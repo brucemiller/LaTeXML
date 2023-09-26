@@ -198,17 +198,17 @@
   </func:function>
 
   <!-- ======================================================================
-       CONTEXT
+       SPANSOUP
        Note that LaTeXML's schema (modeled after latex) is more permissive about
        'miscellaneous' elements (such as tables, inline-blocks, etc) within
        inline context than HTML/HTML5. More than a validity problem, HTML5 parsers
        will rewrite the DOM to suit itself, resulting in flawed display.
-       Virtually all LaTeXML templates take a 'context' parameter that should be either
+       Virtually all LaTeXML templates take a 'spansoup' parameter that should be either
        'inline' or (currently) anything else. Templates that generate elements
-       that only accept inline markup should pass $context 'inline' to templates
+       that only accept inline markup should pass $spansoup 'inline' to templates
        called or applied within.  Any block level templates (that expect to be
        used in such a context) should accomodate by using
-       f:blockelement($context,'element')
+       f:blockelement($spansoup,'element')
        where 'element' is the html element they would normally generate.
        If this is used in an inline context, 'span' will be used instead,
        maintaining validity and avoiding DOM rewrites.
@@ -216,10 +216,10 @@
        which will set the display property appropriately.
   -->
   <func:function name="f:blockelement">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="blocktag"/>
     <xsl:choose>
-      <xsl:when test="$context = 'inline'">
+      <xsl:when test="$spansoup = 'inline'">
         <func:result>span</func:result>
       </xsl:when>
       <xsl:otherwise>
@@ -337,13 +337,13 @@
        they'll resume with the normal templates.
   -->
   <xsl:template match="*" mode='copy-foreign'>
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:for-each select="@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
       <xsl:apply-templates mode='copy-foreign'>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
@@ -365,9 +365,9 @@
 
   <!-- Embedded latexml, however, gets treated with the usual templates! -->
   <xsl:template match="ltx:*" mode='copy-foreign'>
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:apply-templates select="." >
-      <xsl:with-param name="context"/>
+      <xsl:with-param name="spansoup"/>
     </xsl:apply-templates>
   </xsl:template>
 

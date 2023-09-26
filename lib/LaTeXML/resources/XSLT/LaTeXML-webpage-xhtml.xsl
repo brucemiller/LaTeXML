@@ -41,8 +41,8 @@
   <xsl:param name="META_VIEWPORT"></xsl:param>
 
   <!-- We don't really anticipate page structure appearing in inline contexts,
-       so we pretty much ignore the $context switches.
-       See the CONTEXT discussion in LaTeXML-common -->
+       so we pretty much ignore the $spansoup switches.
+       See the SPANSOUP discussion in LaTeXML-common -->
 
   <!--  ======================================================================
        The Page
@@ -582,43 +582,43 @@
 
   <!-- explicitly requested TOC -->
   <xsl:template match="ltx:TOC[@format='short']">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
       <xsl:call-template name='add_attributes'>
         <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
       </xsl:call-template>
       <xsl:apply-templates mode="short">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:TOC[@format='veryshort']">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
       <xsl:call-template name='add_attributes'>
         <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
       </xsl:call-template>
       <xsl:apply-templates mode="veryshort">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:TOC[@format='normal2']">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
       <xsl:call-template name='add_attributes'>
         <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
       </xsl:call-template>
       <xsl:apply-templates mode="normal2">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:TOC">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:if test="ltx:toclist/descendant::ltx:tocentry">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
@@ -627,22 +627,22 @@
         </xsl:call-template>
         <xsl:if test="ltx:title">
           <xsl:element name="h6" namespace="{$html_ns}">
-            <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+            <xsl:variable name="inline" select="'inline'"/><!-- override -->
             <xsl:attribute name="class">ltx_title ltx_title_contents</xsl:attribute>
             <xsl:apply-templates select="ltx:title/node()">
-              <xsl:with-param name="context" select="$innercontext"/>
+              <xsl:with-param name="spansoup" select="$inline"/>
             </xsl:apply-templates>
           </xsl:element>
         </xsl:if>
         <xsl:apply-templates>
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:element>
     </xsl:if>
   </xsl:template>
 
   <xsl:template match="ltx:toclist" mode="short">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name='add_attributes'>
@@ -650,13 +650,13 @@
       </xsl:call-template>
       <xsl:text>&#x0A;&#x2666; </xsl:text>
       <xsl:apply-templates mode="short">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:toclist" mode="veryshort">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name='add_attributes'>
@@ -664,40 +664,40 @@
       </xsl:call-template>
       <xsl:text>&#x2666;</xsl:text>
       <xsl:apply-templates mode="veryshort">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:toclist">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="ol" namespace="{$html_ns}">
       <xsl:call-template name='add_id'/>
       <xsl:call-template name='add_attributes'/>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:toclist" mode="normal2">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:apply-templates select="." mode="twocolumn">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
   </xsl:template>
   <xsl:template match="ltx:toclist" mode="twocolumn">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="items"    select="ltx:tocentry"/>
     <xsl:param name="lines"    select="descendant::ltx:tocentry"/>
     <xsl:param name="halflines" select="ceiling(count($lines) div 2)"/>
     <xsl:param name="miditem"
                select="count($lines[position() &lt; $halflines]/ancestor::ltx:tocentry[parent::ltx:toclist[parent::ltx:TOC]]) + 1"/>
     <xsl:call-template name="split-columns">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
       <xsl:with-param name="wrapper" select="'ul'"/>
       <xsl:with-param name="items"   select="$items"/>
       <xsl:with-param name="miditem" select="$miditem"/>
@@ -705,29 +705,29 @@
   </xsl:template>
 
   <xsl:template match="ltx:tocentry">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="li" namespace="{$html_ns}">
       <xsl:call-template name='add_id'/>
       <xsl:call-template name='add_attributes'/>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:tocentry" mode="short">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:apply-templates>
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
     <xsl:text> &#x2666; </xsl:text>
   </xsl:template>
 
   <xsl:template match="ltx:tocentry" mode="veryshort">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:apply-templates>
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
     <xsl:text>&#x2666;</xsl:text>
   </xsl:template>

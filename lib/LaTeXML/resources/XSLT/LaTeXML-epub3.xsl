@@ -54,7 +54,7 @@
   <xsl:template match="ltx:listing[@data]" mode="begin"/>
 
   <xsl:template match="ltx:TOC">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:if test="ltx:toclist/descendant::ltx:tocentry">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="nav" namespace="{$html_ns}">
@@ -64,15 +64,15 @@
         </xsl:call-template>
         <xsl:if test="ltx:title">
           <xsl:element name="h6" namespace="{$html_ns}">
-            <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+            <xsl:variable name="inline" select="'inline'"/><!-- override -->
             <xsl:attribute name="class">ltx_title ltx_title_contents</xsl:attribute>
             <xsl:apply-templates select="ltx:title/node()">
-              <xsl:with-param name="context" select="$innercontext"/>
+              <xsl:with-param name="spansoup" select="$inline"/>
             </xsl:apply-templates>
           </xsl:element>
         </xsl:if>
         <xsl:apply-templates>
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:element>
     </xsl:if>

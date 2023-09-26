@@ -33,20 +33,20 @@
   <xsl:template match="ltx:tags/ltx:tag[@role]"/>
 
   <xsl:template match="ltx:tag">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:value-of select="@open"/>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:value-of select="@close"/>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
@@ -54,24 +54,24 @@
   <!-- Most of these templates generate block-level elements but may appear
        in inline mode; they use f:blockelement so that they will generate
        a valid 'span' element instead.
-       See the CONTEXT discussion in LaTeXML-common -->
+       See the SPANSOUP discussion in LaTeXML-common -->
 
   <xsl:preserve-space elements="ltx:p"/>
   <xsl:template match="ltx:p">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'p')}" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+    <xsl:element name="{f:blockelement($spansoup,'p')}" namespace="{$html_ns}">
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
@@ -79,19 +79,19 @@
   <xsl:strip-space elements="ltx:quote"/>
 
   <xsl:template match="ltx:quote">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'blockquote')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'blockquote')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -100,19 +100,19 @@
   <xsl:strip-space elements="ltx:block"/>
 
   <xsl:template match="ltx:block">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'div')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -121,34 +121,34 @@
   <xsl:strip-space elements="ltx:listing"/>
 
   <xsl:template match="ltx:listing">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'div')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:listing" mode="classes">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:apply-templates select="." mode="base-classes"/>
     <xsl:text> ltx_listing</xsl:text>
   </xsl:template>
 
   <xsl:template match="ltx:listing[@data]" mode="begin">
-    <xsl:param name="context"/>
-    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+    <xsl:param name="spansoup"/>
+    <xsl:element name="{f:blockelement($spansoup,'div')}" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_listing_data</xsl:attribute>
       <xsl:element name="a" namespace="{$html_ns}">
         <xsl:call-template name="add_data_attribute">
@@ -167,19 +167,19 @@
 
   <xsl:preserve-space elements="ltx:listingline"/>
   <xsl:template match="ltx:listingline">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'div')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -204,14 +204,14 @@
   </xsl:param>
   <!-- Equation numbers on left, or default right? -->
   <xsl:template match="ltx:equation/ltx:tags/ltx:tag | ltx:equationgroup/ltx:tags/ltx:tag">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/>
+      <xsl:variable name="inline" select="'inline'"/>
       <xsl:attribute name="class">ltx_tag ltx_tag_<xsl:value-of select="local-name(../..)"/>
       <xsl:text> </xsl:text>
       <xsl:value-of select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'ltx_align_left','ltx_align_right')"/></xsl:attribute>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
@@ -222,32 +222,32 @@
   <xsl:strip-space elements="ltx:equation ltx:equationgroup"/>
 
   <xsl:template match="ltx:equationgroup">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:choose>
       <xsl:when test="$USE_ALIGNED_EQUATIONS">
         <xsl:apply-templates select="." mode="aligned">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:when>
       <xsl:otherwise>
         <xsl:apply-templates select="." mode="unaligned">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
   <xsl:template match="ltx:equation">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:choose>
       <xsl:when test="$USE_ALIGNED_EQUATIONS">
         <xsl:apply-templates select="." mode="aligned">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:when>
       <xsl:otherwise>
         <xsl:apply-templates select="." mode="unaligned">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:otherwise>
     </xsl:choose>
@@ -261,109 +261,109 @@
   <xsl:template match="*" mode="unaligned-end"/>
 
   <xsl:template match="ltx:equationgroup" mode="unaligned">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="eqnopos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'left','right')"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'div')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="'ltx_eqn_div'"/>
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="unaligned-begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:if test="ltx:tags and not(descendant::ltx:equation[ltx:tags]) and $eqnopos='left'">
         <xsl:apply-templates select="ltx:tags">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:if>
       <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:p">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:if test="ltx:tags and not(descendant::ltx:equation[ltx:tags]) and $eqnopos='right'">
         <xsl:apply-templates select="ltx:tags">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:if>
       <xsl:apply-templates select="." mode="constraints">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="unaligned-end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:equation" mode="unaligned">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="eqnopos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'left','right')"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'div')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="'ltx_eqn_div'"/>
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="unaligned-begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:if test="ltx:tags and $eqnopos='left'">
         <xsl:apply-templates select="ltx:tags">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:if>
       <xsl:element name="span" namespace="{$html_ns}">
-        <xsl:variable name="context" select="'inline'"/><!-- override -->
+        <xsl:variable name="spansoup" select="'inline'"/><!-- override -->
         <!-- This should cover: ltx:Math, ltx:MathFork, ltx:text & Misc
              (ie. all of equation_model EXCEPT Meta & EquationMeta) -->
         <xsl:apply-templates select="ltx:Math | ltx:MathFork | ltx:text
                                      | ltx:inline-block | ltx:verbatim | ltx:break
                                      | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
                                      | ltx:tabular | ltx:picture" >
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:element>
       <xsl:if test="ltx:tags and $eqnopos='right'">
         <xsl:apply-templates select="ltx:tags">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:if>
       <xsl:apply-templates select="." mode="constraints">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="unaligned-end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
       </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:equationgroup|ltx:equation" mode="constraints">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:apply-templates select="ltx:constraint[not(@hidden='true')]">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
   </xsl:template>
 
   <!-- by default (not inside an aligned equationgroup) -->
   <xsl:template match="ltx:MathFork">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:apply-templates select="ltx:Math[1]">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
   </xsl:template>
 
@@ -460,32 +460,32 @@
        It establishes an outer table into which the contained equationgroups
        and equations are set. -->
   <xsl:template match="ltx:equationgroup" mode="aligned">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"
                select="f:maxcolumns(ltx:equation | ltx:equationgroup/ltx:equation)"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'table')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'table')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="'ltx_eqn_table'"/>
       </xsl:call-template>
       <xsl:text>&#x0A;</xsl:text>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="aligned-begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="inalignment">
         <xsl:with-param name="ncolumns" select="$ncolumns"/>
         <xsl:with-param name="spanned" select="false()"/>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="aligned-end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -494,31 +494,31 @@
   <!-- Top-level aligned single equation establishes a table into which the equations
        rows are set. -->
   <xsl:template match="ltx:equation" mode="aligned">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns" select="f:countcolumns(.)"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'table')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'table')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="'ltx_eqn_table'"/>
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="aligned-begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
       <xsl:apply-templates select="." mode="inalignment">
         <xsl:with-param name="ncolumns" select="$ncolumns"/>
         <xsl:with-param name="spanned" select="false()"/>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="aligned-end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -538,7 +538,7 @@
        [this mangled nesting keeps us from being able to use tbody!]
   -->
   <xsl:template name="eqnumtd">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="side"/>                                   <!-- left or right -->
     <xsl:param name="eqnopos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'left','right')"/>
@@ -561,14 +561,14 @@
                                 | ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:constraint
                                 )"/>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+          <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}">
             <xsl:attribute name="rowspan"><xsl:value-of select="$nrows"/></xsl:attribute>
             <xsl:attribute name="class">
               <xsl:value-of select="concat('ltx_eqn_cell ltx_eqn_eqno ltx_align_middle ltx_align_',$side)"/>
             </xsl:attribute>
             <xsl:apply-templates
                 select="ancestor-or-self::ltx:equationgroup[position()=1]/ltx:tags/ltx:tag[not(@role)]">
-              <xsl:with-param name="context" select="$context"/>
+              <xsl:with-param name="spansoup" select="$spansoup"/>
             </xsl:apply-templates>
             </xsl:element>
         </xsl:if>                                              <!--Else NOTHING (rowspan'd!) -->
@@ -590,13 +590,13 @@
                                 [ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
                                 )"/>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+          <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}">
             <xsl:attribute name="rowspan"><xsl:value-of select="$nrows"/></xsl:attribute>
             <xsl:attribute name="class">
               <xsl:value-of select="concat('ltx_eqn_cell ltx_eqn_eqno ltx_align_middle ltx_align_',$side)"/>
             </xsl:attribute>
             <xsl:apply-templates select="ancestor-or-self::ltx:equation[position()=1]/ltx:tags/ltx:tag[not(@role)]">
-              <xsl:with-param name="context" select="$context"/>
+              <xsl:with-param name="spansoup" select="$spansoup"/>
             </xsl:apply-templates>
           </xsl:element>
         </xsl:if>                                                      <!--Else NOTHING (rowspan'd!) -->
@@ -606,15 +606,15 @@
 
   <!-- Handle the equation left side, possibly including equation number -->
   <xsl:template name="eq-left">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:call-template name="eqnumtd">                         <!--Place left number, if any -->
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
       <xsl:with-param name='side' select="'left'"/>
     </xsl:call-template>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}">
       <xsl:attribute name="class">
       <xsl:value-of select="concat('ltx_eqn_cell ltx_eqn_',$eqpos,'_padleft')"/></xsl:attribute>
     </xsl:element>
@@ -623,12 +623,12 @@
   <!-- Handle the equation right side, possibly including equation number,
        and any extra padding "columns" needed to complete the row. -->
   <xsl:template name="eq-right">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:param name="extrapad" select="0"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}">
       <xsl:attribute name="class">
       <xsl:value-of select="concat('ltx_eqn_cell ltx_eqn_',$eqpos,'_padright')"/></xsl:attribute>
       <xsl:if test="$extrapad > 0">
@@ -638,7 +638,7 @@
       </xsl:if>
     </xsl:element>
     <xsl:call-template name="eqnumtd">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
       <xsl:with-param name='side' select="'right'"/>
     </xsl:call-template>
   </xsl:template>
@@ -647,19 +647,19 @@
        Synthesizing rows & columns out for aligned equations and equationgroups
   -->
   <xsl:template match="*" mode="inalignment-begin">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"/>
     <xsl:param name="spanned"/>
   </xsl:template>
   <xsl:template match="*" mode="inalignment-end">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"/>
     <xsl:param name="spanned"/>
   </xsl:template>
 
   <!-- for intertext type entries; these just span he content columns. -->
   <xsl:template match="ltx:p" mode="inalignment">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"/>
     <xsl:param name="spanned"/>
     <xsl:param name="eqpos"
@@ -668,15 +668,15 @@
     <xsl:choose>
       <xsl:when test="$spanned">
         <xsl:apply-templates select="." mode="ininalignment">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
           <xsl:with-param name="spanned" select="$spanned"/>
         </xsl:apply-templates>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($spansoup,'tbody')}" namespace="{$html_ns}">
           <xsl:apply-templates select="." mode="ininalignment">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
             <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
@@ -686,35 +686,35 @@
   </xsl:template>
 
   <xsl:template match="ltx:p" mode="ininalignment">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"/>
     <xsl:param name="spanned"/>
-    <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'tr')}" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
-      <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+      <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}">
         <xsl:attribute name="class">ltx_eqn_cell ltx_align_left</xsl:attribute>
         <xsl:attribute name="style">white-space:normal;</xsl:attribute>
         <xsl:attribute name="colspan">
           <xsl:value-of select="3+$ncolumns"/>
         </xsl:attribute>
         <xsl:apply-templates select="." mode="begin">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
         <xsl:apply-templates select="." mode="inalignment-begin">
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
           <xsl:with-param name="spanned" select="$spanned"/>
         </xsl:apply-templates>
         <xsl:apply-templates>
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
         <xsl:apply-templates select="." mode="inalignment-end">
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
           <xsl:with-param name="spanned" select="$spanned"/>
         </xsl:apply-templates>
         <xsl:apply-templates select="." mode="end">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:element>
     </xsl:element>
@@ -723,7 +723,7 @@
   <!-- equationgroups, possibly nested, already within a table context.
        We'll wrap in a tbody (with ID), unless we're already spanned by an equation number. -->
   <xsl:template match="ltx:equationgroup" mode="inalignment">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"/>
     <xsl:param name="spanned"/> <!--If this group is (row)spanned by an equation number column. -->
     <xsl:choose>
@@ -731,10 +731,10 @@
       <xsl:when test="$spanned or (not(child::ltx:tags) and not(parent::ltx:equationgroup and @fragid))">
         <!-- but without tbody, if id hasn't been handled (by html:table), add dummy row -->
         <xsl:if test="@fragid and parent::ltx:equationgroup">
-          <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+          <xsl:element name="{f:blockelement($spansoup,'tr')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:attribute name="class">ltx_eqn_row</xsl:attribute>
-            <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}"> <!--Empty, too
+            <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}"> <!--Empty, too
 -->
               <xsl:attribute name="class">ltx_eqn_cell</xsl:attribute>
               <xsl:attribute name="colspan"><xsl:value-of select="$ncolumns+3"/></xsl:attribute>
@@ -743,20 +743,20 @@
         </xsl:if>
         <xsl:apply-templates select="." mode="ininalignment">
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
           <xsl:with-param name="spanned" select="$spanned"/>
         </xsl:apply-templates>
       </xsl:when>
       <!-- otherwise, wrap equationgroup in a tbody -->
       <xsl:otherwise>
-        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($spansoup,'tbody')}" namespace="{$html_ns}">
           <!-- If id hasn't been handled (by html:table), put it on tbody -->
           <xsl:if test="@fragid and parent::ltx:equationgroup">
             <xsl:call-template name="add_id"/>
           </xsl:if>
           <xsl:apply-templates select="." mode="ininalignment">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="spanned" select="child::ltx:tags"/>
           </xsl:apply-templates>
         </xsl:element>
@@ -766,26 +766,26 @@
 
   <!-- innermost equationgroup; simply handle the content equations/equationgroups -->
   <xsl:template match="ltx:equationgroup" mode="ininalignment">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"/>
     <xsl:param name="spanned"/>
     <xsl:apply-templates select="." mode="inalignment-begin">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
       <xsl:with-param name="spanned" select="$spanned"/>
     </xsl:apply-templates>
     <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:p" mode="inalignment">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
       <xsl:with-param name="spanned" select="$spanned"/>
     </xsl:apply-templates>
     <xsl:apply-templates select="." mode="aligned-constraints">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
     <xsl:apply-templates select="." mode="inalignment-end">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
       <xsl:with-param name="spanned" select="$spanned"/>
     </xsl:apply-templates>
   </xsl:template>
@@ -793,7 +793,7 @@
   <!-- equation already within a table context.
        We'll wrap in a tbody (with ID), unless we're already spanned by an equation number. -->
   <xsl:template match="ltx:equation" mode="inalignment">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"/>
     <xsl:param name="spanned"/> <!--If this equation is (row)spanned by an equation number column. -->
     <!-- The main issue here is whether to wrap with a tbody (putting any id there),
@@ -805,21 +805,21 @@
       <xsl:when test="$spanned">
         <xsl:apply-templates select="." mode="ininalignment">
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
           <xsl:with-param name="need_id" select="true()"/>
           <xsl:with-param name="spanned" select="$spanned"/>
         </xsl:apply-templates>
       </xsl:when>
       <!-- Otherwise, ALWAYS wrap equation in a tbody -->
       <xsl:otherwise>
-        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($spansoup,'tbody')}" namespace="{$html_ns}">
           <!-- If id hasn't been handled (by outer html:table) put it on the tbody -->
           <xsl:if test="@fragid and parent::ltx:equationgroup">
             <xsl:call-template name="add_id"/>
           </xsl:if>
           <xsl:apply-templates select="." mode="ininalignment">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="need_id" select="false()"/>
             <xsl:with-param name="spanned" select="child::ltx:tags"/>
           </xsl:apply-templates>
@@ -831,7 +831,7 @@
   <!-- innermost equation, already within a table and tbody.
        This is template must sort through all the MathFork's and recover the rows & columns -->
   <xsl:template match="ltx:equation" mode="ininalignment">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"/>
     <xsl:param name="need_id"/> <!--Need to put id in best, first row. -->
     <xsl:param name="spanned"/>
@@ -840,7 +840,7 @@
     <xsl:choose>
       <!-- Case 1: (possibly) Multi-line equation -->
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]/ltx:tr">
-        <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($spansoup,'tr')}" namespace="{$html_ns}">
           <!-- Note that the id is only going on the 1st row! -->
           <xsl:if test="$need_id">
             <xsl:call-template name="add_id"/>
@@ -850,35 +850,35 @@
           </xsl:call-template>
           <xsl:apply-templates select="." mode="inalignment-begin">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-left">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:call-template>
           <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td"
                                mode="inalignment">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="extrapad" select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1]/tr[1])"/>
           </xsl:call-template>
         </xsl:element>
         <xsl:for-each select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[position() &gt; 1]">
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+          <xsl:element name="{f:blockelement($spansoup,'tr')}" namespace="{$html_ns}">
             <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
             <xsl:call-template name="eq-left">
-              <xsl:with-param name="context" select="$context"/>
+              <xsl:with-param name="spansoup" select="$spansoup"/>
             </xsl:call-template>
             <xsl:apply-templates select="ltx:td" mode="inalignment">
-              <xsl:with-param name="context" select="$context"/>
+              <xsl:with-param name="spansoup" select="$spansoup"/>
               <xsl:with-param name="spanned" select="$spanned"/>
             </xsl:apply-templates>
             <xsl:call-template name="eq-right">
-              <xsl:with-param name="context" select="$context"/>
+              <xsl:with-param name="spansoup" select="$spansoup"/>
               <!-- count carefully, here -->
               <xsl:with-param name="extrapad" select="$ncolumns - sum(ltx:td/@colspan) - count(ltx:td[not(@colspan)])"/>
             </xsl:call-template>
@@ -887,7 +887,7 @@
       </xsl:when>
       <!-- Case 2: Single line, (possibly) multiple columns -->
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]">
-        <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($spansoup,'tr')}" namespace="{$html_ns}">
           <xsl:if test="$need_id"> <!--Don't duplicate id! -->
             <xsl:call-template name="add_id"/>
           </xsl:if>
@@ -896,26 +896,26 @@
           </xsl:call-template>
           <xsl:apply-templates select="." mode="inalignment-begin">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-left">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:call-template>
           <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/*"
                                mode="inalignment">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="extrapad" select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1])"/>
           </xsl:call-template>
         </xsl:element>
       </xsl:when>
       <!-- Case : default; just an unaligned equation, presumably within a group-->
       <xsl:otherwise>
-        <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($spansoup,'tr')}" namespace="{$html_ns}">
           <xsl:if test="$need_id"> <!--Don't duplicate id! -->
             <xsl:call-template name="add_id"/>
           </xsl:if>
@@ -924,14 +924,14 @@
           </xsl:call-template>
           <xsl:apply-templates select="." mode="inalignment-begin">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-left">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:call-template>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+          <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}">
             <xsl:attribute name="class">
               <xsl:value-of select="concat('ltx_eqn_cell ltx_align_',$eqpos)"/>
             </xsl:attribute>
@@ -945,11 +945,11 @@
                                          | ltx:inline-block | ltx:verbatim | ltx:break
                                          | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
                                          | ltx:tabular | ltx:picture" >
-              <xsl:with-param name="context" select="$context"/>
+              <xsl:with-param name="spansoup" select="$spansoup"/>
             </xsl:apply-templates>
           </xsl:element>
           <xsl:call-template name="eq-right">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
             <!-- no extra columns, since we've already made the equation span -->
           </xsl:call-template>
         </xsl:element>
@@ -957,25 +957,25 @@
     </xsl:choose>
     <xsl:apply-templates select="." mode="aligned-constraints">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
     <xsl:apply-templates select="." mode="inalignment-end">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
       <xsl:with-param name="spanned" select="$spanned"/>
     </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="ltx:equationgroup|ltx:equation" mode="aligned-constraints">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="ncolumns"/>
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:if test="ltx:constraint[not(@hidden='true')]">
       <xsl:text>&#x0A;</xsl:text>
-      <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+      <xsl:element name="{f:blockelement($spansoup,'tr')}" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_eqn_row</xsl:attribute>
-        <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_eqn_cell ltx_align_right</xsl:attribute>
           <!-- the $ncolumns of math, plus whatever endpadding, but NOT the number-->
           <xsl:attribute name="colspan">
@@ -983,7 +983,7 @@
           <!--<xsl:value-of select="$ncolumns+2"/>-->
           </xsl:attribute>
           <xsl:apply-templates select="." mode="constraints">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:element>
@@ -991,22 +991,22 @@
   </xsl:template>
 
   <xsl:template match="ltx:constraint">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="context" select="'inline'"/><!-- override -->
+      <xsl:variable name="spansoup" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <!-- NOTE: This is pretty wacky.  Maybe we should move the text inside the equation? -->
   <xsl:template match="ltx:td" mode="inalignment">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}">
       <xsl:if test="@colspan">
         <xsl:attribute name="colspan"><xsl:value-of select="@colspan"/></xsl:attribute>
       </xsl:if>
@@ -1020,7 +1020,7 @@
           </xsl:with-param>
       </xsl:call-template>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:if test="(self::* = ../ltx:td[position()=last()])
                     and (parent::* = ../../ltx:tr[position()=last()])
@@ -1028,26 +1028,26 @@
         <!-- if we're the last td in the last tr in an equation followed by a text,
              insert the text here!-->
         <xsl:apply-templates select="ancestor::ltx:MathFork/following-sibling::ltx:text[1]/node()">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:if>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:Math" mode="inalignment">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'td')}" namespace="{$html_ns}">
       <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="'ltx_eqn_cell ltx_align_center'"/>
       </xsl:call-template>
       <xsl:apply-templates select=".">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:if test="ancestor::ltx:MathFork/following-sibling::*[position()=1][self::ltx:text]">
         <!-- if we're followed by a text, insert the text here!-->
         <xsl:apply-templates select="ancestor::ltx:MathFork/following-sibling::ltx:text[1]/node()">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:if>
     </xsl:element>
@@ -1062,83 +1062,83 @@
   <xsl:strip-space elements="ltx:itemize ltx:enumerate ltx:description ltx:item
                              ltx:inline-itemize ltx:inline-enumerate ltx:inline-description ltx:inline-item"/>
   <xsl:template match="ltx:itemize">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'ul')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'ul')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:enumerate">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'ol')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'ol')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:description">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'dl')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'dl')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates mode='description'>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:item">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
       <xsl:when test="$SIMPLIFY_HTML">
-        <xsl:element name="{f:blockelement($context,'li')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($spansoup,'li')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="*[local-name() != 'tags']">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:element name="{f:blockelement($context,'li')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($spansoup,'li')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes">
             <xsl:with-param name="extra_style">
@@ -1149,12 +1149,12 @@
             </xsl:with-param>
           </xsl:call-template>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:choose>
             <xsl:when test="child::ltx:tags">
               <xsl:apply-templates select="ltx:tags/ltx:tag[not(@role)]">
-                <xsl:with-param name="context" select="$context"/>
+                <xsl:with-param name="spansoup" select="$spansoup"/>
               </xsl:apply-templates>
               <xsl:text> </xsl:text>
             </xsl:when>
@@ -1167,10 +1167,10 @@
             </xsl:otherwise>
           </xsl:choose>
           <xsl:apply-templates select="*[local-name() != 'tags']">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:otherwise>
@@ -1178,26 +1178,26 @@
   </xsl:template>
 
   <xsl:template match="ltx:item" mode="description">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'dt')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'dt')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="ltx:tags/ltx:tag[not(@role)]">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'dd')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'dd')}" namespace="{$html_ns}">
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="*[local-name() != 'tags']">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
@@ -1205,7 +1205,7 @@
   <!-- Tricky, perhaps: ltx:tag is typically within a title or caption
        so it's the GRANDPARENT's type we want to use here!-->
   <xsl:template match="ltx:tag" mode="classes">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:apply-templates select="." mode="base-classes"/>
     <xsl:text> </xsl:text>
     <xsl:value-of select="concat('ltx_tag_',local-name(../..))"/>
@@ -1213,56 +1213,56 @@
 
   <!-- Inline forms of the above simply generate running text. -->
   <xsl:template match="ltx:inline-itemize | ltx:inline-enumerate | ltx:inline-description">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:inline-item">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
       <xsl:when test="child::ltx:tags">
         <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+          <xsl:variable name="inline" select="'inline'"/><!-- override -->
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="ltx:tags/ltx:tag[not(@role)]">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
           <xsl:text> </xsl:text>
           <xsl:apply-templates select="*[local-name() != 'tags']">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
         <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+          <xsl:variable name="inline" select="'inline'"/><!-- override -->
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
           <xsl:element name="span" namespace="{$html_ns}">
             <xsl:attribute name="class">ltx_tag</xsl:attribute>
@@ -1270,10 +1270,10 @@
           </xsl:element>
           <xsl:text> </xsl:text>
           <xsl:apply-templates>
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:otherwise>
@@ -1290,7 +1290,7 @@
        $items is the list of items
        $miditem is the cut-off position -->
   <xsl:template name="split-columns">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="wrapper"/>
     <xsl:param name="items"/>
     <xsl:param name="miditem"/>
@@ -1308,13 +1308,13 @@
             <xsl:element name="{$wrapper}" namespace="{$html_ns}">
               <xsl:call-template name="add_attributes"/>
               <xsl:apply-templates select="." mode="begin">
-                <xsl:with-param name="context" select="$context"/>
+                <xsl:with-param name="spansoup" select="$spansoup"/>
               </xsl:apply-templates>
               <xsl:apply-templates select="$items[position() &lt; $miditem]">
-                <xsl:with-param name="context" select="$context"/>
+                <xsl:with-param name="spansoup" select="$spansoup"/>
               </xsl:apply-templates>
               <xsl:apply-templates select="." mode="end">
-                <xsl:with-param name="context" select="$context"/>
+                <xsl:with-param name="spansoup" select="$spansoup"/>
               </xsl:apply-templates>
               <xsl:text>&#x0A;</xsl:text>
             </xsl:element>
@@ -1327,13 +1327,13 @@
             <xsl:element name="{$wrapper}" namespace="{$html_ns}">
               <xsl:call-template name="add_attributes"/>
               <xsl:apply-templates select="." mode="begin">
-                <xsl:with-param name="context" select="$context"/>
+                <xsl:with-param name="spansoup" select="$spansoup"/>
               </xsl:apply-templates>
               <xsl:apply-templates select="$items[not(position() &lt; $miditem)]">
-                <xsl:with-param name="context" select="$context"/>
+                <xsl:with-param name="spansoup" select="$spansoup"/>
               </xsl:apply-templates>
               <xsl:apply-templates select="." mode="end">
-                <xsl:with-param name="context" select="$context"/>
+                <xsl:with-param name="spansoup" select="$spansoup"/>
               </xsl:apply-templates>
               <xsl:text>&#x0A;</xsl:text>
             </xsl:element>
@@ -1346,13 +1346,13 @@
         <xsl:element name="{$wrapper}" namespace="{$html_ns}">
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="$items">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:text>&#x0A;</xsl:text>
         </xsl:element>
@@ -1362,16 +1362,16 @@
   </xsl:template>
 
   <xsl:template match="ltx:pagination">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
