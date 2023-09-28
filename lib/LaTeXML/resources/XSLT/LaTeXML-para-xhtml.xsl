@@ -168,7 +168,7 @@
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
     <xsl:choose>
-      <xsl:when test="count(ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:inline-logical-block | ltx:inline-block | ltx:listing | ltx:p) > 1">
+      <xsl:when test="count(ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:inline-logical-block | ltx:inline-block | ltx:itemize | ltx:equation | ltx:listing | ltx:p) > 1">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:apply-templates select="ltx:caption[following-sibling::ltx:figure
                                      | following-sibling::ltx:table
@@ -178,6 +178,7 @@
                                      | following-sibling::ltx:listing
                                      | following-sibling::ltx:inline-logical-block
                                      | following-sibling::ltx:inline-block
+                                     | following-sibling::ltx:itemize
                                      | following-sibling::ltx:p]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
@@ -191,7 +192,7 @@
             </xsl:otherwise>
           </xsl:choose>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:for-each select="ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:break | ltx:inline-logical-block | ltx:inline-block | ltx:listing | ltx:p | ltx:rawhtml">
+          <xsl:for-each select="ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:break | ltx:itemize | ltx:inline-logical-block | ltx:inline-block | ltx:listing | ltx:p | ltx:rawhtml">
             <xsl:choose>
               <xsl:when test="self::ltx:break">
                 <xsl:element name="div" namespace="{$html_ns}">
@@ -201,13 +202,13 @@
               <xsl:otherwise>
                 <xsl:text>&#x0A;</xsl:text>
                 <xsl:element name="div" namespace="{$html_ns}">
-                  <xsl:attribute name="class">ltx_flex_cell 
-                  <xsl:if test="contains(@class,'ltx_flex_size_1')">ltx_flex_size_1</xsl:if>
-                  <xsl:if test="contains(@class,'ltx_flex_size_2')">ltx_flex_size_2</xsl:if>
-                  <xsl:if test="contains(@class,'ltx_flex_size_3')">ltx_flex_size_3</xsl:if>
-                  <xsl:if test="contains(@class,'ltx_flex_size_4')">ltx_flex_size_4</xsl:if>
-                  <xsl:if test="contains(@class,'ltx_flex_size_many')">ltx_flex_size_many</xsl:if>
-                  </xsl:attribute>
+                  <xsl:attribute name="class">ltx_flex_cell<!--
+                  --><xsl:if test="contains(@class,'ltx_flex_size_1')">ltx_flex_size_1</xsl:if><!--
+                  --><xsl:if test="contains(@class,'ltx_flex_size_2')">ltx_flex_size_2</xsl:if><!--
+                  --><xsl:if test="contains(@class,'ltx_flex_size_3')">ltx_flex_size_3</xsl:if><!--
+                  --><xsl:if test="contains(@class,'ltx_flex_size_4')">ltx_flex_size_4</xsl:if><!--
+                  --><xsl:if test="contains(@class,'ltx_flex_size_many')">ltx_flex_size_many</xsl:if><!--
+                  --></xsl:attribute>
                   <xsl:apply-templates select=".">
                     <xsl:with-param name="context" select="$context"/>
                   </xsl:apply-templates>

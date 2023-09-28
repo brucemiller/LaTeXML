@@ -103,6 +103,24 @@ Testing \ref{array:subfig1} and \ref{array:subfig2} inside \ref{array:fig}.
 \end{figure*}
 \clearpage
 
+
+% two subfigures and an itemize
+\begin{figure}
+  \begin{minipage}[t]{0.4\textwidth}
+    \includegraphics[width={0.4\textwidth}]{example-image-a}
+  \end{minipage}
+  \begin{minipage}[t]{0.4\textwidth}
+    \includegraphics[width={0.4\textwidth}]{example-image-a}
+  \end{minipage} \\
+  \begin{center}\begin{itemize}
+    \item post-minipage item 1
+    \item post-minipage item 2
+    \item post-minipage item 3
+  \end{itemize}\end{center}
+  \caption{Two minipages and an itemize}
+\end{figure}
+\clearpage
+
 % listing, itemize, enumerate, inline math, display math, para text
 % footnotes, equation group, quote, theorem?
 \begin{figure}
@@ -122,6 +140,7 @@ Testing \ref{array:subfig1} and \ref{array:subfig2} inside \ref{array:fig}.
   \end{eqnarray*}
   \begin{quote}Quote me later\end{quote}%
   \begin{theorem} mock theorem \end{theorem}%
+  \begin{verbatim} some verbatim $#! stuff \end{verbatim}%
   \caption{Highly mixed figure}
 \end{figure}
 \clearpage

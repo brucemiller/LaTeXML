@@ -134,18 +134,22 @@ sub getGraphicsSourceTypes {
 sub findGraphicFile {
   my ($self, $doc, $node) = @_;
   if (my $source = $node->getAttribute('graphic')) {
-    # Find all acceptable image files, in order of search paths
-    my ($dir, $name, $reqtype) = pathname_split($source);
-    # Ignore the requested type? Or should it increase desirability?
-    #
-    # If this is *NOT* a known graphics type, it would be best to treat it as
-    # a name suffix (e.g. name.1 from name.1.png)
-    if ((length($reqtype) > 0) && !(grep { $_ eq lc($reqtype) } $$self{graphics_types})) {
-      $name .= ".$reqtype"; }
-    my $file  = pathname_concat($dir, $name);
-    my @paths = pathname_findall($file, paths => $LaTeXML::Post::Graphics::SEARCHPATHS,
-      # accept empty type, incase bad type name, but actual file's content is known type.
-      types => ['', $self->getGraphicsSourceTypes]);
+    # if we already have a usable candidate, save ourselves the work
+    my @paths = split(',', $node->getAttribute('candidates') || '');
+    if (!scalar(@paths)) {
+      # Find all acceptable image files, in order of search paths
+      my ($dir, $name, $reqtype) = pathname_split($source);
+      # Ignore the requested type? Or should it increase desirability?
+      #
+      # If this is *NOT* a known graphics type, it would be best to treat it as
+      # a name suffix (e.g. name.1 from name.1.png)
+      if ((length($reqtype) > 0) && !(grep { $_ eq lc($reqtype) } $$self{graphics_types})) {
+        $name .= ".$reqtype"; }
+      my $file = pathname_concat($dir, $name);
+      @paths = pathname_findall($file, paths => $LaTeXML::Post::Graphics::SEARCHPATHS,
+        # accept empty type, incase bad type name, but actual file's content is known type.
+        types => ['', $self->getGraphicsSourceTypes]);
+    }
     my ($best, $bestpath) = (-1, undef);
     # Now, find the first image that is either the correct type,
     # or has the most desirable type mapping
