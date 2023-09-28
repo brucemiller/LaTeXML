@@ -5,6 +5,8 @@ use FindBin;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
+use lib "$FindBin::RealBin/../../blib/lib";
+use LaTeXML::Common::Error;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my $WORKDIR   = $FindBin::RealBin;
@@ -28,6 +30,7 @@ $SCHEMADOC = "$WORKDIR/schema.tex" unless $SCHEMADOC;
 #======================================================================
 #my $schemadoc = "$WORKDIR/schema.tex";
 if ($force || (!-f $SCHEMADOC) || (-M $SCHEMADIR < -M $SCHEMADOC)) {
+  UseLog('genschema.log');
   print "Converting Schema in $SCHEMADIR to LaTeX\n";
   my $SCHEMAOUT;
   open($SCHEMAOUT, '>', $SCHEMADOC) or die "Couldn't open $SCHEMADOC for output:$!";

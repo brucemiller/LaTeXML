@@ -119,7 +119,7 @@ Debug($@) if $@ ne $LaTeXML::Common::Error::DIE_MESSAGE;
 my $code    = $latexml && $latexml->getStatusCode;
 my $status  = $latexml && $latexml->getStatusMessage;
 my $runtime = RunTime($starttime);
-Note("Conversion " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
+Note("Conversion " . ($code == 3 ? 'failed' : 'complete') . ": " . $status . " (reqd. $runtime)");
 UseLog(undef);
 
 # Should this be within the withState ?

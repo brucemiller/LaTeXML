@@ -178,10 +178,8 @@
 % \elementdef{name}{doc}{body}
 \newcommand{\elementdef}[3]{
   \item[\textit{Element }{\bfseries\schemafont #1}]
-        \hspace{1em}
-        \hypertarget{\cleanhypername{schema.#1}}{}%
-        \index{#1@{\schemafont #1}!element}%
-        #2
+     \hypertarget{\cleanhypername{schema.#1}}{#2}%
+     \index{#1@{\schemafont #1}!element}%
     \ifx.#3.\else\begin{elementdescription}#3\end{elementdescription}\fi
 }
 
@@ -204,28 +202,21 @@
 % \patterndef{name}{doc}{body}
 \newcommand{\patterndef}[3]{
    \item[\textit{Pattern }{\bfseries\patternfont #1}]
-      \hspace{1em} 
-      \hypertarget{\cleanhypername{schema.#1}}{}%
+      \hypertarget{\cleanhypername{schema.#1}}{#2}%
       \test@elpattern{#1}\if@elpattern\else
          \index{#1@{\patternfont #1}!schema pattern}\fi
-      #2
     \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
 % \patternadd{name}{doc}{body}
 \newcommand{\patternadd}[3]{
   \item[\textit{Add to }{\bfseries\patternfont #1}] \hspace{1em} #2
-%%  \item[\textit{Add to }%
-%%    \@ifundefined{defined.schema.#1}{\hypertarget{schema.#1}{{\bfseries\patternfont #1}}}{{\bfseries\patternfont #1}}
-%%    ]  \hspace{1em} #2
     \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
 \newcommand{\patterndefadd}[3]{
   \item[\textit{Add to }{\bfseries\patternfont #1}]
-     \hspace{1em}
-     \hypertarget{\cleanhypername{schema.#1}}{}%
-      #2
+      \hypertarget{\cleanhypername{schema.#1}}{#2}%
      \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
