@@ -214,7 +214,7 @@ sub handle_escape {    # Read control sequence
   # Bit I believe that he does NOT mean within control sequences
   my $cs = "\\" . $ch;    # I need this standardized to be able to lookup tokens (A better way???)
   if ((defined $cc) && ($cc == CC_LETTER)) {    # For letter, read more letters for csname.
-    while ((($ch, $cc) = getNextChar($self)) && (length($ch) > 0) && ($cc == CC_LETTER)) {
+    while ((($ch, $cc) = getNextChar($self)) && (defined $ch) && ($cc == CC_LETTER)) {
       $cs .= $ch; }
     # We WILL skip spaces, but not till next token is read (in case catcode changes!!!!)
     $$self{skipping_spaces} = 1;
