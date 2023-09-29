@@ -1,4 +1,4 @@
-# /=====================================================================\ 
+# /=====================================================================\
 # |  LaTeXML-meta.rnc                                                   |
 # | RelaxNG model for LaTeXML generated documents                       |
 # |=====================================================================|
@@ -14,7 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## Meta elements are generally hidden;
 ## they can appear in both inline and block contexts.
-Meta.class   |= note | declare | indexmark | glossarydefinition | rdf | ERROR | resource | navigation
+Meta.class   |= note | declare | indexmark | glossarydefinition | rdf | resource | navigation
 
 #======================================================================
 
@@ -68,7 +68,7 @@ declare_model =
 #======================================================================
 
 indexmark =
-## Metadata to record an indexing position. The content is 
+## Metadata to record an indexing position. The content is
 ## a sequence of \elementref{indexphrase}, each representing a level in
 ## a multilevel indexing entry.
 element indexmark { indexmark_attributes, indexmark_model }
@@ -149,7 +149,7 @@ element glossaryphrase { glossaryphrase_attributes, glossaryphrase_model }
 glossaryphrase_attributes =
   Common.attributes,
   IDREF.attributes,
-  
+
   ## a flattened form of the phrase for generating an \attr{ID}.
   attribute key { text }?,
   ## a keyword naming the format of this phrase (to match \attr{show} in \elementref{glossaryref}).
@@ -173,20 +173,6 @@ rdf_attributes =
 rdf_model = Flow.model
 
 #======================================================================
-
-ERROR =
-## error object for undefined control sequences, or whatever
-element ERROR { ERROR_attributes, ERROR_model }
-
-## Attributes for \elementref{ERROR}.
-ERROR_attributes =
-  Common.attributes,
-  ID.attributes
-
-## Content model for \elementref{ERROR}.
-ERROR_model = text*
-
-#======================================================================
 # Document-level (or sub-document level) Meta objects
 
 resource =
@@ -194,7 +180,7 @@ resource =
 element resource { resource_attributes, resource_model }
 
 ## Attributes for \elementref{resource}.
-resource_attributes = 
+resource_attributes =
   Common.attributes,
 
   ## the source url to the resource

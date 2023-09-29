@@ -4234,8 +4234,8 @@ DefConstructor('\lx@mung@bibliography@pre', sub {
 DefConstructorI('\lx@bibnewblock', undef, sub {
     $_[0]->openElement('ltx:bibblock') if $_[0]->isOpenable('ltx:bibblock'); });
 Let('\newblock', '\lx@bibnewblock');
-Tag('ltx:bibitem',  autoClose => 1);
-Tag('ltx:bibblock', autoClose => 1);
+Tag('ltx:bibitem',  autoOpen => 1, autoClose => 1);
+Tag('ltx:bibblock', autoOpen => 1, autoClose => 1);
 
 #----------------------------------------------------------------------
 # We've got the same problem as LaTeX: Lather, Rinse, Repeat.

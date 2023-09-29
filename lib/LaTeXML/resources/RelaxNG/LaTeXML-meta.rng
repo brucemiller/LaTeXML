@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  /=====================================================================\ 
+  /=====================================================================\
   |  LaTeXML-meta.rnc                                                   |
   | RelaxNG model for LaTeXML generated documents                       |
   |=====================================================================|
@@ -22,7 +22,6 @@ they can appear in both inline and block contexts.</a:documentation>
       <ref name="indexmark"/>
       <ref name="glossarydefinition"/>
       <ref name="rdf"/>
-      <ref name="ERROR"/>
       <ref name="resource"/>
       <ref name="navigation"/>
     </choice>
@@ -106,7 +105,7 @@ It's content allows both inline and block-level content.</a:documentation>
   <!-- ====================================================================== -->
   <define name="indexmark">
     <element name="indexmark">
-      <a:documentation>Metadata to record an indexing position. The content is 
+      <a:documentation>Metadata to record an indexing position. The content is
 a sequence of \elementref{indexphrase}, each representing a level in
 a multilevel indexing entry.</a:documentation>
       <ref name="indexmark_attributes"/>
@@ -252,25 +251,6 @@ used to crossreference.</a:documentation>
   <define name="rdf_model">
     <a:documentation>Content model for \elementref{rdf}</a:documentation>
     <ref name="Flow.model"/>
-  </define>
-  <!-- ====================================================================== -->
-  <define name="ERROR">
-    <element name="ERROR">
-      <a:documentation>error object for undefined control sequences, or whatever</a:documentation>
-      <ref name="ERROR_attributes"/>
-      <ref name="ERROR_model"/>
-    </element>
-  </define>
-  <define name="ERROR_attributes">
-    <a:documentation>Attributes for \elementref{ERROR}.</a:documentation>
-    <ref name="Common.attributes"/>
-    <ref name="ID.attributes"/>
-  </define>
-  <define name="ERROR_model">
-    <a:documentation>Content model for \elementref{ERROR}.</a:documentation>
-    <zeroOrMore>
-      <text/>
-    </zeroOrMore>
   </define>
   <!--
     ======================================================================
