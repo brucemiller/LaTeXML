@@ -32,14 +32,19 @@ our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE? Encoded in PI?]
 # The purpose of this module is to convert TeX fragments into png (or similar),
 # typically via dvi and other intermediate formats.
 # LaTeX converts the TeX stuff to dvi;
-# dvips converts the dvi to eps, and ImageMagick can convert the eps to png;
+# dvips converts the dvi to ps, and ghostscript converts to png
+# then ImageMagick extracts the dimensions and converts from png if necessary
 # OR dvipng can convert the dvi to png MUCH quicker... if it's available.
+# OR dvisvgm for high quality SVG output, if available
+
+# preview.sty is used to inform gs/dvipng/dvisvgm how to clip the image
+# and recover the depth for vertical alignment
 
 # Options:
 #   source         : (dir)
 #   magnification  : typically something like 1.33333, but you may want bigger
 #   maxwidth       : maximum page width, in pixels (whenever line breaking is possible)
-#   DPI            : assumed DPI for the target medium (default 100)
+#   DPI            : assumed DPI for the target medium (default 96)
 #   background     : color of background (for anti-aliasing, since it is made transparent)
 #   imagetype      : typically 'png' or 'gif'.
 sub new {
@@ -47,16 +52,13 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{magnification} = $options{magnification} || 1.33333;
   $$self{maxwidth}      = $options{maxwidth}      || 800;
-  $$self{DPI}           = $options{DPI}           || 100;
+  $$self{DPI}           = $options{DPI}           || 96;
   $$self{background}    = $options{background}    || "#FFFFFF";
   $$self{imagetype}     = $options{imagetype}     || 'png';
 
-  # Parameters for separating the clipping box from the
   # desired padding between image edge and "ink"
   $$self{padding} = $options{padding} || 2;    # pixels
-      # amount of extra space (+padding) to put between object & rules for clipping
-  $$self{clippingfudge} = 3;       # px
-  $$self{clippingrule}  = 0.90;    # pixels (< 1 to avoid antialiasing..?)
+      # amount of extra space (+padding) to put between object & bounding box
 
   # Sanity check of dvi processing...
   # If trying to create svg...
@@ -72,7 +74,6 @@ sub new {
     $$self{use_dvipng} = 0; }    # but disable if inappropriate or unavailable.
 
   # Parameterize according to the selected dvi-to-whatever processor.
-  my $mag = int($$self{magnification} * 1000);
   my $dpi = int($$self{DPI} * $$self{magnification});
   # Unfortunately, each command has incompatible -o option to name the output file.
   # Note that the formatting char used, '%', has to be doubled on Windows!!
@@ -81,33 +82,45 @@ sub new {
   #  my $fmt = ($^O eq 'MSWin32' ? '%%' : '%');
   my $fmt = '%';
   if ($$self{use_dvisvgm}) {
-    ##    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=min --mag=$mag -o imgx-${fmt}p";
     # dvisvgm currently creates glyph descriptions w/ unicode attribute having the wrong codepoint
     # firefox, chromium use this codepoint instead of the glyph "drawing"
     # a later version of dvisvgm should do better at synthesizing the unicode?
     # but for now, we'll use --no-fonts, which creates glyph drawings rather than "glyphs"
-    # Also, increase the bounding box from min by 1pt
-    $$self{dvicmd} = "dvisvgm --page=1- --bbox=1pt --scale=$$self{magnification} --no-fonts -o imgx-${fmt}3p";
+    # DVISVGM options:
+    # --bbox=preview : use bounding box data computed by the preview package
+    # --scale        : scale the page content (equivalent to -TS)
+    # --exact-bbox   : compute the precise bounding box of each character
+    # --no-fonts     : do not create SVG font elements but use paths instead
+    $$self{dvicmd} = "dvisvgm --page=1- --bbox=preview --scale=$$self{magnification} --exact-bbox --no-fonts -o imgx-${fmt}3p";
     $$self{dvicmd_output_name} = 'imgx-%03d.svg';
-    $$self{dvicmd_output_type} = 'svg';
-    $$self{frame_output}       = 0; }
+    $$self{dvicmd_output_type} = 'svg'; }
   elsif ($$self{use_dvipng}) {
-    $$self{dvicmd}             = "dvipng -bg Transparent -T tight -q -D$dpi -o imgx-${fmt}03d.png";
+    # DVIPNG options:
+    # -bg      : Background color
+    # -D       : Output resolution
+    # -q       : Quiet operation
+    # --width  : Output the image width on stdout (in pixels)
+    # --height : Output the image height on stdout (in pixels)
+    # --depth  : Output the image depth on stdout (in pixels)
+    $$self{dvicmd} = "dvipng -bg Transparent -D$dpi -q --width --height --depth -o imgx-${fmt}03d.png";
     $$self{dvicmd_output_name} = 'imgx-%03d.png';
-    $$self{dvicmd_output_type} = 'png32';
-    $$self{frame_output}       = 1; }
+    $$self{dvicmd_output_type} = 'png32'; }
   else {
-    # Useful DVIPS options:
-    #  -q  : run quietly
-    #  -x#  : magnification * 1000
-    #  -S1 -i  : make a separate file for each `section' consisting of a single page.
-    #       QUESTION: dvips' naming scheme allows for 999 pages... what happens at 1000?
-    #  -E   :  crop each page close to the `ink'.
-    #  -j0  : don't subset fonts; silly really, but some font tests are making problems!
-    $$self{dvicmd}             = "dvips -q -S1 -i -E -j0 -x$mag -o imgx";
-    $$self{dvicmd_output_name} = 'imgx%03d';
-    $$self{dvicmd_output_type} = 'eps';
-    $$self{frame_output}       = 1; }
+    # will run dvips before $$self{dvicmd}
+    $$self{use_dvips} = 1;
+    # GS options:
+    #  -q                   : quiet
+    #  -sDEVICE=pngalpha    : set output to 32-bit RGBA PNG
+    #  -r                   : resolution
+    #  -dGraphicAlphaBits=4 : subsample antialiasing
+    #  -dTextAlphaBits=4    : subsample antialiasing
+    #  -dSAFER -dBATCH ...  : suppress interactivity and enable security checks
+    # dvicmd will be filled by canProcess with the available ghostscript executable
+    $$self{dvicmd_opts} = "-q -sDEVICE=pngalpha -r$$self{DPI}" .
+      " -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -dSAFER -dBATCH -dNOPAUSE" .
+      " -sOutputFile=imgx-%03d.png";
+    $$self{dvicmd_output_name} = 'imgx-%03d.png';
+    $$self{dvicmd_output_type} = 'png32'; }
   return $self; }
 
 #**********************************************************************
@@ -118,9 +131,13 @@ sub new {
 # is even needed.
 # This test is called once we know that, from within
 #
+# NOTE: the test MUST be called if using ghostscript in order to find the
+# correct executable on Windows.
+#
 # At any rate: To process LaTeX snippets into images, we will need
 #  * latex (or related) from a TeX installation
 #  * Image::Magick (or similar) [see LaTeXML::Util::Image]
+#  * dvips and ghostscript if not using dvipng, dvisvgm
 sub canProcess {
   my ($self) = @_;
   # Check if we have Image::Magick (or similar)
@@ -135,6 +152,23 @@ sub canProcess {
       "No latex command ($LATEXCMD) found; Skipping.",
       "Please install TeX to generate images from LaTeX");
     return; }
+  # likewise for dvips and gs, if necessary
+  if ($$self{use_dvips}) {
+    if (!which('dvips')) {
+      Error('expected', 'dvips', undef,
+        "No dvips command found; Skipping.",
+        "Please install dvisvgm, dvipng, or dvips and ghostscript to generate images from LaTeX");
+      return; }
+    else {
+      # find ghostscript executable
+      my @gscmd = grep { which $_ } ($^O eq 'MSWin32' ? ('gswin64c', 'gswin64', 'gswin32c', 'gswin32', 'mgs') : ('gs'));
+      if (@gscmd) {
+        $$self{dvicmd} = $gscmd[0] . ' ' . $$self{dvicmd_opts}; }
+      else {
+        Error('expected', 'gs', undef, "No ghostscript executable ("
+            . ($^O eq 'MSWin32' ? 'gswin64c, gswin64, gswin32c, gswin32, mgs' : 'gs')
+            . ") found; Skipping.", "Please install ghostscript to generate images from LaTeX");
+        return; } } }
   return 1; }
 
 #**********************************************************************
@@ -205,6 +239,8 @@ sub generateImages {
   my $orig_cwd = pathname_cwd();
   my $sep      = $Config::Config{path_sep};
   my %table    = ();
+
+  my $warnings = 0;
 
   # === Get the desired nodes, extract the set of unique tex strings,
   #     noting which need processing.
@@ -299,22 +335,66 @@ sub generateImages {
       return $doc; }
     ### $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images}; # preserve ALL junk!?!?!
 
+    if ($$self{use_dvips}) {
+      # Useful DVIPS options:
+      #  -q  : run quietly
+      #  -x# : magnification * 1000
+      #  -j0 : don't subset fonts; silly really, but some font tests are making problems!
+      my $mag          = int($$self{magnification} * 1000);
+      my $dvipscommand = "dvips -q -j0 -x$mag -o $jobname.ps $jobname.dvi > $jobname.dvipsoutput 2>&1";
+      my $dvipserr     = 0;
+
+      pathname_chdir($workdir);
+      {
+        local $ENV{TEXINPUTS} = join($sep, '.', @searchpaths,
+          pathname_concat($installation_path, 'texmf'),
+          ($ENV{TEXINPUTS} || $sep));
+        $dvipserr = system($dvipscommand);
+      }
+      pathname_chdir($orig_cwd);
+
+      if (($dvipserr != 0) || (!-f "$workdir/$jobname.ps")) {
+        $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images};    # Preserve junk
+        Error('shell', $dvipscommand, undef,
+          "dvips command '$dvipscommand' failed",
+          ($dvipserr == 0 ? "No ps file generated" : "returned code $dvipserr (!= 0): $@"),
+          ($LaTeXML::DEBUG{images}
+            ? "See $workdir/$jobname.dvipsoutput"
+            : "Re-run with --debug=images to see log"));
+        return $doc; }
+    }
+
     # Extract dimensions (width x height+depth) from each image from log file.
-    my @dimensions = ();
+    my $pixels_per_pt = $$self{magnification} * $$self{DPI} / 72.27;
+    my @dimensions    = ();
+    # Extract tightpage adjustments from preview.sty (left bottom right top)
+    my @adjustments = (0, 0, 0, 0);
     my $LOG;
     if (open($LOG, '<', "$workdir/$jobname.log")) {
       while (<$LOG>) {
-        if (/^\s*LXIMAGE\s*(\d+)\s*=\s*([\+\-\d\.]+)pt\s*x\s*([\+\-\d\.]+)pt\s*\+\s*([\+\-\d\.]+)pt\s*$/) {
-          $dimensions[$1] = [$2, $3, $4]; } }
+        # "Preview: Tightpage left bottom right top" (dimensions in sp)
+        if (/^Preview: Tightpage (-?\d+) (-?\d+) (-?\d+) (-?\d+)$/) {
+          @adjustments = ($1, $2, $3, $4); }
+        # "Preview: Snippet count height depth width" (dimensions in sp)
+        if (/^Preview: Snippet (\d+) (\d+) (\d+) (\d+)/) {
+          # dimensions = bounding box + adjustments
+          $dimensions[$1] =
+            [($4 - $adjustments[0] + $adjustments[2]) / 65536 * $pixels_per_pt,
+            ($2 + $adjustments[3]) / 65536 * $pixels_per_pt,
+            ($3 - $adjustments[1]) / 65536 * $pixels_per_pt]; } }
       close($LOG); }
     else {
+      $warnings++;
       Warn('expected', 'dimensions', undef,
         "Couldn't read log file $workdir/$jobname.log to extract image dimensions",
-        "Response was: $!"); }
+        "Response was: $!",
+        $LaTeXML::DEBUG{images}
+        ? "See $workdir/$jobname.log"
+        : "Re-run with --debug=images to see TeX log"); }
 
-    # === Run dvicmd to extract individual png|postscript files.
+    # === Run dvicmd to extract individual png|svg files.
     pathname_chdir($workdir);
-    my $dvicommand = "$$self{dvicmd} $jobname.dvi > $jobname.dvioutput";
+    my $dvicommand = "$$self{dvicmd} $jobname." . ($$self{use_dvips} ? "ps" : "dvi") . " > $jobname.dvioutput 2>&1";
     my $dvierr;
     {
       local $ENV{TEXINPUTS} = join($sep, '.', @searchpaths,
@@ -325,12 +405,90 @@ sub generateImages {
     pathname_chdir($orig_cwd);
 
     if ($dvierr != 0) {
+      $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images};    # Preserve junk
       Error('shell', $$self{dvicmd}, undef,
-        "Shell command '$dvicommand' (for dvi conversion) failed (see $workdir for clues)",
-        "Response was: $!");
+        "Shell command '$dvicommand' (for " . ($$self{use_dvips} ? "ps" : "dvi") . " conversion) failed",
+        "Response was: $!",
+        $LaTeXML::DEBUG{images}
+        ? "See $workdir/$jobname.dvioutput"
+        : "Re-run with --debug=images to see log");
       return $doc; }
+
+    # extract dimensions from command output
+    if ($$self{use_dvipng} || $$self{use_dvisvgm}) {
+      my $LOG;
+      if (open($LOG, '<', "$workdir/$jobname.dvioutput")) {
+        my $i = 0;    # image counter
+        if ($$self{use_dvipng}) {
+          # DVIPNG output:
+          # This is /path/to/dvipng [...]
+          #  depth=DD height=HH width=WW depth=DD height=HH width=WW [...]
+          # dimensions in pixels, already magnified
+          while (<$LOG>) {
+            next if $. == 1;    # skip first line
+            foreach (split(/depth=/)) {
+              if (m/^(\d+) height=(\d+) width=(\d+)\s*$/) {
+                $i++;
+                $dimensions[$i] = [$3, $2, $1]; }
+              else {
+                $warnings++;
+                Warn('unexpected', 'dvipng', undef,
+                  "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_,
+                  $LaTeXML::DEBUG{images}
+                  ? "See $workdir/$jobname.dvioutput"
+                  : "Re-run with --debug=images to see log")
+                  unless m/^\s*$/; } } } }
+        else {
+          my $found = 1;    # check that dimensions are found for all images
+          while (<$LOG>) {
+            # DVISVGM output:
+            #  pre-processing DVI [...]
+            #  processing page N
+            #    applying bounding box set by preview package [...]
+            #    width=W.WWpt, height=H.HHpt, depth=D.DDpt
+            #    output written to [...]
+            #  N of N page converted [...]
+            # dimensions in TeX points, already magnified
+            next if $. == 1;
+            if (m/^processing page (\d+)$/) {
+              if (!$found) {
+                $warnings++;
+                Warn('expected', 'dvisvgm', undef,
+                  "dvisvgm did not return dimensions for image $i",
+                  $LaTeXML::DEBUG{images}
+                  ? "See $workdir/$jobname.dvioutput"
+                  : "Re-run with --debug=images to see log"); }
+              $i     = $1;
+              $found = 0; }
+            elsif (m/^\s+width=(\d*(?:\.\d*)?)pt,\s+height=(\d*(?:\.\d*)?)pt,\s+depth=(\d*(?:\.\d*)?)pt$/) {
+              # convert TeX points to CSS pixels
+              $found = 1;
+              $dimensions[$i] = [$1 * 96 / 72.27, $2 * 96 / 72.27, $3 * 96 / 72.27]; }
+            elsif (!m/^\s+(?:applying bounding box|graphic size:|output written to)/) {
+              Warn('unexpected', 'dvisvgm', undef,
+                "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_,
+                $LaTeXML::DEBUG{images}
+                ? "See $workdir/$jobname.dvioutput"
+                : "Re-run with --debug=images to see log")
+                unless eof; } }
+          if (!$found) {
+            $warnings++;
+            Warn('expected', 'dvisvgm', undef,
+              "dvisvgm did not return dimensions for image $i",
+              $LaTeXML::DEBUG{images}
+              ? "See $workdir/$jobname.dvioutput"
+              : "Re-run with --debug=images to see log"); } }
+        close($LOG); }
+      else {
+        $warnings++;
+        Warn('expected', 'dimensions', undef,
+          "Couldn't read log file $workdir/$jobname.dvioutput to extract image dimensions",
+          "Response was: $!",
+          $LaTeXML::DEBUG{images}
+          ? "See $workdir for clues"
+          : "Re-run with --debug=images to see logs"); } }
+
     # === Convert each image to appropriate type and put in place.
-    my $pixels_per_pt = $$self{magnification} * $$self{DPI} / 72.27;
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
     foreach my $entry (@pending) {
       my $src = "$workdir/" . sprintf($$self{dvicmd_output_name}, ++$index);
@@ -340,21 +498,30 @@ sub generateImages {
           unless @dests;
         foreach my $dest (@dests) {
           my $absdest = $doc->checkDestination($dest);
-          my ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } @{ $dimensions[$index] };
-          my ($w, $h);
-          if ($$self{frame_output}) {    # If framed, trim the frame
+          my ($ww, $hh, $dd) = @{ $dimensions[$index] };
+          my ($w,  $h,  $d)  = (int($ww + 0.5), int($hh + $dd + 0.5), int(0.5 + $dd));
+
+          if ($$self{use_dvips}) {    # If using dvips, convert (if necessary) and recover final image size
             ($w, $h) = $self->convert_image($doc, $src, $absdest);
             next unless defined $w && defined $h; }
           else {
-            pathname_copy($src, $absdest);
-            $w = int($ww + 0.5); $h = int($hh + $dd + 0.5); }
-          my $d = int(0.5 + ($dd || 0) + $$self{padding});
+            pathname_copy($src, $absdest); }
           if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
-            Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
+            $warnings++;
+            Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!",
+              $LaTeXML::DEBUG{images}
+              ? "See $workdir/$jobname for clues"
+              : "Re-run with --debug=images to see log"); }
           $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
       }
       else {
-        Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } } }
+        $warnings++;
+        Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log",
+          $LaTeXML::DEBUG{images}
+          ? "See $workdir/$jobname for clues"
+          : "Re-run with --debug=images to see log"); } }
+
+    $workdir->unlink_on_destroy(0) if $warnings && $LaTeXML::DEBUG{images}; }    # Preserve junk
 
   # Finally, modify the original document to record the associated images.
   foreach my $entry (values %table) {
@@ -376,8 +543,14 @@ sub pre_preamble {
   my ($self, $doc) = @_;
   my @classdata = $self->find_documentclass_and_packages($doc);
   my ($class, $class_options, $oldstyle) = @{ shift(@classdata) };
-  $class_options = "[$class_options]" if $class_options && ($class_options !~ /^\[.*\]$/);
   $class_options = '' unless defined $class_options;
+  $class_options = "[$class_options]" if $class_options && ($class_options !~ /^\[.*\]$/);
+
+  if ($$self{use_dvisvgm}) {
+    # activate dvisvgm driver (e.g. for TikZ)
+    $class_options =~ s/\]$/,dvisvgm]/;
+    $class_options =~ s/^$/[dvisvgm]/; }
+
   my $documentcommand = ($oldstyle ? "\\documentstyle" : "\\documentclass");
   my $packages        = '';
   my $dest            = $doc->getDestination;
@@ -389,8 +562,8 @@ sub pre_preamble {
     my ($package, $package_options) = @$pkgdata;
     next if $loaded_check{$package};
     $loaded_check{$package} = 1;
+    next if $package =~ /^(?:latexml|preview|hyperref)$/;    # some packages are incompatible.
     if ($oldstyle) {
-      next if $package =~ /latexml/;    # some packages are incompatible.
       $packages .= "\\RequirePackage{$package}\n"; }
     else {
       if ($package eq 'english') {
@@ -399,11 +572,14 @@ sub pre_preamble {
         $package_options = "[$package_options]" if $package_options && ($package_options !~ /^\[.*\]$/);
         $packages .= "\\usepackage$package_options\{$package}\n"; } } }
 
-  my $w   = ceil($$self{maxwidth} * $pts_per_pixel);                      # Page Width in points.
-  my $gap = ($$self{padding} + $$self{clippingfudge}) * $pts_per_pixel;
-  my $th  = ($$self{frame_output}
-    ? $$self{clippingrule} * $pts_per_pixel    # clipping box thickness in points.
-    : 0);                                      # NO clipping box!
+  # PREVIEW.STY options
+  # active    : output only content of preview environments in separate pages
+  # tightpage : restrict each page to a tight box around the content
+  # lyx       : output page dimensions in sp
+  $packages .= ($oldstyle ? "\\RequirePackage" : "\\usepackage") . "[active,tightpage,lyx]{preview}\n";
+
+  my $w         = ceil($$self{maxwidth} * $pts_per_pixel);    # Page Width in points.
+  my $gap       = $$self{padding} * $pts_per_pixel;
   my $preambles = $self->find_preambles($doc);
   # Some classes are too picky: thanks but no thanks
   my $result_add_to_body = "\\makeatletter\\thispagestyle{empty}\\pagestyle{empty}\n";
@@ -429,43 +605,10 @@ $documentcommand$class_options\{$class}
 $description
 $packages
 \\makeatletter
-\\setlength{\\hoffset}{0pt}\\setlength{\\voffset}{0pt}
 \\setlength{\\textwidth}{${w}pt}
-\\newcount\\lxImageNumber\\lxImageNumber=0\\relax
-\\newbox\\lxImageBox
-\\newdimen\\lxImageBoxSep
-\\setlength\\lxImageBoxSep{${gap}\\p\@}
-\\newdimen\\lxImageBoxRule
-\\setlength\\lxImageBoxRule{${th}\\p\@}
-\\def\\lxShowImage{%
-  \\global\\advance\\lxImageNumber1\\relax
-  \\\@tempdima\\wd\\lxImageBox
-  \\advance\\\@tempdima-\\lxImageBoxSep
-  \\advance\\\@tempdima-\\lxImageBoxSep
-  \\typeout{LXIMAGE \\the\\lxImageNumber\\space= \\the\\\@tempdima\\space x \\the\\ht\\lxImageBox\\space + \\the\\dp\\lxImageBox}%
-  \\\@tempdima\\lxImageBoxRule
-  \\advance\\\@tempdima\\lxImageBoxSep
-  \\advance\\\@tempdima\\dp\\lxImageBox
-  \\hbox{%
-    \\lower\\\@tempdima\\hbox{%
-      \\vbox{%
-        \\hrule\\\@height\\lxImageBoxRule%
-        \\hbox{%
-          \\vrule\\\@width\\lxImageBoxRule%
-          \\vbox{%
-           \\vskip\\lxImageBoxSep
-          \\box\\lxImageBox
-           \\vskip\\lxImageBoxSep
-           }%
-          \\vrule\\\@width\\lxImageBoxRule%
-          }%
-        \\hrule\\\@height\\lxImageBoxRule%
-         }%
-         }%
-        }%
-}%
-\\def\\lxBeginImage{\\setbox\\lxImageBox\\hbox\\bgroup\\color\@begingroup\\kern\\lxImageBoxSep}
-\\def\\lxEndImage{\\kern\\lxImageBoxSep\\color\@endgroup\\egroup}
+\\setlength\\PreviewBorder{${gap}\\p\@}
+\\def\\lxBeginImage{\\begin{preview}}
+\\def\\lxEndImage{\\end{preview}}
 $preambles
 \\makeatother
 EOPreamble
@@ -473,13 +616,10 @@ EOPreamble
   return ($result_preamble, $result_add_to_body); }
 
 #======================================================================
-# Converting the postscript images to gif/png/whatever
-# Note that properly trimming the clipping box (and keeping the right
-# padding and dimensions) is harder than it seems!
-#
+# Converting the png images to gif/png/whatever and return the size
+
 # Note that this conversion is, indeed, quite slow.
 # Profiling indicates that virtually ALL the time is taken in ->Read !!
-# (not the various trimming/shaving).
 #======================================================================
 
 sub convert_image {
@@ -487,25 +627,17 @@ sub convert_image {
   my ($bg, $fg) = ($$self{background}, 'black');
 
   my $image = image_object(antialias => 'True', background => $bg, density => $$self{DPI});
-  my $err   = $image->Read($$self{dvicmd_output_type} . ':' . $src);
+
+  if ($$self{imagetype} eq 'png' && $$self{dvicmd_output_type} =~ /^png/) {
+    my ($w, $h, $s, $f) = $image->Ping($$self{dvicmd_output_type} . ':' . $src);
+    pathname_copy($src, $dest);
+    return ($w, $h); }
+
+  my $err = $image->Read($$self{dvicmd_output_type} . ':' . $src);
   if ($err) {
     Warn('imageprocessing', 'read', undef,
       "Image conversion failed to read '$src'",
       "Response was: $err"); return; }
-
-  my ($ww, $hh) = $image->Get('width', 'height');    # Get final image size
-
-  # We can't quite rely on the -E option to dvips; there may or may not be white outside the clipbox;
-  # Moreover, rounding can leave (possibly gray) 'tabs' on the clipbox corners.
-  # To be sure, add known white border, and trim away all white AND gray
-  $image->Border(width => 1, height => 1, fill => $bg);
-  $image->Trim(fuzz => '75%');    # Fuzzy, to trim the gray tabs, as well!!
-  $image->Set(fuzz => '0%');      # But, be SURE to RESET fuzz!! (It is NOT an "argument"!!!)
-      # [Also, be CAREFULL of ImageMagick's Floodfill variants, they sometimes go wild]
-
-  # Finally, shave off the rule & fudge padding.
-  my $fudge = int(0.5 + $$self{clippingfudge} + $$self{clippingrule});
-  $image->Shave(width => $fudge, height => $fudge);
 
   my ($w, $h) = $image->Get('width', 'height');    # Get final image size
       # ImageMagick tries to manage a "virtual" image within the image data,

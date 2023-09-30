@@ -478,7 +478,7 @@ sub _prepare_options {
     # Validation:
     $$opts{validate} = 1 unless defined $$opts{validate};
     # Graphics:
-    $$opts{mathimagemag} = 1.75 unless defined $$opts{mathimagemag};
+    $$opts{mathimagemag} = 1.33333 unless defined $$opts{mathimagemag};
     if ((defined $$opts{destination}) || ($$opts{whatsout} =~ /^archive/)) {
       # We want the graphics enabled by default, but only when we have a destination
       $$opts{dographics} = 1 unless defined $$opts{dographics};
@@ -1374,7 +1374,7 @@ Requests or disables the conversion of math to svg images.
 =item C<--mathimagemagnification=>I<factor>
 
 Specifies the magnification used for math images (both png and svg),
-if they are made. Default is 1.75.
+if they are made. Default is 1.33333.
 
 =item C<--presentationmathml>, C<--nopresentationmathml>
 

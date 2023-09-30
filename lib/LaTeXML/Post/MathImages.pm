@@ -81,10 +81,10 @@ sub preamble {
   my ($self, $doc) = @_;
   return <<'EOPreamble';
 \def\beginINLINE{\lxBeginImage\(}
-\def\endINLINE{\)\lxEndImage\lxShowImage}
+\def\endINLINE{\)\lxEndImage}
 % For Display, same as inline, but set displaystyle.
 \def\beginDISPLAY{\lxBeginImage\(\displaystyle\the\everydisplay}
-\def\endDISPLAY{\)\lxEndImage\lxShowImage}
+\def\endDISPLAY{\)\lxEndImage}
 EOPreamble
 }
 #======================================================================

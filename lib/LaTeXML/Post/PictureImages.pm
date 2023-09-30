@@ -86,7 +86,7 @@ sub preamble {
 \@tempdimb\f@size\p@ \@tempdimb#1\@tempdimb
    \fontsize{\strip@pt\@tempdimb}{\strip@pt\@tempdimb}\selectfont}
 \def\beginPICTURE{\lxBeginImage}
-\def\endPICTURE{\lxEndImage\lxShowImage}
+\def\endPICTURE{\lxEndImage}
 EOPreamble
 }
 #======================================================================
