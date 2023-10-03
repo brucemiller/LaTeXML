@@ -5,22 +5,10 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p>A<Math mode="inline" tex="{}^{c}" text="^c" xml:id="p1.m1">
-        <XMath>
-          <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
-            <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
-          </XMApp>
-        </XMath>
-      </Math></p>
+    <p>A<sup><text font="italic">c</text></sup></p>
   </para>
   <para xml:id="p2">
-    <p>A<Math mode="inline" tex="{}_{d}" text="_d" xml:id="p2.m1">
-        <XMath>
-          <XMApp role="FLOATSUBSCRIPT" scriptpos="1">
-            <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
-          </XMApp>
-        </XMath>
-      </Math></p>
+    <p>A<sub><text font="italic">d</text></sub></p>
   </para>
   <para xml:id="p3">
     <p>A<Math mode="inline" tex="{}^{c}_{d}" text="_ d ^ c absent" xml:id="p3.m1">
@@ -128,41 +116,10 @@
       </Math></p>
   </para>
   <para xml:id="p10">
-    <p><Math mode="inline" tex="{}_{x&lt;3,&gt;0}" text="_list@(x &lt; 3, absent &gt; 0)" xml:id="p10.m1">
-        <XMath>
-          <XMApp role="FLOATSUBSCRIPT" scriptpos="1">
-            <XMDual>
-              <XMApp>
-                <XMTok meaning="list"/>
-                <XMRef idref="p10.m1.1"/>
-                <XMRef idref="p10.m1.2"/>
-              </XMApp>
-              <XMWrap>
-                <XMApp xml:id="p10.m1.1">
-                  <XMTok fontsize="70%" meaning="less-than" role="RELOP">&lt;</XMTok>
-                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">x</XMTok>
-                  <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
-                </XMApp>
-                <XMTok fontsize="70%" role="PUNCT">,</XMTok>
-                <XMApp xml:id="p10.m1.2">
-                  <XMTok fontsize="70%" meaning="greater-than" role="RELOP">&gt;</XMTok>
-                  <XMTok meaning="absent"/>
-                  <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
-                </XMApp>
-              </XMWrap>
-            </XMDual>
-          </XMApp>
-        </XMath>
-      </Math></p>
+    <p><sub><text font="italic">x&lt;3,&gt;0</text></sub></p>
   </para>
   <para xml:id="p11">
-    <p><Math mode="inline" tex="{}^{\prime\prime\prime}" text="^prime3" xml:id="p11.m1">
-        <XMath>
-          <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
-            <XMTok fontsize="70%" name="prime3" role="SUPOP">′′′</XMTok>
-          </XMApp>
-        </XMath>
-      </Math></p>
+    <p><sup><text font="italic">′′′</text></sup></p>
   </para>
   <para xml:id="p12">
     <p><Math mode="inline" tex="\mathrm{Na}^{+}" text="Na ^ +" xml:id="p12.m1">
