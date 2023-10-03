@@ -4531,6 +4531,35 @@ DefMacroI('\active@math@prime', undef, sub {
 AssignMathcode("'" => 0x8000);
 Let("'", '\active@math@prime');
 
+# Experiment: When we detect a math element containing solely a floating superscript in the
+#             *Frontmatter* of a document, assume it is a note mark, and normalize it down to
+#             plain text.
+DefRewrite(xpath => 'descendant::ltx:Math[child::ltx:XMath[child::ltx:XMApp[' .
+    '(@role="FLOATSUPERSCRIPT" or @role="FLOATSUBSCRIPT") and ' .
+    'not(preceding-sibling::*) and not(following-sibling::*) ' .
+    'and not(./*/*[not(self::ltx:XMTok)]) ]]]',
+  replace => sub {
+    my ($document, $math) = @_;
+    # We can assume the grandchild of the XMath node is the XMArg,
+    # which we need to normalize to scripted Unicode.
+    if (my @xmath = element_nodes($math)) {
+      if (my @xmapp = element_nodes($xmath[0])) {
+        if (my @xmarg = element_nodes($xmapp[0])) {
+          if (my $role = $xmapp[0]->getAttribute('role')) {
+            my $text = $xmarg[0]->textContent;
+            local $LaTeXML::BOX = $document->getNodeBox($xmarg[0]);
+            if ($role eq 'FLOATSUPERSCRIPT') {
+              $document->insertElement('ltx:sup', $text);
+              return; }
+            elsif ($role eq 'FLOATSUBSCRIPT') {
+              $document->insertElement('ltx:sub', $text);
+              return; }
+    } } } }
+    # should never happen, but just in case:
+    Info("rewrite", "footnotemark", "Failed to find floating node in: " . $math->toString(1));
+    $document->getNode->appendChild($math);
+    return; });
+
 #======================================================================
 # \choose & friends, also need VERY special argument handling
 
