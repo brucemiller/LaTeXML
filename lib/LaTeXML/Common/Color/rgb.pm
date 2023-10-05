@@ -51,12 +51,14 @@ sub hsb {
   elsif ($i == 6) { return Phi($r, $g, $b, 1, -1); }
   elsif ($i == 7) { return LaTeXML::Common::Color->new('hsb', 0, 0, $b); } }
 
-my @hex = qw(0 1 2 3 4 5 6 7 8 9 A B C D E F);    # [CONSTANT]
-
 sub hex2 {
-  my ($n) = @_;
-  my $nn = LaTeXML::Common::Number::roundto($n * 255, 0);
-  return $hex[int($nn / 16)] . $hex[$nn % 16]; }
+  my ($n)    = @_;
+  my $nn     = LaTeXML::Common::Number::roundto($n * 255, 0);
+  my $h_full = sprintf("%.2X", $nn);
+  # the precision doesn't quite get enforced on larger values,
+  # so let's try to substring explicitly
+  my $h2 = substr($h_full, 0, 2);
+  return $h2; }
 
 sub toHex {
   my ($self) = @_;
