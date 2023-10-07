@@ -121,7 +121,8 @@ DefEnvironment('{titled-frame} Undigested', sub {
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     insertBlock($document, $props{body},
       framed          => 'rectangle', framecolor => $props{framecolor},
-      backgroundcolor => $props{backgroundcolor}); },
+      backgroundcolor => $props{backgroundcolor},
+      cssstyle        => 'padding:8pt;border-width:2pt'); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
@@ -130,8 +131,8 @@ DefEnvironment('{titled-frame} Undigested', sub {
   properties => sub { (framecolor => LookupValue('color_TFFrameColor'),
       backgroundcolor => LookupValue('font')->getBackground); });
 DefMacro('\@titledframe@title{}',
-  '\@@titledframe@title{{\pagecolor{TFFrameColor}\textcolor{TFTitleColor} {#1}}}');
-DefConstructor('\@@titledframe@title{}', "<ltx:text cssstyle='display:block;width:100%;'>#1</ltx:text>");
+'\@@titledframe@title{{\fboxsep8pt\fboxrule2pt\pagecolor{TFFrameColor}\textcolor{TFTitleColor} {#1}}}');
+DefConstructor('\@@titledframe@title{}', "<ltx:text cssstyle='display:block;margin:-8pt -8pt 8pt -8pt;padding:8pt'>#1</ltx:text>");
 
 #======================================================================
 # Customization:
