@@ -148,7 +148,7 @@ DefMacro('\LastFrameCommand',  '\FrameCommand');
 # \FrameRule (used for \fboxrule)
 # \FrameSep (used for \fboxsep)
 DefRegister('\FrameRule' => LookupRegister('\fboxrule'));
-DefRegister('\FrameSep'  => Dimension('12pt'));
+DefRegister('\FrameSep'  => Dimension(LookupRegister('\fboxsep')->valueOf * 3));
 
 #======================================================================
 # \makeFramed, \endMakeFramed; {MakeFramed}
