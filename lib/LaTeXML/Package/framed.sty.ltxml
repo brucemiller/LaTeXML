@@ -107,7 +107,8 @@ DefEnvironment('{snugshade*}', sub {
 DefEnvironment('{leftbar}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    insertBlock($document, $props{body}, framed => 'left', framecolor => $props{framecolor}); },
+    insertBlock($document, $props{body}, framed => 'left', framecolor => $props{framecolor},
+      cssstyle => 'border-width:3pt;padding-left:10pt'); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
