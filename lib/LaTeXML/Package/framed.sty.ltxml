@@ -24,12 +24,13 @@ DefEnvironment('{framed}', sub {
     insertBlock($document, $props{body},
       framed     => 'rectangle',
       framecolor => $props{framecolor},
-      cssstyle   => 'padding:' . $props{margin} . 'pt'); },
+      cssstyle   => 'padding:' . $props{margin} . 'pt;border-width:' . $props{border} . 'pt'); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
   properties => sub { (framecolor => Black,
-      margin => LookupRegister('\FrameSep')->ptValue); });
+      margin => LookupRegister('\FrameSep')->ptValue,
+      border => LookupRegister('\FrameRule')->ptValue); });
 
 # {oframed} "open" framed box, the top/bottom is open when it splits across pages.
 # That shouldn't matter for us (?)
@@ -39,12 +40,13 @@ DefEnvironment('{oframed}', sub {
     insertBlock($document, $props{body},
       framed     => 'rectangle',
       framecolor => $props{framecolor},
-      cssstyle   => 'padding:' . $props{margin} . 'pt'); },
+      cssstyle   => 'padding:' . $props{margin} . 'pt;border-width:' . $props{border} . 'pt'); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
   properties => sub { (framecolor => Black,
-      margin => LookupRegister('\FrameSep')->ptValue); });
+      margin => LookupRegister('\FrameSep')->ptValue,
+      border => LookupRegister('\FrameRule')->ptValue); });
 
 # {shaded} a shaded box; uses "shadecolor" for background color; otherwise, no frame.
 # Note that the shading "bleeds" into the margin (whatever that means)
