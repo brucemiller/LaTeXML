@@ -21,8 +21,7 @@ use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Let('\@xp', '\expandafter');
-Let('\@nx', '\noexpand');
+RequirePackage('amsgen');
 
 # Core is defined in LaTeX.ltxml
 
@@ -77,7 +76,13 @@ DefPrimitive('\newtheoremstyle{}{}{}{}{}{}{}{}{}', sub {
     my $headformatter;
     if (!IsEmpty($headspec)) {    # If spec given, create formatter macro
       $headformatter = T_CS('\format@title@theoremstyle@' . ToString($name));
-      DefMacroI($headformatter, convertLaTeXArgs(3, 0), $headspec); }
+      DefMacroI($headformatter, convertLaTeXArgs(3, 0),
+        # amsthm.sty uses the code below to ignore \thmname, \thmnumber, \thmnote
+        # if the respective arguments are empty
+        Tokens(TokenizeInternal('\@ifempty{#1}{\let\thmname\@gobble}{\let\thmname\@iden}' .
+              '\@ifempty{#2}{\let\thmnumber\@gobble}{\let\thmnumber\@iden}' .
+              '\@ifempty{#3}{\let\thmnote\@gobble}{\let\thmnote\@iden}'),
+          $headspec)); }
 
     $name = ToString($name);
     saveTheoremStyle($name,
