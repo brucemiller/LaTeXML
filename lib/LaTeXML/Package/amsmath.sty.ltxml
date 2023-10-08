@@ -41,6 +41,21 @@ RequirePackage('amsopn');
 DefMacroI('\AmSfont', undef, Tokens());
 DefMacroI('\AmS',     undef, "AmS");
 
+# Unhandled options (for now)
+foreach my $option (qw(
+  centertags tbtags
+  sumlimits nosumlimits
+  intlimits nointlimits
+  namelimits nonamelimits
+  alignedleftspaceyes alignedleftspaceno alignedleftspaceyesifneg)) {
+  DeclareOption($option, undef); }
+
+DeclareOption('reqno', sub { AssignMapping('DOCUMENT_CLASSES', ltx_leqno => undef); });
+DeclareOption('leqno', sub { AssignMapping('DOCUMENT_CLASSES', ltx_leqno => 1); });
+DeclareOption('fleqn', sub { AssignMapping('DOCUMENT_CLASSES', ltx_fleqn => 1); });
+
+ProcessOptions();
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 3:  Displayed equations
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
