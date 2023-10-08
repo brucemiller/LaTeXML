@@ -1,0 +1,41 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  t5enc.def                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+# vietnamese uses a lot of multiple-accents.
+# We probably can get away w/o defininng the whole T5 font map,
+# providing we have definintions for the following special cases.
+DefAccent('\texthookabove', "\x{0309}", "'");
+Let('\h', '\texthookabove');
+DefPrimitiveI('\Acircumflex', undef, UTF(0xC2));
+DefPrimitiveI('\Abreve',      undef, "\x{0102}");
+DefPrimitiveI('\Ecircumflex', undef, UTF(0xCA));
+DefPrimitiveI('\Ocircumflex', undef, UTF(0xD4));
+DefPrimitiveI('\Ohorn',       undef, "\x{01A0}");
+DefPrimitiveI('\Uhorn',       undef, "\x{01AF}");
+DefPrimitiveI('\acircumflex', undef, UTF(0xE2));
+DefPrimitiveI('\abreve',      undef, "\x{0103}");
+DefPrimitiveI('\ecircumflex', undef, UTF(0xEA));
+DefPrimitiveI('\ocircumflex', undef, UTF(0xF4));
+DefPrimitiveI('\ohorn',       undef, "\x{01A1}");
+DefPrimitiveI('\uhorn',       undef, "\x{01B0}");
+DefAccent('\k', "\x{0328}", "\x{02DB}");
+# Now read the rest from the REAL t5enc.
+InputDefinitions('t5enc', type => 'def', noltxml => 1);
+#**********************************************************************
+
+1;
