@@ -278,8 +278,8 @@ sub DecodeColor {
   my $dec_re         = qr/[+-]*(?:\d*\.?\d*)/;
   # <ext_expr>     : <core_model>,<div>:<expr1><dec1>;...;<exprk><deck>
   #                     | <core_model>:<expr1><dec1>;...;<exprk><deck>
-  my $ext_expr_re = qr/($core_model_re)(,($div_re))?:\s*
-                       (($expr_re|$name_re),$dec_re(?:;\s*(?:$expr_re|$name_re),$dec_re)*)/x;
+  my $ext_expr_re = qr/($core_model_re)(,\s*($div_re))?:\s*
+                       (($expr_re|$name_re),\s*$dec_re(?:;\s*(?:$expr_re|$name_re),\s*$dec_re)*)/x;
   # <color_expr>   : <name> | <expr> | <ext_expt>
   my $color_expr_re = qr/$expr_re|$ext_expr_re/;
   my $function_re   = qr/wheel|twheel/;
@@ -305,13 +305,17 @@ sub DecodeColor {
     if (defined $core_model) {    # Extended color expression: combine colors as on a pallete
       $color = Black->convert($core_model);
       my $dectot = 0;
-      while ($exprs =~ s/($expr_re),($dec_re)//) {
+      while ($exprs =~ s/($expr_re),\s*($dec_re)//) {
         my $dec = $6; $dec =~ s/--//g;
         next if !$dec || $dec eq '.';    # the contribution is 0!
         $dectot += $dec;
         push(@pallete, [DecodeColor($1), $dec]); }
       $div = $dectot unless $div;
       foreach my $cp (@pallete) {
+        # IMPORTANT: if we need to scale, first convert to RGB,
+        # or we risk losing scaling precision on any zero-valued components.
+        $$cp[0] = $$cp[0]->convert($color->model) unless $color->model eq $$cp[0]->model;
+        # now it is safe to scale:
         $color = $color->add($$cp[0]->scale($$cp[1] / $div)); } }
     else {    # Standard Color Expression: <prefix><name><mix_expr><postfix>
       $color = ($postfix && ($postfix =~ /!!\[(\d+)\]/)    # Note "out-of-order" effect!

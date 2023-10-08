@@ -252,4 +252,22 @@ test & row \number\rownum\\
 \copy\mybox
 \setbox\mybox=\hbox{Should be Red!}
 {\color{red}\copy\mybox}
+
+\section{Custom rgb directives}
+\color{rgb:red,4;green,2;yellow,1} Brown
+
+\color{rgb:red,1;green,2;blue,5} Dark blue
+
+\color{rgb:orange,1;yellow,2;pink,5} Light orange
+
+\color{rgb:black,1;white,2} Gray
+
+\color{rgb, 255:red, 208; green, 2; blue, 27} Brick-like Red
+
+\color{rgb, 255:red, 74; green, 144; blue, 226} Ocean blue
+
+\color{rgb, 255:red, 0; green, 116; blue, 201} Sky blue
+
+\color{rgb, 255:red, 0; green, 0; blue, 0} Black
+
 \end{document}
