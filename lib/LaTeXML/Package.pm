@@ -2793,6 +2793,7 @@ sub LoadFontMap {
     if ($map = LookupValue($encoding . '_fontmap')) {           # Got map?
       AssignValue($encoding . '_fontmap_failed_to_load' => 0); }
     else {
+      Info('fontmap', $encoding, undef, "Couldn't find fontmap for '$encoding'");
       AssignValue($encoding . '_fontmap_failed_to_load' => 1, 'global'); } }
   return $map; }
 
