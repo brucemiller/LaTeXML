@@ -1454,7 +1454,7 @@ DefPrimitive('\toksdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
 DefRegister('\lastpenalty', Number(0), readonly => 1);
 
 # \parshape !?!??
-DefPrimitive('\parshape SkipMatch:= Number', sub {
+DefPrimitive('\parshape SkipSpaces SkipMatch:= Number', sub {
     my ($stomach, $n) = @_;
     $n = $n->valueOf;
     my $gullet = $stomach->getGullet;
@@ -1847,7 +1847,7 @@ DefPrimitive('\char Number', sub {
 
 # Almost like a register (and \countdef), but different...
 # (including the preassignment to \relax!)
-DefPrimitive('\chardef Token SkipMatch:=', sub {
+DefPrimitive('\chardef Token SkipSpaces SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
     $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
     my $value = $stomach->getGullet->readNumber();
@@ -1895,7 +1895,7 @@ DefConstructor('\delimiter Number',
     return; });
 
 # Almost like a register, but different...
-DefPrimitive('\mathchardef Token SkipMatch:=', sub {
+DefPrimitive('\mathchardef Token SkipSpaces SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
     $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
     my $value = $stomach->getGullet->readNumber();
@@ -1927,7 +1927,7 @@ DefConstructor('\mathaccent Number Digested',
 DefPrimitive('\lastbox', sub {    # Hopefully, the correct box got seen!
     return pop(@LaTeXML::LIST); });
 
-DefPrimitive('\setbox Number SkipMatch:=', sub {
+DefPrimitive('\setbox Number SkipSpaces SkipMatch:=', sub {
     my ($stomach) = @_;
     no warnings 'recursion';
     my $box = 'box' . $_[1]->valueOf;
@@ -2554,7 +2554,7 @@ DefPrimitive('\errmessage{}', sub {
     return; });
 
 # TeX I/O primitives
-DefPrimitive('\openin Number SkipMatch:= SkipSpaces TeXFileName', sub {
+DefPrimitive('\openin Number SkipSpaces SkipMatch:= SkipSpaces TeXFileName', sub {
     my ($stomach, $port, $filename) = @_;
     # possibly should close $port if it's already been opened?
     $port     = ToString($port);
@@ -2608,7 +2608,7 @@ DefConditional('\ifeof Number', sub {
 
 # For output files, we'll write the data to a cached internal copy
 # rather than to the actual file system.
-DefPrimitive('\openout Number SkipMatch:= SkipSpaces TeXFileName', sub {
+DefPrimitive('\openout Number SkipSpaces SkipMatch:= SkipSpaces TeXFileName', sub {
     my ($stomach, $port, $filename) = @_;
     $port     = ToString($port);
     $filename = ToString($filename);
