@@ -1324,7 +1324,7 @@ sub lookupFontinfo {
 
 # This should eventually actually load the font metrics,
 # and tie-in to the FontMetrics data used by Font.
-DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
+DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileName', sub {
     my ($stomach, $cs, $name) = @_;
     my $gullet = $stomach->getGullet;
     $name = ToString($name);
