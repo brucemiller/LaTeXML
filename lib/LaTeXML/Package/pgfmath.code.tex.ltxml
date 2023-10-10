@@ -58,11 +58,19 @@ sub pgfmathargradians {
   else {
     return deg2rad($arg); } }
 
+# Our factorial function emulates the \pgfmathparse behavior under texlive 2023.
+# it does not actually *compute* a factorial.
+my @memoized_pgf_factorial = (1.0, 1.0, 2.0, 6.0, 24.0, 120.0, 720.0, 5040.0, 13440.0);
+
 sub pgfmathfactorial {
-  my ($arg) = @_;
-  my $f = 1;
-  while ($arg > 0) { $f *= $arg; $arg--; }
-  return $f; }
+  my ($arg) = int(shift);
+  if ($arg > 7) {
+    Error('Arithmetic overflow.');
+    return $memoized_pgf_factorial[7]; }
+  elsif ($arg < 0) {
+    return -1 * pgfmathfactorial(-$arg); }
+  else {
+    return $memoized_pgf_factorial[$arg]; } }
 
 # I'll bet the deired precision is a parameter somewhere?
 # Actually, the library uses exponents, but I generate them, for some reason I'm getting
@@ -75,10 +83,10 @@ sub pgfmathfactorial {
 # NOTE: Since this is for use in macros, it returns Tokens which will set \pgfmathresult,
 # but doesn't directly set it itself.
 sub pgfmathresult {
-  my ($value) = @_;
-  if ($value =~ /\./) {
-    $value = sprintf("%06f", $value);
-  }
+  my ($value, $presanitized) = @_;
+  if (!$presanitized && $value =~ /[.e]/) {
+    $value = sprintf("%.5f", $value);
+    $value =~ s/([^.])0+$/$1/; }
   return Tokens(T_CS('\def'), T_CS('\pgfmathresult'), T_BEGIN, ExplodeText($value), T_END); }
 
 DefMacro('\@@@show@mathresult{}', sub {
@@ -300,6 +308,7 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 our $PGMATH_UNITS_REGEXP = undef;
+our $MAX_PGF_NUMBER      = 16383.99998;
 
 sub pgfmathparse {
   my ($gullet, $tokens) = @_;
@@ -316,6 +325,21 @@ sub pgfmathparse {
   my $string = (ref $tokens ? ToString(Expand($tokens)->stripBraces) : $tokens);
   $string =~ s/^\s+//; $string =~ s/\s+$//; $string =~ s/\s+/ /gs;
   my $input = $string;
+  # simple number-like thing? return as-is without any changes.
+  if ($input =~ /^([-+])?(\d+)(\.[\d.]*)?$/) {
+    # unary minus exception: always trail with ".0"
+    my $result = $input;
+    my ($sign, $integer, $decimals) = ($1, $2, $3);
+    if ($sign) {
+      # simple plus? just drop it and return.
+      if ($sign eq '+') { $result = ($decimals ? "$integer$decimals" : $integer); }
+      # special edge case! -0(.000...) prints 0.0
+      elsif ($result !~ /[1-9]/)   { $result = '0.0'; }
+      elsif (!(defined $decimals)) { $result .= '.0'; }
+      if    ($result < -$MAX_PGF_NUMBER) {
+        Error("pgfmath", "overflow", $gullet, "Dimension too large: $result. Input was: " . ToString($tokens));
+        $result = -$MAX_PGF_NUMBER; } }
+    return $result; }
   my $result;
   $PGMATH_UNITS_REGEXP
     = join('|', qw(em ex mu), keys %{ $STATE->lookupValue('UNITS') })
@@ -348,15 +372,16 @@ sub pgfmathparse {
       "Parse of '$input' failed",
       "LTX: '$result'",
       "Left: $string"); }
-  # There seem to be some pesky expectations for the results
-  if ($result == 0.0) {
-    $result = "0."; }
   # NOT really correct, but would like to use an internal to distinguish 1.0 from int(1.0)!!!
   elsif ($result == int($result)) {
     $result = int($result);
-    $result .= '.' unless $input =~ /^int\(/; }
-  else {    # We don't want scientific notation output!!!
-    $result = sprintf("%f", $result); }
+    $result .= '.0' unless $input =~ /^int\(/; }
+  elsif ($result =~ /[.e]/) {    # We don't want scientific notation output!!!
+    $result = sprintf("%.5f", $result);
+    $result =~ s/([^.])0+$/$1/; }
+  if ($result > $MAX_PGF_NUMBER or $result < -$MAX_PGF_NUMBER) {
+    Error("pgfmath", "overflow", $gullet, "Dimension too large: $result. Input was: " . ToString($tokens));
+    $result = ($result < 0 ? -$MAX_PGF_NUMBER : $MAX_PGF_NUMBER); }
   return $result; }
 
 DefMacro('\lx@pgfmath@parseX{}', sub {
@@ -366,7 +391,7 @@ DefMacro('\lx@pgfmath@parseX{}', sub {
 
 DefMacro('\lx@pgfmath@parse{}', sub {
     my ($gullet, $tokens) = @_;
-    return pgfmathresult(pgfmathparse($gullet, $tokens)); });
+    return pgfmathresult(pgfmathparse($gullet, $tokens), 1); });
 
 DefPrimitive('\pgfmathsetlength DefToken {}', sub {
     my ($stomach, $register, $tokens) = @_;
@@ -405,7 +430,7 @@ DefMacro('\lx@test@pgfmath@parse{}',
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Leave BOTH of the following commented out, to use pgfmath's own parser.
 # Use this to use our version of the pgfmath parser
-Let('\pgfmathparse', '\lx@pgfmath@parse');
+DefMacro('\pgfmathparse', '\lx@pgfmath@parse');
 # Use this to run both and compare the results.
 #Let('\pgfmathparse', '\lx@test@pgfmath@parse');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -442,7 +467,12 @@ sub pgfmath_convert {
   my ($number, $unit) = @_;
   SetCondition(T_CS('\ifpgfmathunitsdeclared'),     1, 'global');                    # Saw units!
   SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 1, 'global') if $unit eq 'mu';
-  return $number * $STATE->convertUnit($unit) / 65536; }    # return value in pts!
+  # return value in pts!
+  my $pts = $number * $STATE->convertUnit($unit) / 65536;
+  $pts = sprintf("%.5f", $pts);
+  $pts =~ s/0+$// if $pts =~ /\./;
+  return $pts;
+}
 
 sub pgfmath_register {
   my ($cs) = @_;
@@ -623,6 +653,8 @@ expr :
     | PREFIX simplefactor   { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
     | FUNCTION /\(/ formula (/,/ formula { $item[2]; })(s?) /\)/
            { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[3], @{$item[4]}); }
+    | FUNCTION formula
+           { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[2]); }
     | FUNCTION0                   { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
     | NUMBER UNIT          { LaTeXML::Package::Pool::pgfmath_convert($item[1],$item[2]); }
     | NUMBER REGISTER      { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
