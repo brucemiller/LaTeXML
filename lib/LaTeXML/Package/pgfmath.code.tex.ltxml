@@ -76,7 +76,9 @@ sub pgfmathfactorial {
 # but doesn't directly set it itself.
 sub pgfmathresult {
   my ($value) = @_;
-  $value = sprintf("%06f", $value);
+  if ($value =~ /\./) {
+    $value = sprintf("%06f", $value);
+  }
   return Tokens(T_CS('\def'), T_CS('\pgfmathresult'), T_BEGIN, ExplodeText($value), T_END); }
 
 DefMacro('\@@@show@mathresult{}', sub {
@@ -325,6 +327,8 @@ sub pgfmathparse {
     $string = ''; }
   if ($string && !$result
     && ($string !~ /\W(?:sin|cos|tan|cot|sec|cosec)\W/)) { {
+      # special case! the ^ in tikz is used for power, but NOT so in perl.
+      $string =~ s/\^/**/g;
       local $LaTeXML::IGNORE_ERRORS = 1;
       local $@;
       no warnings;
@@ -349,8 +353,9 @@ sub pgfmathparse {
     $result = "0."; }
   # NOT really correct, but would like to use an internal to distinguish 1.0 from int(1.0)!!!
   elsif ($result == int($result)) {
-    $result = int($result) . '.'; }
-  else {                       # We don't want scientific notation output!!!
+    $result = int($result);
+    $result .= '.' unless $input =~ /^int\(/; }
+  else {    # We don't want scientific notation output!!!
     $result = sprintf("%f", $result); }
   return $result; }
 
