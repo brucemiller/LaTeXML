@@ -1400,7 +1400,7 @@ DefPrimitive('\divide Variable SkipKeyword:by Number', sub {
 
 # <let assignment> = \futurelet <control sequence><token><token>
 #   | \let<control sequence><equals><one optional space><token>
-DefPrimitive('\let Token SkipMatch:= Skip1Space Token', sub {
+DefPrimitive('\let SkipSpaces Token SkipSpaces SkipMatch:= Skip1Space Token', sub {
     my ($stomach, $token1, $token2) = @_;
     Let($token1, $token2);
     return; });
