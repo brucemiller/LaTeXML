@@ -1430,19 +1430,19 @@ sub shorthandDef {
   AfterAssignment();
   return; }
 
-DefPrimitive('\countdef Token SkipMatch:=', sub {
+DefPrimitive('\countdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
     shorthandDef($_[0], $_[1], '\count', Number(0)); });
 
-DefPrimitive('\dimendef Token SkipMatch:=', sub {
+DefPrimitive('\dimendef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
     shorthandDef($_[0], $_[1], '\dimen', Dimension(0)); });
 
-DefPrimitive('\skipdef Token SkipMatch:=', sub {
+DefPrimitive('\skipdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
     shorthandDef($_[0], $_[1], '\skip', Glue(0)); });
 
-DefPrimitive('\muskipdef Token SkipMatch:=', sub {
+DefPrimitive('\muskipdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
     shorthandDef($_[0], $_[1], '\muskip', MuGlue(0)); });
 
-DefPrimitive('\toksdef Token SkipMatch:=', sub {
+DefPrimitive('\toksdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
     shorthandDef($_[0], $_[1], '\toks', Tokens()); });
 
 # NOTE: Get all these handled as registers
