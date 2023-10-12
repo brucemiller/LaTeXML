@@ -1,49 +1,49 @@
 \documentclass{article}
 \begin{document}
 
-\hbox{text $math$ text}
+\hbox{t $m$ t}
 
-\hbox{text $$alsotext$$ text}
+\hbox{t $$t$$ t}
 
-Footnote\footnote{text $math$ text}
-Another\footnote{text $$displayedmath$$ text}
+Footnote\footnote{t $m$ t}
+Another\footnote{t $$m$$ t}
 
 \begin{minipage}{3in}
-text $$displaymath$$ text
+t $$m$$ t
 \end{minipage}
 
 \hbox{\begin{minipage}{3in}
-text $$displaymath$$ text
+t $$m$$ t
 \end{minipage}}
 
-\parbox{3in}{text $$displaymath$$ text}
+\parbox{3in}{t $$m$$ t}
 
-\hbox{\parbox{3in}{text $$displaymath$$ text}}
+\hbox{\parbox{3in}{t $$m$$ t}}
 
 Note that dollar inside equation, etc.~fails.
-% \[ math {\rm $text$ } math \]
+% \[ m {\rm $t$ } m \]
 
-% \[ math $$math$$ math \]
+% \[ m $$m$$ m \]
 
-\mbox{text $math$ text}
+\mbox{t $m$ t}
 
-\mbox{text $$alsotext$$ text}
+\mbox{t $$t$$ t}
 
-\[ a + \mbox{text $math$ text}  + c \]
+\[ a + \mbox{t $m$ t}  + c \]
 
-\[ a + \mbox{text $$alsotext$$ text}  + c \]
+\[ a + \mbox{t $$t$$ t}  + c \]
 
-\[ a + \makebox{text $math$ text}  + c \]
+\[ a + \makebox{t $m$ t}  + c \]
 
-\[ a + \makebox{text $$alsotext$$ text}  + c \]
+\[ a + \makebox{t $$t$$ t}  + c \]
 
-Base\raisebox{1em}{text $math$ text}
+Base\raisebox{1em}{t $m$ t}
 
-Base\raisebox{1em}{text $$alsotext$$ text}
+Base\raisebox{1em}{t $$t$$ t}
 
-Base\shortstack{text\\ $math$\\ text}
+Base\shortstack{t\\ $m$\\ t}
 
-Base\shortstack{text\\$$alsotext$$\\ text}
+Base\shortstack{t\\$$t$$\\ t}
 
 
 \end{document}
