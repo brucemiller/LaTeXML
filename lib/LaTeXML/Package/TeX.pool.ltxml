@@ -3813,7 +3813,10 @@ DefPrimitive('\setlanguage Number', undef);
 #======================================================================
 # Decide whether we're going into or out of math, inline or display.
 Tag('ltx:XMText', autoOpen => 1, autoClose => 1);
-DefPrimitiveI(T_MATH, undef, sub {
+# This really should be T_MATH
+# and it should (or not) check for a second $ only if not in restricted horizontal mode!
+# (and then all the \@dollar@in@(text|math|normal)mode defns would not be needed.
+DefPrimitiveI('\@dollar@in@normalmode', undef, sub {
     my ($stomach) = @_;
     my $gullet    = $stomach->getGullet;
     my $mode      = LookupValue('MODE');
@@ -3839,7 +3842,7 @@ DefPrimitiveI(T_MATH, undef, sub {
       $op = '\@@BEGINDISPLAYMATH'; }
     $stomach->invokeToken(T_CS($op)) if $op; });
 # Let this be the default, conventional $
-Let(T_CS('\@dollar@in@normalmode'), T_MATH);
+Let(T_MATH, T_CS('\@dollar@in@normalmode'));
 
 # Effectively these are the math hooks, redefine these to do what you want with math?
 DefConstructorI('\@@BEGINDISPLAYMATH', undef,
