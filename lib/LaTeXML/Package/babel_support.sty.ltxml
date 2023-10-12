@@ -151,6 +151,7 @@ DefPrimitive('\ltx@bbl@select@language{}', sub {
     $language = ToString(Expand($language));
     my $iso = $$bbl_language_map{$language};
     MergeFont(language => $iso) if $iso;
+    DefMacroI('\cf@encoding', undef, ExplodeText(LookupValue('font')->getEncoding));
     return; });
 
 # pretend we've got hyphenation patterns for ANY language.
