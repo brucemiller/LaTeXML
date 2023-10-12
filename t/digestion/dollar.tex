@@ -8,6 +8,18 @@
 Footnote\footnote{text $math$ text}
 Another\footnote{text $$displayedmath$$ text}
 
+\begin{minipage}{3in}
+text $$displaymath$$ text
+\end{minipage}
+
+\hbox{\begin{minipage}{3in}
+text $$displaymath$$ text
+\end{minipage}}
+
+\parbox{3in}{text $$displaymath$$ text}
+
+\hbox{\parbox{3in}{text $$displaymath$$ text}}
+
 Note that dollar inside equation, etc.~fails.
 % \[ math {\rm $text$ } math \]
 
