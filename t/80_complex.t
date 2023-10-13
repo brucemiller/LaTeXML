@@ -7,4 +7,6 @@ use LaTeXML::Util::Test;
 latexml_tests("t/complex",
   requires => {
     cleveref_minimal => 'cleveref.sty',
-    si               => { packages => 'siunitx.sty', texlive_min => 2015 } });
+    si               => {
+      env=>'CI', # only runs in continuous integration
+      packages => 'siunitx.sty', texlive_min => 2015 } });
