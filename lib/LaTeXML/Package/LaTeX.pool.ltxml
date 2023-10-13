@@ -4852,6 +4852,7 @@ DefConstructor('\parbox[] OptionalUndigested OptionalUndigested {Dimension} VBox
   mode         => 'text', bounded => 1,
   robust       => 1,
   beforeDigest => sub {
+    reenterTextMode(1);    # actually vertical mode!
     AssignRegister('\hsize' => $_[4]);
     Let('\\\\', '\lx@parboxnewline'); });
 DefMacroI('\@parboxrestore', undef, Tokens());
@@ -4873,6 +4874,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
       width   => $_[4],
       vattach => translateAttachment($_[1])); },
   beforeDigest => sub {
+    reenterTextMode(1);    # actually vertical mode!
     Digest(T_CS('\@minipagetrue'));
     AssignRegister('\hsize' => $_[4]);
     # this conflicts (& not needed?) with insertBlock
