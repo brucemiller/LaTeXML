@@ -445,7 +445,7 @@ AtBeginDocument('\def\XC@mcolor{\pgfsetcolor{.}}');
 # Implementation
 
 DefMacro('\pgfsys@color@rgb{}{}{}',
-  '\pgfsys@color@rgb@stroke{#1}{#2}{#3}\pgfsys@color@rgb@fill{#1}{#2}{#3}');
+  '\ifpgfpicture\pgfsys@color@rgb@stroke{#1}{#2}{#3}\pgfsys@color@rgb@fill{#1}{#2}{#3}\fi');
 
 DefMacro('\lxSVG@RGB{}{}{}',    sub { Explode(Color('rgb',  $_[1], $_[2], $_[3])->toHex); });
 DefMacro('\lxSVG@CMYK{}{}{}{}', sub { Explode(Color('cmyk', $_[1], $_[2], $_[3], $_[4])->toHex); });

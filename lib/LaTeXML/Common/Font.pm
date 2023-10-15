@@ -20,8 +20,9 @@ use LaTeXML::Common::Number;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Common::Font::Metric;
 use LaTeXML::Common::Font::StandardMetrics;
+use LaTeXML::Common::Color;
 use List::Util qw(min max sum);
-use base qw(LaTeXML::Common::Object);
+use base       qw(LaTeXML::Common::Object);
 
 # Note that this has evolved way beynond just "font",
 # but covers text properties (or even display properties) in general
@@ -34,7 +35,7 @@ DebuggableFeature('size-detailed', "Show sizing of boxes in detail");
 my $DEFFAMILY     = 'serif';      # [CONSTANT]
 my $DEFSERIES     = 'medium';     # [CONSTANT]
 my $DEFSHAPE      = 'upright';    # [CONSTANT]
-my $DEFCOLOR      = 'black';      # [CONSTANT]
+my $DEFCOLOR      = Black;        # [CONSTANT]
 my $DEFBACKGROUND = undef;        # [CONSTANT] no color; transparent
 my $DEFOPACITY    = '1';          # [CONSTANT]
 my $DEFENCODING   = 'OT1';        # [CONSTANT]
@@ -871,7 +872,7 @@ The attributes are
  size   : TINY, Tiny, tiny, SMALL, Small, small,
           normal, Normal, large, Large, LARGE,
           huge, Huge, HUGE, gigantic, Gigantic, GIGANTIC
- color  : any named color, default is black
+ color  : any named color, default is Black
 
 They are usually merged against the current font, attempting to mimic the,
 sometimes counter-intuitive, way that TeX does it,  particularly for math

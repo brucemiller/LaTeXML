@@ -4994,10 +4994,11 @@ sub picScale {
 
 sub picProperties {
   my (%props) = @_;
-  if (($props{stroke} || 'black') ne 'none') {
+  if (($props{stroke} || '') ne 'none') {
     $props{thick} = ptValue(LookupRegister('\@wholewidth')); }
   if (my $arrowlength = LookupValue('arrowlength')) {
     $props{arrowlength} = ptValue($arrowlength); }
+  $props{color} = Black unless defined $props{color};
   return %props; }
 
 #----------------------------------------------------------------------
@@ -5061,11 +5062,11 @@ DefConstructor('\lx@pic@put Pair{}',
   mode  => 'text');
 
 DefConstructor('\line Pair:Number {Float}',
-  "<ltx:line points='#points' stroke='black' stroke-width='#thick'/>",
+  "<ltx:line points='#points' stroke='#color' stroke-width='#thick'/>",
   alias      => '\line',
   properties => sub { picProperties(points => '0,0 ' . slopeToPicCoord($_[1], $_[2])->pxValue()); });
 DefConstructor('\vector Pair:Number {Float}',
-  "<ltx:line points='#points' stroke='black' stroke-width='#thick' terminators='->'"
+  "<ltx:line points='#points' stroke='#color' stroke-width='#thick' terminators='->'"
     . " arrowlength='#arrowlength'/>",
   alias      => '\vector',
   properties => sub { picProperties(points => '0,0 ' . slopeToPicCoord($_[1], $_[2])->pxValue()); });
@@ -5075,11 +5076,11 @@ DefConstructor('\circle OptionalMatch:* {Float}',
   properties => sub {
     my ($stomach, $filled, $dia) = @_;
     picProperties(radius => picScale($dia)->multiply(0.5)->pxValue,
-      ($filled ? 'fill' : 'stroke') => 'black'); });
+      ($filled ? 'fill' : 'stroke') => Black); });
 
 DefConstructor('\oval [Float] Pair []',
   "<ltx:rect x='#x' y='#y' width='#width' height='#height' rx='#radius'"
-    . "  stroke='black' fill='none' part='#3' stroke-width='#thick'/>",
+    . "  stroke='#color' fill='none' part='#3' stroke-width='#thick'/>",
   alias      => '\oval',
   properties => sub {
     my ($stomach, $r, $size, $part) = @_;
@@ -5095,7 +5096,7 @@ DefConstructor('\oval [Float] Pair []',
     ); });
 
 DefConstructor('\qbezier [Number] Pair Pair Pair',
-"<ltx:bezier ?#1(displayedpoints='#1') points='&ptValue(#pt)' stroke='black' stroke-width='#thick' />",
+"<ltx:bezier ?#1(displayedpoints='#1') points='&ptValue(#pt)' stroke='#color' stroke-width='#thick' />",
   alias      => '\qbezier',
   properties => sub {
     picProperties(pt => PairList(picScale($_[2]), picScale($_[3]), picScale($_[4]))); });
@@ -5110,7 +5111,7 @@ DefConstructor('\lx@pic@bezier {Number} Pair Pair Pair',
 # Generic boxing command (frames, dash, etc)
 DefConstructor('\pic@makebox@ Undigested RequiredKeyVals Pair []{}',
   "?#framed(<ltx:rect x='0' y='0' width='#fwidth' height='#fheight'"
-    . " stroke='black' stroke-width='#thick' fill='none' stroke-dasharray='#dash'/>)()"
+    . " stroke='#color' stroke-width='#thick' fill='none' stroke-dasharray='#dash'/>)()"
     . "<ltx:g class='makebox' innerwidth='#width' innerheight='#height' innerdepth='#depth'"
     . " transform='translate(#xshift,#yshift)'>#box</ltx:g>",
   reversion    => '#1#3[#4]{#5}',

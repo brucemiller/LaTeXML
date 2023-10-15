@@ -56,7 +56,7 @@ DefMacro('\lx@diag@head{}{}',
 
 DefConstructor('\lx@diagheads {}{} {}{}{}',
   "<ltx:picture width='&pxValue(#width)' height='&pxValue(#height)'>"
-    . "<ltx:line points='#line' stroke='black' stroke-width='0.4'/>"
+    . "<ltx:line points='#line' stroke='#color' stroke-width='0.4'/>"
     . "<ltx:g transform='translate(#Ax,#Ay)' innerwidth='#Aw' innerheight='#Ah' innerdepth='#Ad'>"
     . "<ltx:inline-block>#A</ltx:inline-block>"
     . "</ltx:g>"
@@ -84,9 +84,9 @@ DefConstructor('\lx@diagheads {}{} {}{}{}',
     my $pxppt = Dimension('1pt')->pxValue(10);
     $whatsit->setProperties(
       width => Dimension($w / $pxppt . 'pt'), height => Dimension($h / $pxppt . 'pt'),
-      A     => $A, Ax => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
-      B     => $B, Bx => $Bx, By => $By, Bw => $Bw, Bh => $Bh,
-      line  => $line); }
+      A     => $A,    Ax    => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
+      B     => $B,    Bx    => $Bx, By => $By, Bw => $Bw, Bh => $Bh,
+      line  => $line, color => Black); }
 );
 #======================================================================
 1;
