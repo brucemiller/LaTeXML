@@ -23,7 +23,7 @@ use LaTeXML::Package;
 
 #======================================================================
 
-DefPrimitiveI('\ataribox', undef, "\x{26CB}", font => { color => 'white', background => 'black' }, bounded => 1);
+DefPrimitiveI('\ataribox', undef, "\x{26CB}", font => { color => White, background => Black }, bounded => 1);
 DefMathI('\Join',       undef, "\x{2a1d}");
 DefMathI('\Box',        undef, "\x{25a1}");
 DefMathI('\Diamond',    undef, "\x{25c7}");

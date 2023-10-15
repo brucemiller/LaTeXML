@@ -145,7 +145,7 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
       M         => $M,     Mx    => $Mx, My => $My, Mw => $Bw, Mh => $Mh,
       line1     => $line1, line2 => $line2,
       linewidth => ($kv && $kv->getValue('linewidth')) || '0.4',
-      linecolor => ($kv && $kv->getValue('linecolor')) || 'black'); }
+      linecolor => ($kv && $kv->getValue('linecolor')) || Black); }
 );
 
 # slashbox compatibility
