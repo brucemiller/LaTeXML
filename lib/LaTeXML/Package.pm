@@ -4647,7 +4647,7 @@ Likely values include (the values aren't required to be in this set):
  shape  : upright, italic, slanted, smallcaps
  size   : tiny, footnote, small, normal, large,
           Large, LARGE, huge, Huge
- color  : any named color, default is black
+ color  : any color, default is Black
 
 Some families will only be used in math.
 This function returns nothing so it can be easily used in beforeDigest, afterDigest.
