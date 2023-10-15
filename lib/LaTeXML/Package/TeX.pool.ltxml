@@ -1947,7 +1947,7 @@ sub adjustBoxColor {
   my ($box) = @_;
   my $font = LookupValue('font');
   if (my $color = $font && $font->getColor) {
-    if ($color ne 'black') {
+    if (!Black->equals($color)) {
       adjustBoxColor_rec($color, {}, $box); } }
   return; }
 
@@ -2402,7 +2402,7 @@ DefConstructor('\vrule RuleSpecification',
     elsif ((defined $w) && ($w == 0)) {
       $whatsit->setProperty(invisible => 1); }
     if (my $color = LookupValue('font')->getColor) {
-      if ($color ne 'black') {
+      if (!Black->equals($color)) {
         $whatsit->setProperty(color => $color); } }
     return; });
 
@@ -2432,7 +2432,7 @@ DefConstructor('\hrule RuleSpecification',
         $alignment->addLine('t');
         $whatsit->setProperty(isHorizontalRule => 1) } }    # Marked as rule within alignment
     if (my $color = LookupValue('font')->getColor) {
-      if ($color ne 'black') {
+      if (!Black->equals($color)) {
         $whatsit->setProperty(color => $color); } }
     return; });
 
