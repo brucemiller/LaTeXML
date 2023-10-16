@@ -65,7 +65,7 @@ my @memoized_pgf_factorial = (1.0, 1.0, 2.0, 6.0, 24.0, 120.0, 720.0, 5040.0, 13
 sub pgfmathfactorial {
   my ($arg) = int(shift);
   if ($arg > 7) {
-    Error('Arithmetic overflow.');
+    Error("pgfmath", "overflow", undef, "Arithmetic overflow: $arg! is too large.");
     return $memoized_pgf_factorial[7]; }
   elsif ($arg < 0) {
     return -1 * pgfmathfactorial(-$arg); }
