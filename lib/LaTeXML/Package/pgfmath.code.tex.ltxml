@@ -470,7 +470,7 @@ sub pgfmath_convert {
   # return value in pts!
   my $pts = $number * $STATE->convertUnit($unit) / 65536;
   $pts = sprintf("%.5f", $pts);
-  $pts =~ s/0+$// if $pts =~ /\./;
+  $pts =~ s/([^.])0+$/$1/ if $pts =~ /\./;
   return $pts;
 }
 
