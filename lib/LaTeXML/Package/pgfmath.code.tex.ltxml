@@ -430,7 +430,7 @@ DefMacro('\lx@test@pgfmath@parse{}',
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Leave BOTH of the following commented out, to use pgfmath's own parser.
 # Use this to use our version of the pgfmath parser
-DefMacro('\pgfmathparse', '\lx@pgfmath@parse');
+Let('\pgfmathparse', '\lx@pgfmath@parse');
 # Use this to run both and compare the results.
 #Let('\pgfmathparse', '\lx@test@pgfmath@parse');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
