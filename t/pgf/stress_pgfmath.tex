@@ -107,6 +107,14 @@
 \pgfmathparse{6!}\pgfmathresult\\
 \pgfmathparse{7!}\pgfmathresult
 
+\subsection{Function bare args}
+
+cos left: \pgfmathparse{cos(180/5)}\pgfmathresult\\
+cos right:\pgfmathparse{(cos 180)/5}\pgfmathresult\\
+cos precedence: \pgfmathparse{cos 180/5}\pgfmathresult\\
+sin cos right: \pgfmathparse{sin(cos 180)}\pgfmathresult\\
+sin cos precedence: \pgfmathparse{sin cos 180}\pgfmathresult\\
+
 \clearpage
 \subsection{Figure test}
 
