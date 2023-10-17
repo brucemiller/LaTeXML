@@ -349,8 +349,15 @@ sub pgfmathparse {
   if ($string =~ /^([+-]?[\d\.]+)($PGMATH_UNITS_REGEXP)$/) {
     $result = pgfmath_convert($1, $2);
     $string = ''; }
-  if ($string && !$result
-    && ($string !~ /\W(?:sin|cos|tan|cot|sec|cosec)\W/)) { {
+  if ($string && (!(defined $result) || (length($result) == 0))
+    # blacklist anything that doesn't match perl, starting with:
+    # https://tikz.dev/math-parsing#sec-94.3
+    # note: trig functions may be tempting, but their precedence differs
+    # e.g. perl's eval of 'cos 1260/5' is 0.7822121... , while PGF computes
+    # \def\e{1260}\pgfmathparse{cos \e/5} to -0.2 - i.e. "cos" binds stronger than "/"
+    && ($string !~ /\b(?:a?(sin|cos|tan2?)h?)|bin|add|array|tan|cot|sec|(?:co)?sec|
+    deg|depth|dim|div|divide|(?:(?:not)?(?:equal|greater|less))|oct|pi|pow|multiply|
+    rand|scalar|sign|vec|width/x)) { {
       # special case! the ^ in tikz is used for power, but NOT so in perl.
       $string =~ s/\^/**/g;
       local $LaTeXML::IGNORE_ERRORS = 1;
@@ -360,11 +367,10 @@ sub pgfmathparse {
       if (!$@) {
         # need to erase string when perl eval works, to keep it consistent with recdescent
         $string = ''; }
-    } }
+  } }
   if ($string && !$result) {
     $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
     $result         = $PGFMATHGrammar->expr(\$string); }
-
   $result = $result || 0.0;
   $string =~ s/^[\)\]]+$//;    # Forgive excess trailing ) !?!?!?!?!
   if ($string) {
@@ -442,7 +448,8 @@ sub pgfmath_apply {
     return &$fcn(@args); }
   elsif (my $defn = LookupDefinition($tok = T_CS('\pgfmath' . $op . '@'))) {    # User defined op?
         # Mindbogglingly inefficient, I think...
-    Expand(Invocation($tok, map { (ref $_ ? $_ : T_OTHER($_)) } @args));    # Sets \pgfmathresult
+        # we need Digest() to execute the resulting \def\pgfmathresult{...}
+    Digest(Invocation($tok, map { (ref $_ ? $_ : T_OTHER($_)) } @args));    # Sets \pgfmathresult
     return ToString(Expand(T_CS('\pgfmathresult'))); }
   else {
     Error('unexpected', $op, undef, "Unimplemented pgfmath operator '$op'");
@@ -525,7 +532,7 @@ sub pgfmath_checkuserfunction {
   if (LookupDefinition(T_CS('\pgfmath@function@' . $name))) {
     my $aritycs = T_CS('\pgfmath@operation@' . $name . '@arity');
     my $arity   = LookupDefinition($aritycs) && ToString(Expand($aritycs));
-    return ($arity && ($arity > 0) ? $name : undef); }
+    return (defined($arity) && ($arity > 0)) ? $name : undef; }
   return; }
 
 BEGIN {
@@ -653,7 +660,7 @@ expr :
     | PREFIX simplefactor   { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
     | FUNCTION /\(/ formula (/,/ formula { $item[2]; })(s?) /\)/
            { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[3], @{$item[4]}); }
-    | FUNCTION formula
+    | FUNCTION simplefactor
            { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[2]); }
     | FUNCTION0                   { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
     | NUMBER UNIT          { LaTeXML::Package::Pool::pgfmath_convert($item[1],$item[2]); }
