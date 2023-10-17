@@ -47,6 +47,6 @@ DefPrimitive('\use@@tikzlibrary{}', sub {
     } }
     return; });
 
-Let('\tikz@align@temp', '\relax');
+DefMacro('\tikz@align@temp', '\pgfmathresult');
 
 1;
