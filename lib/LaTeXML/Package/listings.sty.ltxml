@@ -1019,7 +1019,9 @@ DefKeyVal('LST', 'indexstyle', '');
 DefMacro('\lst@@indexstyle [Number] Until:\end', sub {
     lstSetClassStyle(lstClassName('index', $_[1]), $_[2]); });
 
-DefMacro('\lstindexmacro{}', '\index{{\ttfamily #1}}');
+# use the simple plain-argument index,
+# otherwise we need to double-check any relevant Semiverbatim cases
+DefMacro('\lstindexmacro{}', '\lx@simple@index{{\ttfamily #1}}');
 
 #======================================================================
 # 4.13 Column alignment
