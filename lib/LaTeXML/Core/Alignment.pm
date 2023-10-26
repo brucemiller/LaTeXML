@@ -419,9 +419,9 @@ sub normalize_cell_sizes {
             . " Boxes=" . ToString($boxes)) if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
         my $empty =
           (((!$cw) || $cw->valueOf < 1)
-            || (((!$ch) || $ch->valueOf < 1)
+            && (((!$ch) || $ch->valueOf < 1)
             && ((!$cd) || $cd->valueOf < 1))
-            || !(grep { !$_->getProperty('isSpace'); } $boxes->unlist)
+            || !(grep { !($_->getProperty('isSpace') || $_->getProperty('isHorizontalRule') || $_->getProperty('isVerticalRule')); } $boxes->unlist)
           ) && !preservedBoxes($boxes);
         $$cell{cwidth}  = $w || Dimension(0);
         $$cell{cheight} = $h || Dimension(0);
