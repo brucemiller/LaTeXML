@@ -204,7 +204,6 @@ sub getColumnAfter {
   my ($self) = @_;
   my $column;
   if (($column = $self->currentColumn) && !$$column{omitted}) {
-    # Possible \@@eat@space ??? (if LaTeX style???)
     return Tokens(@{ $$column{after} }, T_CS('\@column@after')); }
   else {
     return Tokens(); } }
@@ -421,7 +420,7 @@ sub normalize_cell_sizes {
           (((!$cw) || $cw->valueOf < 1)
             && (((!$ch) || $ch->valueOf < 1)
             && ((!$cd) || $cd->valueOf < 1))
-            || !(grep { !($_->getProperty('isSpace') || $_->getProperty('isHorizontalRule') || $_->getProperty('isVerticalRule')); } $boxes->unlist)
+            || !(grep { !($_->getProperty('isHorizontalRule') || $_->getProperty('isVerticalRule')); } $boxes->unlist)
           ) && !preservedBoxes($boxes);
         $$cell{cwidth}  = $w || Dimension(0);
         $$cell{cheight} = $h || Dimension(0);
