@@ -3093,24 +3093,28 @@ sub translateAttachment {
   $pos = ($pos ? ToString($pos) : '');
   return ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : 'middle')); }    # undef meaning 'baseline'
 
-# This removes trailing whitespace from the current digested list.
-# It is useful as the 1st thing in the rhs template of things like {tabular}.
+# This trims trailing whitespace from the current digested list,
+# for use within latex tabular-style columns.
 # But note that \halign does NOT remove this trailing space!
-DefPrimitiveI('\@@eat@space', undef, sub {
+DefPrimitiveI('\lx@column@trimright', undef, sub {
     my $box;
     my @save = ();
+    my $s;
     while ($box = $LaTeXML::LIST[-1]) {
       if ($box->getProperty('alignmentSkippable')
-        || $box->getProperty('isFill')) {
+        || $box->getProperty('isFill')
+        || IsEmpty($box)) {
         push(@save, pop(@LaTeXML::LIST)); }
-      elsif (IsEmpty($box)) {
-        pop(@LaTeXML::LIST); }
+      elsif (ref $box eq 'LaTeXML::Core::List') {    # Unwrap and continue
+        pop(@LaTeXML::LIST);
+        push(@LaTeXML::LIST, $box->unlist); }
+      elsif ((ref $box eq 'LaTeXML::Core::Box')
+        && defined($s = $box->getString) && ($s =~ /^\s*$/)) {
+        pop(@LaTeXML::LIST); }                       # remove any box containing only spaces
       else {
         last; } }
     push(@LaTeXML::LIST, @save);
     return; });
-
-#DefMacroI('\@@eat@space',undef,undef);
 
 use constant T_hfil => T_CS('\hfil');
 # Yet more special case hacking. Sometimes the order of tokens works for
@@ -6889,7 +6893,7 @@ DefPrimitive('\lx@gen@cases@bindings RequiredKeyVals:lx@GEN', sub {
           { before => Tokens($style), after => Tokens(T_CS('\hfil')) },
           { before => Tokens($style,
               ($condtext ? (T_CS('\lx@cases@condition')) : ())),
-            after => Tokens(T_CS('\@@eat@space'),
+            after => Tokens(T_CS('\lx@column@trimright'),
               ($condtext ? (T_CS('\lx@cases@end@condition')) : ()),
               T_CS('\hfil')) }]),
       'math');

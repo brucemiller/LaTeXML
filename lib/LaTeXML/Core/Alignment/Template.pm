@@ -53,11 +53,11 @@ sub addBeforeColumn {
   unshift(@{ $$self{save_before} }, @tokens);    # NOTE: goes all the way to front!
   return; }
 
-# NOTE: \@@eat@space should ONLY be added to LaTeX tabular style templates!!!!
+# NOTE: \lx@column@trimright should ONLY be added to LaTeX tabular style templates!!!!
 # NOT \halign style templates!
 sub addAfterColumn {
   my ($self, @tokens) = @_;
-  $$self{current_column}{after} = Tokens(T_CS('\@@eat@space'),
+  $$self{current_column}{after} = Tokens(T_CS('\lx@column@trimright'),
     @tokens, @{ $$self{current_column}{after} });
   return; }
 
@@ -80,7 +80,7 @@ sub addColumn {
   push(@before, @{ $$self{save_before} })    if $$self{save_before};
   $$col{before} = Tokens(@before);
   my @after = ();
-  push(@after, T_CS('\@@eat@space'));
+  push(@after, T_CS('\lx@column@trimright'));
   push(@after, $properties{after}->unlist) if $properties{after};
   $$col{after} = Tokens(@after);
 ###  $$col{after}           = Tokens() unless $properties{after};
@@ -104,7 +104,7 @@ sub clone {
   foreach my $cell (@{ $$self{columns} }) {
     push(@dup, {%$cell}); }
   return bless { columns => [@dup],
-    repeated => $$self{repeated}, non_repeating => $$self{non_repeating},
+    repeated  => $$self{repeated}, non_repeating => $$self{non_repeating},
     repeating => $$self{repeating} }, ref $self; }
 
 sub show {
