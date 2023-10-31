@@ -2017,9 +2017,9 @@ DefParameterType('BoxSpecification', sub {
   reversion => sub {
     my ($spec) = @_;
     if (my $to = $spec && $spec->getValue('to')) {
-      return Tokens(Tokenize('to'), T_SPACE, Revert($to)); }
+      return Tokens(Tokenize('to'), Revert($to)); }
     elsif (my $spread = $spec && $spec->getValue('spread')) {
-      return Tokens(Tokenize('spread'), T_SPACE, Revert($spread)); }
+      return Tokens(Tokenize('spread'), Revert($spread)); }
     else {
       return; } },
   optional => 1, undigested => 1);
@@ -4364,6 +4364,7 @@ sub scriptHandler {
     # Parsing is too late!
     while (my $prev = pop(@LaTeXML::LIST)) {
       if (($prev->getProperty('isSpace'))
+        || ($prev->getProperty('isEmpty'))              # EXPLICITLY empty, rather than {}
         || (ref $prev eq 'LaTeXML::Core::Comment')) {
         $prevspace = 1;              # a space avoids double-scripts
         unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
@@ -6018,14 +6019,14 @@ DefMathI('\biguplus', undef, "\x{2A04}",     # versus \x{228e}
   mathstyle => \&doVariablesizeOp);
 DefConstructorI('\limits', undef, '',
   afterDigest => sub { mergeLimits('mid'); },
-  properties  => { isSpace => 1 });
+  properties  => { isEmpty => 1 });
 DefConstructorI('\nolimits', undef, '',
   afterDigest => sub { mergeLimits('post'); },
-  properties  => { isSpace => 1 });
+  properties  => { isEmpty => 1 });
 DefConstructorI('\displaylimits', undef, '',
   afterDigest => sub {
     mergeLimits((($_[1]->getProperty('mathstyle') || '') eq 'display' ? 'mid' : 'post')); },
-  properties => { isSpace => 1 });
+  properties => { isEmpty => 1 });
 
 sub mergeLimits {
   my ($pos) = @_;
