@@ -82,7 +82,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   qw(&Expand &Invocation &Digest &DigestText &DigestIf &DigestLiteral
     &RawTeX &Let &StartSemiverbatim &EndSemiverbatim
     &Tokenize &TokenizeInternal
-    &IsEmpty &IsEmptyOrSpace),
+    &IsEmpty),
 
   # Font encoding
   qw(&DeclareFontMap &FontDecode &FontDecodeString &LoadFontMap),
@@ -991,30 +991,6 @@ sub IsEmpty {
       if ($ref eq 'LaTeXML::Core::Box') {
         my $s = $thing->getString;
         return 0 if (defined $s) && length($s); }
-      elsif ($ref eq 'LaTeXML::Core::List') {
-        return 0 unless IsEmpty($thing->unlist); }
-      elsif ($ref eq 'LaTeXML::Core::Whatsit') {
-        return 0 unless ($thing->getDefinition eq $STATE->lookupDefinition(T_BEGIN))
-          && IsEmpty($thing->getBody->unlist); } } }
-  return 1; }
-
-# Check whether all these things are "empty" OR spaces
-sub IsEmptyOrSpace {
-  my (@things) = @_;
-  foreach my $thing (@things) {
-    my $ref = ref $thing;
-    if    (!$thing)                          { }
-    elsif ($ref eq 'LaTeXML::Core::Comment') { }
-    elsif ($ref eq 'LaTeXML::Core::Tokens') {
-      return 0 unless IsEmpty($thing->unlist); }
-    elsif ($ref eq 'LaTeXML::Core::Token') {
-      my $cc = $$thing[1];
-      return 0 if ($cc == CC_LETTER) || ($cc == CC_OTHER) || ($cc == CC_ACTIVE) || ($cc == CC_CS); }
-    elsif ((!$thing->getProperty('isEmpty'))
-      && (!$thing->getProperty('isSpace'))) {
-      if ($ref eq 'LaTeXML::Core::Box') {
-        my $s = $thing->getString;
-        return 0 if (defined $s) && ($s !~ /^\s*$/); }
       elsif ($ref eq 'LaTeXML::Core::List') {
         return 0 unless IsEmpty($thing->unlist); }
       elsif ($ref eq 'LaTeXML::Core::Whatsit') {
