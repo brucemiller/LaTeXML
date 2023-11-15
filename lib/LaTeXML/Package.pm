@@ -994,8 +994,11 @@ sub IsEmpty {
       elsif ($ref eq 'LaTeXML::Core::List') {
         return 0 unless IsEmpty($thing->unlist); }
       elsif ($ref eq 'LaTeXML::Core::Whatsit') {
-        return 0 unless ($thing->getDefinition eq $STATE->lookupDefinition(T_BEGIN))
-          && IsEmpty($thing->getBody->unlist); } } }
+        # Sneaky Whatsit property for something (an arg) that stands-in for the whatsit's content.
+        if (my $body = $thing->getProperty('the_body')) {
+          return 0 unless IsEmpty($body); }
+        else {
+          return 0; } } } }
   return 1; }
 
 #======================================================================
