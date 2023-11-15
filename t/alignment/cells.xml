@@ -30,7 +30,7 @@
               <tr>
                 <td align="center">cell text</td>
               </tr>
-            </tabular> </td>
+            </tabular></td>
           <td align="center" border="r t">28–31</td>
         </tr>
         <tr>
@@ -41,7 +41,7 @@
               <tr>
                 <td align="left">cell text</td>
               </tr>
-            </tabular> </td>
+            </tabular></td>
           <td align="center" border="r t">37–43</td>
         </tr>
         <tr>
@@ -63,7 +63,7 @@
               <tr>
                 <td align="center">cell text</td>
               </tr>
-            </tabular> </td>
+            </tabular></td>
           <td align="center" border="r t">52–58</td>
         </tr>
         <tr>
@@ -100,7 +100,7 @@
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">First column head</text></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
             <td align="center" border="r t" thead="column row"> <tabular rowsep="-1.5pt" vattach="middle">
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">Second</text></td>
@@ -111,7 +111,7 @@
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">column head</text></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
           </tr>
         </thead>
         <tbody>
@@ -138,10 +138,10 @@
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">First column head</text></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
             <td align="center" border="r t" thead="column row"> <tabular rowsep="-1.5pt" vattach="middle">
                 <tr>
-                  <td align="center" thead="column row"><inline-block angle="90" depth="0.0pt" height="78.1pt" innerdepth="0.0pt" innerheight="36.0pt" innerwidth="78.1pt" width="36.0pt" xtranslate="-21.03pt" ytranslate="-21.03pt">
+                  <td align="center" thead="column row"><inline-block angle="90" depth="0.0pt" height="84.1pt" innerdepth="0.0pt" innerheight="36.0pt" innerwidth="84.1pt" width="36.0pt" xtranslate="-24.03pt" ytranslate="-24.03pt">
                       <p><text color="#FF0000" font="bold"><tabular rowsep="-1.5pt" vattach="middle">
                             <tr>
                               <td align="justify" width="78.1pt"><p vattach="top">Second multilined</p></td>
@@ -152,7 +152,7 @@
                           </tabular></text></p>
                     </inline-block></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
           </tr>
         </thead>
         <tbody>
@@ -211,24 +211,24 @@
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">First …</text></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
             <td align="center" border="r t" colspan="2"> <tabular rowsep="-1.5pt" vattach="middle">
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">Multicolumn head</text></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
           </tr>
           <tr>
             <td align="center" border="r t" thead="column row"> <tabular rowsep="-1.5pt" vattach="middle">
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">Second …</text></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
             <td align="center" border="r t" thead="column row"> <tabular rowsep="-1.5pt" vattach="middle">
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">Third …</text></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
           </tr>
           <tr>
             <td align="left" border="l r t">Cell text</td>
@@ -237,7 +237,7 @@
                 <tr>
                   <td align="center">28–31</td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
           </tr>
           <tr>
             <td align="left" border="l r t"> <tabular vattach="middle">
@@ -247,7 +247,7 @@
                 <tr>
                   <td align="center">Cell text</td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
             <td align="center" border="r t">B</td>
           </tr>
           <tr>
@@ -255,13 +255,13 @@
                 <tr>
                   <td align="left">Left …</td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
             <td align="center" border="r t">C</td>
             <td align="center" border="r t" rowspan="2"><tabular vattach="middle">
                 <tr>
                   <td align="left">37–43</td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
           </tr>
           <tr>
             <td align="left" border="l r t"> <tabular vattach="middle">
@@ -276,7 +276,7 @@
                 <tr>
                   <td align="center">Bottom …</td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
             <td align="center" border="r t">E</td>
             <td align="center" border="b r t" rowspan="5"> <tabular vattach="middle">
                 <tr>
@@ -317,12 +317,20 @@
     <para xml:id="S9.p1">
       <tabular vattach="middle">
         <tr>
-          <td align="center" border="l r tt">1</td>
-          <td align="center" border="r tt">2</td>
-          <td align="center" border="r tt">3</td>
-          <td align="center" border="r tt">4</td>
-          <td align="center" border="r tt">5</td>
-          <td align="center" border="r tt">6</td>
+          <td border="l r t"/>
+          <td border="r t"/>
+          <td border="r t"/>
+          <td border="r t"/>
+          <td border="r t"/>
+          <td border="r t"/>
+        </tr>
+        <tr>
+          <td align="center" border="l r t">1</td>
+          <td align="center" border="r t">2</td>
+          <td align="center" border="r t">3</td>
+          <td align="center" border="r t">4</td>
+          <td align="center" border="r t">5</td>
+          <td align="center" border="r t">6</td>
         </tr>
         <tr>
           <td border="l r t"/>
@@ -388,7 +396,7 @@
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">column</text></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
             <td align="center" border="r t" thead="column row"> <tabular rowsep="-1.5pt" vattach="middle">
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">Third</text></td>
@@ -396,7 +404,7 @@
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">column</text></td>
                 </tr>
-              </tabular> </td>
+              </tabular></td>
           </tr>
         </thead>
         <tbody>
