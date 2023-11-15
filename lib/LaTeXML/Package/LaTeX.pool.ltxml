@@ -2422,6 +2422,7 @@ sub eqnarrayBindings {
       properties  => { preserve_structure => 1, attributes => {%attributes} }));
 
   Let("\\\\",                    '\@alignment@newline');
+  Let('\lx@intercol',            '\lx@math@intercol');
   Let('\@row@before',            '\eqnarray@row@before');
   Let('\@row@after',             '\eqnarray@row@after');
   Let('\lx@eqnarray@save@label', '\label');
@@ -3757,6 +3758,7 @@ sub tabularBindings {
     $properties{strut} = LookupRegister('\baselineskip')->multiply(1.5); }    # Account for html space
   alignmentBindings($template, 'text', %properties);
   Let("\\\\",            '\@tabularcr');
+  Let('\lx@intercol',    '\lx@text@intercol');
   Let('\tabularnewline', "\\\\");
   # NOTE: Fit this back in!!!!!!!
   # # Do like AddToMacro, but NOT global!
@@ -3873,7 +3875,8 @@ DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
       $$attr{rowsep} = Dimension(($str - 1) . 'em'); }
     alignmentBindings($template, 'math', attributes => $attr);
     MergeFont(mathstyle => 'text');
-    Let("\\\\", '\@alignment@newline');
+    Let("\\\\",         '\@alignment@newline');
+    Let('\lx@intercol', '\lx@math@intercol');
     return; });
 
 DefMacro('\array[]{}',
