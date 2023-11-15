@@ -341,7 +341,7 @@ sub beAbsorbed {
         x      => $$cell{x}, y => $$cell{y},
         cwidth => $$cell{cwidth}, cheight => $$cell{cheight}, cdepth => $$cell{cdepth},
       );
-      if (!$empty) {
+      if (!$$cell{skippable}) {
         local $LaTeXML::BOX = $$cell{boxes};
         $document->openElement('ltx:XMArg', rule => 'Anything,') if $ismath;    # Hacky!
         $document->absorb($$cell{boxes});
@@ -422,15 +422,45 @@ sub normalize_cell_sizes {
             && ((!$cd) || $cd->valueOf < 1))
             || !(grep { !($_->getProperty('isHorizontalRule') || $_->getProperty('isVerticalRule')); } $boxes->unlist)
           ) && !preservedBoxes($boxes);
-        $$cell{cwidth}  = $w || Dimension(0);
-        $$cell{cheight} = $h || Dimension(0);
-        $$cell{cdepth}  = $d || Dimension(0);
-        $$cell{empty}   = $empty;
-        $$cell{align}   = undef if $empty; }
+        $$cell{cwidth}    = $w || Dimension(0);
+        $$cell{cheight}   = $h || Dimension(0);
+        $$cell{cdepth}    = $d || Dimension(0);
+        $$cell{empty}     = $empty;
+        $$cell{skippable} = $empty || isSkippable($boxes);
+        $$cell{align}     = undef if $$cell{skippable}; }
       else {
-        $$cell{empty} = 1; }
+        $$cell{empty}     = 1;
+        $$cell{skippable} = 1; }
   } }
   return; }
+
+# Check whether all these things are "empty" or only spaces or otherwise skippable in a table cell
+# Very similar to IsEmpty, but also recognizes spaces or alignmentSkippable items
+sub isSkippable {
+  my (@things) = @_;
+  foreach my $thing (@things) {
+    my $ref = ref $thing;
+    if    (!$thing)                          { }
+    elsif ($ref eq 'LaTeXML::Core::Comment') { }
+    elsif ($ref eq 'LaTeXML::Core::Tokens') {
+      return 0 unless isSkippable($thing->unlist); }
+    elsif ($ref eq 'LaTeXML::Core::Token') {
+      my $cc = $$thing[1];
+      return 0 if ($cc == CC_LETTER) || ($cc == CC_OTHER) || ($cc == CC_ACTIVE) || ($cc == CC_CS); }
+    elsif ((!$thing->getProperty('isEmpty'))
+      && (!$thing->getProperty('isSpace'))
+      && (!$thing->getProperty('alignmentSkippable'))) {
+      if ($ref eq 'LaTeXML::Core::Box') {
+        my $s = $thing->getString;
+        return 0 if (defined $s) && ($s !~ /^\s*$/); }
+      elsif ($ref eq 'LaTeXML::Core::List') {
+        return 0 unless isSkippable($thing->unlist); }
+      elsif ($ref eq 'LaTeXML::Core::Whatsit') {
+        if (my $body = $thing->getProperty('the_body')) {
+          return 0 unless isSkippable($body); }
+        else {
+          return 0; } } } }
+  return 1; }
 
 sub showSize {
   my ($w, $h, $d) = @_;
@@ -579,7 +609,7 @@ sub normalize_mark_spans {
           if ($rrow) {
             for (my $jj = $j ; $jj < $j + $ncspan ; $jj++) {
               if (my $ccol = $$rrow{columns}[$jj]) {
-                if (!$$ccol{empty}) {
+                if (!$$ccol{skippable}) {
                   $rowempty = 0; } } } }
           if    (!$nrc) { }
           elsif (!$rrow || !$rowempty) {
@@ -617,12 +647,26 @@ sub normalize_prune_rows {
   my @rows     = @{ $$self{rows} };
   my @filtered = ();
   for (my $i = 0 ; $i < scalar(@rows) ; $i++) {
-    my $row = $rows[$i];
-    if (grep { !$$_{empty} } @{ $$row{columns} }) {    # Not empty! so keep it
+    my $row  = $rows[$i];
+    my $next = $rows[$i + 1];
+    # prunable if all cells are empty
+    # OR are only spacing NOT made visible by requiring both top & bottom borders
+    my $prunable = 1;
+    my $check_bracketting;
+    foreach my $c (@{ $$row{columns} }) {    # Check if all cells are either empty or space only
+      $check_bracketting = 1 if $$c{skippable} && !$$c{empty};
+      $prunable          = 0 unless $$c{skippable}; }
+    if ($prunable && $check_bracketting      # If spaces, make sure not bracketted by borders
+      && scalar(grep { ($$_{border} || '') =~ /t/i } @{ $$row{columns} })) {
+      if ($next) {
+        $prunable = 0 if scalar(grep { ($$_{border} || '') =~ /t/i } @{ $$next{columns} }); }
+      else {
+        $prunable = 0 if scalar(grep { ($$_{border} || '') =~ /b/i } @{ $$row{columns} }); } }
+    if (!$prunable) {
       push(@filtered, $row); }
-    elsif (my $next = $rows[$i + 1]) {    # Remove empty row, but copy top border to NEXT row
+    elsif ($next) {                          # Remove empty row, but copy top border to NEXT row
       if ($preserve) {
-        push(@filtered, $row); next; }    # don't remove inner rows from math EXCEPT last row!!
+        push(@filtered, $row); next; }       # don't remove inner rows from math EXCEPT last row!!
       my $nc = scalar(@{ $$row{columns} });
       my ($pruneh, $pruned) = (0, 0);
       for (my $j = 0 ; $j < $nc ; $j++) {
