@@ -4467,7 +4467,7 @@ sub process_index_phrases {
     T_BEGIN, @expansion, T_END);
   return @expansion; }
 
-# read verbatim, as perl latex.ltx \@sanitize;
+# read verbatim, as if with LaTeX's \@sanitize;
 # useful for \index (maybe others?)
 DefParameterType('SanitizedVerbatim', sub {
     my ($gullet) = @_;
