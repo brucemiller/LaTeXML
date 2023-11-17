@@ -94,7 +94,11 @@ sub isBalanced {
   foreach my $t (@$self) {
     my $cc = $$t[1];    # INLINE
     $level++ if $cc == CC_BEGIN;
-    $level-- if $cc == CC_END; }
+    if ($cc == CC_END) {
+      $level--;
+      # Note that '{ }} {' is still unbalanced
+      # even though the left and right braces match in count.
+      last if $level < 0; } }
   return $level == 0; }
 
 # NOTE: Assumes each arg either undef or also Tokens
