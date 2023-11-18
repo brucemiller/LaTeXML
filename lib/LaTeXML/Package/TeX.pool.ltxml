@@ -3506,8 +3506,7 @@ sub extractAlignmentColumn {
       push(@saveleft, shift(@boxes)); }
     elsif ($boxes[0]->getProperty('isHorizontalRule')
       || $boxes[0]->getProperty('alignmentSkippable')
-      || (ref $boxes[0] eq 'LaTeXML::Core::Comment')
-      || IsEmpty($boxes[0])) {
+      || (ref $boxes[0] eq 'LaTeXML::Core::Comment')) {
       push(@saveleft, shift(@boxes)); }
     else {
       last; } }
@@ -3526,8 +3525,7 @@ sub extractAlignmentColumn {
       unshift(@saveright, pop(@boxes)); }
     elsif ($boxes[-1]->getProperty('isHorizontalRule')
       || $boxes[-1]->getProperty('alignmentSkippable')
-      || (ref $boxes[-1] eq 'LaTeXML::Core::Comment')
-      || IsEmpty($boxes[-1])) {
+      || (ref $boxes[-1] eq 'LaTeXML::Core::Comment')) {
       unshift(@saveright, pop(@boxes)); }
     else {
       last; } }
