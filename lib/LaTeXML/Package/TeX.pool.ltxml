@@ -2975,20 +2975,23 @@ DefMacroI('\tabularnewline', undef, '\cr');    # ???
 # (but NOT used by TeX's \halign!)
 DefMacro('\lx@intercol', '');
 # Candidates for binding \lx@intercol for LaTeX tabular or math arrays
-DefConstructor('\lx@text@intercol', "",
+# These provide "padding" of half tabcolsep, since added before & after columns
+DefConstructor('\lx@text@intercol', sub {
+    my ($document, %props) = @_;
+    $document->absorb(DimensionToSpaces($props{width})); },
   reversion  => '',
   properties => sub {
     my $defn;
     my $w = (($defn = $STATE->lookupDefinition(T_CS('\tabcolsep'))) && $defn->isRegister
-      ? $defn->valueOf : Dimension(0));
-    (width => $w, isSpace => 1); });
-DefConstructor('\lx@math@intercol', "",
+      ? $defn->valueOf->divide(2) : Dimension(0));
+    (width => $w, isSpace => 1, isPadding => 1); });
+DefConstructor('\lx@math@intercol', "",    # mspace ???
   reversion  => '',
   properties => sub {
     my $defn;
     my $w = (($defn = $STATE->lookupDefinition(T_CS('\arraycolsep'))) && $defn->isRegister
-      ? $defn->valueOf : Dimension(0));
-    (width => $w, isSpace => 1); });
+      ? $defn->valueOf->divide(2) : Dimension(0));
+    (width => $w, isSpace => 1, isPadding => 1); });
 
 #======================================================================
 # Various decorations within alignments, rules, headers, etc
@@ -3490,7 +3493,7 @@ sub extractAlignmentColumn {
   my @boxes     = $boxes->unlist;
   my @saveleft  = ();
   my @saveright = ();
-  my ($lpadding, $rpadding) = (0, 0);
+  my ($lpadding, $rpadding) = (Dimension(0), Dimension(0));
   while (@boxes) {
     if (ref $boxes[0] eq 'LaTeXML::Core::List') {
       unshift(@boxes, shift(@boxes)->unlist); }
@@ -3501,12 +3504,13 @@ sub extractAlignmentColumn {
     elsif ($boxes[0]->getProperty('isVerticalRule')) {
       $border .= 'l';
       shift(@boxes); }
-    elsif ($boxes[0]->getProperty('isSpace')) {
-      $lpadding += $boxes[0]->getWidth->valueOf;
-      push(@saveleft, shift(@boxes)); }
+    elsif ($boxes[0]->getProperty('isPadding')) {
+      $lpadding = $lpadding->add($boxes[0]->getWidth);
+      shift(@boxes); }
     elsif ($boxes[0]->getProperty('isHorizontalRule')
       || $boxes[0]->getProperty('alignmentSkippable')
-      || (ref $boxes[0] eq 'LaTeXML::Core::Comment')) {
+      || (ref $boxes[0] eq 'LaTeXML::Core::Comment')
+      || ($boxes[0]->getProperty('isSpace'))) {
       push(@saveleft, shift(@boxes)); }
     else {
       last; } }
@@ -3520,12 +3524,13 @@ sub extractAlignmentColumn {
     elsif ($boxes[-1]->getProperty('isVerticalRule')) {
       $border .= 'r';
       pop(@boxes); }
-    elsif ($boxes[-1]->getProperty('isSpace')) {
-      $rpadding += $boxes[-1]->getWidth->valueOf;
-      unshift(@saveright, pop(@boxes)); }
+    elsif ($boxes[-1]->getProperty('isPadding')) {
+      $rpadding = $rpadding->add($boxes[-1]->getWidth);
+      pop(@boxes); }
     elsif ($boxes[-1]->getProperty('isHorizontalRule')
       || $boxes[-1]->getProperty('alignmentSkippable')
-      || (ref $boxes[-1] eq 'LaTeXML::Core::Comment')) {
+      || (ref $boxes[-1] eq 'LaTeXML::Core::Comment')
+      || ($boxes[-1]->getProperty('isSpace'))) {
       unshift(@saveright, pop(@boxes)); }
     else {
       last; } }
@@ -3534,12 +3539,12 @@ sub extractAlignmentColumn {
   @boxes = (@saveleft, @boxes, @saveright);
   $boxes = List(@boxes, mode => ($boxes->isMath ? 'math' : 'text'));
   # record relevant info in the Alignment.
-  $$colspec{align}      = $align;
-  $$colspec{border}     = $border = ($$colspec{border} || '') . $border;
-  $$colspec{boxes}      = $boxes;
-  $$colspec{colspan}    = $n1 - $n0 + 1;
-  $$colspec{tightleft}  = 1 if $lpadding < 10;
-  $$colspec{tightright} = 1 if $rpadding < 10;
+  $$colspec{align}    = $align;
+  $$colspec{border}   = $border = ($$colspec{border} || '') . $border;
+  $$colspec{boxes}    = $boxes;
+  $$colspec{colspan}  = $n1 - $n0 + 1;
+  $$colspec{lpadding} = $lpadding;
+  $$colspec{rpadding} = $rpadding;
   if ($$alignment{in_tabular_head} || $$alignment{in_tabular_foot}) {
     $$colspec{thead}{column} = 1; }
   for (my $i = $n0 + 1 ; $i <= $n1 ; $i++) {

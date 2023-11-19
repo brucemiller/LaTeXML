@@ -66,8 +66,10 @@ sub addBetweenColumn {
   my ($self, @tokens) = @_;
   my @cols = @{ $$self{columns} };
   if (my $col = $$self{current_column}) {
-    unshift(@tokens, T_CS('\lx@intercol')) unless $$col{disabled_intercolumn};
-    delete $$col{disabled_intercolumn};
+    if (!$$col{disabled_intercolumn}) {
+      unshift(@tokens, T_CS('\lx@intercol'));
+      push(@tokens, T_CS('\lx@intercol'));
+      delete $$col{disabled_intercolumn}; }
     $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after} }, @tokens); }
   else {
     push(@{ $$self{save_between} }, @tokens); }

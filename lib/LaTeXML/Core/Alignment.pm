@@ -412,15 +412,22 @@ sub normalize_cell_sizes {
         my ($w, $h, $d, $cw, $ch, $cd)
           = $boxes->getSize(align => $$cell{align}, width => $$cell{width},
           vattach => $$cell{vattach});
-        Debug("CELL (" . join(',', map { $_ . "=" . ToString($$cell{$_}); } qw(align width vattach))
+        $w  = $w->add($$cell{lpadding})  if $$cell{lpadding};
+        $w  = $w->add($$cell{rpadding})  if $$cell{rpadding};
+        $cw = $cw->add($$cell{lpadding}) if $$cell{lpadding};
+        $cw = $cw->add($$cell{rpadding}) if $$cell{rpadding};
+        Debug("CELL (" . join(',', map { $_ . "=" . ToString($$cell{$_}); } qw(align width vattach lpadding rpadding))
             . ") size " . showSize($w,  $h,  $d)
             . " csize " . showSize($cw, $ch, $cd)
             . " Boxes=" . ToString($boxes)) if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
+        my @boxes  = $boxes->unlist;
+        my $isrule = scalar(@boxes)
+          && !(grep { !($_->getProperty('isHorizontalRule') || $_->getProperty('isVerticalRule')); } @boxes);
         my $empty =
           (((!$cw) || $cw->valueOf < 1)
             && (((!$ch) || $ch->valueOf < 1)
             && ((!$cd) || $cd->valueOf < 1))
-            || !(grep { !($_->getProperty('isHorizontalRule') || $_->getProperty('isVerticalRule')); } $boxes->unlist)
+            || $isrule
           ) && !preservedBoxes($boxes);
         $$cell{cwidth}    = $w || Dimension(0);
         $$cell{cheight}   = $h || Dimension(0);
