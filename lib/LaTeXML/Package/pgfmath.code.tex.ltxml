@@ -283,7 +283,9 @@ DefMacro('\@@@test@mathresult{}{}{}', sub {
 
 DefMacro('\pgfmath@smuggleone Until:\endgroup', sub {
     my ($gullet, $arg) = @_;
-    $arg = $$arg[0] if (ref $arg eq 'LaTeXML::Core::Tokens');
+    if (ref $arg eq 'LaTeXML::Core::Tokens') {
+      my @ts = grep { my $cc = $$_[1]; $cc ne CC_COMMENT and $cc ne CC_MARKER } $arg->unlist;
+      $arg = shift @ts; }
     my $def = LookupDefinition($arg);
     if (my $is_expandable = $def && $def->isExpandable) {
       # Texlive 2020 definition:
