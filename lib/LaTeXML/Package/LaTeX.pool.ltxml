@@ -933,13 +933,13 @@ DefPrimitive('\DeclareOption{}{}', sub {
         DeclareOption(ToString($option), $code)); });
 
 DefPrimitive('\PassOptionsToPackage{}{}', sub {
-    my ($stomach, $name, $options) = @_;
+    my ($stomach, $options, $name) = @_;
     $name = ToString($name);
     $name =~ s/\s+//g;
     PassOptions($name, 'sty', split(/\s*,\s*/, ToString(Expand($options)))); });
 
 DefPrimitive('\PassOptionsToClass{}{}', sub {
-    my ($stomach, $name, $options) = @_;
+    my ($stomach, $options, $name) = @_;
     $name = ToString($name);
     $name =~ s/\s+//g;
     PassOptions($name, 'cls', split(/\s*,\s*/, ToString(Expand($options)))); });
