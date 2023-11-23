@@ -17,19 +17,22 @@ use LaTeXML::Package;
 
 # Generally ignorable options
 foreach my $option (qw(preprint final review
-  authoryear number numbers longtitle
   5p 3p 1p
-  times
   12pt 11pt 10pt
+  endfloat endfloats numafflabel doubleblind
   oneside twoside onecolumn twocolumn
+  longtitle lefttitle centertitle reversenotenum nopreprintline
   symbold ussrhead nameyear doublespacing reviewcopy)) {
   DeclareOption($option, undef); }
 
 DeclareOption('times', sub { AddToMacro(T_CS('\elsarticle.cls-h@@k'), '\RequirePackage{txfonts}'); });
 
-DeclareOption("seceqn", sub { AssignValue('@seceqn' => 1); });
-DeclareOption("secthm", sub { AssignValue('@secthm' => 1); });
-DeclareOption("amsthm", sub { AssignValue('@amsthm' => 1); });
+DeclareOption("seceqn",     sub { AssignValue('@seceqn' => 1); });
+DeclareOption("secthm",     sub { AssignValue('@secthm' => 1); });
+DeclareOption("amsthm",     sub { AssignValue('@amsthm' => 1); });
+DeclareOption('authoryear', sub { AssignValue('@biboptions', 'round,authoryear'); });
+DeclareOption('number',     sub { AssignValue('@biboptions', 'numbers'); });
+DeclareOption('numbers',    sub { AssignValue('@biboptions', 'numbers'); });
 
 # Anything else is for article.
 DeclareOption(undef, sub {
@@ -42,6 +45,9 @@ RequirePackage('elsart_support_core');    # Hopefully, this covers elsarticle
 RequirePackage('fleqn');
 RequirePackage('graphicx');
 RequirePackage('pifont');
+# number style inline citations by default
+my $natbib_opts = LookupValue('@biboptions') || 'numbers';
+PassOptions('natbib', 'sty', split(/\s*,\s*/, $natbib_opts));
 RequirePackage('natbib');
 RequirePackage('hyperref');
 # RequirePackage('endfloat');
