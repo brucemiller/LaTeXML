@@ -66,10 +66,10 @@ sub addBetweenColumn {
   my ($self, @tokens) = @_;
   my @cols = @{ $$self{columns} };
   if (my $col = $$self{current_column}) {
-    if (!$$col{disabled_intercolumn}) {
+    if (!$$self{disabled_intercolumn}) {
       unshift(@tokens, T_CS('\lx@intercol'));
       push(@tokens, T_CS('\lx@intercol'));
-      delete $$col{disabled_intercolumn}; }
+      delete $$self{disabled_intercolumn}; }
     $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after} }, @tokens); }
   else {
     push(@{ $$self{save_between} }, @tokens); }
@@ -78,7 +78,7 @@ sub addBetweenColumn {
 sub disableIntercolumn {
   my ($self) = @_;
   if (my $col = $$self{current_column}) {
-    $$col{disabled_intercolumn} = 1;
+    $$self{disabled_intercolumn} = 1;
     if (my $after = $$col{after}) {
       my @after = $after->unlist;
       if (T_CS('\lx@intercol')->equals($$after[-1])) {
@@ -91,8 +91,8 @@ sub addColumn {
   my $col    = {%properties};
   my @before = ();
   push(@before, @{ $$self{save_between} }) if $$self{save_between};
-  push(@before, T_CS('\lx@intercol')) unless $$col{disabled_intercolumn};
-  delete $$col{disabled_intercolumn};
+  push(@before, T_CS('\lx@intercol')) unless $$self{disabled_intercolumn};
+  delete $$self{disabled_intercolumn};
 
   push(@before, $properties{before}->unlist) if $properties{before};
   push(@before, @{ $$self{save_before} })    if $$self{save_before};
