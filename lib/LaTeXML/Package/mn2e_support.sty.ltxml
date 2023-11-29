@@ -148,6 +148,7 @@ DefMath('\leqslant', "\x{2A7D}", role => 'RELOP',
 DefMath('\geqslant', "\x{2A7E}", role => 'RELOP',
   meaning => 'greater-than-or-equals');
 DefPrimitiveI('\micron', undef, UTF(0xB5) . "m");
+DefMacro('\ion{}{}', '\text{#1\,\textsc{\lowercase{#2}}}');
 
 DefMacro('\rmn{}',      '\mathrm{#1}');
 DefMacro('\romn{}',     '\mathrm{#1}');
