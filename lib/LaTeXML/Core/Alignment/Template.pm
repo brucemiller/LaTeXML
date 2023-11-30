@@ -67,9 +67,7 @@ sub addBetweenColumn {
   my @cols = @{ $$self{columns} };
   if (my $col = $$self{current_column}) {
     if (!$$self{disabled_intercolumn}) {
-      unshift(@tokens, T_CS('\lx@intercol'));
-      push(@tokens, T_CS('\lx@intercol'));
-      delete $$self{disabled_intercolumn}; }
+      unshift(@tokens, T_CS('\lx@intercol')); }
     $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after} }, @tokens); }
   else {
     push(@{ $$self{save_between} }, @tokens); }
@@ -78,17 +76,15 @@ sub addBetweenColumn {
 sub disableIntercolumn {
   my ($self) = @_;
   if (my $col = $$self{current_column}) {
-    $$self{disabled_intercolumn} = 1;
-    if (my $after = $$col{after}) {
-      my @after = $after->unlist;
-      if (T_CS('\lx@intercol')->equals($$after[-1])) {
-        pop(@after);
-        $$col{after} = Tokens(@after); } } }
+    $$self{disabled_intercolumn} = 1; }
   return; }
 
 sub addColumn {
   my ($self, %properties) = @_;
-  my $col    = {%properties};
+  my $col = {%properties};
+  if (my $prev = $$self{current_column}) {
+    $$prev{after} = Tokens(($$prev{after} || ()), T_CS('\lx@intercol'))
+      unless $$self{disabled_intercolumn}; }
   my @before = ();
   push(@before, @{ $$self{save_between} }) if $$self{save_between};
   push(@before, T_CS('\lx@intercol')) unless $$self{disabled_intercolumn};
@@ -100,7 +96,6 @@ sub addColumn {
   my @after = ();
   push(@after, T_CS('\lx@column@trimright'));
   push(@after, $properties{after}->unlist) if $properties{after};
-  push(@after, T_CS('\lx@intercol'));
   $$col{after}           = Tokens(@after);
   $$col{thead}           = $properties{thead};
   $$col{empty}           = 1;
@@ -113,6 +108,13 @@ sub addColumn {
     push(@{ $$self{repeated} }, $col); }
   else {
     push(@{ $$self{columns} }, $col); }
+  return; }
+
+sub finish {
+  my ($self) = @_;
+  if (my $prev = $$self{current_column}) {
+    $$prev{after} = Tokens(($$prev{after} || ()), T_CS('\lx@intercol'))
+      unless $$self{disabled_intercolumn}; }
   return; }
 
 # Methods for using a template.

@@ -328,7 +328,23 @@ sub beAbsorbed {
       # Normalize the border attribute
       my $border = join(' ', sort(map { split(/ */, $_) } $$cell{border} || ''));
       $border =~ s/(.) \1/$1$1/g;
-      my $empty = $$cell{empty} || !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
+      my @classes = ($$cell{class});
+      my $empty   = $$cell{empty};
+      my ($pre, $post);
+      # Heuristic: use common td CSS padding, or none, or explicit spacing within cell
+      # Ideally, we'd compare to a current \(tab|array)colsep
+      # and create a special CSS class for non-standard values
+      my $lpad = ($$cell{lspaces} ? $$cell{lspaces}->getWidth->valueOf : 0);
+      my $rpad = ($$cell{rspaces} ? $$cell{rspaces}->getWidth->valueOf : 0);
+      if ((!$empty || $$cell{boxes}) && ($lpad < Dimension('0.2em')->valueOf)) {
+        push(@classes, 'ltx_nopad_l') unless $ismath; }
+      elsif ($lpad < Dimension('1.5em')->valueOf) { }                           # do nothing
+      else                                        { $pre = $$cell{lspaces}; }
+      if ((!$empty || $$cell{boxes}) && ($rpad < Dimension('0.2em')->valueOf)) {
+        push(@classes, 'ltx_nopad_r') unless $ismath; }
+      elsif ($rpad < Dimension('1.5em')->valueOf) { }                            # do nothing
+      else                                        { $post = $$cell{rspaces}; }
+      my $class = join(' ', grep { $_; } @classes);
       $$cell{cell} = &{ $$self{openColumn} }($document,
         align   => $$cell{align}, width => $$cell{width},
         vattach => $$cell{vattach},
@@ -340,11 +356,14 @@ sub beAbsorbed {
         # Which properties do we expose to the constructor?
         x      => $$cell{x}, y => $$cell{y},
         cwidth => $$cell{cwidth}, cheight => $$cell{cheight}, cdepth => $$cell{cdepth},
+        class  => $class
       );
       if (!$$cell{skippable}) {
         local $LaTeXML::BOX = $$cell{boxes};
         $document->openElement('ltx:XMArg', rule => 'Anything,') if $ismath;    # Hacky!
+        $document->absorb($pre)                                  if $pre;
         $document->absorb($$cell{boxes});
+        $document->absorb($post)             if $post;
         $document->closeElement('ltx:XMArg') if $ismath;
       }
       &{ $$self{closeColumn} }($document); }
@@ -405,24 +424,27 @@ sub normalize_cell_sizes {
   my ($self) = @_;
   # Examines: boxes, align, vattach
   # Sets: cwidth, cheight, cdepth (per cell) & empty
+  my $i = -1;
   foreach my $row (@{ $$self{rows} }) {
+    my $j = -1;
+    $i++;
     # Do we need to account for any space in the $$row{before} or $$row{after}?
     foreach my $cell (@{ $$row{columns} }) {
+      $j++;
       if (my $boxes = $$cell{boxes}) {
         my ($w, $h, $d, $cw, $ch, $cd)
           = $boxes->getSize(align => $$cell{align}, width => $$cell{width},
           vattach => $$cell{vattach});
-        $w  = $w->add($$cell{lpadding})  if $$cell{lpadding};
-        $w  = $w->add($$cell{rpadding})  if $$cell{rpadding};
-        $cw = $cw->add($$cell{lpadding}) if $$cell{lpadding};
-        $cw = $cw->add($$cell{rpadding}) if $$cell{rpadding};
-        Debug("CELL (" . join(',', map { $_ . "=" . ToString($$cell{$_}); } qw(align width vattach lpadding rpadding))
-            . ") size " . showSize($w,  $h,  $d)
-            . " csize " . showSize($cw, $ch, $cd)
-            . " Boxes=" . ToString($boxes)) if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
+        my $lpad = ($$cell{lspaces} ? $$cell{lspaces}->getWidth : Dimension(0));
+        my $rpad = ($$cell{rspaces} ? $$cell{rspaces}->getWidth : Dimension(0));
+        $w  = $w->add($lpad)->add($rpad);    # Are we double counting, here???
+        $cw = $cw->add($lpad)->add($rpad);
         my @boxes  = $boxes->unlist;
         my $isrule = scalar(@boxes)
-          && !(grep { !($_->getProperty('isHorizontalRule') || $_->getProperty('isVerticalRule')); } @boxes);
+          && !(grep { !($_->getProperty('isHorizontalRule') || $_->getProperty('isVerticalRule')
+              || $_->getProperty('alignmentSkippable')
+              || (ref $_ eq 'LaTeXML::Core::Comment')
+          ); } @boxes);
         my $empty =
           (((!$cw) || $cw->valueOf < 1)
             && (((!$ch) || $ch->valueOf < 1)
@@ -432,9 +454,16 @@ sub normalize_cell_sizes {
         $$cell{cwidth}    = $w || Dimension(0);
         $$cell{cheight}   = $h || Dimension(0);
         $$cell{cdepth}    = $d || Dimension(0);
+        $$cell{lpadding}  = $lpad;
+        $$cell{rpadding}  = $rpad;
         $$cell{empty}     = $empty;
         $$cell{skippable} = $empty || isSkippable($boxes);
-        $$cell{align}     = undef if $$cell{skippable}; }
+        $$cell{align}     = undef if $$cell{skippable};
+        Debug("CELL[$i,$j] size=" . showSize($w, $h, $d) . " csize " . showSize($cw, $ch, $cd)
+            . ";\n   " . join(',', map { $_ . "=" . ToString($$cell{$_}); } sort keys %$cell)
+            . "\n    Boxes=" . Stringify($boxes)
+        ) if $LaTeXML::DEBUG{alignment_normalize};
+      }
       else {
         $$cell{empty}     = 1;
         $$cell{skippable} = 1; }
@@ -571,7 +600,7 @@ sub normalize_sum_sizes {
         elsif ($a eq 'right')  { $colx = $colx->add($dx); } }
       $$cell{x} = $colx;
       $$cell{y} = $rowpos[$i];
-      Debug("CELL[$j,$i] " . showSize($$cell{cwidth}, $$cell{cheight}, $$cell{cdepth})
+      Debug("CELL[$i,$j] " . showSize($$cell{cwidth}, $$cell{cheight}, $$cell{cdepth})
           . " @ " . ToString($$cell{x}) . "," . ToString($$cell{y})
           . " w/ " . join(',', map { $_ . '=' . ToString($$cell{$_}); }
             (qw(align vattach skipped colspan rowspan))))
@@ -688,7 +717,9 @@ sub normalize_prune_rows {
         $border =~ s/B/T/g;                                      # but convert to top
         $$next{columns}[$j]{border} .= $border; }                # add to NEXT row
           # This tpadding should be combined w/any extra rowspacing from \\[dim] !
-      $$next{tpadding} = Dimension($pruneh + $pruned) if $pruneh + $pruned; }    # And save padding.
+      $$next{tpadding} = Dimension($pruneh + $pruned) if $pruneh + $pruned;    # And save padding.
+      Debug("PRUNE ROW $i")                           if $LaTeXML::DEBUG{alignment_normalize};
+    }
     else {    # Remove empty last row, but copy top border to bottom of prev.
       my $prev = $filtered[-1];
       my $nc   = scalar(@{ $$row{columns} });
@@ -707,7 +738,8 @@ sub normalize_prune_rows {
         if (defined $$ccol{rowspanned}) {                        # skip to spanning column if rowspanned!
           $ccol = $rows[$$ccol{rowspanned}]{columns}[$j]; }
         $$ccol{border} .= $border; }                             # add to PREVIOUS row.
-      $$prev{bpadding} = Dimension($pruneh + $pruned) if $pruneh + $pruned; }    # And save padding.
+      $$prev{bpadding} = Dimension($pruneh + $pruned) if $pruneh + $pruned;    # And save padding.
+      Debug("PRUNE ROW (last) $i")                    if $LaTeXML::DEBUG{alignment_normalize}; }
   }
   @rows = @filtered;
   $$self{rows} = [@filtered];
@@ -736,10 +768,13 @@ sub normalize_prune_columns {
               my $prev = $$row{columns}[$j - 1];
               if (my $jj = $$prev{colspanned}) {
                 $prev = $$row{columns}[$jj]; }
-              $border =~ s/[^rRlL]//g;                              # mask all but left border
-              $border =~ s/l/r/g;                                   # convert to right
-              $border =~ s/L/R/g;                                   # convert to right
+              $border =~ s/[^rRlL]//g;                           # mask all but left border
+              $border =~ s/l/r/g;                                # convert to right
+              $border =~ s/L/R/g;                                # convert to right
               $$prev{border} .= $border;
+              # Copy left spacing to right column, as well
+              $$prev{rspaces} = LaTeXML::Core::List::List($$prev{rspaces} || (), $$col{lspaces} || ()) if $$col{lspaces};
+              $$prev{rpadding} = $$prev{rspaces}->getWidth if $$prev{rspaces};
               if (my @preserve = preservedBoxes($$col{boxes})) {    # Copy boxes over, in case side effects?
                 $$prev{boxes} = LaTeXML::Core::List($$prev{boxes}
                   ? ($$prev{boxes}->unlist, @preserve) : @preserve); }
@@ -755,14 +790,16 @@ sub normalize_prune_columns {
             }    # Now, remove the column
             $$row{columns} = [grep { $_ ne $col } @{ $$row{columns} }];
         } }
+        $prunew = Dimension($prunew);
         if ($j) {    # If not 1st row, add right padding to previous column
           foreach my $row (@rows) {
             if (my $col = $$row{columns}[$j - 1]) {
-              $$col{rpadding} = Dimension($prunew); } } }
+              $$col{rpadding} = ($$col{rpadding} ? $$col{rpadding}->add($prunew) : $prunew); } } }
         else {       # Else add left padding to (newly) first column
           foreach my $row (@rows) {    # And add the padding to previous column
             if (my $col = $$row{columns}[0]) {
-              $$col{lpadding} = Dimension($prunew); } } }
+              $$col{lpadding} = ($$col{lpadding} ? $$col{lpadding}->add($prunew) : $prunew); } } }
+        Debug("PRUNE COLUMN $j") if $LaTeXML::DEBUG{alignment_normalize};
   } } }
   return; }
 
@@ -819,6 +856,7 @@ sub ReadAlignmentTemplate {
     last unless $nopens; }
   push(@tokens, T_END);
   $LaTeXML::BUILD_TEMPLATE->setReversion(@tokens);
+  $LaTeXML::BUILD_TEMPLATE->finish;
   return $LaTeXML::BUILD_TEMPLATE; }
 
 sub parseAlignmentTemplate {
