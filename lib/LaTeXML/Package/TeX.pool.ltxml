@@ -2453,7 +2453,7 @@ DefConstructor('\hrule RuleSpecification',
 DefPrimitive('{', sub {
     my ($stomach) = @_;
     $stomach->bgroup;
-    my $open   = Box(undef, undef, undef, T_BEGIN, isEmpty => 1);
+    my $open   = Box(undef, undef, undef, T_BEGIN, isEmpty => 1, alignmentSkippable => 1);
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @body   = $stomach->digestNextBody();
     List($open, @body, mode => ($ismath ? 'math' : 'text')); });
@@ -2461,7 +2461,7 @@ DefPrimitive('{', sub {
 DefPrimitive('}', sub {
     my $f = LookupValue('font');
     $_[0]->egroup;
-    Box(undef, $f, undef, T_END, isEmpty => 1); });
+    Box(undef, $f, undef, T_END, isEmpty => 1, alignmentSkippable => 1); });
 
 # These are for those screwy cases where you need to create a group like box,
 # more than just bgroup, egroup,
