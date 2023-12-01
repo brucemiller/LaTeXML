@@ -2202,7 +2202,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
       $whatsit->setWidth($w); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setWidth($box->getWidth->add($s)); }
-    $whatsit->setProperty(the_body => $box);
+    $whatsit->setProperty(content_box => $box);
     return; });
 
 # Cleanup foreignObjects: remove empty (or only <p/>); and determine size
@@ -2346,7 +2346,7 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
       $whatsit->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setHeight($box->getHeight->add($s)); }
-    $whatsit->setProperty(the_body => $box);
+    $whatsit->setProperty(content_box => $box);
     return; });
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
@@ -2363,7 +2363,7 @@ DefConstructor('\vtop BoxSpecification VBoxContents', sub {
       $whatsit->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setHeight($box->getHeight->add($s)); }
-    $whatsit->setProperty(the_body => $box);
+    $whatsit->setProperty(content_box => $box);
     return; });
 
 DefParameterType('RuleSpecification', sub {

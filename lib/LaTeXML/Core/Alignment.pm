@@ -500,7 +500,7 @@ sub isSkippable {
       elsif ($ref eq 'LaTeXML::Core::List') {
         return 0 unless isSkippable($thing->unlist); }
       elsif ($ref eq 'LaTeXML::Core::Whatsit') {
-        if (my $body = $thing->getProperty('the_body')) {
+        if (my $body = $thing->getProperty('content_box')) {
           return 0 unless isSkippable($body); }
         else {
           return 0; } } } }

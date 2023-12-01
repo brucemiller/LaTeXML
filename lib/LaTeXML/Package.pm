@@ -995,7 +995,7 @@ sub IsEmpty {
         return 0 unless IsEmpty($thing->unlist); }
       elsif ($ref eq 'LaTeXML::Core::Whatsit') {
         # Sneaky Whatsit property for something (an arg) that stands-in for the whatsit's content.
-        if (my $body = $thing->getProperty('the_body')) {
+        if (my $body = $thing->getProperty('content_box')) {
           return 0 unless IsEmpty($body); }
         else {
           return 0; } } } }
