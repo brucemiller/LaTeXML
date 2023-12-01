@@ -435,10 +435,18 @@ sub normalize_cell_sizes {
         my ($w, $h, $d, $cw, $ch, $cd)
           = $boxes->getSize(align => $$cell{align}, width => $$cell{width},
           vattach => $$cell{vattach});
-        my $lpad = ($$cell{lspaces} ? $$cell{lspaces}->getWidth : Dimension(0));
-        my $rpad = ($$cell{rspaces} ? $$cell{rspaces}->getWidth : Dimension(0));
-        $w  = $w->add($lpad)->add($rpad);    # Are we double counting, here???
-        $cw = $cw->add($lpad)->add($rpad);
+        my $fullw = $cw;
+        my ($lpad, $rpad, $padh, $padd);
+        if (my $lspaces = $$cell{lspaces}) {
+          ($lpad, $padh, $padd) = $lspaces->getSize;
+          $fullw = ($fullw ? $fullw->add($lpad) : $lpad) if $lpad;
+          $h     = ($h     ? $h->larger($padh)  : $padh) if $padh;
+          $d     = ($d     ? $d->larger($padd)  : $padd) if $padd; }
+        if (my $rspaces = $$cell{rspaces}) {
+          ($rpad, $padh, $padd) = $rspaces->getSize;
+          $fullw = ($fullw ? $fullw->add($lpad) : $rpad) if $rpad;
+          $h     = ($h     ? $h->larger($padh)  : $padh) if $padh;
+          $d     = ($d     ? $d->larger($padd)  : $padd) if $padd; }
         my @boxes  = $boxes->unlist;
         my $isrule = scalar(@boxes)
           && !(grep { !($_->getProperty('isHorizontalRule') || $_->getProperty('isVerticalRule')
@@ -446,7 +454,7 @@ sub normalize_cell_sizes {
               || (ref $_ eq 'LaTeXML::Core::Comment')
           ); } @boxes);
         my $empty =
-          (((!$cw) || $cw->valueOf < 1)
+          (((!$fullw) || $fullw->valueOf < 1)
             && (((!$ch) || $ch->valueOf < 1)
             && ((!$cd) || $cd->valueOf < 1))
             || $isrule
