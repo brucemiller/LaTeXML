@@ -444,7 +444,7 @@ sub normalize_cell_sizes {
           $d     = ($d     ? $d->larger($padd)  : $padd) if $padd; }
         if (my $rspaces = $$cell{rspaces}) {
           ($rpad, $padh, $padd) = $rspaces->getSize;
-          $fullw = ($fullw ? $fullw->add($lpad) : $rpad) if $rpad;
+          $fullw = ($fullw ? $fullw->add($rpad) : $rpad) if $rpad;
           $h     = ($h     ? $h->larger($padh)  : $padh) if $padh;
           $d     = ($d     ? $d->larger($padd)  : $padd) if $padd; }
         my @boxes  = $boxes->unlist;
