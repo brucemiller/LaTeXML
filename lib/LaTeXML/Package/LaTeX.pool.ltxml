@@ -3061,7 +3061,7 @@ sub defineNewTheorem {
   $listname =~ s/\#/hash/g;
   $otherthmset = $otherthmset && ToString($otherthmset);
   $type        = undef if IsEmpty($type);
-  $within      = $within ? ToString($within) : undef;
+  $within      = $within ? ToString(Digest($within)) : undef;
 
   my $counter = $otherthmset || $thmset;
   $counter =~ s/\s+/./;    # convert spaces to period?
