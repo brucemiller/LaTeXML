@@ -53,11 +53,11 @@ sub addBeforeColumn {
   unshift(@{ $$self{save_before} }, @tokens);    # NOTE: goes all the way to front!
   return; }
 
-# NOTE: \@@eat@space should ONLY be added to LaTeX tabular style templates!!!!
+# NOTE: \lx@column@trimright should ONLY be added to LaTeX tabular style templates!!!!
 # NOT \halign style templates!
 sub addAfterColumn {
   my ($self, @tokens) = @_;
-  $$self{current_column}{after} = Tokens(T_CS('\@@eat@space'),
+  $$self{current_column}{after} = Tokens(T_CS('\lx@column@trimright'),
     @tokens, @{ $$self{current_column}{after} });
   return; }
 
@@ -65,25 +65,38 @@ sub addAfterColumn {
 sub addBetweenColumn {
   my ($self, @tokens) = @_;
   my @cols = @{ $$self{columns} };
-  if ($$self{current_column}) {
+  if (my $col = $$self{current_column}) {
+    if (!$$self{disabled_intercolumn}) {
+      unshift(@tokens, T_CS('\lx@intercol')); }
     $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after} }, @tokens); }
   else {
     push(@{ $$self{save_between} }, @tokens); }
   return; }
 
+sub disableIntercolumn {
+  my ($self) = @_;
+  if (my $col = $$self{current_column}) {
+    $$self{disabled_intercolumn} = 1; }
+  return; }
+
 sub addColumn {
   my ($self, %properties) = @_;
-  my $col    = {%properties};
+  my $col = {%properties};
+  if (my $prev = $$self{current_column}) {
+    $$prev{after} = Tokens(($$prev{after} || ()), T_CS('\lx@intercol'))
+      unless $$self{disabled_intercolumn}; }
   my @before = ();
-  push(@before, @{ $$self{save_between} })   if $$self{save_between};
+  push(@before, @{ $$self{save_between} }) if $$self{save_between};
+  push(@before, T_CS('\lx@intercol')) unless $$self{disabled_intercolumn};
+  delete $$self{disabled_intercolumn};
+
   push(@before, $properties{before}->unlist) if $properties{before};
   push(@before, @{ $$self{save_before} })    if $$self{save_before};
   $$col{before} = Tokens(@before);
   my @after = ();
-  push(@after, T_CS('\@@eat@space'));
+  push(@after, T_CS('\lx@column@trimright'));
   push(@after, $properties{after}->unlist) if $properties{after};
-  $$col{after} = Tokens(@after);
-###  $$col{after}           = Tokens() unless $properties{after};
+  $$col{after}           = Tokens(@after);
   $$col{thead}           = $properties{thead};
   $$col{empty}           = 1;
   $$self{save_between}   = [];
@@ -97,6 +110,13 @@ sub addColumn {
     push(@{ $$self{columns} }, $col); }
   return; }
 
+sub finish {
+  my ($self) = @_;
+  if (my $prev = $$self{current_column}) {
+    $$prev{after} = Tokens(($$prev{after} || ()), T_CS('\lx@intercol'))
+      unless $$self{disabled_intercolumn}; }
+  return; }
+
 # Methods for using a template.
 sub clone {
   my ($self) = @_;
@@ -104,7 +124,7 @@ sub clone {
   foreach my $cell (@{ $$self{columns} }) {
     push(@dup, {%$cell}); }
   return bless { columns => [@dup],
-    repeated => $$self{repeated}, non_repeating => $$self{non_repeating},
+    repeated  => $$self{repeated}, non_repeating => $$self{non_repeating},
     repeating => $$self{repeating} }, ref $self; }
 
 sub show {

@@ -1466,7 +1466,7 @@ DefMacro('\lx@si@column@parse XUntil:\lx@si@column@end', sub {
         push(@pre, T_BEGIN, $p, T_END); }
       else {
         last; } }
-    pop(@tokens) if @tokens && Equals($tokens[-1], T_CS('\@@eat@space'));
+    pop(@tokens) if @tokens && Equals($tokens[-1], T_CS('\lx@column@trimright'));
     if (my $defns = six_convertUnits(Tokens(@tokens))) {
       $result = six_format_units(six_parse_units($defns)); }
     else {

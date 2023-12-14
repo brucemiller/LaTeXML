@@ -2017,9 +2017,9 @@ DefParameterType('BoxSpecification', sub {
   reversion => sub {
     my ($spec) = @_;
     if (my $to = $spec && $spec->getValue('to')) {
-      return Tokens(Tokenize('to'), T_SPACE, Revert($to)); }
+      return Tokens(Tokenize('to'), Revert($to)); }
     elsif (my $spread = $spec && $spec->getValue('spread')) {
-      return Tokens(Tokenize('spread'), T_SPACE, Revert($spread)); }
+      return Tokens(Tokenize('spread'), Revert($spread)); }
     else {
       return; } },
   optional => 1, undigested => 1);
@@ -2202,6 +2202,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
       $whatsit->setWidth($w); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setWidth($box->getWidth->add($s)); }
+    $whatsit->setProperty(content_box => $box);
     return; });
 
 # Cleanup foreignObjects: remove empty (or only <p/>); and determine size
@@ -2345,6 +2346,7 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
       $whatsit->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setHeight($box->getHeight->add($s)); }
+    $whatsit->setProperty(content_box => $box);
     return; });
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
@@ -2361,6 +2363,7 @@ DefConstructor('\vtop BoxSpecification VBoxContents', sub {
       $whatsit->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setHeight($box->getHeight->add($s)); }
+    $whatsit->setProperty(content_box => $box);
     return; });
 
 DefParameterType('RuleSpecification', sub {
@@ -2450,7 +2453,7 @@ DefConstructor('\hrule RuleSpecification',
 DefPrimitive('{', sub {
     my ($stomach) = @_;
     $stomach->bgroup;
-    my $open   = Box(undef, undef, undef, T_BEGIN, isEmpty => 1);
+    my $open   = Box(undef, undef, undef, T_BEGIN, isEmpty => 1, alignmentSkippable => 1);
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @body   = $stomach->digestNextBody();
     List($open, @body, mode => ($ismath ? 'math' : 'text')); });
@@ -2458,7 +2461,7 @@ DefPrimitive('{', sub {
 DefPrimitive('}', sub {
     my $f = LookupValue('font');
     $_[0]->egroup;
-    Box(undef, $f, undef, T_END, isEmpty => 1); });
+    Box(undef, $f, undef, T_END, isEmpty => 1, alignmentSkippable => 1); });
 
 # These are for those screwy cases where you need to create a group like box,
 # more than just bgroup, egroup,
@@ -2831,7 +2834,10 @@ DefColumnType('*{Number}{}', sub {
 
 DefColumnType('@{}', sub {
     my ($gullet, $filler) = @_;
-    $LaTeXML::BUILD_TEMPLATE->addBetweenColumn($filler->unlist); return; });
+    $LaTeXML::BUILD_TEMPLATE->disableIntercolumn;
+    $LaTeXML::BUILD_TEMPLATE->addBetweenColumn($filler->unlist);
+    $LaTeXML::BUILD_TEMPLATE->disableIntercolumn;
+    return; });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Alignment code
@@ -2965,6 +2971,29 @@ DefConstructor('\@alignment@newline@markertall {Dimension}', '',
 
 DefMacroI('\tabularnewline', undef, '\cr');    # ???
 
+# \lx@intercol is our replacement for LaTeX's \@acol which places intercolumn space in tabular
+# (but NOT used by TeX's \halign!)
+DefMacro('\lx@intercol', '');
+# Candidates for binding \lx@intercol for LaTeX tabular or math arrays
+# These provide "padding" of half tabcolsep, since added before & after columns
+# [these could be \hskip\tabcolsep, but the expansion confounds trimColumnSpec]
+DefConstructor('\lx@text@intercol', sub {
+    my ($document, %props) = @_;
+    $document->absorb(DimensionToSpaces($props{width})); },
+  reversion  => '\lx@intercol',
+  properties => sub {
+    my $defn;
+    my $w = (($defn = $STATE->lookupDefinition(T_CS('\tabcolsep'))) && $defn->isRegister
+      ? $defn->valueOf : Dimension(0));
+    (width => $w, isSpace => 1); });
+DefConstructor('\lx@math@intercol', "",    # mspace ???
+  reversion  => '\lx@intercol',
+  properties => sub {
+    my $defn;
+    my $w = (($defn = $STATE->lookupDefinition(T_CS('\arraycolsep'))) && $defn->isRegister
+      ? $defn->valueOf : Dimension(0));
+    (width => $w, isSpace => 1); });
+
 #======================================================================
 # Various decorations within alignments, rules, headers, etc
 
@@ -3093,24 +3122,28 @@ sub translateAttachment {
   $pos = ($pos ? ToString($pos) : '');
   return ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : 'middle')); }    # undef meaning 'baseline'
 
-# This removes trailing whitespace from the current digested list.
-# It is useful as the 1st thing in the rhs template of things like {tabular}.
+# This trims trailing whitespace from the current digested list,
+# for use within latex tabular-style columns.
 # But note that \halign does NOT remove this trailing space!
-DefPrimitiveI('\@@eat@space', undef, sub {
+DefPrimitiveI('\lx@column@trimright', undef, sub {
     my $box;
     my @save = ();
+    my $s;
     while ($box = $LaTeXML::LIST[-1]) {
       if ($box->getProperty('alignmentSkippable')
-        || $box->getProperty('isFill')) {
+        || $box->getProperty('isFill')
+        || IsEmpty($box)) {
         push(@save, pop(@LaTeXML::LIST)); }
-      elsif (IsEmpty($box)) {
-        pop(@LaTeXML::LIST); }
+      elsif (ref $box eq 'LaTeXML::Core::List') {    # Unwrap and continue
+        pop(@LaTeXML::LIST);
+        push(@LaTeXML::LIST, $box->unlist); }
+      elsif ((ref $box eq 'LaTeXML::Core::Box')
+        && defined($s = $box->getString) && ($s =~ /^\s*$/)) {
+        pop(@LaTeXML::LIST); }                       # remove any box containing only spaces
       else {
         last; } }
     push(@LaTeXML::LIST, @save);
     return; });
-
-#DefMacroI('\@@eat@space',undef,undef);
 
 use constant T_hfil => T_CS('\hfil');
 # Yet more special case hacking. Sometimes the order of tokens works for
@@ -3180,22 +3213,22 @@ sub parseHAlignTemplate {
   my ($gullet, $whatsit) = @_;
   my $t = $gullet->readNonSpace;
   Error('expected', '\bgroup', $gullet, "Missing \\halign box") unless $t->defined_as(T_BEGIN);
-  my $before   = 1;    # true if we're before a # in current column
-  my @pre      = ();
-  my @post     = ();
-  my @cols     = ();
-  my $repeated = 0;
-  my @nonreps  = ();
-  my $tabskip;         # Need to use this somehow!
-  my @tokens = ();
+  my $before      = 1;                            # true if we're before a # in current column
+  my @pre         = ();
+  my @post        = ();
+  my @cols        = ();
+  my $repeated    = 0;
+  my @nonreps     = ();
+  my $tabskip     = LookupRegister('\tabskip');
+  my $nexttabskip = $tabskip;
+  my @tokens      = ();
   ## Only expand certain things; See TeX book p.238
   local $LaTeXML::ALIGN_STATE = 1000000;
   while ($t = $gullet->readToken) {
     my $cc = $t->getCatcode;
     if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
       $gullet->readKeyword('=');
-      $tabskip = $gullet->readGlue;
-      push(@tokens, $t, $tabskip); }
+      $nexttabskip = $gullet->readGlue; }
     elsif ($t->equals(T_CS('\span'))) {    # ex-span-ded next token.
       $gullet->unread($gullet->readXToken(0)); }
     elsif ($cc == CC_PARAM) {              # Found the template's column slot
@@ -3209,9 +3242,11 @@ sub parseHAlignTemplate {
       else {                                # Finished column spec; add it
         ## How should we be handling tabskip? An attribute on the cell or spacing?
         push(@cols, {
-            before => Tokens(beforeCellUnlist(Tokens(@pre))),
-            after  => Tokens(afterCellUnlist(Tokens(@post))) });
-        @pre = @post = (); $before = 1; }
+            tabskip => $tabskip,
+            before  => Tokens(beforeCellUnlist(Tokens(@pre))),
+            after   => Tokens(afterCellUnlist(Tokens(@post))) });
+        $tabskip = $nexttabskip;
+        @pre     = @post = (); $before = 1; }
       last unless $cc == CC_ALIGN;
       push(@tokens, $t); }
     elsif ($before) {    # Other random tokens go into the column's pre-template
@@ -3461,6 +3496,9 @@ sub extractAlignmentColumn {
   my @boxes     = $boxes->unlist;
   my @saveleft  = ();
   my @saveright = ();
+  my (@lspaces, @rspaces);
+  if (my $skip = $$colspec{tabskip}) {
+    push(@lspaces, Digest(Tokens(T_CS('\hskip'), $skip->revert, T_CS('\relax')))); }
   while (@boxes) {
     if (ref $boxes[0] eq 'LaTeXML::Core::List') {
       unshift(@boxes, shift(@boxes)->unlist); }
@@ -3470,12 +3508,15 @@ sub extractAlignmentColumn {
       last; }
     elsif ($boxes[0]->getProperty('isVerticalRule')) {
       $border .= 'l';
+      if (my $prev = $alignment->getColumn($n0 - 1)) {    # space before | ? move to previous column
+        $$prev{rspaces} = List(($$prev{rspaces} || ()), @lspaces) if @lspaces; }
+      @lspaces = ();                                      # then discard
       shift(@boxes); }
+    elsif ($boxes[0]->getProperty('isSpace')) {
+      push(@lspaces, shift(@boxes)); }
     elsif ($boxes[0]->getProperty('isHorizontalRule')
       || $boxes[0]->getProperty('alignmentSkippable')
-      || (ref $boxes[0] eq 'LaTeXML::Core::Comment')
-      || $boxes[0]->getProperty('isSpace')
-      || IsEmpty($boxes[0])) {
+      || (ref $boxes[0] eq 'LaTeXML::Core::Comment')) {
       push(@saveleft, shift(@boxes)); }
     else {
       last; } }
@@ -3488,12 +3529,13 @@ sub extractAlignmentColumn {
       last; }
     elsif ($boxes[-1]->getProperty('isVerticalRule')) {
       $border .= 'r';
+      @rspaces = ();    # discard spacing after rule!!! (should save for next column?)
       pop(@boxes); }
+    elsif ($boxes[-1]->getProperty('isSpace')) {
+      unshift(@rspaces, pop(@boxes)); }
     elsif ($boxes[-1]->getProperty('isHorizontalRule')
       || $boxes[-1]->getProperty('alignmentSkippable')
-      || (ref $boxes[-1] eq 'LaTeXML::Core::Comment')
-      || $boxes[-1]->getProperty('isSpace')
-      || IsEmpty($boxes[-1])) {
+      || (ref $boxes[-1] eq 'LaTeXML::Core::Comment')) {
       unshift(@saveright, pop(@boxes)); }
     else {
       last; } }
@@ -3505,7 +3547,10 @@ sub extractAlignmentColumn {
   $$colspec{align}   = $align;
   $$colspec{border}  = $border = ($$colspec{border} || '') . $border;
   $$colspec{boxes}   = $boxes;
+  $$colspec{lspaces} = List(@lspaces) if @lspaces;
+  $$colspec{rspaces} = List(@rspaces) if @rspaces;
   $$colspec{colspan} = $n1 - $n0 + 1;
+
   if ($$alignment{in_tabular_head} || $$alignment{in_tabular_foot}) {
     $$colspec{thead}{column} = 1; }
   for (my $i = $n0 + 1 ; $i <= $n1 ; $i++) {
@@ -4360,6 +4405,7 @@ sub scriptHandler {
     # Parsing is too late!
     while (my $prev = pop(@LaTeXML::LIST)) {
       if (($prev->getProperty('isSpace'))
+        || ($prev->getProperty('isEmpty'))              # EXPLICITLY empty, rather than {}
         || (ref $prev eq 'LaTeXML::Core::Comment')) {
         $prevspace = 1;              # a space avoids double-scripts
         unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
@@ -6014,14 +6060,14 @@ DefMathI('\biguplus', undef, "\x{2A04}",     # versus \x{228e}
   mathstyle => \&doVariablesizeOp);
 DefConstructorI('\limits', undef, '',
   afterDigest => sub { mergeLimits('mid'); },
-  properties  => { isSpace => 1 });
+  properties  => { isEmpty => 1 });
 DefConstructorI('\nolimits', undef, '',
   afterDigest => sub { mergeLimits('post'); },
-  properties  => { isSpace => 1 });
+  properties  => { isEmpty => 1 });
 DefConstructorI('\displaylimits', undef, '',
   afterDigest => sub {
     mergeLimits((($_[1]->getProperty('mathstyle') || '') eq 'display' ? 'mid' : 'post')); },
-  properties => { isSpace => 1 });
+  properties => { isEmpty => 1 });
 
 sub mergeLimits {
   my ($pos) = @_;
@@ -6765,6 +6811,7 @@ DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
       'math',
       (keys %attributes ? (attributes => {%attributes}) : ()));    # });
     Let("\\\\",         '\@alignment@newline');
+    Let('\lx@intercol', '\lx@math@intercol');
     Let('\@row@before', '\@empty');    # Disable special row treatment (eg. numbering) unless requested
     Let('\@row@after',  '\@empty');
 });
@@ -6889,11 +6936,12 @@ DefPrimitive('\lx@gen@cases@bindings RequiredKeyVals:lx@GEN', sub {
           { before => Tokens($style), after => Tokens(T_CS('\hfil')) },
           { before => Tokens($style,
               ($condtext ? (T_CS('\lx@cases@condition')) : ())),
-            after => Tokens(T_CS('\@@eat@space'),
+            after => Tokens(T_CS('\lx@column@trimright'),
               ($condtext ? (T_CS('\lx@cases@end@condition')) : ()),
               T_CS('\hfil')) }]),
       'math');
-    Let("\\\\", '\@alignment@newline');
+    Let("\\\\",         '\@alignment@newline');
+    Let('\lx@intercol', '\lx@math@intercol');
     DefMacro('\@row@before', '');    # Don't inherit counter stepping from containing environments
     DefMacro('\@row@after',  '');
 });
