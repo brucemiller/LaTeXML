@@ -15,7 +15,10 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+RequirePackage('amstext');
+RequirePackage('graphicx');
 RequirePackage('nicefrac');
+
 DefMacro('\sfrac[]{}[]{}', '\ensuremath{\@UnitsNiceFrac{#2}{#4}}');
 
 DefMacro('\DeclareInstance{}{}{}{}',             '');
