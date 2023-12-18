@@ -469,16 +469,20 @@ sub simplify {
         $$self{elementreversedefs}{ $args[0][1] } = $qname;
         return @args; }
       else {
-        my $prev  = $$self{defs}{$qname};
-        my $prevc = $$self{def_combiner}{$qname};
-        my @xargs = grep { !eqOp($_, 'doc') } @args;    # Remove annotations
-        if ($prev) {                                    # Previoud definition?
+        my $prev     = $$self{defs}{$qname};
+        my $prevc    = $$self{def_combiner}{$qname};
+        my @xargs    = grep { !eqOp($_, 'doc') } @args;    # Remove annotations
+        my @prevargs = ();
+        if ($prev) {                                       # Previoud definition?
+          if ((ref $prev) && ($$prev[0] eq 'combination')) {
+            @prevargs = @$prev[2 .. $#{$prev}]; }
+          else {
+            @prevargs = ($prev); }
           if (($combination eq 'group') && ($prevc eq 'group')) {    # apparently RE-defining $qname?
             $prev = undef; }
           elsif (($combination eq 'group') && ($prevc ne 'group')) {    # Use old combination!?!?!?!?
             $combination = $prevc; } }
-        $$self{defs}{$qname} = simplifyCombination(['combination', $combination,
-            ($prev ? @$prev[2 .. $#{$prev}] : ()), @xargs]);
+        $$self{defs}{$qname} = simplifyCombination(['combination', $combination, @prevargs, @xargs]);
         $$self{def_combiner}{$qname} = $combination;
         return ([$op, $qname, @args]); } }
     else {
