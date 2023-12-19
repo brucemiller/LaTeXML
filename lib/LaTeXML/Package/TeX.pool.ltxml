@@ -2792,9 +2792,14 @@ DefColumnType('r', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\hfil'))); return; });
 
 DefColumnType('p{Dimension}', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN, T_CS('\hbox'), T_BEGIN),
-      after => Tokens(T_END, T_END),
-      align => 'justify', width => $_[1]); return; });
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before => Tokens(T_CS('\vtop'), T_BEGIN, T_CS('\hbox'),
+        T_LETTER('t'), T_LETTER('o'), $_[1]->revert, T_CS('\relax'),
+        T_BEGIN),
+      after   => Tokens(T_END, T_END),
+      vattach => 'top',
+      align   => 'justify',
+    ); return; });
 
 DefColumnType('*{Number}{}', sub {
     my ($gullet, $n, $pattern) = @_;
