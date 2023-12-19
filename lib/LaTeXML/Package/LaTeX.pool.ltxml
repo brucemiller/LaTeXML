@@ -3451,7 +3451,7 @@ sub SubfigureAndID {
   # A little verbose, but much easier to do than XSLT 1.0 would allow.
   my $contents_count = 0;    # count with author breaks excluded
   my @contents       = grep { my $name = $document->getNodeQName($_);
-    my $ok = ($name =~ /^ltx:(?:graphics|float|figure|table|tabular|break|inline-para|inline-block|listing)$/);
+    my $ok = ($name =~ /^ltx:(?:graphics|float|figure|table|tabular|break|inline-logical-block|inline-block|listing)$/);
     $contents_count += 1 if $ok and $name ne 'ltx:break';
     $ok; } element_nodes($node);
   if ($contents_count > 1) {
@@ -3618,9 +3618,9 @@ DefConditional('\if@reversemargin');
 Let('\reversemarginpar', '\@reversemargintrue');
 Let('\normalmarginpar',  '\@reversemarginfalse');
 DefConstructor('\marginpar[]{}',
-"?#1(<ltx:note role='margin' class='ltx_marginpar_left'><ltx:inline-para>#1</ltx:inline-para></ltx:note>"
-    . "?#2(<ltx:note role='margin' class='ltx_marginpar_right'><ltx:inline-para>#2</ltx:inline-para></ltx:note>))"
-    . "(<ltx:note role='margin' class='ltx_marginpar'><ltx:inline-para>#2</ltx:inline-para></ltx:note>)");
+"?#1(<ltx:note role='margin' class='ltx_marginpar_left'><ltx:inline-logical-block>#1</ltx:inline-logical-block></ltx:note>"
+    . "?#2(<ltx:note role='margin' class='ltx_marginpar_right'><ltx:inline-logical-block>#2</ltx:inline-logical-block></ltx:note>))"
+    . "(<ltx:note role='margin' class='ltx_marginpar'><ltx:inline-logical-block>#2</ltx:inline-logical-block></ltx:note>)");
 DefRegister('\marginparpush', Dimension(0));
 
 #**********************************************************************
