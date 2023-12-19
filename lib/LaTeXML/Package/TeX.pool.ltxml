@@ -2176,9 +2176,9 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     #  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
     my $issvg  = $current && $document->getNodeQName($current) =~ /^svg:/;
     my $vmode  = $current && $current->getAttribute('_vertical_mode_');
-    my $newtag = ($issvg ? 'svg:g' : ($vmode ? 'ltx:p' : 'ltx:text'));
-    my $node   = $document->openElement($newtag, _noautoclose => 1,
-      width => $props{width});
+    my $inline = $document->canContain($current, '#PCDATA');
+    my $newtag = ($issvg ? 'svg:g' : ($vmode ? ($inline ? 'ltx:inline-block' : 'ltx:p') : 'ltx:text'));
+    my $node   = $document->openElement($newtag, _noautoclose => 1, width => $props{width});
     $document->absorb($contents);
     if (!$issvg) {
       while (!$document->getElement()->hasAttribute('_beginscope') && $document->maybeCloseElement('svg:g')) { }
