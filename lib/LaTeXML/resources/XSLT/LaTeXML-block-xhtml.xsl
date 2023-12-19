@@ -329,7 +329,7 @@
              (ie. all of equation_model EXCEPT Meta & EquationMeta) -->
         <xsl:apply-templates select="ltx:Math | ltx:MathFork | ltx:text
                                      | ltx:inline-block | ltx:verbatim | ltx:break
-                                     | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
+                                     | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-logical-block
                                      | ltx:tabular | ltx:picture" >
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
@@ -943,7 +943,7 @@
                  (ie. all of equation_model EXCEPT Meta & EquationMeta) -->
             <xsl:apply-templates select="ltx:Math | ltx:text
                                          | ltx:inline-block | ltx:verbatim | ltx:break
-                                         | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
+                                         | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-logical-block
                                          | ltx:tabular | ltx:picture" >
               <xsl:with-param name="context" select="$context"/>
             </xsl:apply-templates>

@@ -51,7 +51,7 @@
   <xsl:strip-space elements="ltx:itemize ltx:enumerate ltx:description ltx:item
                              ltx:inline-itemize ltx:inline-enumerate ltx:inline-description ltx:inline-item"/>
   <xsl:strip-space elements="ltx:inline-block"/>
-  <xsl:strip-space elements="ltx:para ltx:inline-para"/>
+  <xsl:strip-space elements="ltx:para ltx:logical-block ltx:inline-logical-block"/>
   <xsl:strip-space elements="ltx:theorem ltx:proof"/>
   <xsl:strip-space elements="ltx:figure ltx:table ltx:float"/>
   <xsl:strip-space elements="ltx:picture svg:*"/>

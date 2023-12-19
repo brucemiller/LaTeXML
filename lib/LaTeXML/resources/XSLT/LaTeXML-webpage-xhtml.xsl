@@ -437,11 +437,11 @@
 
   <xsl:template match="/" mode="navbar">
     <xsl:choose>
-      <xsl:when test="//ltx:navigation/ltx:inline-para[contains(@class,'ltx_page_navbar')]">
+      <xsl:when test="//ltx:navigation/ltx:inline-logical-block[contains(@class,'ltx_page_navbar')]">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_page_navbar</xsl:attribute>
-          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[contains(@class,'ltx_page_navbar')]/*"/>
+          <xsl:apply-templates select="//ltx:navigation/ltx:inline-logical-block[contains(@class,'ltx_page_navbar')]/*"/>
         </xsl:element>
       </xsl:when>
       <xsl:when test="//ltx:navigation/ltx:TOC">
@@ -463,11 +463,11 @@
        purely as navigational page header and footer-->
   <xsl:template match="/" mode="header">
     <xsl:choose>
-      <xsl:when test="//ltx:navigation/ltx:inline-para[@class='ltx_page_header']">
+      <xsl:when test="//ltx:navigation/ltx:inline-logical-block[@class='ltx_page_header']">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="{f:if($USE_HTML5,'header','div')}" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_page_header</xsl:attribute>
-          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_header']/*"/>
+          <xsl:apply-templates select="//ltx:navigation/ltx:inline-logical-block[@class='ltx_page_header']/*"/>
         </xsl:element>
       </xsl:when>
       <xsl:when test="//ltx:navigation/ltx:ref">
@@ -482,11 +482,11 @@
 
   <xsl:template match="/" mode="footer">
     <xsl:choose>
-      <xsl:when test="//ltx:navigation/ltx:inline-para[@class='ltx_page_footer']">
+      <xsl:when test="//ltx:navigation/ltx:inline-logical-block[@class='ltx_page_footer']">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="{f:if($USE_HTML5,'footer','div')}" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_page_footer</xsl:attribute>
-          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_footer']/*"/>
+          <xsl:apply-templates select="//ltx:navigation/ltx:inline-logical-block[@class='ltx_page_footer']/*"/>
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
