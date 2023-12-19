@@ -283,10 +283,21 @@ EOTeX
 # C.1.6 The \\ Command
 #======================================================================
 # In math, \\ is just a formatting hint, unless within an array, cases, .. environment.
-DefConstructor("\\\\ OptionalMatch:* [Glue]",
-  "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
+DefConstructor('\lx@newline OptionalMatch:* [Glue]', sub {
+    my ($document, $star, $skip, %props) = @_;
+    if ($STATE->lookupValue('IN_MATH')) {
+      $document->insertElement('ltx:XMHint', undef, name => 'newline'); }
+    else {
+      my $context = $document->getElement;
+      if    ($context->getAttribute('_vertical_mode_')) { }
+      elsif (($document->getNodeQName($context) eq 'ltx:p')
+        && $context->parentNode->getAttribute('_vertical_mode_')) {
+        $document->maybeCloseElement('ltx:p'); }
+      elsif ($document->canContain($context, 'ltx:break')) {
+        $document->insertElement('ltx:break'); } } },
   reversion  => Tokens(T_CS("\\\\"), T_CR),
   properties => { isBreak => 1 });
+Let('\\\\', '\lx@newline');
 
 DefConstructor('\newline',
   "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
@@ -1340,27 +1351,19 @@ DefMacroI('\@evenfoot', undef, Tokens());
 #**********************************************************************
 
 DefEnvironment('{center}', sub {
-    $_[0]->maybeCloseElement('ltx:p');                        # this starts a new vertical block
-    aligningEnvironment('center', 'ltx_centering', @_); },    # aligning will take care of \\\\ "rows"
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); });
+    $_[0]->maybeCloseElement('ltx:p');                         # this starts a new vertical block
+    aligningEnvironment('center', 'ltx_centering', @_); });    # aligning will take care of \\\\ "rows"
+
 # HOWEVER, define a plain \center to act like \centering (?)
 DefMacroI('\center',    undef, '\centering');
 DefMacroI('\endcenter', undef, '');
 
 DefEnvironment('{flushleft}', sub {
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    aligningEnvironment('left', 'ltx_align_left', @_); },
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); });
+    aligningEnvironment('left', 'ltx_align_left', @_); });
 DefEnvironment('{flushright}', sub {
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    aligningEnvironment('right', 'ltx_align_right', @_); },
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); });
+    aligningEnvironment('right', 'ltx_align_right', @_); });
 
 # These add an operation to be carried out on the current node & following siblings, when the current group ends.
 # These operators will add alignment (class) attributes to each "line" in the current block.
@@ -4835,13 +4838,7 @@ RawTeX(<<'EOL');
 \DeclareRobustCommand\usebox[1]{\leavevmode\copy #1\relax}
 EOL
 
-# A soft sorta \par that only closes an ltx:p, but not ltx:para
-DefConstructor('\lx@parboxnewline[]', sub {
-    my ($document, $ignore, %props) = @_;
-    $document->maybeCloseElement('ltx:p');
-    return; },
-  properties => { isBreak => 1 });
-
+Let('\lx@parboxnewline[]', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring them, for now, though.
 DefConstructor('\parbox[] OptionalUndigested OptionalUndigested {Dimension} VBoxContents', sub {
@@ -4861,7 +4858,7 @@ DefConstructor('\parbox[] OptionalUndigested OptionalUndigested {Dimension} VBox
   beforeDigest => sub {
     reenterTextMode(1);    # actually vertical mode!
     AssignRegister('\hsize' => $_[4]);
-    Let('\\\\', '\lx@parboxnewline'); });
+    Let('\\\\', '\lx@newline'); });
 DefMacroI('\@parboxrestore', undef, Tokens());
 
 DefConditional('\if@minipage');
@@ -4870,7 +4867,6 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
     my ($document, $attachment, $b, $c, $width, %props) = @_;
     my $vattach = translateAttachment($attachment);
     insertBlock($document, $props{body},
-      para    => 1,
       width   => $width,
       vattach => $vattach,
       class   => 'ltx_minipage');
@@ -4884,8 +4880,8 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
     reenterTextMode(1);    # actually vertical mode!
     Digest(T_CS('\@minipagetrue'));
     AssignRegister('\hsize' => $_[4]);
-    # this conflicts (& not needed?) with insertBlock
-    Let('\\\\', '\lx@parboxnewline'); });
+    Let('\\\\', '\lx@newline');
+  });
 
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}',
   "<ltx:rule ?#offset(yoffset='#offset') width='#width' height='#height'/>",

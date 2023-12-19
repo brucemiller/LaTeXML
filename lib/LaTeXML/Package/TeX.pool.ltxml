@@ -3612,9 +3612,6 @@ DefConstructorI('\normal@par', undef, sub {
       if ($qname eq 'ltx:para' && !$node->getAttribute("class")) { # Only set on the para about to close, if unknown!
         if (my $c = $props{class}) {
           $document->setAttribute($node, class => $c); } }
-      elsif ($qname eq 'ltx:figure') {
-        # insert breaks in figures, for vertically separating subfigures
-        $document->insertElement('ltx:break'); }
       $document->maybeCloseElement('ltx:para'); } },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -3639,15 +3636,7 @@ DefConstructorI('\normal@par', undef, sub {
   alias      => '\par');
 
 Let('\par', '\normal@par');
-# OTOH, sometimes \par is just a minimalistic "start a new line"
-# This should be closer for those cases.
-# BUT! In the cases where an elaborate \\[0.4cm] or such sneaks in, gracefully ignore its args.
-DefConstructor('\inner@par OptionalMatch:* [Glue]', sub {
-    if    ($_[0]->maybeCloseElement('ltx:p')) { }
-    elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
-      $_[0]->insertElement('ltx:break'); } },
-  properties => { isBreak => 1 },
-  reversion  => Tokens(T_CS("\\\\"), T_CR));
+DefMacro('\inner@par OptionalMatch:* [Glue]', '\normal@par');  # Obsolete, but in case still used...
 
 Tag('ltx:para', autoClose => 1, autoOpen => 1, afterClose => \&pruneEmpty);
 
