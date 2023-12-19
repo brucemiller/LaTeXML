@@ -1957,7 +1957,7 @@ sub replaceNode {
 # initially since $node->setNodeName was broken in XML::LibXML 1.58
 # but this can provide for more options & correctness?
 sub renameNode {
-  my ($self, $node, $newname) = @_;
+  my ($self, $node, $newname, $reinsert) = @_;
   my $model = $$self{model};
   my ($ns, $tag) = $model->decodeQName($newname);
   my $parent = $node->parentNode;
@@ -1972,8 +1972,20 @@ sub renameNode {
     $id = $value if $key eq 'xml:id';    # Save to register after removal of old node.
     $new->setAttribute($key, $value); }
   # AND move all content from $node to $newnode
-  foreach my $child ($node->childNodes) {
-    $new->appendChild($child); }
+  if (!$reinsert) {
+    foreach my $child ($node->childNodes) {
+      $new->appendChild($child); } }
+  else {
+    my $savenode = $$self{node};
+    $$self{node} = $new;
+    foreach my $child ($node->childNodes) {
+      if ($child->nodeType == XML_TEXT_NODE) {
+        openText_internal($self, $child->data);
+        closeText_internal($self); }
+      else {
+        my $point = find_insertion_point($self, getNodeQName($self, $child));
+        $point->appendChild($child); } }
+    $$self{node} = $savenode; }
   ## THEN call afterOpen... ?
   # It would normally be called before children added,
   # but how can we know if we're duplicated auto-added stuff?
