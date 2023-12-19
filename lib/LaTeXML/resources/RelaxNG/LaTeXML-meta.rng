@@ -295,7 +295,7 @@ used to crossreference.</a:documentation>
     <element name="navigation">
       <a:documentation>Records navigation cross-referencing information,
 or serves as a container for page navigational blocks.
-An \elementref{inline-para} child should have attribute \attr{class}
+An \elementref{inline-logical-block} child should have attribute \attr{class}
 being one of \texttt{ltx_page_navbar}, \texttt{ltx_page_header}
 or \texttt{ltx_page_footer} and its contents will be used to create those components of webpages.
 Lacking those, a \elementref{TOC} requests a table of contents
@@ -317,7 +317,7 @@ being up, down, previous, next, and so forth.</a:documentation>
       <choice>
         <ref name="ref"/>
         <ref name="TOC"/>
-        <ref name="inline-para"/>
+        <ref name="inline-logical-block"/>
       </choice>
     </zeroOrMore>
   </define>

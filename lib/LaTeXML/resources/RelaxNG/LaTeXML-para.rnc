@@ -14,14 +14,14 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## This module defines the following `logical' block elements.
 Para.class |=
-     para
+     para | logical-block
    | theorem | proof
    | figure | table | float | pagination
 # allow pagination here, to avoid unnecessary extra para!
 
 ## Additionally, it defines these miscellaneous elements that can appear
 ## in both inline and block contexts.
-Misc.class  |= inline-para
+Misc.class  |= inline-logical-block
 
 #======================================================================
 
@@ -41,20 +41,37 @@ para_model = Block.model
 
 #======================================================================
 
-inline-para =
-## An inline para. Actually, can appear in inline or block mode, but
+logical-block =
+## A logical-block. Actually, like block can appear in inline or block mode, but
 ## typesets its contents as para.
-element inline-para { inline-para_attributes, inline-para_model }
+element logical-block { logical-block_attributes, logical-block_model }
 
-## Attributes for \elementref{inline-para}.
-inline-para_attributes =
+## Attributes for \elementref{inline-logical-block}.
+logical-block_attributes =
   Common.attributes,
   ID.attributes,
   Positionable.attributes,
   Backgroundable.attributes
 
-## Content model for \elementref{inline-para}.
-inline-para_model = Para.model
+## Content model for \elementref{logical-block}.
+logical-block_model = Para.model
+
+#======================================================================
+
+inline-logical-block =
+## An inline logical-block. Actually, can appear in inline or block mode, but
+## typesets its contents as para.
+element inline-logical-block { inline-logical-block_attributes, inline-logical-block_model }
+
+## Attributes for \elementref{inline-logical-block}.
+inline-logical-block_attributes =
+  Common.attributes,
+  ID.attributes,
+  Positionable.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{inline-logical-block}.
+inline-logical-block_model = Para.model
 
 #======================================================================
 

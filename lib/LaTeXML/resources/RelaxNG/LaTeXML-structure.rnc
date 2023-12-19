@@ -22,6 +22,9 @@ element document { document_attributes, document_model }
 ## The content allowable as the main body of the document.
 document.body.class = Para.model | paragraph | subsubsection
   | subsection | section | chapter | part | slide | slidesequence | sidebar
+  | sectional-block
+
+Misc.class  |= inline-sectional-block
 
 ## Attributes for \elementref{document}.
 document_attributes = Sectional.attributes
@@ -31,6 +34,23 @@ document_attributes = Sectional.attributes
 document_model =
  (FrontMatter.class | SectionalFrontMatter.class | Meta.class | titlepage)*,
   (document.body.class | BackMatter.class)*
+
+#======================================================================
+sectional-block =
+## A block containing sectional material. Note that this may tend to break the overall heirarchy.
+element sectional-block { sectional-block_attributes, sectional-block_model }
+
+sectional-block_attributes = Sectional.attributes
+
+sectional-block_model = document.body.class*
+
+inline-sectional-block =
+## A block containing sectional material. Note that this may tend to break the overall heirarchy.
+element inline-sectional-block { inline-sectional-block_attributes, inline-sectional-block_model }
+
+inline-sectional-block_attributes = Sectional.attributes
+
+inline-sectional-block_model = document.body.class*
 
 #======================================================================
 

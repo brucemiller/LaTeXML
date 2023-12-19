@@ -139,7 +139,7 @@ td_attributes =
   attribute thead { "column" | "column row" | "row"}?
 
 ## Content model for \elementref{td}.
-td_model =  Flow.model
+td_model =  Inline.model
 
 #======================================================================
 
