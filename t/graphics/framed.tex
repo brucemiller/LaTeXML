@@ -1,6 +1,8 @@
 \documentclass{article}
 \usepackage{xcolor}
 \usepackage{framed}
+\usepackage{amsthm}
+\newtheorem{thm}{Theorem}
 \begin{document}
 \section{Basics}
 
@@ -59,4 +61,26 @@ This is with a left bar, like a changebar?
 \begin{titled-frame}{A Titled Frame}
 This is a titled frame.
 \end{titled-frame}
+
+\begin{framed}
+Lorem ipsum.
+\begin{thm}
+  A theorem.
+\end{thm}
+\end{framed}
+
+\begin{shaded}
+\begin{thm}
+Para 1.
+ 
+Para 2.
+ 
+
+Para 3.
+ 
+ 
+ 
+Para 4.
+\end{thm}\end{shaded}
+
 \end{document}
