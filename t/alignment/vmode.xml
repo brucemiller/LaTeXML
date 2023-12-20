@@ -29,25 +29,25 @@
           <p>d</p>
         </inline-block></p>
     </para>
-    <para xml:id="S1.p4">
-      <p vattach="bottom">a b c d</p>
+    <para vattach="bottom" xml:id="S1.p4">
+      <p>a b c d</p>
     </para>
-    <para xml:id="S1.p5">
-      <inline-block vattach="bottom">
+    <logical-block vattach="bottom">
+      <para xml:id="S1.p5">
         <p>a</p>
         <p>b</p>
         <p>c</p>
         <p>d</p>
-      </inline-block>
-    </para>
-    <para xml:id="S1.p6">
-      <inline-block vattach="bottom">
+      </para>
+    </logical-block>
+    <logical-block vattach="bottom">
+      <para xml:id="S1.p6">
         <p vattach="bottom">a</p>
         <p vattach="bottom">b</p>
         <p vattach="bottom">c</p>
         <p vattach="bottom">d</p>
-      </inline-block>
-    </para>
+      </para>
+    </logical-block>
     <para xml:id="S1.p7">
       <p>ab<inline-block vattach="bottom">
           <p>a</p>
@@ -64,50 +64,52 @@
       <tag role="typerefnum">§2</tag>
     </tags>
     <title><tag close=" ">2</tag>parbox and minipage</title>
-    <para xml:id="S2.p1">
-      <inline-block class="ltx_parbox" vattach="middle" width="144.5pt">
+    <logical-block class="ltx_parbox" vattach="middle" width="144.5pt">
+      <para xml:id="S2.p1">
         <p>hbox1</p>
         <p vattach="bottom">vbox1</p>
         <p>hbox2</p>
         <p>hbox3</p>
         <p vattach="bottom">vbox2</p>
-      </inline-block>
-    </para>
-    <para class="ltx_minipage" vattach="middle" width="144.5pt" xml:id="S2.p2">
-      <p>This is random text. This is random text.
+      </para>
+    </logical-block>
+    <logical-block class="ltx_minipage" vattach="middle" width="144.5pt">
+      <para xml:id="S2.p2">
+        <p>This is random text. This is random text.
 This is random text. This is random text. This is random text.</p>
-      <itemize xml:id="S2.I1">
-        <item xml:id="S2.I1.i1">
-          <tags>
-            <tag>•</tag>
-            <tag role="typerefnum">1st item</tag>
-          </tags>
-          <para xml:id="S2.I1.i1.p1">
-            <p>One</p>
-          </para>
-        </item>
-        <item xml:id="S2.I1.i2">
-          <tags>
-            <tag>•</tag>
-            <tag role="typerefnum">2nd item</tag>
-          </tags>
-          <para xml:id="S2.I1.i2.p1">
-            <p>Two</p>
-          </para>
-        </item>
-        <item xml:id="S2.I1.i3">
-          <tags>
-            <tag>•</tag>
-            <tag role="typerefnum">3rd item</tag>
-          </tags>
-          <para xml:id="S2.I1.i3.p1">
-            <p>Three</p>
-          </para>
-        </item>
-      </itemize>
-      <p>This is random text. This is random text.
+        <itemize xml:id="S2.I1">
+          <item xml:id="S2.I1.i1">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">1st item</tag>
+            </tags>
+            <para xml:id="S2.I1.i1.p1">
+              <p>One</p>
+            </para>
+          </item>
+          <item xml:id="S2.I1.i2">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">2nd item</tag>
+            </tags>
+            <para xml:id="S2.I1.i2.p1">
+              <p>Two</p>
+            </para>
+          </item>
+          <item xml:id="S2.I1.i3">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">3rd item</tag>
+            </tags>
+            <para xml:id="S2.I1.i3.p1">
+              <p>Three</p>
+            </para>
+          </item>
+        </itemize>
+        <p>This is random text. This is random text.
 This is random text. This is random text. This is random text.</p>
-    </para>
+      </para>
+    </logical-block>
   </section>
   <section inlist="toc" xml:id="S3">
     <tags>
@@ -116,49 +118,52 @@ This is random text. This is random text. This is random text.</p>
       <tag role="typerefnum">§3</tag>
     </tags>
     <title><tag close=" ">3</tag>Centering</title>
-    <para align="center" xml:id="S3.p1">
-      <p>This is random text. This is random text. This is random text.
+    <para xml:id="S3.p1">
+      <p align="center">This is random text. This is random text. This is random text.
 This is random text. This is random text. This is random text.
 This is random text. This is random text. This is random text.
 This is random text. This is random text. This is random text.</p>
     </para>
-    <para align="center" xml:id="S3.p2">
-      <p>This is random text. This is random text. This is random text.</p>
-      <p>This is random text. This is random text. This is random text.</p>
-      <p>This is random text. This is random text. This is random text.</p>
-    </para>
-    <para align="center" xml:id="S3.p3">
-      <graphics candidates="foo.png" graphic="foo.png" xml:id="S3.p3.g1"/>
-    </para>
-    <para align="center" xml:id="S3.p4">
-      <p>c) Parabolic cylinder,  <Math mode="inline" tex="x^{2}=2pz" text="x ^ 2 = 2 * p * z" xml:id="S3.p4.m1">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
+    <logical-block>
+      <para xml:id="S3.p2">
+        <p align="center">This is random text. This is random text. This is random text.</p>
+        <p align="center">This is random text. This is random text. This is random text.</p>
+        <p align="center">This is random text. This is random text. This is random text.</p>
+      </para>
+    </logical-block>
+    <logical-block>
+      <para xml:id="S3.p3">
+        <graphics candidates="foo.png" class="ltx_centering" graphic="foo.png" xml:id="S3.g1"/>
+        <break class="ltx_centering"/>
+        <p align="center">c) Parabolic cylinder,  <Math mode="inline" tex="x^{2}=2pz" text="x ^ 2 = 2 * p * z" xml:id="S3.m1">
+            <XMath>
               <XMApp>
-                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
-                <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">z</XMTok>
+                </XMApp>
               </XMApp>
-              <XMApp>
-                <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                <XMTok meaning="2" role="NUMBER">2</XMTok>
-                <XMTok font="italic" role="UNKNOWN">p</XMTok>
-                <XMTok font="italic" role="UNKNOWN">z</XMTok>
-              </XMApp>
-            </XMApp>
-          </XMath>
-        </Math>;  it is a developable surface.</p>
-      <p>Signatures: blah <Math mode="inline" tex="x" text="x" xml:id="S3.p4.m2">
-          <XMath>
-            <XMTok font="italic" role="UNKNOWN">x</XMTok>
-          </XMath>
-        </Math>, <Math mode="inline" tex="y" text="y" xml:id="S3.p4.m3">
-          <XMath>
-            <XMTok font="italic" role="UNKNOWN">y</XMTok>
-          </XMath>
-        </Math>)</p>
-    </para>
+            </XMath>
+          </Math>;  it is a developable surface.</p>
+        <p align="center">Signatures: blah <Math mode="inline" tex="x" text="x" xml:id="S3.m2">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+            </XMath>
+          </Math>, <Math mode="inline" tex="y" text="y" xml:id="S3.m3">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">y</XMTok>
+            </XMath>
+          </Math>)</p>
+      </para>
+    </logical-block>
     <figure inlist="lof" xml:id="S3.F1">
       <tags>
         <tag>Figure 1</tag>
