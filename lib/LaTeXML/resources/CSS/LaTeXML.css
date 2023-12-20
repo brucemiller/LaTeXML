@@ -53,8 +53,9 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 .ltx_runin { display:inline; }
 .ltx_runin:after { content:" "; }
 .ltx_runin + .ltx_para,
-.ltx_runin + .ltx_para p,
-.ltx_runin + p { display:inline; }
+.ltx_runin + .ltx_para p:first-child,
+.ltx_runin + p:first-child {
+    display:inline; }
 
 .ltx_outdent { margin-left: -2em; }
 
@@ -163,6 +164,7 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 .ltx_p,
 .ltx_quote,
 .ltx_block,
+.ltx_logical-block,
 .ltx_para {
     display: block; }
 
@@ -188,7 +190,8 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 .ltx_td.ltx_align_justify,  .ltx_th.ltx_align_justify { white-space:normal; }
 
 .ltx_tabular .ltx_tabular { width:100%; }
-.ltx_inline-block { display:inline-block; }
+.ltx_inline-block,
+.ltx_inline-logical-block { display:inline-block; }
 
 /* tabbing is always a standalone paragraph-level construct */
 .ltx_tabular.ltx_tabbing { 
