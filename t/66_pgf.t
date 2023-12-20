@@ -6,7 +6,7 @@ use LaTeXML::Util::Test;
 
 latexml_tests("t/pgf",
 	requires=>{
-		env => 'CI',
-		stress_pgfmath=>'tikz.sty',
-		stress_pgfplots=>'pgfplots.sty',
-});
+		stress_pgfmath=>{
+			env => 'CI', packages=>'tikz.sty'},
+		stress_pgfplots=>{
+			env => 'CI', packages=>'pgfplots.sty'} });

@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="amsmath"?>
+<?latexml package="tikz"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:svg="http://www.w3.org/2000/svg">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Test eval of pgfmathparse</title>
+    <subsection inlist="toc" xml:id="S1.SS1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
+      <title><tag close=" ">1.1</tag>Input precision</title>
+      <para xml:id="S1.SS1.p1">
+        <p>0<break/>0.<break/>0.0<break/>0.00<break/>0.000<break/>0.0000<break/>0.00000<break/>0.000000<break/>0.1<break/>0.01<break/>0.001<break/>0.0001<break/>0.00001<break/>0.000001<break/>0.0000001<break/>
+1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890<break/>1.2.3.4.5<break/>1.1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890<break/></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS2">
+      <tags>
+        <tag>1.2</tag>
+        <tag role="refnum">1.2</tag>
+        <tag role="typerefnum">§1.2</tag>
+      </tags>
+      <title><tag close=" ">1.2</tag>simple infix arithmetic</title>
+      <para xml:id="S1.SS2.p1">
+        <p>0.0<break/>0.0<break/>0.0<break/>0.0<break/>0.0<break/>0.0<break/>0.0<break/>0.0<break/>1.00001<break/>1.00002 = 1.00001<break/>1.00002 = 1.0<break/>1.0<break/>16383.0<break/></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS3">
+      <tags>
+        <tag>1.3</tag>
+        <tag role="refnum">1.3</tag>
+        <tag role="typerefnum">§1.3</tag>
+      </tags>
+      <title><tag close=" ">1.3</tag>unary signs</title>
+      <para xml:id="S1.SS3.p1">
+        <p>0<break/>0.0<break/>0.0<break/>10<break/>-10.0<break/>10.0<break/>-10.0<break/>0.1<break/>-0.1<break/>
+-16383.0<break/></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS4">
+      <tags>
+        <tag>1.4</tag>
+        <tag role="refnum">1.4</tag>
+        <tag role="typerefnum">§1.4</tag>
+      </tags>
+      <title><tag close=" ">1.4</tag>int</title>
+      <para xml:id="S1.SS4.p1">
+        <p>0<break/>0<break/>0<break/>0<break/>0<break/>0<break/>0<break/>0<break/>0<break/></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS5">
+      <tags>
+        <tag>1.5</tag>
+        <tag role="refnum">1.5</tag>
+        <tag role="typerefnum">§1.5</tag>
+      </tags>
+      <title><tag close=" ">1.5</tag>Unit arithmetic</title>
+      <para xml:id="S1.SS5.p1">
+        <p>3.0<break/>3.5<break/>3.05<break/>3.005<break/>3.0005<break/>3.00005<break/>3.0<break/>3.0<break/>5.5<break/>5.0<break/>5.0<break/></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS6">
+      <tags>
+        <tag>1.6</tag>
+        <tag role="refnum">1.6</tag>
+        <tag role="typerefnum">§1.6</tag>
+      </tags>
+      <title><tag close=" ">1.6</tag>Precision multiplication</title>
+      <para xml:id="S1.SS6.p1">
+        <p>20.0<break/>20.0<break/>20.0<break/></p>
+      </para>
+      <para xml:id="S1.SS6.p2">
+        <p>20.20001 = 20.2<break/>20.01999 = 20.02<break/>20.00201 = 20.002<break/>20.00021 = 20.0002<break/>20.00003 = 20.00002<break/>20.0<break/>20.0<break/>20.0<break/></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS7">
+      <tags>
+        <tag>1.7</tag>
+        <tag role="refnum">1.7</tag>
+        <tag role="typerefnum">§1.7</tag>
+      </tags>
+      <title><tag close=" ">1.7</tag>Factorials</title>
+      <para xml:id="S1.SS7.p1">
+        <p>1.0<break/>1.0<break/>2.0<break/>6.0<break/>24.0<break/>120.0<break/>720.0<break/>5040.0</p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS8">
+      <tags>
+        <tag>1.8</tag>
+        <tag role="refnum">1.8</tag>
+        <tag role="typerefnum">§1.8</tag>
+      </tags>
+      <title><tag close=" ">1.8</tag>Function bare args</title>
+      <para xml:id="S1.SS8.p1">
+        <p>cos left: 0.80902<break/>cos right:-0.2<break/>cos precedence: -0.2<break/>sin cos right: -0.01746 = -0.01745<break/>sin cos precedence: -0.01746 = -0.01745<break/></p>
+      </para>
+      <pagination role="newpage"/>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS9">
+      <tags>
+        <tag>1.9</tag>
+        <tag role="refnum">1.9</tag>
+        <tag role="typerefnum">§1.9</tag>
+      </tags>
+      <title><tag close=" ">1.9</tag>Figure test</title>
+      <figure inlist="lof" labels="LABEL:fig:rootq-node" placement="h" xml:id="S1.F1">
+        <tags>
+          <tag>Figure 1</tag>
+          <tag role="refnum">1</tag>
+          <tag role="typerefnum">Figure 1</tag>
+        </tags>
+        <picture class="ltx_centering" height="65.39" tex="\hbox to204.62pt{\vbox to47.26pt{\pgfpicture\makeatletter\raise 0.0pt\hbox{%&#10;\hskip 75.13086pt\lower-47.05565pt\hbox to0.0pt{\pgfsys@beginscope%&#10;\pgfsys@invoke{ }\definecolor{pgfstrokecolor}{rgb}{0,0,0}%&#10;\pgfsys@color@rgb@stroke{0}{0}{0}\pgfsys@invoke{ }\pgfsys@color@rgb@fill{0}{0}%&#10;{0}\pgfsys@invoke{ }\pgfsys@setlinewidth{0.4pt}\pgfsys@invoke{ }\nullfont\hbox&#10;to%&#10;0.0pt{\pgfsys@beginscope\pgfsys@invoke{ }{{}}&#10;{}{{}}{}&#10;{}{}&#10;{}{}&#10;{}{}{}\pgfsys@moveto{0.0pt}{0.0pt}\pgfsys@lineto{85.35805pt}{-8.5358pt}%&#10;\pgfsys@lineto{76.82225pt}{-17.07161pt}\pgfsys@lineto{0.0pt}{0.0pt}%&#10;\pgfsys@stroke\pgfsys@invoke{ }&#10;{}{{}}{}&#10;{}{}{}\pgfsys@moveto{0.0pt}{0.0pt}\pgfsys@lineto{-68.28644pt}{-34.14322pt}%&#10;\pgfsys@stroke\pgfsys@invoke{ }&#10;{}{{}}{}&#10;{}{}{}\pgfsys@moveto{0.0pt}{0.0pt}\pgfsys@lineto{-34.14322pt}{-34.14322pt}%&#10;\pgfsys@stroke\pgfsys@invoke{ }&#10;{}{{}}{}&#10;{}{}{}\pgfsys@moveto{0.0pt}{0.0pt}\pgfsys@lineto{0.0pt}{-34.14322pt}%&#10;\pgfsys@stroke\pgfsys@invoke{ }&#10;{}{{}}{}&#10;{}{}{}\pgfsys@moveto{0.0pt}{0.0pt}\pgfsys@lineto{68.28644pt}{-34.14322pt}%&#10;\pgfsys@stroke\pgfsys@invoke{ }&#10;{}{{}}{}&#10;{}{}\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@setlinewidth{1.2pt}%&#10;\pgfsys@invoke{ }\pgfsys@setdash{1.2pt,4.0pt}{0.0pt}\pgfsys@invoke{ }{}%&#10;\pgfsys@moveto{17.07161pt}{-34.14322pt}\pgfsys@lineto{51.21483pt}{-34.14322pt}%&#10;\pgfsys@stroke\pgfsys@invoke{ }&#10;\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope{{}}\hbox{\hbox{{%&#10;\pgfsys@beginscope\pgfsys@invoke{ }{{}{}{{&#10;{}{}}}{&#10;{}{}}&#10;{{}{{}}}{{}{}}{}{{}{}}&#10;{&#10;}{{{{}}\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@transformcm{1.0}{0.0}{0.0}{1%&#10;.0}{-71.79785pt}{-43.72264pt}\pgfsys@invoke{ }\hbox{{\definecolor{%&#10;pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@rgb@stroke{0}{0}{0}\pgfsys@invoke{ }%&#10;\pgfsys@color@rgb@fill{0}{0}{0}\pgfsys@invoke{ }\hbox{{$\begin{subarray}{c}T_{%&#10;0}\end{subarray}$}}&#10;}}\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;{{}}\hbox{\hbox{{\pgfsys@beginscope\pgfsys@invoke{ }{{}{}{{&#10;{}{}}}{&#10;{}{}}&#10;{{}{{}}}{{}{}}{}{{}{}}&#10;{&#10;}{{{{}}\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@transformcm{1.0}{0.0}{0.0}{1%&#10;.0}{-37.65463pt}{-43.72264pt}\pgfsys@invoke{ }\hbox{{\definecolor{%&#10;pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@rgb@stroke{0}{0}{0}\pgfsys@invoke{ }%&#10;\pgfsys@color@rgb@fill{0}{0}{0}\pgfsys@invoke{ }\hbox{{$\begin{subarray}{c}T_{%&#10;1}\end{subarray}$}}&#10;}}\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;{{}}\hbox{\hbox{{\pgfsys@beginscope\pgfsys@invoke{ }{{}{}{{&#10;{}{}}}{&#10;{}{}}&#10;{{}{{}}}{{}{}}{}{{}{}}&#10;{&#10;}{{{{}}\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@transformcm{1.0}{0.0}{0.0}{1%&#10;.0}{-3.51141pt}{-43.72264pt}\pgfsys@invoke{ }\hbox{{\definecolor{%&#10;pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@rgb@stroke{0}{0}{0}\pgfsys@invoke{ }%&#10;\pgfsys@color@rgb@fill{0}{0}{0}\pgfsys@invoke{ }\hbox{{$\begin{subarray}{c}T_{%&#10;2}\end{subarray}$}}&#10;}}\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;{{}}\hbox{\hbox{{\pgfsys@beginscope\pgfsys@invoke{ }{{}{}{{&#10;{}{}}}{&#10;{}{}}&#10;{{}{{}}}{{}{}}{}{{}{}}&#10;{&#10;}{{{{}}\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@transformcm{1.0}{0.0}{0.0}{1%&#10;.0}{63.41391pt}{-43.72264pt}\pgfsys@invoke{ }\hbox{{\definecolor{%&#10;pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@rgb@stroke{0}{0}{0}\pgfsys@invoke{ }%&#10;\pgfsys@color@rgb@fill{0}{0}{0}\pgfsys@invoke{ }\hbox{{$\begin{subarray}{c}T_{%&#10;t-1}\end{subarray}$}}&#10;}}\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;{{}}\hbox{\hbox{{\pgfsys@beginscope\pgfsys@invoke{ }{{}{}{{&#10;{}{}}}{&#10;{}{}}&#10;{{}{{}}}{{}{}}{}{{}{}}&#10;{&#10;}{{{{}}\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@transformcm{1.0}{0.0}{0.0}{1%&#10;.0}{88.89105pt}{-20.4148pt}\pgfsys@invoke{ }\hbox{{\definecolor{pgfstrokecolor%&#10;}{rgb}{0,0,0}\pgfsys@color@rgb@stroke{0}{0}{0}\pgfsys@invoke{ }%&#10;\pgfsys@color@rgb@fill{0}{0}{0}\pgfsys@invoke{ }\hbox{{$\begin{subarray}{c}q,q%&#10;,\dotsc,q\\&#10;q-t\text{ branches}\end{subarray}$}}&#10;}}\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope}}}&#10;\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope{}{}{}\hss}%&#10;\pgfsys@discardpath\pgfsys@invoke{\lxSVG@closescope }\pgfsys@endscope\hss}}%&#10;\lxSVG@closescope\endpgfpicture}}" width="283.14" xml:id="S1.F1.pic1">
+          <svg:svg height="65.39" overflow="visible" version="1.1" width="283.14">
+            <svg:g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,65.39) matrix(1 0 0 -1 0 0) translate(103.96,0) translate(0,65.11)">
+              <svg:path d="M 0 0 L 118.11 -11.81 L 106.3 -23.62 L 0 0" style="fill:none"/>
+              <svg:path d="M 0 0 L -94.49 -47.24" style="fill:none"/>
+              <svg:path d="M 0 0 L -47.24 -47.24" style="fill:none"/>
+              <svg:path d="M 0 0 L 0 -47.24" style="fill:none"/>
+              <svg:path d="M 0 0 L 94.49 -47.24" style="fill:none"/>
+              <svg:g stroke-dasharray="1.2pt,4.0pt" stroke-dashoffset="0.0pt" stroke-width="1.2pt">
+                <svg:path d="M 23.62 -47.24 L 70.87 -47.24" style="fill:none"/>
+              </svg:g>
+              <svg:g fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 -99.35 -60.5)">
+                <svg:foreignObject height="8.37" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="9.72"><Math mode="inline" tex="\begin{subarray}{c}T_{0}\end{subarray}" text="list@(Array[[T _ 0]])" xml:id="S1.F1.pic1.m1">
+                    <XMath>
+                      <XMDual>
+                        <XMApp>
+                          <XMTok meaning="list"/>
+                          <XMRef idref="S1.F1.pic1.m1.1"/>
+                        </XMApp>
+                        <XMArray rowsep="0pt" xml:id="S1.F1.pic1.m1.1">
+                          <XMRow>
+                            <XMCell align="center">
+                              <XMApp>
+                                <XMTok role="SUBSCRIPTOP" scriptpos="post5"/>
+                                <XMTok font="italic" fontsize="70%" role="UNKNOWN">T</XMTok>
+                                <XMTok fontsize="49%" meaning="0" role="NUMBER">0</XMTok>
+                              </XMApp>
+                            </XMCell>
+                          </XMRow>
+                        </XMArray>
+                      </XMDual>
+                    </XMath>
+                  </Math></svg:foreignObject>
+              </svg:g>
+              <svg:g fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 -52.1 -60.5)">
+                <svg:foreignObject height="8.37" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="9.72"><Math mode="inline" tex="\begin{subarray}{c}T_{1}\end{subarray}" text="list@(Array[[T _ 1]])" xml:id="S1.F1.pic1.m2">
+                    <XMath>
+                      <XMDual>
+                        <XMApp>
+                          <XMTok meaning="list"/>
+                          <XMRef idref="S1.F1.pic1.m2.1"/>
+                        </XMApp>
+                        <XMArray rowsep="0pt" xml:id="S1.F1.pic1.m2.1">
+                          <XMRow>
+                            <XMCell align="center">
+                              <XMApp>
+                                <XMTok role="SUBSCRIPTOP" scriptpos="post5"/>
+                                <XMTok font="italic" fontsize="70%" role="UNKNOWN">T</XMTok>
+                                <XMTok fontsize="49%" meaning="1" role="NUMBER">1</XMTok>
+                              </XMApp>
+                            </XMCell>
+                          </XMRow>
+                        </XMArray>
+                      </XMDual>
+                    </XMath>
+                  </Math></svg:foreignObject>
+              </svg:g>
+              <svg:g fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 -4.86 -60.5)">
+                <svg:foreignObject height="8.37" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="9.72"><Math mode="inline" tex="\begin{subarray}{c}T_{2}\end{subarray}" text="list@(Array[[T _ 2]])" xml:id="S1.F1.pic1.m3">
+                    <XMath>
+                      <XMDual>
+                        <XMApp>
+                          <XMTok meaning="list"/>
+                          <XMRef idref="S1.F1.pic1.m3.1"/>
+                        </XMApp>
+                        <XMArray rowsep="0pt" xml:id="S1.F1.pic1.m3.1">
+                          <XMRow>
+                            <XMCell align="center">
+                              <XMApp>
+                                <XMTok role="SUBSCRIPTOP" scriptpos="post5"/>
+                                <XMTok font="italic" fontsize="70%" role="UNKNOWN">T</XMTok>
+                                <XMTok fontsize="49%" meaning="2" role="NUMBER">2</XMTok>
+                              </XMApp>
+                            </XMCell>
+                          </XMRow>
+                        </XMArray>
+                      </XMDual>
+                    </XMath>
+                  </Math></svg:foreignObject>
+              </svg:g>
+              <svg:g fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 87.75 -60.5)">
+                <svg:foreignObject height="8.37" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="13.48"><Math mode="inline" tex="\begin{subarray}{c}T_{t-1}\end{subarray}" text="list@(Array[[T _ (t - 1)]])" xml:id="S1.F1.pic1.m4">
+                    <XMath>
+                      <XMDual>
+                        <XMApp>
+                          <XMTok meaning="list"/>
+                          <XMRef idref="S1.F1.pic1.m4.1"/>
+                        </XMApp>
+                        <XMArray rowsep="0pt" xml:id="S1.F1.pic1.m4.1">
+                          <XMRow>
+                            <XMCell align="center">
+                              <XMApp>
+                                <XMTok role="SUBSCRIPTOP" scriptpos="post5"/>
+                                <XMTok font="italic" fontsize="70%" role="UNKNOWN">T</XMTok>
+                                <XMApp>
+                                  <XMTok fontsize="49%" meaning="minus" role="ADDOP">-</XMTok>
+                                  <XMTok font="italic" fontsize="49%" role="UNKNOWN">t</XMTok>
+                                  <XMTok fontsize="49%" meaning="1" role="NUMBER">1</XMTok>
+                                </XMApp>
+                              </XMApp>
+                            </XMCell>
+                          </XMRow>
+                        </XMArray>
+                      </XMDual>
+                    </XMath>
+                  </Math></svg:foreignObject>
+              </svg:g>
+              <svg:g fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 123 -28.25)">
+                <svg:foreignObject height="21.06" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="51.57"><Math mode="inline" tex="\begin{subarray}{c}q,q,\dotsc,q\\&#10;q-t\text{ branches}\end{subarray}" text="list@(Array[[list@(q, q, dotsc, q)], [q - t * [ branches]]])" xml:id="S1.F1.pic1.m5">
+                    <XMath>
+                      <XMDual>
+                        <XMApp>
+                          <XMTok meaning="list"/>
+                          <XMRef idref="S1.F1.pic1.m5.1"/>
+                        </XMApp>
+                        <XMArray rowsep="0pt" xml:id="S1.F1.pic1.m5.1">
+                          <XMRow>
+                            <XMCell align="center">
+                              <XMDual>
+                                <XMApp>
+                                  <XMTok meaning="list"/>
+                                  <XMRef idref="S1.F1.pic1.m5.1.1"/>
+                                  <XMRef idref="S1.F1.pic1.m5.1.2"/>
+                                  <XMRef idref="S1.F1.pic1.m5.1.3"/>
+                                  <XMRef idref="S1.F1.pic1.m5.1.4"/>
+                                </XMApp>
+                                <XMWrap>
+                                  <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.F1.pic1.m5.1.1">q</XMTok>
+                                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                  <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.F1.pic1.m5.1.2">q</XMTok>
+                                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                  <XMTok fontsize="70%" name="dotsc" role="ID" xml:id="S1.F1.pic1.m5.1.3">…</XMTok>
+                                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                  <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.F1.pic1.m5.1.4">q</XMTok>
+                                </XMWrap>
+                              </XMDual>
+                            </XMCell>
+                          </XMRow>
+                          <XMRow>
+                            <XMCell align="center">
+                              <XMApp>
+                                <XMTok fontsize="70%" meaning="minus" role="ADDOP">-</XMTok>
+                                <XMTok font="italic" fontsize="70%" role="UNKNOWN">q</XMTok>
+                                <XMApp>
+                                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">t</XMTok>
+                                  <XMText><text fontsize="70%"> branches</text></XMText>
+                                </XMApp>
+                              </XMApp>
+                            </XMCell>
+                          </XMRow>
+                        </XMArray>
+                      </XMDual>
+                    </XMath>
+                  </Math></svg:foreignObject>
+              </svg:g>
+            </svg:g>
+          </svg:svg>
+        </picture>
+        <toccaption class="ltx_centering"><tag close=" ">1</tag>The root of a tree diagram for <Math mode="inline" tex="\mathcal{C}" text="C" xml:id="S1.F1.m1">
+            <XMath>
+              <XMTok font="caligraphic" role="UNKNOWN">C</XMTok>
+            </XMath>
+          </Math></toccaption>
+        <caption class="ltx_centering"><tag close=": ">Figure 1</tag>The root of a tree diagram for <Math mode="inline" tex="\mathcal{C}" text="C" xml:id="S1.F1.m2">
+            <XMath>
+              <XMTok font="caligraphic" role="UNKNOWN">C</XMTok>
+            </XMath>
+          </Math></caption>
+      </figure>
+      <pagination role="newpage"/>
+    </subsection>
+  </section>
+</document>

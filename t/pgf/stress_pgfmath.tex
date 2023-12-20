@@ -38,8 +38,9 @@
 \pgfmathparse{1-1.00000}\pgfmathresult\\
 \pgfmathparse{1-1.000000}\pgfmathresult\\
 \pgfmathparse{1.00001}\pgfmathresult\\
-\pgfmathparse{1.00001-0}\pgfmathresult\\
-\pgfmathparse{1.00001-0.0000076}\pgfmathresult\\
+% TODO:
+1.00002 = \pgfmathparse{1.00001-0}\pgfmathresult\\
+1.00002 = \pgfmathparse{1.00001-0.0000076}\pgfmathresult\\
 \pgfmathparse{1.00001-0.0000077}\pgfmathresult\\
 \pgfmathparse{16383-0}\pgfmathresult\\ % largest allowed set
 
@@ -88,11 +89,12 @@
 \pgfmathparse{10.0*2}\pgfmathresult\\
 \pgfmathparse{10*2.0}\pgfmathresult\\
 
-\pgfmathparse{10.10*2.0}\pgfmathresult\\
-\pgfmathparse{10.01*2.0}\pgfmathresult\\
-\pgfmathparse{10.001*2.0}\pgfmathresult\\
-\pgfmathparse{10.0001*2.0}\pgfmathresult\\
-\pgfmathparse{10.00001*2.0}\pgfmathresult\\
+% TODO
+20.20001 = \pgfmathparse{10.10*2.0}\pgfmathresult\\
+20.01999 = \pgfmathparse{10.01*2.0}\pgfmathresult\\
+20.00201 = \pgfmathparse{10.001*2.0}\pgfmathresult\\
+20.00021 = \pgfmathparse{10.0001*2.0}\pgfmathresult\\
+20.00003 = \pgfmathparse{10.00001*2.0}\pgfmathresult\\
 \pgfmathparse{10.000001*2.0}\pgfmathresult\\
 \pgfmathparse{10.0000001*2.0}\pgfmathresult\\
 \pgfmathparse{10.00000001*2.0}\pgfmathresult\\
@@ -112,8 +114,9 @@
 cos left: \pgfmathparse{cos(180/5)}\pgfmathresult\\
 cos right:\pgfmathparse{(cos 180)/5}\pgfmathresult\\
 cos precedence: \pgfmathparse{cos 180/5}\pgfmathresult\\
-sin cos right: \pgfmathparse{sin(cos 180)}\pgfmathresult\\
-sin cos precedence: \pgfmathparse{sin cos 180}\pgfmathresult\\
+% TODO
+sin cos right: -0.01746 = \pgfmathparse{sin(cos 180)}\pgfmathresult\\
+sin cos precedence: -0.01746 = \pgfmathparse{sin cos 180}\pgfmathresult\\
 
 \clearpage
 \subsection{Figure test}
