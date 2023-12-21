@@ -1970,7 +1970,7 @@ sub renameNode {
     my $key   = $attr->getName;
     my $value = $node->getAttribute($key);
     $id = $value if $key eq 'xml:id';    # Save to register after removal of old node.
-    $new->setAttribute($key, $value); }
+    $new->setAttribute($key, $value) if $model->canHaveAttribute($newname, $key); }
   # AND move all content from $node to $newnode
   if (!$reinsert) {
     foreach my $child ($node->childNodes) {
