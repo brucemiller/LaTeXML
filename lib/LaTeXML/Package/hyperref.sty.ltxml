@@ -227,6 +227,7 @@ sub localized_anchor {
   my ($document, $whatsit) = @_;
   my $model      = $STATE->getModel;
   my $node       = $document->getNode;
+  my $id         = $whatsit->getProperty('id');
   my @candidates = ($node);
   my $candidate;
   while ($candidate = pop(@candidates)) {
@@ -236,13 +237,12 @@ sub localized_anchor {
       unshift(@candidates, $candidate->childNodes); }
     elsif ($type = XML_TEXT_NODE) {
       last; } }
-  my $id = $whatsit->getProperty('id');
   if ($candidate) {
     my $anchor = $document->wrapNodes('ltx:anchor', $candidate);
     $anchor->setAttribute('xml:id', $id);
     $document->closeNode($anchor) if $document->isOpen($anchor); }
   else {
-    Error("No available insertion point for ltx:anchor, failing \\hypertarget to $id"); }
+    Warn("No available insertion point for ltx:anchor, failing \\hypertarget to $id"); }
   return; }
 
 # \hyperdef{category}{name}{text}
