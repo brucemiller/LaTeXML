@@ -4838,7 +4838,7 @@ RawTeX(<<'EOL');
 \DeclareRobustCommand\usebox[1]{\leavevmode\copy #1\relax}
 EOL
 
-Let('\lx@parboxnewline[]', '\lx@newline');    # Obsolete, but in case still used
+Let('\lx@parboxnewline', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring them, for now, though.
 DefConstructor('\parbox[] OptionalUndigested OptionalUndigested {Dimension} VBoxContents', sub {
