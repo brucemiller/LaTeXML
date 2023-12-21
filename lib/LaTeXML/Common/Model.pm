@@ -94,7 +94,10 @@ sub loadInternalExtensions {
   if (!exists $$self{tagprop}{'ltx:_CaptureBlock_'}) {
     # Synthesize ltx:_CaptureBlock_ to act like the union of ltx:block, ltx:para,
     $self->synthesizeElement('ltx:_CaptureBlock_',
-      qw(ltx:block ltx:logical-block ltx:sectional-block Caption)); }
+      qw(ltx:block ltx:logical-block ltx:sectional-block Caption));
+    $$self{tagprop}{'ltx:_CaptureBlock_'}{model}{'svg:g'}             = 1;
+    $$self{tagprop}{'ltx:_CaptureBlock_'}{model}{'svg:foreignObject'} = 1;
+  }
   return; }
 
 # Clone the tagprop's (allowed content & attributes) of @other to $tag
@@ -443,7 +446,8 @@ sub canHaveAttribute {
   return 0 if $tag eq '#Document';
   return 0 if $tag eq '#ProcessingInstruction';
   return 0 if $tag eq '#DTD';
-  return 1 if $tag =~ /(.*?:)?_Capture_$/;
+  return 1 if $tag    =~ /(.*?:)?_Capture_$/;
+  return 1 if $attrib =~ /^_/;
   return 1 if $$self{permissive};
   my ($tagns,  $tagname)  = ($tag    =~ /^(\w+):(\w*)$/ ? ($1, $2) : ('', $tag));
   my ($attrns, $attrname) = ($attrib =~ /^(\w+):(\w*)$/ ? ($1, $2) : ('', $attrib));
