@@ -111,7 +111,7 @@ grammar {
    common.attrs.aria.implicit.link = empty
    SVG.Core.extra.attrib &= parent svgForeign.attributes
   include "svg11.rnc"
-  { SVG.foreignObject.content = parent Flow.model
+  { SVG.foreignObject.content = parent Inline.model
     SVG.desc.content = parent Flow.model
  }
 }
