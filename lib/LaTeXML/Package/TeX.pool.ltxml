@@ -2252,14 +2252,15 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
 # from block, logical-block or sectional-block, or the inline- variants.
 sub insertBlock {
   my ($document, $contents, %blockattr) = @_;
-  my $hasattr     = scalar(keys %blockattr);
-  my $model       = $document->getModel;
-  my $context     = $document->getElement;               # Where we originally start inserting.
-  my $context_tag = $document->getNodeQName($context);
-  if (($context_tag =~ /^ltx:XM/) && ($context_tag ne 'ltx:XMText')) {
+  my $model          = $document->getModel;
+  my $context        = $document->getElement;                  # Where we originally start inserting.
+  my $context_tag    = $document->getNodeQName($context);
+  my $is_svg         = ($context_tag =~ /^svg:/);              # svg is slightly tricky
+  my $ignorable_attr = $is_svg || !scalar(keys %blockattr);    # if we do not REQUIRE the attributes
+  if (($context_tag =~ /^ltx:XM/) && ($context_tag ne 'ltx:XMText')) {    # but math always needs this
     $context     = $document->openElement('ltx:XMText');
     $context_tag = $document->getNodeQName($context); }
-  my $inline    = $document->canContain($context_tag, '#PCDATA');
+  my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
   my $container = $document->openElement('ltx:_CaptureBlock_', '_vertical_mode_' => 1, %blockattr);
   $document->absorb($contents);
   my @nodes     = $container->childNodes;
@@ -2268,23 +2269,26 @@ sub insertBlock {
   $document->closeToNode($container, 1);
   $document->closeNode($container);
   $document->closeToNode($context, 1);
-
   my $newcontainer;
+
   if ($nnodes < 1) {    # Insertion came up empty?
     $document->removeNode($container); }    # then remove the new block entirely
-  elsif (!$hasattr                          # No attributes, contents allowed in context?
+  elsif ($ignorable_attr                    # No attributes, contents allowed in context?
     && !grep { !$document->canContain($context, $_); } @node_tags) {
     $document->unwrapNodes($container); }    # No container needed, at all.
   elsif (($nnodes == 1)                      # Single node, allowed in context & accepts attributes
     && $document->canContain($context, $nodes[0])
-    && (!$hasattr || !grep { !$document->canHaveAttribute($nodes[0], $_) } keys %blockattr)) {
+    && ($ignorable_attr || !grep { !$document->canHaveAttribute($nodes[0], $_) } keys %blockattr)) {
     map { $document->setAttribute($nodes[0], $_ => $blockattr{$_}) } keys %blockattr;
     $document->unwrapNodes($container); }    # Add attributes and unwrap the single node
   elsif (($nnodes == 1)    # Single node, but needs auto-wrapper which accepts attributes?
     && ($newcontainer = $document->canContainSomehow($context, $nodes[0]))
-    && (!$hasattr || !grep { !$document->canHaveAttribute($newcontainer, $_) } keys %blockattr)) {
+    && ($ignorable_attr || !grep { !$document->canHaveAttribute($newcontainer, $_) } keys %blockattr)) {
     $document->renameNode($container, $newcontainer, 1); }    # rename the capture to that container
   else {                                                      # Otherwise, rename the capture
+    if ($is_svg && grep { $_ =~ /^ltx:/; } @node_tags) {      # MAY need foreignObject wrapper
+      $context     = $document->wrapNodes('svg:foreignObject', $container);
+      $context_tag = $document->getNodeQName($context); }
     my @candidates =
       ($inline
       ? (qw(ltx:inline-block ltx:inline-logical-block ltx:inline-sectional-block))
