@@ -13,13 +13,13 @@
         <tr>
           <td border="l rr tt" thead="column row"/>
           <td align="center" border="r tt" colspan="2" thead="column">Price</td>
-          <td border="r tt" thead="column" width="90.3pt"/>
+          <td border="r tt" thead="column" vattach="top"/>
         </tr>
         <tr>
           <td align="center" border="l rr" thead="column row">Year</td>
           <td align="right" border="r t" class="ltx_nopad_r" thead="column">low</td>
           <td align="left" border="r t" class="ltx_nopad_l" thead="column">high</td>
-          <td align="center" border="r" thead="column">Comments</td>
+          <td align="center" border="r" thead="column" vattach="top">Comments</td>
         </tr>
       </thead>
       <tbody>
@@ -27,19 +27,25 @@
           <td align="right" border="l rr t" thead="row">1971</td>
           <td align="right" border="t" class="ltx_nopad_r">97–</td>
           <td align="left" border="r t" class="ltx_nopad_l">245</td>
-          <td align="justify" border="r t" width="90.3pt"><p vattach="top">Bad year.</p></td>
+          <td align="justify" border="r t" vattach="top"><inline-block vattach="top">
+              <p width="90.3pt">Bad year.</p>
+            </inline-block></td>
         </tr>
         <tr>
           <td align="right" border="l rr t" thead="row">72</td>
           <td align="right" border="t" class="ltx_nopad_r">245–</td>
           <td align="left" border="r t" class="ltx_nopad_l">245</td>
-          <td align="justify" border="r t" width="90.3pt"><p vattach="top">Light trading due to a heavy winter.</p></td>
+          <td align="justify" border="r t" vattach="top"><inline-block vattach="top">
+              <p width="90.3pt">Light trading due to a heavy winter.</p>
+            </inline-block></td>
         </tr>
         <tr>
           <td align="right" border="b l rr t" thead="row">73</td>
           <td align="right" border="b t" class="ltx_nopad_r">245–</td>
           <td align="left" border="b r t" class="ltx_nopad_l">2001</td>
-          <td align="justify" border="b r t" width="90.3pt"><p vattach="top">No gnus was very good gnus this year.</p></td>
+          <td align="justify" border="b r t" vattach="top"><inline-block vattach="top">
+              <p width="90.3pt">No gnus was very good gnus this year.</p>
+            </inline-block></td>
         </tr>
       </tbody>
     </tabular>
@@ -63,6 +69,34 @@
           <td align="center" border="b l r t">x</td>
           <td border="b r t"/>
           <td align="center" border="b r t">x</td>
+        </tr>
+      </tbody>
+    </tabular>
+  </para>
+  <para xml:id="p3">
+    <tabular vattach="middle">
+      <tbody>
+        <tr>
+          <td align="justify" class="ltx_nopad_l ltx_nopad_r" vattach="top">1  <inline-block vattach="top">
+              <p width="30.0pt">a</p>
+            </inline-block>2</td>
+          <td align="justify" class="ltx_nopad_l ltx_nopad_r" vattach="top"><inline-block vattach="top">
+              <p width="30.0pt">b</p>
+            </inline-block>3</td>
+          <td align="justify" class="ltx_nopad_l ltx_nopad_r" vattach="top"><inline-block vattach="top">
+              <p width="30.0pt">c</p>
+            </inline-block>4</td>
+        </tr>
+        <tr>
+          <td align="justify" class="ltx_nopad_l ltx_nopad_r" vattach="top">1  <inline-block vattach="top">
+              <p width="30.0pt">a a a a a a a a a a</p>
+            </inline-block>2</td>
+          <td align="justify" class="ltx_nopad_l ltx_nopad_r" vattach="top"><inline-block vattach="top">
+              <p width="30.0pt">b</p>
+            </inline-block>3</td>
+          <td align="justify" class="ltx_nopad_l ltx_nopad_r" vattach="top"><inline-block vattach="top">
+              <p width="30.0pt">c</p>
+            </inline-block>4</td>
         </tr>
       </tbody>
     </tabular>

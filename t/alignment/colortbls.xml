@@ -81,21 +81,25 @@ p{3cm}}"?>
       <tabular>
         <thead>
           <tr>
-            <td align="center" backgroundcolor="#00FFFF" colspan="3" thead="column"><text backgroundcolor="#00FFFF" font="bold" fontsize="120%">A long table example</text></td>
+            <td align="center" backgroundcolor="#00FFFF" colspan="3" thead="column" vattach="top"><text backgroundcolor="#00FFFF" font="bold" fontsize="120%">A long table example</text></td>
           </tr>
           <tr>
-            <td align="center" backgroundcolor="#FF00FF" colspan="2" thead="column"><text backgroundcolor="#FF00FF" color="#FFFFFF">First two columns</text></td>
+            <td align="center" backgroundcolor="#FF00FF" colspan="2" thead="column" vattach="top"><text backgroundcolor="#FF00FF" color="#FFFFFF">First two columns</text></td>
             <td align="center" backgroundcolor="#FF00FF" thead="column"><text backgroundcolor="#FF00FF" color="#FFFFFF">Third column</text></td>
           </tr>
           <tr>
-            <td align="center" backgroundcolor="#FF00FF" colspan="2" thead="column"><text backgroundcolor="#FF00FF" color="#FFFFFF">p-type</text></td>
+            <td align="center" backgroundcolor="#FF00FF" colspan="2" thead="column" vattach="top"><text backgroundcolor="#FF00FF" color="#FFFFFF">p-type</text></td>
             <td align="center" backgroundcolor="#FF00FF" thead="column"><text backgroundcolor="#FF00FF" color="#FFFFFF">D-type (<text font="sansserif">dcolumn</text>)</text></td>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td align="justify" backgroundcolor="#FF0000" width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF" vattach="top">P-column</text></td>
-            <td align="justify" backgroundcolor="#0000FF" width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00" vattach="top">and another one</text></td>
+            <td align="justify" backgroundcolor="#FF0000" vattach="top"><inline-block vattach="top">
+                <p width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF">P-column</text></p>
+              </inline-block></td>
+            <td align="justify" backgroundcolor="#0000FF" vattach="top"><inline-block vattach="top">
+                <p width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00">and another one</text></p>
+              </inline-block></td>
             <td align="char:⋅" backgroundcolor="#FFFF00"><Math mode="inline" tex="\pagecolor{yellow}12\cdot 34" text="12.34" xml:id="S2.T1.m1">
                 <XMath>
                   <XMTok backgroundcolor="#FFFF00" meaning="12.34" role="NUMBER">12⋅34</XMTok>
@@ -103,8 +107,8 @@ p{3cm}}"?>
               </Math></td>
           </tr>
           <tr>
-            <td align="justify" backgroundcolor="#CCCCCC" width="56.9pt"><text backgroundcolor="#CCCCCC">Total</text></td>
-            <td align="justify" backgroundcolor="#CCCCCC" width="85.4pt"><text backgroundcolor="#CCCCCC">(wrong)</text></td>
+            <td align="justify" backgroundcolor="#CCCCCC" vattach="top"><text backgroundcolor="#CCCCCC">Total</text></td>
+            <td align="justify" backgroundcolor="#CCCCCC" vattach="top"><text backgroundcolor="#CCCCCC">(wrong)</text></td>
             <td align="char:⋅" backgroundcolor="#CCCCCC"><Math mode="inline" tex="\pagecolor[gray]{0.8}100\cdot 6" text="100.6" xml:id="S2.T1.m2">
                 <XMath>
                   <XMTok backgroundcolor="#CCCCCC" meaning="100.6" role="NUMBER">100⋅6</XMTok>
@@ -112,8 +116,12 @@ p{3cm}}"?>
               </Math></td>
           </tr>
           <tr>
-            <td align="justify" backgroundcolor="#FF0000" width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF" vattach="top">Some long text in the first column</text></td>
-            <td align="justify" backgroundcolor="#0000FF" width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00" vattach="top">bbb</text></td>
+            <td align="justify" backgroundcolor="#FF0000" vattach="top"><inline-block vattach="top">
+                <p width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF">Some long text in the first column</text></p>
+              </inline-block></td>
+            <td align="justify" backgroundcolor="#0000FF" vattach="top"><inline-block vattach="top">
+                <p width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00">bbb</text></p>
+              </inline-block></td>
             <td align="char:⋅" backgroundcolor="#FFFF00"><Math mode="inline" tex="\pagecolor{yellow}1\cdot 2" text="1.2" xml:id="S2.T1.m3">
                 <XMath>
                   <XMTok backgroundcolor="#FFFF00" meaning="1.2" role="NUMBER">1⋅2</XMTok>
@@ -121,8 +129,12 @@ p{3cm}}"?>
               </Math></td>
           </tr>
           <tr>
-            <td align="justify" backgroundcolor="#FF0000" width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF" vattach="top">aaa</text></td>
-            <td align="justify" backgroundcolor="#0000FF" width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00" vattach="top">and some long text in the second column</text></td>
+            <td align="justify" backgroundcolor="#FF0000" vattach="top"><inline-block vattach="top">
+                <p width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF">aaa</text></p>
+              </inline-block></td>
+            <td align="justify" backgroundcolor="#0000FF" vattach="top"><inline-block vattach="top">
+                <p width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00">and some long text in the second column</text></p>
+              </inline-block></td>
             <td align="char:⋅" backgroundcolor="#FFFF00"><Math mode="inline" tex="\pagecolor{yellow}1\cdot 345" text="1.345" xml:id="S2.T1.m4">
                 <XMath>
                   <XMTok backgroundcolor="#FFFF00" meaning="1.345" role="NUMBER">1⋅345</XMTok>
@@ -130,8 +142,8 @@ p{3cm}}"?>
               </Math></td>
           </tr>
           <tr>
-            <td align="justify" backgroundcolor="#CCCCCC" width="56.9pt"><text backgroundcolor="#CCCCCC">Total</text></td>
-            <td align="justify" backgroundcolor="#CCCCCC" width="85.4pt"><text backgroundcolor="#CCCCCC">(wrong)</text></td>
+            <td align="justify" backgroundcolor="#CCCCCC" vattach="top"><text backgroundcolor="#CCCCCC">Total</text></td>
+            <td align="justify" backgroundcolor="#CCCCCC" vattach="top"><text backgroundcolor="#CCCCCC">(wrong)</text></td>
             <td align="char:⋅" backgroundcolor="#CCCCCC"><Math mode="inline" tex="\pagecolor[gray]{0.8}100\cdot 6" text="100.6" xml:id="S2.T1.m5">
                 <XMath>
                   <XMTok backgroundcolor="#CCCCCC" meaning="100.6" role="NUMBER">100⋅6</XMTok>
@@ -139,8 +151,12 @@ p{3cm}}"?>
               </Math></td>
           </tr>
           <tr>
-            <td align="justify" backgroundcolor="#FF0000" width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF" vattach="top">aaa</text></td>
-            <td align="justify" backgroundcolor="#0000FF" width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00" vattach="top">bbb</text></td>
+            <td align="justify" backgroundcolor="#FF0000" vattach="top"><inline-block vattach="top">
+                <p width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF">aaa</text></p>
+              </inline-block></td>
+            <td align="justify" backgroundcolor="#0000FF" vattach="top"><inline-block vattach="top">
+                <p width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00">bbb</text></p>
+              </inline-block></td>
             <td align="char:⋅" backgroundcolor="#FFFF00"><Math mode="inline" tex="\pagecolor{yellow}1\cdot 345" text="1.345" xml:id="S2.T1.m6">
                 <XMath>
                   <XMTok backgroundcolor="#FFFF00" meaning="1.345" role="NUMBER">1⋅345</XMTok>
@@ -148,9 +164,13 @@ p{3cm}}"?>
               </Math></td>
           </tr>
           <tr>
-            <td align="justify" backgroundcolor="#FF0000" width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF" vattach="top">Note that the coloured rules in all columns stretch to accomodate
-large entries in one column.</text></td>
-            <td align="justify" backgroundcolor="#0000FF" width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00" vattach="top">bbb</text></td>
+            <td align="justify" backgroundcolor="#FF0000" vattach="top"><inline-block vattach="top">
+                <p width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF">Note that the coloured rules in all columns stretch to accomodate
+large entries in one column.</text></p>
+              </inline-block></td>
+            <td align="justify" backgroundcolor="#0000FF" vattach="top"><inline-block vattach="top">
+                <p width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00">bbb</text></p>
+              </inline-block></td>
             <td align="char:⋅" backgroundcolor="#FFFF00"><Math mode="inline" tex="\pagecolor{yellow}1\cdot 345" text="1.345" xml:id="S2.T1.m7">
                 <XMath>
                   <XMTok backgroundcolor="#FFFF00" meaning="1.345" role="NUMBER">1⋅345</XMTok>
@@ -158,8 +178,12 @@ large entries in one column.</text></td>
               </Math></td>
           </tr>
           <tr>
-            <td align="justify" backgroundcolor="#FF0000" width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF" vattach="top">aaa</text></td>
-            <td align="justify" backgroundcolor="#0000FF" width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00" vattach="top">bbb</text></td>
+            <td align="justify" backgroundcolor="#FF0000" vattach="top"><inline-block vattach="top">
+                <p width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF">aaa</text></p>
+              </inline-block></td>
+            <td align="justify" backgroundcolor="#0000FF" vattach="top"><inline-block vattach="top">
+                <p width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00">bbb</text></p>
+              </inline-block></td>
             <td align="char:⋅" backgroundcolor="#FFFF00"><Math mode="inline" tex="\pagecolor{yellow}100" text="100" xml:id="S2.T1.m8">
                 <XMath>
                   <XMTok backgroundcolor="#FFFF00" meaning="100" role="NUMBER">100</XMTok>
@@ -167,12 +191,16 @@ large entries in one column.</text></td>
               </Math></td>
           </tr>
           <tr>
-            <td align="justify" backgroundcolor="#FF0000" width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF" vattach="top">aaa</text></td>
-            <td align="justify" backgroundcolor="#0000FF" width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00" vattach="top">Depending on your driver you may get unsightly gaps or lines
+            <td align="justify" backgroundcolor="#FF0000" vattach="top"><inline-block vattach="top">
+                <p width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF">aaa</text></p>
+              </inline-block></td>
+            <td align="justify" backgroundcolor="#0000FF" vattach="top"><inline-block vattach="top">
+                <p width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00">Depending on your driver you may get unsightly gaps or lines
 where the ‘screens’ used to produce different shapes interact
 badly. You may want to cause adjacent panels of the same colour by
 specifying a larger overhang
-or by adding some negative space (in a ”“noalign” between rows.</text></td>
+or by adding some negative space (in a ”“noalign” between rows.</text></p>
+              </inline-block></td>
             <td align="char:⋅" backgroundcolor="#FFFF00"><Math mode="inline" tex="\pagecolor{yellow}12\cdot 4" text="12.4" xml:id="S2.T1.m9">
                 <XMath>
                   <XMTok backgroundcolor="#FFFF00" meaning="12.4" role="NUMBER">12⋅4</XMTok>
@@ -180,8 +208,12 @@ or by adding some negative space (in a ”“noalign” between rows.</text></td
               </Math></td>
           </tr>
           <tr>
-            <td align="justify" backgroundcolor="#FF0000" width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF" vattach="top">aaa</text></td>
-            <td align="justify" backgroundcolor="#0000FF" width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00" vattach="top">bbb</text></td>
+            <td align="justify" backgroundcolor="#FF0000" vattach="top"><inline-block vattach="top">
+                <p width="56.9pt"><text backgroundcolor="#FF0000" class="ltx_align_left" color="#FFFFFF">aaa</text></p>
+              </inline-block></td>
+            <td align="justify" backgroundcolor="#0000FF" vattach="top"><inline-block vattach="top">
+                <p width="85.4pt"><text backgroundcolor="#0000FF" class="ltx_align_left" color="#FFFF00">bbb</text></p>
+              </inline-block></td>
             <td align="char:⋅" backgroundcolor="#FFFF00"><Math mode="inline" tex="\pagecolor{yellow}45\cdot 3" text="45.3" xml:id="S2.T1.m10">
                 <XMath>
                   <XMTok backgroundcolor="#FFFF00" meaning="45.3" role="NUMBER">45⋅3</XMTok>
@@ -191,7 +223,7 @@ or by adding some negative space (in a ”“noalign” between rows.</text></td
         </tbody>
         <tfoot>
           <tr>
-            <td align="center" backgroundcolor="#00FFFF" colspan="3" thead="column"><text backgroundcolor="#00FFFF" font="bold" fontsize="120%">The End</text></td>
+            <td align="center" backgroundcolor="#00FFFF" colspan="3" thead="column" vattach="top"><text backgroundcolor="#00FFFF" font="bold" fontsize="120%">The End</text></td>
           </tr>
         </tfoot>
       </tabular>

@@ -79,6 +79,7 @@ sub loadSchema {
     $self->loadCompiledSchema($compiled); }
   else {
     $$self{schema}->loadSchema; }
+  $self->loadInternalExtensions;
   $self->describeModel if $LaTeXML::Common::Model::DEBUG;
   $$self{schema_loaded} = 1;
   return $$self{schema}; }
@@ -86,6 +87,33 @@ sub loadSchema {
 sub addSchemaDeclaration {
   my ($self, $document, $tag) = @_;
   $$self{schema}->addSchemaDeclaration($document, $tag);
+  return; }
+
+sub loadInternalExtensions {
+  my ($self) = @_;
+  if (!exists $$self{tagprop}{'ltx:_CaptureBlock_'}) {
+    # Synthesize ltx:_CaptureBlock_ to act like the union of ltx:block, ltx:para,
+    $self->synthesizeElement('ltx:_CaptureBlock_',
+      qw(ltx:block ltx:logical-block ltx:sectional-block Caption));
+    $$self{tagprop}{'ltx:_CaptureBlock_'}{model}{'svg:g'}             = 1;
+    $$self{tagprop}{'ltx:_CaptureBlock_'}{model}{'svg:foreignObject'} = 1;
+  }
+  return; }
+
+# Clone the tagprop's (allowed content & attributes) of @other to $tag
+sub synthesizeElement {
+  my ($self, $tag, @others) = @_;
+  $$self{tagprop}{$tag} = {} unless $$self{tagprop}{$tag};
+  my $capture = $$self{tagprop}{$tag};
+  foreach my $other (@others) {
+    if (my $content = $$self{schemaclass}{$other}) {
+      foreach my $child (keys %$content) {
+        $$capture{model}{$child} = $$content{$child}; } }
+    elsif (my $entry = $$self{tagprop}{$other}) {
+      foreach my $child (keys %{ $$entry{model} }) {
+        $$capture{model}{$child} = $$entry{model}{$child}; }
+      foreach my $attr (keys %{ $$entry{attributes} }) {
+        $$capture{attributes}{$attr} = $$entry{attributes}{$attr}; } } }
   return; }
 
 #=====================================================================
@@ -378,7 +406,8 @@ sub canContain {
   return 0 if !$tag || ($tag eq '#PCDATA') || ($tag eq '#Comment');
   return 1 if $tag =~ /(.*?:)?_Capture_$/;                          # with or without namespace prefix
   return 1 if $tag eq '_WildCard_';
-  return 1 if $childtag =~ /(.*?:)?_Capture_$/;
+  return 1 if $childtag =~ /(.*?:)?_Capture_$/;                     # anything can contain these
+  return 1 if $childtag =~ /(.*?:)?_CaptureBlock_$/;
   return 1 if $childtag eq '_WildCard_';
   return 1 if $childtag eq '#Comment';
   return 1 if $childtag eq '#ProcessingInstruction';
@@ -417,7 +446,8 @@ sub canHaveAttribute {
   return 0 if $tag eq '#Document';
   return 0 if $tag eq '#ProcessingInstruction';
   return 0 if $tag eq '#DTD';
-  return 1 if $tag =~ /(.*?:)?_Capture_$/;
+  return 1 if $tag    =~ /(.*?:)?_Capture_$/;
+  return 1 if $attrib =~ /^_/;
   return 1 if $$self{permissive};
   my ($tagns,  $tagname)  = ($tag    =~ /^(\w+):(\w*)$/ ? ($1, $2) : ('', $tag));
   my ($attrns, $attrname) = ($attrib =~ /^(\w+):(\w*)$/ ? ($1, $2) : ('', $attrib));

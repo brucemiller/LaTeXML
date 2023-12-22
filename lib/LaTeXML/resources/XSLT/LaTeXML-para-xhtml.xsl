@@ -29,7 +29,7 @@
        a valid 'span' element instead.
        See the CONTEXT discussion in LaTeXML-common -->
 
-  <xsl:strip-space elements="ltx:para ltx:inline-para"/>
+  <xsl:strip-space elements="ltx:para ltx:inline-logical-block"/>
 
   <xsl:template match="ltx:para">
     <xsl:param name="context"/>
@@ -50,7 +50,26 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:inline-para">
+  <xsl:template match="ltx:logical-block">
+    <xsl:param name="context"/>
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates>
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates select="." mode="end">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:inline-logical-block">
     <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
       <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
@@ -82,7 +101,7 @@
   <xsl:template match="ltx:theorem | ltx:proof">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
@@ -149,7 +168,7 @@
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
     <xsl:choose>
-      <xsl:when test="count(ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:inline-para | ltx:inline-block | ltx:listing | ltx:p) > 1">
+      <xsl:when test="count(ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:inline-logical-block | ltx:inline-block | ltx:listing | ltx:p) > 1">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:apply-templates select="ltx:caption[following-sibling::ltx:figure
                                      | following-sibling::ltx:table
@@ -157,7 +176,7 @@
                                      | following-sibling::ltx:float
                                      | following-sibling::ltx:graphics
                                      | following-sibling::ltx:listing
-                                     | following-sibling::ltx:inline-para
+                                     | following-sibling::ltx:inline-logical-block
                                      | following-sibling::ltx:inline-block
                                      | following-sibling::ltx:p]">
           <xsl:with-param name="context" select="$context"/>
@@ -172,7 +191,7 @@
             </xsl:otherwise>
           </xsl:choose>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:for-each select="ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:break | ltx:inline-para | ltx:inline-block | ltx:listing | ltx:p | ltx:rawhtml">
+          <xsl:for-each select="ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:break | ltx:inline-logical-block | ltx:inline-block | ltx:listing | ltx:p | ltx:rawhtml">
             <xsl:choose>
               <xsl:when test="self::ltx:break">
                 <xsl:element name="div" namespace="{$html_ns}">
@@ -204,7 +223,7 @@
                                      | preceding-sibling::ltx:float
                                      | preceding-sibling::ltx:graphics
                                      | preceding-sibling::ltx:listing
-                                     | preceding-sibling::ltx:inline-para
+                                     | preceding-sibling::ltx:inline-logical-block
                                      | preceding-sibling::ltx:inline-block
                                      | preceding-sibling::ltx:p]">
           <xsl:with-param name="context" select="$context"/>

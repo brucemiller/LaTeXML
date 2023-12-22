@@ -34,7 +34,11 @@
       <ref name="slide"/>
       <ref name="slidesequence"/>
       <ref name="sidebar"/>
+      <ref name="sectional-block"/>
     </choice>
+  </define>
+  <define name="Misc.class" combine="choice">
+    <ref name="inline-sectional-block"/>
   </define>
   <define name="document_attributes">
     <a:documentation>Attributes for \elementref{document}.</a:documentation>
@@ -55,6 +59,37 @@
         <ref name="document.body.class"/>
         <ref name="BackMatter.class"/>
       </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="sectional-block">
+    <element name="sectional-block">
+      <a:documentation>A block containing sectional material. Note that this may tend to break the overall heirarchy.</a:documentation>
+      <ref name="sectional-block_attributes"/>
+      <ref name="sectional-block_model"/>
+    </element>
+  </define>
+  <define name="sectional-block_attributes">
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="sectional-block_model">
+    <zeroOrMore>
+      <ref name="document.body.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="inline-sectional-block">
+    <element name="inline-sectional-block">
+      <a:documentation>A block containing sectional material. Note that this may tend to break the overall heirarchy.</a:documentation>
+      <ref name="inline-sectional-block_attributes"/>
+      <ref name="inline-sectional-block_model"/>
+    </element>
+  </define>
+  <define name="inline-sectional-block_attributes">
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="inline-sectional-block_model">
+    <zeroOrMore>
+      <ref name="document.body.class"/>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->

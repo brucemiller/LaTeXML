@@ -25,9 +25,6 @@ DefEnvironment('{framed}', sub {
       framed     => 'rectangle',
       framecolor => $props{framecolor},
       cssstyle   => 'padding:' . $props{margin} . 'pt;border-width:' . $props{border} . 'pt'); },
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); },
   properties => sub { (framecolor => Black,
       margin => LookupRegister('\FrameSep')->ptValue,
       border => LookupRegister('\FrameRule')->ptValue); });
@@ -41,9 +38,6 @@ DefEnvironment('{oframed}', sub {
       framed     => 'rectangle',
       framecolor => $props{framecolor},
       cssstyle   => 'padding:' . $props{margin} . 'pt;border-width:' . $props{border} . 'pt'); },
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); },
   properties => sub { (framecolor => Black,
       margin => LookupRegister('\FrameSep')->ptValue,
       border => LookupRegister('\FrameRule')->ptValue); });
@@ -60,8 +54,6 @@ DefEnvironment('{shaded}', sub {
       backgroundcolor => $props{backgroundcolor},
       cssstyle        => 'padding:' . $props{margin} . 'pt'); },
   beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par');
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
       margin => LookupRegister('\FrameSep')->ptValue); });
@@ -75,8 +67,6 @@ DefEnvironment('{shaded*}', sub {
       cssstyle        => 'padding:' . $props{margin} . 'pt'); },
 
   beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par');
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
       margin => LookupRegister('\FrameSep')->ptValue); });
@@ -89,8 +79,6 @@ DefEnvironment('{snugshade}', sub {
       backgroundcolor => $props{backgroundcolor},
       cssstyle        => 'padding:' . $props{margin} . 'pt'); },
   beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par');
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
       margin => LookupRegister('\fboxsep')->ptValue); });    # Not \FrameSep
@@ -101,8 +89,6 @@ DefEnvironment('{snugshade*}', sub {
       backgroundcolor => $props{backgroundcolor},
       cssstyle        => 'padding:' . $props{margin} . 'pt'); },
   beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par');
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
       margin => LookupRegister('\fboxsep')->ptValue); });
@@ -111,9 +97,6 @@ DefEnvironment('{leftbar}', sub {
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     insertBlock($document, $props{body}, framed => 'left', framecolor => $props{framecolor},
       cssstyle => 'border-width:3pt;padding-left:10pt'); },
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); },
   properties => sub { (framecolor => Black); });
 
 # Expects: TFFrameColor to color the frame
@@ -126,9 +109,6 @@ DefEnvironment('{titled-frame} Undigested', sub {
       framed          => 'rectangle', framecolor => $props{framecolor},
       backgroundcolor => $props{backgroundcolor},
       cssstyle        => 'padding:8pt;border-width:2pt'); },
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); },
   afterDigestBegin => sub {
     Digest(Invocation(T_CS('\@titledframe@title'), $_[1]->getArg(1))); },
   properties => sub { (framecolor => LookupValue('color_TFFrameColor'),

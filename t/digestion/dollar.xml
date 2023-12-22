@@ -36,34 +36,34 @@ Another<note mark="2" role="footnote" xml:id="footnote2"><tags>
           </Math>
         </equation> t</note></p>
   </para>
-  <para class="ltx_minipage" vattach="middle" width="216.8pt" xml:id="p4">
-    <p>t</p>
-    <equation xml:id="S0.Ex2">
-      <Math mode="display" tex="m" text="m" xml:id="S0.Ex2.m1">
-        <XMath>
-          <XMTok font="italic" role="UNKNOWN">m</XMTok>
-        </XMath>
-      </Math>
-    </equation>
-    <p>t</p>
-  </para>
+  <logical-block class="ltx_minipage" vattach="middle" width="216.8pt">
+    <para xml:id="p4">
+      <p>t</p>
+      <equation xml:id="S0.Ex2">
+        <Math mode="display" tex="m" text="m" xml:id="S0.Ex2.m1">
+          <XMath>
+            <XMTok font="italic" role="UNKNOWN">m</XMTok>
+          </XMath>
+        </Math>
+      </equation>
+      <p>t</p>
+    </para>
+  </logical-block>
   <para xml:id="p5">
-    <p><inline-para class="ltx_minipage" vattach="middle" width="216.8pt">
-        <para xml:id="p5.p1">
-          <p>t</p>
-          <equation xml:id="S0.Ex3">
-            <Math mode="display" tex="m" text="m" xml:id="S0.Ex3.m1">
-              <XMath>
-                <XMTok font="italic" role="UNKNOWN">m</XMTok>
-              </XMath>
-            </Math>
-          </equation>
-          <p>t</p>
-        </para>
-      </inline-para></p>
+    <p><inline-block class="ltx_minipage" vattach="middle" width="216.8pt">
+        <p>t</p>
+        <equation xml:id="S0.Ex3">
+          <Math mode="display" tex="m" text="m" xml:id="S0.Ex3.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">m</XMTok>
+            </XMath>
+          </Math>
+        </equation>
+        <p>t</p>
+      </inline-block></p>
   </para>
-  <para xml:id="p6">
-    <inline-block class="ltx_parbox" vattach="middle" width="216.8pt">
+  <logical-block class="ltx_parbox" vattach="middle" width="216.8pt">
+    <para xml:id="p6">
       <p>t</p>
       <equation xml:id="S0.Ex4">
         <Math mode="display" tex="m" text="m" xml:id="S0.Ex4.m1">
@@ -73,8 +73,8 @@ Another<note mark="2" role="footnote" xml:id="footnote2"><tags>
         </Math>
       </equation>
       <p>t</p>
-    </inline-block>
-  </para>
+    </para>
+  </logical-block>
   <para xml:id="p7">
     <p><inline-block class="ltx_parbox" vattach="middle" width="216.8pt">
         <p>t</p>

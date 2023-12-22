@@ -2176,9 +2176,9 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     #  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
     my $issvg  = $current && $document->getNodeQName($current) =~ /^svg:/;
     my $vmode  = $current && $current->getAttribute('_vertical_mode_');
-    my $newtag = ($issvg ? 'svg:g' : ($vmode ? 'ltx:p' : 'ltx:text'));
-    my $node   = $document->openElement($newtag, _noautoclose => 1,
-      width => $props{width});
+    my $inline = $document->canContain($current, '#PCDATA');
+    my $newtag = ($issvg ? 'svg:g' : ($vmode ? ($inline ? 'ltx:inline-block' : 'ltx:p') : 'ltx:text'));
+    my $node   = $document->openElement($newtag, _noautoclose => 1, width => $props{width});
     $document->absorb($contents);
     if (!$issvg) {
       while (!$document->getElement()->hasAttribute('_beginscope') && $document->maybeCloseElement('svg:g')) { }
@@ -2244,93 +2244,65 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       $node->setAttribute(overflow  => 'visible'); } });
 
 # This attempts to be a generalize vbox construction;
-# It tries to figure out whether an ltx:inline-block or ltx:para is needed,
-# and attempts to figure out whether sequences of the inserted content
-# need to be explicitly wrapped in some kind of block element (presumably ltx:p).
-# It returns the inserted inner blocks,
-# whether or not they got wrapped by that ltx:inline-block; which it DOESN'T TELL YOU ABOUT!
+# The idea is to receeive block-like material, possibly wrapped in appropriate
+# container which gets attributes.
+# The contents are constructed in an ltx:_CaptureBlock_ element,
+# designed to accept all reasonable block material from several levels,
+# and then determine which container element is most apprpriate for both the conent & context
+# from block, logical-block or sectional-block, or the inline- variants.
 sub insertBlock {
   my ($document, $contents, %blockattr) = @_;
-  # Create something like:
-  # "<ltx:inline-block vattach='$vattach' height='#height'>#2</ltx:inline-block>"
-  my $model    = $document->getModel;
-  my $ocontext = $document->getElement;    # Where we originally start inserting.
+  my $model          = $document->getModel;
+  my $context        = $document->getElement;                  # Where we originally start inserting.
+  my $context_tag    = $document->getNodeQName($context);
+  my $is_svg         = ($context_tag =~ /^svg:/);              # svg is slightly tricky
+  my $ignorable_attr = $is_svg || !scalar(keys %blockattr);    # if we do not REQUIRE the attributes
+  if (($context_tag =~ /^ltx:XM/) && ($context_tag ne 'ltx:XMText')) {    # but math always needs this
+    $context     = $document->openElement('ltx:XMText');
+    $context_tag = $document->getNodeQName($context); }
+  my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
+  my $container = $document->openElement('ltx:_CaptureBlock_', '_vertical_mode_' => 1, %blockattr);
+  $document->absorb($contents);
+  my @nodes     = $container->childNodes;
+  my @node_tags = map { $document->getNodeQName($_); } @nodes;
+  my $nnodes    = scalar(@nodes);
+  $document->closeToNode($container, 1);
+  $document->closeNode($container);
+  $document->closeToNode($context, 1);
+  my $newcontainer;
 
-  my $blocktag  = 'ltx:block';
-  my $iblocktag = 'ltx:inline-block';
-  if ($blockattr{para}) {
-    $blocktag  = 'ltx:para';
-    $iblocktag = 'ltx:inline-para';
-    delete $blockattr{para}; }
-  # Generally, we're going to need some sort of container to hold the contents of the block.
-  # Particularly if we're: setting various size & positioning attributes;
-  # or can't currently open an ltx:p; or if the current point accepts plain text (#PCDATA).
-  # If we're in an inline context, we'll need a ltx:inline-block,  otherwise ltx:block.
-  # [Or maybe an ltx:para... when does that happen?]
-  my $newblock = undef;
-  map { ($blockattr{$_} || delete $blockattr{$_}) } keys %blockattr;
-  my $hasattr = scalar(keys %blockattr);
-  if ($hasattr || !$document->canContainSomehow($ocontext, 'ltx:p') || $document->canContain($ocontext, '#PCDATA')) {
-    my $tag = ($document->canContain($ocontext, $blocktag)
-      ? $blocktag
-      : $iblocktag);
-    $newblock = $document->openElement($tag, '_autoclose' => 1, %blockattr); }
-  my $context = ($newblock ? $newblock->parentNode : $ocontext);
-
-  ## I think this option isn't really needed.... try to simplify
-  ## elsif ($document->canContainSomehow($context, 'ltx:para')) {
-  ## $newblock = $document->openElement('ltx:para', '_autoclose' => 1, %blockattr); }
-  # Insert the content for the block, and reduce
-
-  $document->setAttribute($document->getElement, '_vertical_mode_' => 1);    # HACK!!!! (see \hbox)
-  my @nodes = $document->filterChildren($document->filterDeletions($document->absorb($contents)));
-
-  # Scan the inserted nodes, wrapping sequences of Inline items with a ltx:p
-  my @newnodes = ();
-  while (@nodes) {
-    # ltx:break are superflous, now, unless we're transporting a figure/float
-    if ($model->getNodeQName($nodes[0]) eq 'ltx:break' and
-      $model->getNodeQName($nodes[0]->parentNode) !~ /^ltx:(?:figure|float)$/) {
-      $document->removeNode(shift(@nodes));
-      next; }
-    my @n;    # Collect up sequences of Inline
-    while (@nodes && ($model->isInSchemaClass('Inline', $nodes[0]))) {
-      push(@n, shift(@nodes)); }
-    if (@n) {
-      push(@newnodes, $document->wrapNodes('ltx:p', @n)); }
-    else {
-      push(@newnodes, shift(@nodes)); } }
-  # If we've inserted a wrapper element, close all open elements up to it's parent
-  # It may have auto-opened some element to contain it, but leave that open for following material
-  # Otherwise, close everything back up to the originally open element (but only if still open!)
-  if ($newblock) {
-    $document->closeToNode($context, 1); }
-  else {
-    $document->closeToNode($ocontext, 1); }
-  # Check if the container is really needed.
-  if ($newblock) {
-    my @rows  = element_nodes($newblock);
-    my @crows = $rows[0]  && $rows[0]->childNodes;
-    my $row0  = $rows[0]  && $model->getNodeQName($rows[0]);
-    my $crow0 = $crows[0] && $model->getNodeQName($crows[0]);
-    if (scalar(@rows) < 1) {    # Insertion came up empty?
-      $document->removeNode($newblock); }    # then remove the new block entirely
-    elsif (scalar(@rows) > 1) {              # Multiple children, probably stock with container
-    }
-    elsif (($row0 =~ /^(?:ltx:p|ltx:para)/)    # Single child is ltx:p or ltx:para?
-      && (scalar(@crows) == 1)                         # with 1 child
-      && $document->canContain($context, $crows[0])    # if allowed.
-      && (!$hasattr || !grep { !$document->canHaveAttribute($crows[0], $_) } keys %blockattr)) {
-      map { $document->setAttribute($crows[0], $_ => $blockattr{$_}) } keys %blockattr;
-      $document->unwrapNodes($rows[0]);
-      $document->unwrapNodes($newblock); }
-    elsif ($document->canContain($context, $rows[0])    # row[0] allowed.
-      && (!$hasattr || !grep { !$document->canHaveAttribute($rows[0], $_) } keys %blockattr)) {
-      map { $document->setAttribute($rows[0], $_ => $blockattr{$_}) } keys %blockattr;
-      $document->unwrapNodes($newblock); } }
-
-  # And return the list of "rows" in the box (in case they need attributes....)
-  return @newnodes; }
+  if ($nnodes < 1) {    # Insertion came up empty?
+    $document->removeNode($container); }    # then remove the new block entirely
+  elsif ($ignorable_attr                    # No attributes, contents allowed in context?
+    && !grep { !$document->canContain($context, $_); } @node_tags) {
+    $document->unwrapNodes($container); }    # No container needed, at all.
+  elsif (($nnodes == 1)                      # Single node, allowed in context & accepts attributes
+    && $document->canContain($context, $nodes[0])
+    && ($ignorable_attr || !grep { !$document->canHaveAttribute($nodes[0], $_) } keys %blockattr)) {
+    map { $document->setAttribute($nodes[0], $_ => $blockattr{$_}) } keys %blockattr;
+    $document->unwrapNodes($container); }    # Add attributes and unwrap the single node
+  elsif (($nnodes == 1)    # Single node, but needs auto-wrapper which accepts attributes?
+    && ($newcontainer = $document->canContainSomehow($context, $nodes[0]))
+    && ($ignorable_attr || !grep { !$document->canHaveAttribute($newcontainer, $_) } keys %blockattr)) {
+    $document->renameNode($container, $newcontainer, 1); }    # rename the capture to that container
+  else {                                                      # Otherwise, rename the capture
+    if ($is_svg && grep { $_ =~ /^ltx:/; } @node_tags) {      # MAY need foreignObject wrapper
+      $context     = $document->wrapNodes('svg:foreignObject', $container);
+      $context_tag = $document->getNodeQName($context); }
+    my @candidates =
+      ($inline
+      ? (qw(ltx:inline-block ltx:inline-logical-block ltx:inline-sectional-block))
+      : (qw(ltx:block ltx:logical-block ltx:sectional-block)));
+    my @filtered_candidates = ();    # Filtered containers that can contain the content
+    foreach my $candidate (@candidates) {
+      push(@filtered_candidates, $candidate)
+        unless grep { !$document->canContainSomehow($candidate, $_); } @node_tags; }
+    my @allowed_candidates           # and are allowed in the context
+      = grep { ($document->canContain($context_tag, $_) ? $_ : ()); } @filtered_candidates;
+    if (my $tag = $allowed_candidates[0] || $filtered_candidates[0]) {
+      $document->renameNode($container, $tag, 1); }    # Rename the capture to the correct container
+  }
+  return @nodes; }
 
 DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
@@ -2824,9 +2796,14 @@ DefColumnType('r', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\hfil'))); return; });
 
 DefColumnType('p{Dimension}', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN, T_CS('\hbox'), T_BEGIN),
-      after => Tokens(T_END, T_END),
-      align => 'justify', width => $_[1]); return; });
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before => Tokens(T_CS('\vtop'), T_BEGIN, T_CS('\hbox'),
+        T_LETTER('t'), T_LETTER('o'), $_[1]->revert, T_CS('\relax'),
+        T_BEGIN),
+      after   => Tokens(T_END, T_END),
+      vattach => 'top',
+      align   => 'justify',
+    ); return; });
 
 DefColumnType('*{Number}{}', sub {
     my ($gullet, $n, $pattern) = @_;
@@ -3639,9 +3616,6 @@ DefConstructorI('\normal@par', undef, sub {
       if ($qname eq 'ltx:para' && !$node->getAttribute("class")) { # Only set on the para about to close, if unknown!
         if (my $c = $props{class}) {
           $document->setAttribute($node, class => $c); } }
-      elsif ($qname eq 'ltx:figure') {
-        # insert breaks in figures, for vertically separating subfigures
-        $document->insertElement('ltx:break'); }
       $document->maybeCloseElement('ltx:para'); } },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -3666,15 +3640,7 @@ DefConstructorI('\normal@par', undef, sub {
   alias      => '\par');
 
 Let('\par', '\normal@par');
-# OTOH, sometimes \par is just a minimalistic "start a new line"
-# This should be closer for those cases.
-# BUT! In the cases where an elaborate \\[0.4cm] or such sneaks in, gracefully ignore its args.
-DefConstructor('\inner@par OptionalMatch:* [Glue]', sub {
-    if    ($_[0]->maybeCloseElement('ltx:p')) { }
-    elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
-      $_[0]->insertElement('ltx:break'); } },
-  properties => { isBreak => 1 },
-  reversion  => Tokens(T_CS("\\\\"), T_CR));
+DefMacro('\inner@par OptionalMatch:* [Glue]', '\normal@par');  # Obsolete, but in case still used...
 
 Tag('ltx:para', autoClose => 1, autoOpen => 1, afterClose => \&pruneEmpty);
 

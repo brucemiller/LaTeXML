@@ -17,6 +17,7 @@
     <a:documentation>This module defines the following `logical' block elements.</a:documentation>
     <choice>
       <ref name="para"/>
+      <ref name="logical-block"/>
       <ref name="theorem"/>
       <ref name="proof"/>
       <ref name="figure"/>
@@ -29,7 +30,7 @@
   <define name="Misc.class" combine="choice">
     <a:documentation>Additionally, it defines these miscellaneous elements that can appear
 in both inline and block contexts.</a:documentation>
-    <ref name="inline-para"/>
+    <ref name="inline-logical-block"/>
   </define>
   <!-- ====================================================================== -->
   <define name="para">
@@ -51,23 +52,43 @@ in both inline and block contexts.</a:documentation>
     <ref name="Block.model"/>
   </define>
   <!-- ====================================================================== -->
-  <define name="inline-para">
-    <element name="inline-para">
-      <a:documentation>An inline para. Actually, can appear in inline or block mode, but
+  <define name="logical-block">
+    <element name="logical-block">
+      <a:documentation>A logical-block. Actually, like block can appear in inline or block mode, but
 typesets its contents as para.</a:documentation>
-      <ref name="inline-para_attributes"/>
-      <ref name="inline-para_model"/>
+      <ref name="logical-block_attributes"/>
+      <ref name="logical-block_model"/>
     </element>
   </define>
-  <define name="inline-para_attributes">
-    <a:documentation>Attributes for \elementref{inline-para}.</a:documentation>
+  <define name="logical-block_attributes">
+    <a:documentation>Attributes for \elementref{inline-logical-block}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
     <ref name="Positionable.attributes"/>
     <ref name="Backgroundable.attributes"/>
   </define>
-  <define name="inline-para_model">
-    <a:documentation>Content model for \elementref{inline-para}.</a:documentation>
+  <define name="logical-block_model">
+    <a:documentation>Content model for \elementref{logical-block}.</a:documentation>
+    <ref name="Para.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="inline-logical-block">
+    <element name="inline-logical-block">
+      <a:documentation>An inline logical-block. Actually, can appear in inline or block mode, but
+typesets its contents as para.</a:documentation>
+      <ref name="inline-logical-block_attributes"/>
+      <ref name="inline-logical-block_model"/>
+    </element>
+  </define>
+  <define name="inline-logical-block_attributes">
+    <a:documentation>Attributes for \elementref{inline-logical-block}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+  </define>
+  <define name="inline-logical-block_model">
+    <a:documentation>Content model for \elementref{inline-logical-block}.</a:documentation>
     <ref name="Para.model"/>
   </define>
   <!-- ====================================================================== -->

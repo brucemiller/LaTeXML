@@ -258,7 +258,7 @@ DefEnvironment('{lxNavbar}', sub { },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
-      ['ltx:inline-para', { class => 'ltx_page_navbar' }, $whatsit->getBody]);
+      ['ltx:inline-logical-block', { class => 'ltx_page_navbar' }, $whatsit->getBody]);
     return; });
 
 # Of course, it would be more interesting to supply a "template"
@@ -271,14 +271,14 @@ DefEnvironment('{lxHeader}', sub { },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
-      ['ltx:inline-para', { class => 'ltx_page_header' }, $whatsit->getBody]);
+      ['ltx:inline-logical-block', { class => 'ltx_page_header' }, $whatsit->getBody]);
     return; });
 DefEnvironment('{lxFooter}', sub { },
   beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
-      ['ltx:inline-para', { class => 'ltx_page_footer' }, $whatsit->getBody]);
+      ['ltx:inline-logical-block', { class => 'ltx_page_footer' }, $whatsit->getBody]);
     return; });
 
 #======================================================================
