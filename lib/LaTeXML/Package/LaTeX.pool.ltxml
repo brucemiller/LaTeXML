@@ -1377,11 +1377,11 @@ sub applyAligningContext {
   my ($document, $align, $class) = @_;
   if (my $container = LookupValue('ALIGNING_NODE')) {
     my ($node, $previous) = @$container;
-    my @children = $node->childNodes($node);
+    my @children = $node->childNodes;
     while (my $skip = shift(@children)) {
       last if !$previous || $previous->isSameNode($skip); }
     while (my $child = shift(@children)) {
-      setAlignOrClass($document, $child, $align, $class); } }
+      setAlignOrClass($document, $child, $align, $class) if $child->nodeType == XML_ELEMENT_NODE; } }
   return; }
 
 DefConstructorI('\centering', undef, \&setupAligningContext,
