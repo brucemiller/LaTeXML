@@ -115,7 +115,7 @@ sub replace_star {
   my ($tokens, $replacement) = @_;
   my @t = ();
   foreach my $t ($tokens->unlist) {
-    push(@t, ($t->equals(T_OTHER('*')) ? (T_BEGIN, $replacement, T_END) : $t)); }
+    push(@t, ($t->equals(T_OTHER('*')) ? $replacement : $t)); }
   return Tokens(@t); }
 
 sub endEnumItemize {
@@ -213,6 +213,11 @@ DefPrimitive('\setlist Optional RequiredKeyVals:enumitem', sub {
         foreach my $level (@levels) {
           store_enumitem_defaults('enumitem_' . $name . $level . '_defaults', $kv); } } }
     return; });
+
+# These are obsolete
+DefMacro('\setitemize Optional {}',     '\setlist[itemize,#1]{#2}');
+DefMacro('\setenumerate Optional {}',   '\setlist[enumerate,#1]{#2}');
+DefMacro('\setdescription Optional {}', '\setlist[description,#1]{#2}');
 
 sub store_enumitem_defaults {
   my ($name, $kv) = @_;
