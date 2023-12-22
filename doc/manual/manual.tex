@@ -1205,8 +1205,7 @@ Here are a couple of trivial examples of constructors:
   DefConstructor('\item[]',
     "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
   DefEnvironment('{quote}',   
-    '<ltx:quote>#body</ltx:quote>',
-    beforeDigest=>sub{ Let('\\\\','\@block@cr');});
+    '<ltx:quote>#body</ltx:quote>');
   DefConstructor('\footnote[]{}',
     "<ltx:note class='footnote' mark='#refnum'>#2</ltx:note>",
     mode=>'text',
