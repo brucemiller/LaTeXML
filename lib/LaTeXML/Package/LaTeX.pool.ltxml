@@ -1407,21 +1407,16 @@ DefConstructorI('\@add@flushleft', undef,
 #======================================================================-
 # C.6.1 Quotations and Verse
 #======================================================================-
-DefConstructor('\@block@cr[Dimension]', "<ltx:break/>\n",
-  reversion => Tokens(T_CS("\\\\"), T_CR));
+Let('\@block@cr', '\lx@newline');    # Obsolete, but in case still used
 DefEnvironment('{quote}',
   '<ltx:quote>#body</ltx:quote>',
-  beforeDigest => sub { Let('\\\\', '\@block@cr'); Let('\par', '\@block@cr') },
-  mode         => 'text');
+  mode => 'text');
 DefEnvironment('{quotation}',
   '<ltx:quote>#body</ltx:quote>',
-  beforeDigest => sub { Let('\\\\', '\@block@cr'); Let('\par', '\@block@cr') },
-  mode         => 'text');
-# NOTE: Handling of \\ within these environments?
+  mode => 'text');
 DefEnvironment('{verse}',
   '<ltx:quote role="verse">#body</ltx:quote>',
-  beforeDigest => sub { Let('\\\\', '\@block@cr'); Let('\par', '\@block@cr') },
-  mode         => 'text');
+  mode => 'text');
 
 #======================================================================
 # C.6.2 List-Making environments

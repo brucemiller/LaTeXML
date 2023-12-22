@@ -235,8 +235,7 @@ Let('\csq@bquote@ii', '\csq@bquote@iii');
 DefMacro('\ltxml@mkblockquote@open', '\begingroup\ltxml@mkblockquote@open@i');
 DefPrimitive('\ltxml@mkblockquote@open@i', sub {
     DefEnvironment('{quote}', '<ltx:quote class="ltx_blockquote">#body</ltx:quote>',
-      beforeDigest => sub { Let('\\\\', '\@block@cr'); Let('\par', '\@block@cr') },
-      mode         => 'text'); });
+      mode => 'text'); });
 DefMacro('\ltxml@mkblockquote@close', '\endgroup');
 
 DefConstructor('\ltxml@mkblockquote@aopen', '<ltx:text class="ltx_inline-quote" _noautoclose="1">');
@@ -266,8 +265,7 @@ EoTeX
 DefMacro('\ltxml@blockenvironment@open', '\begingroup\ltxml@blockenvironment@open@i');
 DefPrimitive('\ltxml@blockenvironment@open@i', sub {
     DefEnvironment('{quote}', '<ltx:quote class="ltx_displayquote">#body</ltx:quote>',
-      beforeDigest => sub { Let('\\\\', '\@block@cr'); Let('\par', '\@block@cr') },
-      mode         => 'text'); });
+      mode => 'text'); });
 DefMacro('\ltxml@blockenvironment@close', '\endgroup');
 
 DefMacro('\ltxml@mkbegdispquote{}{}', '\ltxml@mkbegdispquote@aopen\mkbegdispquote{#1}{#2}');

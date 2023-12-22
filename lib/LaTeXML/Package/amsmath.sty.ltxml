@@ -929,7 +929,7 @@ DefConstructor('\boxed@text{}',
     . "</ltx:Math>",
   mode         => 'math', bounded => 1,
   beforeDigest => sub {
-    Let("\\\\", '\@block@cr'); },
+    Let("\\\\", '\lx@newline'); },
   alias => '\boxed');
 
 DefMath('\implies',   "\x{27F9}", role => 'ARROW', meaning => 'implies');
