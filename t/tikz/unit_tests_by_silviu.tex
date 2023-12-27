@@ -23,7 +23,7 @@ Rectangles
   \pgfpathrectangle{\pgfpointorigin}{\pgfpoint{2ex}{1ex}}
   \pgfusepath{stroke}
 \end{pgfpicture}
- and 
+ and
 \begin{pgfpicture}
   \pgfpathrectangle{\pgfpoint{0ex}{1ex}}{\pgfpoint{2ex}{1ex}}
   \pgfusepath{stroke}
@@ -536,7 +536,7 @@ rounded corners
 %text=around and around and around and around we go}}]
 %(0,1) arc (180:-180:1.5cm and 1cm);
 %\end{tikzpicture}
- 
+
 \endgroup % ----------- end -----------------
 %======================================================================
 \section{More Paths}
@@ -1469,37 +1469,6 @@ clip
   \fill[red] (0,0) circle (1);
   \fill[red] (1,0) circle (1);
 \end{tikzpicture}
-\endgroup % ----------- end -----------------
-%======================================================================
-\section{Images}
-
-% TODO: images: constructor sets its width to width
-% TODO: 2 types of sets of dim
-%\usetikzlibrary{spy}
-\begingroup % ------ pseudo document ---------
-% \begin{tikzpicture}[path image/.style={
-% path picture={
-% \node at (path picture bounding box.center) {
-% \includegraphics[height=3cm]{#1}
-% };}}]
-% \draw [help lines] (0,0) grid (3,2);
-% \draw [path image=brave-gnu-world-logo,draw=blue,thick]
-% (0,1) circle (1);
-% \draw [path image=brave-gnu-world-logo,draw=red,very thick,->]
-% (1,0) parabola[parabola height=2cm] (3,0);
-% \end{tikzpicture}
-\pgfdeclareimage[interpolate=true,width=1cm,height=1cm]{image1}{brave-gnu-world-logo}
-\pgfdeclareimage[interpolate=true,width=1cm,height=1cm]{image2}{brave-gnu-world-logo}
-\pgfdeclareimage[interpolate=true,height=1cm]{image3}{brave-gnu-world-logo}
-\begin{pgfpicture}
-  \pgftext[at=\pgfpoint{1cm}{5cm},left,base]{\pgfuseimage{image1}}
-  \pgftext[at=\pgfpoint{1cm}{3cm},left,base]{\pgfuseimage{image2}}
-  \pgftext[at=\pgfpoint{1cm}{1cm},left,base]{\pgfuseimage{image3}}
-  \pgfpathrectangle{\pgfpoint{1cm}{5cm}}{\pgfpoint{1cm}{1cm}}
-  \pgfpathrectangle{\pgfpoint{1cm}{3cm}}{\pgfpoint{1cm}{1cm}}
-  \pgfpathrectangle{\pgfpoint{1cm}{1cm}}{\pgfpoint{1cm}{1cm}}
-  \pgfusepath{stroke}
-\end{pgfpicture}
 \endgroup % ----------- end -----------------
 %======================================================================
 \section{Quick Commands}
