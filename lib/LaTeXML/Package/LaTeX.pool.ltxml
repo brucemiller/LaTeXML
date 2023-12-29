@@ -4422,9 +4422,14 @@ our %index_style = (textbf => 'bold', bf => 'bold', textrm => '', rm => '',
 sub process_index_phrases {
   my ($gullet, $phrases, $inlist) = @_;
   my @expansion = ();
+  my @tokens    = $phrases->unlist;
+  # check we have a well-formed argument
+  return unless @tokens;
+  if (!$phrases->isBalanced) {    # if ill-formed, discard;
+    Warn("malformed", "indexentry", $gullet,
+      'index entry has unbalanced groups, discarding: "' . ToString($phrases) . '"');
+    return; }
   # Split the text into phrases, separated by "!"
-  my @tokens = $phrases->unlist;
-  return                      unless @tokens;
   push(@tokens, T_OTHER('!')) unless $tokens[-1]->getString eq '!';    # Add terminal !
   my @phrase = ();
   my @sortas = ();
@@ -4462,7 +4467,30 @@ sub process_index_phrases {
     T_BEGIN, @expansion, T_END);
   return @expansion; }
 
-DefMacro('\index{}', \&process_index_phrases);
+# read verbatim, as if with LaTeX's \@sanitize;
+# useful for \index (maybe others?)
+DefParameterType('SanitizedVerbatim', sub {
+    my ($gullet) = @_;
+    $gullet->readUntil(T_BEGIN);
+    # crucial: deactivate the backslash to avoid activating command sequences
+    # chars switched to CC_OTHER by \@sanitize: ' ', '\\', '$', '&', '#', '^', '_', '%', '~'
+    # some of those are already in state's "SPECIALS", so only adding the rest:
+    StartSemiverbatim(' ', '\\', '%');
+    my $arg = $gullet->readBalanced();
+    EndSemiverbatim();
+    # now that we have the semiverbatim tokens, retokenize.
+    # this may seem like wasted work, but it avoids very unfortunate error propagation in cases
+    # where the \index argument was malformed for one reason or another.
+    #
+    # the strangeness comes from the original TeX workflow requiring multiple conversion calls,
+    # alongside a call to the `makeidx` binary, which we don't do in latexml. This parameter type
+    # emulates one important aspect implied by those steps.
+    $arg = TokenizeInternal(UnTeX($arg));
+    return $arg; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+# real-world LaTeX \index
+DefMacro('\index SanitizedVerbatim', \&process_index_phrases);
 
 Tag('ltx:indexphrase',    afterClose => \&addIndexPhraseKey);
 Tag('ltx:glossaryphrase', afterClose => \&addIndexPhraseKey);
