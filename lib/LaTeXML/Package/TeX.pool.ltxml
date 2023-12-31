@@ -6859,14 +6859,15 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
     my $n    = scalar(@rows) - 1;
     $col1->setAttribute(rowspan => $n);
     $coln->setAttribute(rowspan => $n);
+    my $pfont = $STATE->lookupValue('font')->specialize('(');
     $document->appendTree($col1,
       ['ltx:XMWrap', { depth => $d },
-        ['ltx:XMTok', { role   => 'OPEN', height  => 0, depth => $d, yoffset => $md }, '('],
-        ['ltx:XMTok', { height => $h,     yoffset => $md }, ' ']]);    # Effectively, a strut
+        ['ltx:XMTok', { role   => 'OPEN', height  => 0, depth => $d, yoffset => $md, font => $pfont }, '('],
+        ['ltx:XMTok', { height => $h,     yoffset => $md, font => $pfont }, ' ']]);   # Effectively, a strut
     $document->appendTree($coln,
       ['ltx:XMWrap', {},
-        ['ltx:XMTok', { role   => 'CLOSE', height => 0, depth => $d, yoffset => $md }, ')'],
-        ['ltx:XMTok', { height => $h, yoffset => $md }, ' ']]);
+        ['ltx:XMTok', { role   => 'CLOSE', height => 0, depth => $d, yoffset => $md, font => $pfont }, ')'],
+        ['ltx:XMTok', { height => $h, yoffset => $md, font => $pfont }, ' ']]);
     return; },
   reversion => '#1');
 
@@ -7291,7 +7292,9 @@ DefConstructor('\lx@apply OptionalKeyVals:XMath {}{}',
 DefConstructor('\lx@symbol OptionalKeyVals:XMath {}',
   "<ltx:XMTok $XMath_attributes>#2</ltx:XMTok>",
   reversion   => '#2',
-  afterDigest => sub { XMath_copy_keyvals(@_); });
+  afterDigest => sub {
+    $_[1]->setFont($_[1]->getArg(2)->getFont);
+    XMath_copy_keyvals(@_); });
 
 # Wrap the contents in an ltx:XMWrap, to stand as a single subtree & providing attributes
 # The ltx:XMWrap may be collapsed, later, by parsing

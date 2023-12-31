@@ -3875,7 +3875,9 @@ DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
     if ($str != 1) {
       $$attr{rowsep} = Dimension(($str - 1) . 'em'); }
     alignmentBindings($template, 'math', attributes => $attr);
-    MergeFont(mathstyle => 'text');
+    if (my $font = LookupValue('font')) {
+      if (($font->getMathstyle || 'text') eq 'display') {
+        MergeFont(mathstyle => 'text'); } }
     Let("\\\\",         '\@alignment@newline');
     Let('\lx@intercol', '\lx@math@intercol');
     return; });

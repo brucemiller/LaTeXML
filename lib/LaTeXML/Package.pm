@@ -1619,7 +1619,8 @@ sub defmath_rewrite {
 
 sub defmath_common_constructor_options {
   my ($cs, $presentation, %options) = @_;
-  my $sizer = inferSizer($options{sizer}, $options{reversion});
+  my $sizer          = inferSizer($options{sizer}, $options{reversion});
+  my $presentation_s = $presentation && ToString($presentation);
   return (
     alias => $options{alias} || $cs->getString,
     (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
@@ -1645,8 +1646,8 @@ sub defmath_common_constructor_options {
       stretchy           => $options{stretchy},
       operator_stretchy  => $options{operator_stretchy},
       font               => ($options{mathstyle}
-        ? sub { LookupValue('font')->merge(mathstyle => $options{mathstyle})->specialize($presentation); }
-        : sub { LookupValue('font')->specialize($presentation); }),
+        ? sub { LookupValue('font')->merge(mathstyle => $options{mathstyle})->specialize($presentation_s); }
+        : sub { LookupValue('font')->specialize($presentation_s); }),
       lpadding => $options{lpadding},
       rpadding => $options{rpadding} },
     scope => $options{scope}); }

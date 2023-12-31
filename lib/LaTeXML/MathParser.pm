@@ -1168,10 +1168,10 @@ sub Absent {
   return New('absent'); }
 
 sub InvisibleTimes {
-  return New('times', "\x{2062}", role => 'MULOP', font => LaTeXML::Common::Font->new()); }
+  return New('times', "\x{2062}", role => 'MULOP'); }
 
 sub InvisibleComma {
-  return New(undef, "\x{2063}", role => 'PUNCT', font => LaTeXML::Common::Font->new()); }
+  return New(undef, "\x{2063}", role => 'PUNCT'); }
 
 # Get n-th arg of an XMApp.
 # However, this is really only used to get the script out of a sub/super script
@@ -1406,19 +1406,22 @@ sub Fence {
     return InterpretDelimited(New($op, undef, ($decl_id ? (decl_id => $decl_id) : ())), @stuff); } }
 
 # Compose a complex relational operator from two tokens, such as >=, >>
+# (similar to CatSymbols, but specialized to relops)
 sub TwoPartRelop {
   my ($op1, $op2) = @_;
   $op1 = Lookup($op1);
   $op2 = Lookup($op2);
-  my $m1 = p_getTokenMeaning($op1);
-  my $m2 = p_getTokenMeaning($op2);
+  my $m1   = p_getTokenMeaning($op1);
+  my $m2   = p_getTokenMeaning($op2);
+  my $font = p_getAttribute($op1, '_font');
   my $meaning;
   if ($m1 eq $m2) {
     $meaning = "much-$m1"; }
   else {
     $meaning = "$m1-or-$m2"; }
   my $content = $op1->textContent . $op2->textContent;
-  return ['ltx:XMTok', { role => "RELOP", meaning => $meaning }, $content]; }
+  return ['ltx:XMTok', { role => "RELOP", meaning => $meaning, ($font ? (_font => $font) : ()) },
+    $content]; }
 
 # NOTE: It might be best to separate the multiple Formulae into separate XMath's???
 # but only at the top level!
