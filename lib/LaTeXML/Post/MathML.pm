@@ -18,8 +18,8 @@ use LaTeXML::Util::Unicode;
 use LaTeXML::Post;
 use LaTeXML::Common::Font;
 use List::Util qw(max);
-use base qw(LaTeXML::Post::MathProcessor);
-use base qw(Exporter);
+use base       qw(LaTeXML::Post::MathProcessor);
+use base       qw(Exporter);
 our @EXPORT = (
   qw( &DefMathML ),
   qw( &pmml &pmml_scriptsize &pmml_smaller
@@ -703,6 +703,8 @@ sub stylizeContent {
     elsif (!$variant)            { $variant = 'normal'; } }    # must say so explicitly.
   elsif ($font && !$variant) {
     Warn('unexpected', $font, undef, "Unrecognized font variant '$font'"); $variant = ''; }
+  elsif ($variant eq 'normal') {    # normal is default for any other tokens, so omit
+    $variant = undef; }
   # Should we map to Unicode's Plane 1 blocks for Mathematical Alphanumeric Symbols?
   # Only upper & lower case latin & greek, and also numerals can be mapped.
   # For each mathvariant, and for each of those 5 groups, there is a linear mapping,
