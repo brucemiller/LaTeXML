@@ -731,6 +731,9 @@ sub stylizeContent {
     $class = ($class ? $class . ' ' : '') . 'ltx_font_oldstyle'; }
   elsif ($font =~ /smallcaps/) {
     $class = ($class ? $class . ' ' : '') . 'ltx_font_smallcaps'; }
+  elsif ($variant) {    # Any left-over mathvariant? Punt to CSS
+    $class = ($class ? $class . ' ' : '') . 'ltx_mathvariant_' . $variant; }
+
   if ($opacity) {
     $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
 
@@ -738,8 +741,8 @@ sub stylizeContent {
   my %props = ($tag eq 'm:mo' ? opdict_lookup($text, $role) : ());
 
   # Resolve stretch & size
-  $stretchy = undef if ($tag ne 'm:mo');                          # Only allowed on m:mo!
-  $size     = undef if $stretchy;                                 # Ignore size, if we're stretching.
+  $stretchy = undef if ($tag ne 'm:mo');             # Only allowed on m:mo!
+  $size     = undef if $stretchy;                    # Ignore size, if we're stretching.
   my $stretchyhack = undef;
   if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {    # invisible get no size or stretchiness
     $stretchy = $size = undef; }
