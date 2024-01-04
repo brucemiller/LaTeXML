@@ -731,7 +731,7 @@ sub stylizeContent {
     $class = ($class ? $class . ' ' : '') . 'ltx_font_oldstyle'; }
   elsif ($font =~ /smallcaps/) {
     $class = ($class ? $class . ' ' : '') . 'ltx_font_smallcaps'; }
-  elsif ($variant) {    # Any left-over mathvariant? Punt to CSS
+  elsif ($variant && ($variant ne 'normal')) {    # Any left-over mathvariant? Punt to CSS
     $class = ($class ? $class . ' ' : '') . 'ltx_mathvariant_' . $variant; }
 
   if ($opacity) {
