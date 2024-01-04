@@ -2139,7 +2139,9 @@ sub FindFile_fallback {
 
 sub pathname_is_nasty {
   my ($pathname) = @_;
-  return $pathname =~ /[^\w\-_\+\=\/\\\.~\:\s)(]/; }
+  my $is_nasty = $pathname =~ /([^\w\-_\+\=\/\\\.~\:\s)(])/;
+  Warn('malformed', 'path', undef, "Path may be dangerous due to char '$1' skipping: $pathname") if $is_nasty;
+  return $is_nasty; }
 
 sub maybeReportSearchPaths {
   if (LookupValue('SEARCHPATHS_REPORTED')) {
