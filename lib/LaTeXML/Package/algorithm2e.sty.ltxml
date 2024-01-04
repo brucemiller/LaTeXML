@@ -120,11 +120,18 @@ DefMacro('\algocf@Vsline{}', '\lx@algo@endline\lx@algo@startline \@marker{VsL}\l
 DefMacro('\algocf@Noline{}', '\lx@algo@endline\lx@algo@startline \@marker{NoL}\lx@algo@advlevel \lx@strippar{#1} \@marker{ENDNoLINE}');
 
 #DefMacro('\@endalgocfline',  'EOL');
+DefMacro('\algocf@endline', sub {
+    if (LookupValue('algorithm_dont_print_semicolon')) {
+      return (); }
+    else {
+      return (T_OTHER(';')); } }, locked => 1);
 #DefMacro('\lx@algo@lastpar', 'PRELASTPAR\the\everypar\lx@algo@@endline');
 #DefMacro('\@endalgoln',  '\@endalgocfline\lx@algo@par');
 DefMacro('\@endalgoln', '\@endalgocfline');
 #DefMacro('\@endalgocfline',  '\algocf@endline\@marker{EOL}\lx@algo@par\let\lx@algo@parx\relax');
 DefMacro('\@endalgocfline', '\algocf@endline\@marker{EOL}\lx@algo@par');
+DefMacro('\PrintSemicolon', sub { AssignValue('algorithm_dont_print_semicolon', 0); return (); }, locked => 1);
+DefMacro('\DontPrintSemicolon', sub { AssignValue('algorithm_dont_print_semicolon', 1); return (); }, locked => 1);
 # Annoying: sometimes these are ended by authors \; (which ends the line)
 # sometimes the author omits that.
 # And sometimes the enclosing caller appends a \par afterwards!
