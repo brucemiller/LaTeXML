@@ -721,8 +721,8 @@ sub stylizeContent {
     $variant = ($plane1hack && ($variant ne $u_variant) && ($variant =~ /^bold/)
       ? 'bold' : undef); }                       # Possibly keep variant bold
                                                  # Use class (css) to patchup some weak translations
-  if ($text =~ /^\p{Format}*$/) {                # Formatting (eg. InvisibleTImes)
-    $font = $variant = $color = $bgcolor = $opacity = undef; }
+  if ($text =~ /^\p{Format}*$/) {                # Only Formatting (eg. InvisibleTImes) (or empty)
+    $font = $variant = $color = $bgcolor = $opacity = undef; }    # Needs no viz. styling attributes
   elsif (!$font) { }
   elsif ($font =~ /caligraphic/) {
     # Note that this is unlikely to have effect when plane1 chars are used!
