@@ -715,13 +715,15 @@ sub stylizeContent {
   my $u_variant  = $variant
     && ($plane1hack ? $plane1hackable{$variant}
     : ($plane1 ? $variant : undef));
-  my $u_text = $u_variant && unicode_convert($text, $u_variant);
+  my $u_text = ($tag ne 'm:mtext') && $u_variant && unicode_convert($text, $u_variant);
   if ((defined $u_text) && ($u_text ne '')) {    # didn't remap the text ? Keep text & variant
     $text    = $u_text;
     $variant = ($plane1hack && ($variant ne $u_variant) && ($variant =~ /^bold/)
       ? 'bold' : undef); }                       # Possibly keep variant bold
                                                  # Use class (css) to patchup some weak translations
-  if    (!$font) { }
+  if ($text =~ /^\p{Format}*$/) {                # Formatting (eg. InvisibleTImes)
+    $font = $variant = $color = $bgcolor = $opacity = undef; }
+  elsif (!$font) { }
   elsif ($font =~ /caligraphic/) {
     # Note that this is unlikely to have effect when plane1 chars are used!
     $class = ($class ? $class . ' ' : '') . 'ltx_font_mathcaligraphic'; }
@@ -733,6 +735,8 @@ sub stylizeContent {
     $class = ($class ? $class . ' ' : '') . 'ltx_font_smallcaps'; }
   elsif ($variant && ($variant ne 'normal')) {    # Any left-over mathvariant? Punt to CSS
     $class = ($class ? $class . ' ' : '') . 'ltx_mathvariant_' . $variant; }
+  if ($tag eq 'm:mtext') {
+    $variant = undef; }
 
   if ($opacity) {
     $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
