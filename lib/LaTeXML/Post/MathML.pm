@@ -18,8 +18,8 @@ use LaTeXML::Util::Unicode;
 use LaTeXML::Post;
 use LaTeXML::Common::Font;
 use List::Util qw(max);
-use base qw(LaTeXML::Post::MathProcessor);
-use base qw(Exporter);
+use base       qw(LaTeXML::Post::MathProcessor);
+use base       qw(Exporter);
 our @EXPORT = (
   qw( &DefMathML ),
   qw( &pmml &pmml_scriptsize &pmml_smaller
@@ -703,6 +703,8 @@ sub stylizeContent {
     elsif (!$variant)            { $variant = 'normal'; } }    # must say so explicitly.
   elsif ($font && !$variant) {
     Warn('unexpected', $font, undef, "Unrecognized font variant '$font'"); $variant = ''; }
+  elsif ($variant eq 'normal') {    # normal is default for any other tokens, so omit
+    $variant = undef; }
   # Should we map to Unicode's Plane 1 blocks for Mathematical Alphanumeric Symbols?
   # Only upper & lower case latin & greek, and also numerals can be mapped.
   # For each mathvariant, and for each of those 5 groups, there is a linear mapping,
@@ -713,13 +715,15 @@ sub stylizeContent {
   my $u_variant  = $variant
     && ($plane1hack ? $plane1hackable{$variant}
     : ($plane1 ? $variant : undef));
-  my $u_text = $u_variant && unicode_convert($text, $u_variant);
+  my $u_text = ($tag ne 'm:mtext') && $u_variant && unicode_convert($text, $u_variant);
   if ((defined $u_text) && ($u_text ne '')) {    # didn't remap the text ? Keep text & variant
     $text    = $u_text;
     $variant = ($plane1hack && ($variant ne $u_variant) && ($variant =~ /^bold/)
       ? 'bold' : undef); }                       # Possibly keep variant bold
                                                  # Use class (css) to patchup some weak translations
-  if    (!$font) { }
+  if ($text =~ /^\p{Format}*$/) {                # Only Formatting (eg. InvisibleTImes) (or empty)
+    $font = $variant = $color = $bgcolor = $opacity = undef; }    # Needs no viz. styling attributes
+  elsif (!$font) { }
   elsif ($font =~ /caligraphic/) {
     # Note that this is unlikely to have effect when plane1 chars are used!
     $class = ($class ? $class . ' ' : '') . 'ltx_font_mathcaligraphic'; }
@@ -729,6 +733,11 @@ sub stylizeContent {
     $class = ($class ? $class . ' ' : '') . 'ltx_font_oldstyle'; }
   elsif ($font =~ /smallcaps/) {
     $class = ($class ? $class . ' ' : '') . 'ltx_font_smallcaps'; }
+  elsif ($variant && ($variant ne 'normal')) {    # Any left-over mathvariant? Punt to CSS
+    $class = ($class ? $class . ' ' : '') . 'ltx_mathvariant_' . $variant; }
+  if ($tag eq 'm:mtext') {
+    $variant = undef; }
+
   if ($opacity) {
     $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
 
@@ -736,8 +745,8 @@ sub stylizeContent {
   my %props = ($tag eq 'm:mo' ? opdict_lookup($text, $role) : ());
 
   # Resolve stretch & size
-  $stretchy = undef if ($tag ne 'm:mo');                          # Only allowed on m:mo!
-  $size     = undef if $stretchy;                                 # Ignore size, if we're stretching.
+  $stretchy = undef if ($tag ne 'm:mo');             # Only allowed on m:mo!
+  $size     = undef if $stretchy;                    # Ignore size, if we're stretching.
   my $stretchyhack = undef;
   if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {    # invisible get no size or stretchiness
     $stretchy = $size = undef; }

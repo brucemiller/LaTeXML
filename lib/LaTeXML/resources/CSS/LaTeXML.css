@@ -462,6 +462,22 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 .ltx_font_smallcaps  { font-variant: small-caps; font-style:normal; }
 .ltx_font_oldstyle   { font-variant-numeric: oldstyle-nums; }
 .ltx_font_mathcaligraphic { font-family: "Lucida Calligraphy", "Zapf Chancery","URW Chancery L"; }
+/* Fallbacks for when content+mathvariant cannot be mapped to Unicode */
+.ltx_mathvariant_italic        { font-style: italic; }
+.ltx_mathvariant_bold          { font-weight: bold; }
+.ltx_mathvariant_bold-italic   { font-style: italic; font-weight: bold; }
+.ltx_mathvariant_sans-serif             { font-family: sans-serif; }
+.ltx_mathvariant-bold-sans-serif        { font-family: sans-serif; font-weight: bold; }
+.ltx_mathvariant-sans-serif-italic      { font-family: sans-serif; font-style: italic; }
+.ltx_mathvariant-bold-sans-serif-italic { font-family: sans-serif; font-style: italic; font-weight: bold; }
+.ltx_mathvariant_monospace     { font-family: monospace; }
+/* Can we say anything generic about double-struck, script or fraktur ? */
+.ltx_mathvariant_double-struck { font-weight: bold; }
+.ltx_mathvariant_script        { font-family: "Lucida Calligraphy", "Zapf Chancery","URW Chancery L", cursive; }
+.ltx_mathvariant_bold-script   { font-family: "Lucida Calligraphy", "Zapf Chancery","URW Chancery L", cursive; font-weight: bold; }
+.ltx_mathvariant-fraktur       { }/* ??? */
+.ltx_mathvariant_bold-fraktur  { font-weight: bold; }
+
 /*
 
 .ltx_font_mathscript { ? }
