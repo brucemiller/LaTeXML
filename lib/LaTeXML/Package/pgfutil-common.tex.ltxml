@@ -21,17 +21,17 @@ use warnings;
 # Load pgf's TeX code for util-common, first
 InputDefinitions('pgfutil-common', type => 'tex', noltxml => 1);
 
-# Overwrite macros of interest
-
-DefPrimitive('\pgfutil@in@{}{}', sub {
-    AssignValue('pgfutilin_args', [ToString($_[1]), ToString($_[2])]);
-    return; });
-
-DefConditional('\ifpgfutil@in@', sub {
-    my $args    = LookupValue('pgfutilin_args') || ['', ''];
-    my $element = $$args[0];
-    my $list    = $$args[1];
-    my $test    = (index($list, $element) != -1);
-    return $test; });
+# DG: This is no longer needed, as raw interpretation is sufficient,
+#     while the redefinitions can lead to breakage (see issue ar5iv#402).
+#
+# DefPrimitive('\pgfutil@in@{}{}', sub {
+#     AssignValue('pgfutilin_args', [ToString($_[1]), ToString($_[2])]);
+#     return; });
+# DefConditional('\ifpgfutil@in@', sub {
+#     my $args    = LookupValue('pgfutilin_args') || ['', ''];
+#     my $element = $$args[0];
+#     my $list    = $$args[1];
+#     my $test    = (index($list, $element) != -1);
+#     return $test; });
 
 1;

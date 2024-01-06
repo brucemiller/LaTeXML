@@ -1,0 +1,44 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | pgfcircutils.tex                                                    | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+
+# The usual argument here is \pgfmathresult, which latexml currently redefines often.
+# in some cases we may not yet perfectly emulate the decimal separators,
+# so for now let us add our own version of the ...@stripdecimals macro,
+# which can accept a result that is missing a dot.
+DefMacro('\pgf@circ@stripdecimals Until:\pgf@nil', sub {
+    my ($gullet, $arg) = @_;
+    my $dot    = T_OTHER('.');
+    my @tokens = $arg->unlist;
+    my @leading;
+    # drop a decimal if found, otherwise return as-is
+    while (my $t = shift @tokens) {
+      if ($t->equals($dot)) {
+        last; }
+      else {
+        push @leading, $t;
+      }
+    }
+    return Tokens(@leading); },
+  locked => 1);
+
+InputDefinitions('pgfcircutils', type => 'tex', noltxml => 1);
+
+#**********************************************************************
+
+1;

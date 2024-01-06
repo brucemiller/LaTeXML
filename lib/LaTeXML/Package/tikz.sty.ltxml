@@ -47,6 +47,10 @@ DefPrimitive('\use@@tikzlibrary{}', sub {
     } }
     return; });
 
-Let('\tikz@align@temp', '\relax');
+# TODO: What do we need to do to get the native emulation working?
+DefMacro('\tikz@align@temp', '\pgfmathresult');
+
+# TODO: Why is this macro failing to get picked up?
+DefMacro('\tikzcdset', '\pgfqkeys{/tikz/commutative diagrams}');
 
 1;

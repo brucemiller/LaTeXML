@@ -51,7 +51,7 @@ DefMacro('\acksection', '\section*{Acknowledgments and Disclosure of Funding}');
 DefEnvironment('{ack}', '#body',
   beforeDigest => sub { $_[0]->getGullet->unread(T_CS('\acksection')); return; });
 
-DefMacro('\answerYes[]',  '\textcolor{blue}{[Yes] #1}}');
+DefMacro('\answerYes[]',  '\textcolor{blue}{[Yes] #1}');
 DefMacro('\answerNo[]',   '\textcolor{orange}{[No] #1}');
 DefMacro('\answerNA[]',   '\textcolor{gray}{[N/A] #1}');
 DefMacro('\answerTODO[]', '\textcolor{red}{\bf [TODO]}');

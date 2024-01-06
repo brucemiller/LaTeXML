@@ -1,0 +1,66 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usetikzlibrary{calc}
+
+\tikzset{3D/.cd,
+  x/.store in=\xx, x=0,
+  y/.store in=\yy, y=0,
+  z/.store in=\zz, z=0
+}
+
+\tikzdeclarecoordinatesystem{3D}{%
+  \tikzset{3D/.cd,#1}%
+  \pgfpoint{sin(\yy)*(\xx)}{-((\xx)/75)^2+(\zz)/100*(\xx)}%
+}
+
+\begin{document}
+\message{init: \meaning\t^^J}
+\def\e{1260}
+\begin{tikzpicture}%[line join=round, very thin]
+  \foreach \x [evaluate={\i=mod(\x+90,360); \j=int((\i<180)*2-1); \t=3;
+    \sc=\x/\e; \n=int((\e-\x)/15+5); \X=\x/\e;}] in {10,25,...,\e} {
+    % \message{x: \meaning\x^^J}
+    % \message{i: \meaning\i^^J}
+    % \message{j: \meaning\j^^J}
+    % \message{t: \meaning\t^^J}
+    % \message{sc: \meaning\sc^^J}
+    % \message{n: \meaning\n^^J}
+    % \message{X: \meaning\X^^J}
+    \path [shift={(3D cs:x=\x-\t,y={3*sin(\x-\t)})}, yslant=cos(\x)/5]
+      (-\X/2, 0)   coordinate (A')  ( \X/2, 0)   coordinate (B')
+      ( \X/2,2*\X) coordinate (C')  (-\X/2,2*\X) coordinate (D');
+
+    \path [shift={(3D cs:x=\x,y=3*sin \x)}, yslant=cos(\x)/5]
+      (-\X/2, 0)   coordinate (A) ( \X/2, 0)   coordinate (B)
+      ( \X/2,2*\X) coordinate (C) (-\X/2,2*\X) coordinate (D);
+
+    \filldraw [black!90] (B) -- (B') -- (C') -- (C)  -- cycle;
+    \filldraw [black!80] (A) -- (A') -- (D') -- (D)  -- cycle;
+    \filldraw [black!70] (C) -- (D)  -- (D') -- (C') -- cycle;
+    \filldraw [black]    (A) -- (B)  -- (C)  -- (D)  -- cycle;
+
+    \node [text=white, shift={($(C)!0.5!(D)$)}, anchor=north,
+      yslant=cos(\x)/5, font=\sf, scale=\sc*1.5] at (0,-.33*\X) {\n};
+  }
+
+  \foreach \i [evaluate={\x=\i*30-10; \X=1; \n=int(5-\i); \xsl=\x/180}]
+    in {1,...,4} {
+
+    \path [shift={(3D cs:x=\x+\e,y=-3*\x/90)}, yslant=cos \e/5, xslant=\xsl]
+      (-\X/2, 0)           coordinate (A) ( \X/2, 0)           coordinate (B)
+      ( \X/2, \X*2-\x/360) coordinate (C) (-\X/2, \X*2-\x/360) coordinate (D);
+
+    \path [shift={(3D cs:x=\x+\e,y=-3*\x/90)}, shift={(5/50,5/50-\i*2/50)},
+      yslant=cos \e/5, xslant=\xsl]
+      (-\X/2, 0)           coordinate (A') ( \X/2, 0)           coordinate (B')
+      ( \X/2, \X*2-\x/330) coordinate (C') (-\X/2, \X*2-\x/330) coordinate (D');
+
+    \filldraw [black!70] (C) -- (D)  -- (D') -- (C') -- cycle;
+    \filldraw [black!70] (A) -- (B)  -- (B') -- (A') -- cycle;
+    \filldraw [black!90] (B) -- (B') -- (C') -- (C)  -- cycle;
+    \filldraw [black]    (A) -- (B)  -- (C)  -- (D)  -- cycle;
+
+    \node [text=white, shift={($(C)!0.5!(D)$)}, anchor=north, xslant=\xsl,
+      yslant=cos \e/5, font=\sf, scale=1.5] at (0,-.33*\X) {\n};
+  }
+\end{tikzpicture}
+\end{document}

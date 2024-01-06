@@ -1,0 +1,52 @@
+% Behaviour of the stator voltage and the RMS-value of the stator
+% flux as a function of speed in scalar control.
+% Author: Erno Pentzin (2013)
+\documentclass{article}
+\usepackage{amsmath} % Required for \varPsi below
+\usepackage{tikz}
+%%%<
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{10pt}%
+%%%>
+\begin{comment}
+:Title: AC drive voltage flux control
+:Tags: Electrical engineering;Plotting;Basics
+:Author: Erno Pentzin
+:Slug: ac-drive-voltage
+
+Behaviour of the stator voltage and the RMS-value of the stator
+flux as a function of speed in scalar control. Adapted from the
+figure in the handout by Jorma Luomi and Asko Niemenmaa (2011).
+\end{comment}
+\begin{document}
+
+\begin{tikzpicture}
+
+% horizontal axis
+\draw[->] (0,0) -- (6,0) node[anchor=north] {$f/f_N$};
+% labels
+\draw	(0,0) node[anchor=north] {0}
+		(2,0) node[anchor=north] {1}
+		(4,0) node[anchor=north] {2};
+% ranges
+\draw	(1,3.5) node{{\scriptsize Constant flux}}
+		(4,3.5) node{{\scriptsize Field weakening}};
+
+% vertical axis
+\draw[->] (0,0) -- (0,4) node[anchor=east] {$U_s,\varPsi_s$};
+% nominal speed
+\draw[dotted] (2,0) -- (2,4);
+
+% Us
+\draw[thick] (0,0) -- (2,2) -- (6,2);
+\draw (1,1.5) node {$U_s$}; %label
+
+% Psis
+\draw[thick,dashed] (0,3) -- (2,3) parabola[bend at end] (6,1);
+\draw (2.5,3) node {$\varPsi_s$}; %label
+
+\end{tikzpicture}
+
+\end{document}
