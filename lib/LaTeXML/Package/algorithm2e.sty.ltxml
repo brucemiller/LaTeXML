@@ -77,9 +77,9 @@ for my $env (qw(algorithm2e algorithm algorithm*)) {
       Let('\parbox', '\lx@algo@parbox');
       Let("\\\\",    '\lx@algo@par');
       Let('\strut',  '\lx@algo@strut');
-      AssignCatcode("\r" => CC_SPACE);    # NOT CC_EOL, so newlines don't turn to \par!
-                                          #    AssignCatcode("\r" => 13);
-          #    Let(T_ACTIVE("\r"), '\relax');    # More appropriate than \par, I think?
+      # AssignCatcode("\r" => CC_SPACE);    # NOT CC_EOL, so newlines don't turn to \par!
+      #    AssignCatcode("\r" => 13);
+      #    Let(T_ACTIVE("\r"), '\relax');    # More appropriate than \par, I think?
 
       #    Let('\vtop','\relax');      # ?
       DefMacro('\;', '\ifmmode\@mathsemicolon\else\@endalgoln\fi');
@@ -120,11 +120,20 @@ DefMacro('\algocf@Vsline{}', '\lx@algo@endline\lx@algo@startline \@marker{VsL}\l
 DefMacro('\algocf@Noline{}', '\lx@algo@endline\lx@algo@startline \@marker{NoL}\lx@algo@advlevel \lx@strippar{#1} \@marker{ENDNoLINE}');
 
 #DefMacro('\@endalgocfline',  'EOL');
+DefMacro('\algocf@endline', sub {
+    return LookupValue('algorithm_dont_print_semicolon') ? () : (T_OTHER(';')); },
+  locked => 1);
 #DefMacro('\lx@algo@lastpar', 'PRELASTPAR\the\everypar\lx@algo@@endline');
 #DefMacro('\@endalgoln',  '\@endalgocfline\lx@algo@par');
 DefMacro('\@endalgoln', '\@endalgocfline');
 #DefMacro('\@endalgocfline',  '\algocf@endline\@marker{EOL}\lx@algo@par\let\lx@algo@parx\relax');
 DefMacro('\@endalgocfline', '\algocf@endline\@marker{EOL}\lx@algo@par');
+DefMacro('\PrintSemicolon', sub {
+    AssignValue('algorithm_dont_print_semicolon', 0, 'global');
+    return (); }, locked => 1);
+DefMacro('\DontPrintSemicolon', sub {
+    AssignValue('algorithm_dont_print_semicolon', 1, 'global');
+    return (); }, locked => 1);
 # Annoying: sometimes these are ended by authors \; (which ends the line)
 # sometimes the author omits that.
 # And sometimes the enclosing caller appends a \par afterwards!
