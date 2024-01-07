@@ -138,6 +138,7 @@ sub loadCompiledSchema {
   my ($self, $file) = @_;
   ProgressSpinup("Loading compiled schema $file");
   my $MODEL;
+  RecordInput($file);
   open($MODEL, '<', $file) or Fatal('I/O', $file, undef, "Cannot open Compiled Model $file for reading", $!);
   my $line;
   while ($line = <$MODEL>) {

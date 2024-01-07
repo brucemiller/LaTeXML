@@ -36,6 +36,7 @@ use strict;
 use warnings;
 use XML::LibXML qw(:all);
 use XML::LibXML::XPathContext;
+use LaTeXML::Common::Error;
 use LaTeXML::Util::Pathname;
 use Encode;
 use Carp;

@@ -27,6 +27,7 @@ sub new {
   my ($class, $pathname) = @_;
   my ($dir, $name, $ext) = pathname_split($pathname);
   my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
+  RecordInput($pathname);
   ProgressSpinup("Loading $$self{source}");
   return $self; }
 
@@ -65,7 +66,7 @@ sub stringify {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

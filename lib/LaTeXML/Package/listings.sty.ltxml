@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use LaTeXML::Common::Error;
 use MIME::Base64;
 use Encode qw(is_utf8 encode);
 
@@ -321,6 +322,7 @@ sub listingsReadRawFile {
   my $path     = FindFile($filename);
   my $text;
   my $LST_FH;
+  RecordInput($filename) if $path;
   if ($path && open($LST_FH, '<', $path)) {
     { local $/ = undef;
       $text = <$LST_FH>;

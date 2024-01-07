@@ -2660,6 +2660,7 @@ sub maybeRequireDependencies {
   if (my $path = FindFile($file, type => $type, noltxml => 1)) {
     local $/ = undef;
     my $IN;
+    RecordInput($path);
     if (open($IN, '<', $path)) {
       my $code = <$IN>;
       close($IN);
