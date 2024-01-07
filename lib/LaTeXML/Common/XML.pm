@@ -228,6 +228,7 @@ sub initialize_catalogs {
   return if $catalogs_initialized;
   $catalogs_initialized = 1;
   foreach my $catalog (pathname_findall('LaTeXML.catalog', installation_subdir => '.')) {
+    RecordInput($catalog);
     XML::LibXML->load_catalog($catalog); }
   return; }
 
