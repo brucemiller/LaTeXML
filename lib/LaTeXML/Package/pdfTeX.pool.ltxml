@@ -170,12 +170,12 @@ DefParameterType('OpenAnnotSpecification', sub {
     return; }
   , optional => 1, undigested => 1);
 
-DefPrimitive('\pdfannot OpenAnnotSpecification', undef);
+DefPrimitive('\pdfannot OpenAnnotSpecification', sub { (); });
 
 # \pdfstartlink [ rule spec ] [ attr spec ] action spec (h, m)
-DefPrimitive('\pdfstartlink', undef);
+DefPrimitiveI('\pdfstartlink', undef, sub { (); });
 # \pdfendlink (h, m)
-DefPrimitive('\pdfendlink', undef);
+DefPrimitiveI('\pdfendlink', undef, sub { (); });
 # \pdfoutline outline spec (h, v, m)
 # \pdfdest dest spec (h, v, m)
 # \pdfthread thread spec (h, v, m)
@@ -196,18 +196,18 @@ DefMacro('\pdfmapline{}',                         '');
 # \vadjust [ pre spec ] filler { vertical mode material } (h, m)
 DefMacro('\quitvmode', '');
 # \pdfliteral [ pdfliteral spec ] general text (h, v, m)
-DefPrimitive('\pdfliteral OptionalMatch:direct OptionalMatch:page GeneralText', undef);
+DefPrimitive('\pdfliteral OptionalMatch:direct SkipSpaces OptionalMatch:page GeneralText', sub { (); });
 # \special pdfspecial spec
 # \pdfresettimer
-DefPrimitive('\pdfresettimer',           undef);
-DefPrimitive('\pdfresettimerresettimer', undef);
+DefPrimitive('\pdfresettimer',           sub { (); });
+DefPrimitive('\pdfresettimerresettimer', sub { (); });
 # \pdfsetrandomseed number
 # \pdfnoligatures font
 # \pdfprimitive control sequence
 # TODO: https://tex.stackexchange.com/questions/13771/let-a-control-sequence-to-a-redefined-primitive
 DefMacro('\pdfprimitive DefToken', '#1');    # we can just ignore the advanced effects for now.
 # \pdfcolorstack stack number stack action general text
-DefPrimitive('\pdfcolorstack Number OptionalMatch:set OptionalMatch:push OptionalMatch:pop OptionalMatch:current', sub {
+DefPrimitive('\pdfcolorstack Number OptionalMatch:set SkipSpaces OptionalMatch:push SkipSpaces OptionalMatch:pop SkipSpaces OptionalMatch:current', sub {
     # for now, carefully read and discard all arguments
     my ($stomach, $number, $set, $push, $pop, $current) = @_;
     return if ($pop);
