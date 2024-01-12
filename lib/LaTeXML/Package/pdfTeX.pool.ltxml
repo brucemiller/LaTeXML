@@ -196,7 +196,7 @@ DefMacro('\pdfmapline{}',                         '');
 # \vadjust [ pre spec ] filler { vertical mode material } (h, m)
 DefMacro('\quitvmode', '');
 # \pdfliteral [ pdfliteral spec ] general text (h, v, m)
-DefPrimitive('\pdfliteral OptionalMatch:direct SkipSpaces OptionalMatch:page GeneralText', sub { (); });
+DefPrimitive('\pdfliteral OptionalMatch:direct OptionalMatch:page GeneralText', sub { (); });
 # \special pdfspecial spec
 # \pdfresettimer
 DefPrimitive('\pdfresettimer',           sub { (); });
@@ -207,7 +207,7 @@ DefPrimitive('\pdfresettimerresettimer', sub { (); });
 # TODO: https://tex.stackexchange.com/questions/13771/let-a-control-sequence-to-a-redefined-primitive
 DefMacro('\pdfprimitive DefToken', '#1');    # we can just ignore the advanced effects for now.
 # \pdfcolorstack stack number stack action general text
-DefPrimitive('\pdfcolorstack Number OptionalMatch:set SkipSpaces OptionalMatch:push SkipSpaces OptionalMatch:pop SkipSpaces OptionalMatch:current', sub {
+DefPrimitive('\pdfcolorstack Number OptionalMatch:set OptionalMatch:push OptionalMatch:pop OptionalMatch:current', sub {
     # for now, carefully read and discard all arguments
     my ($stomach, $number, $set, $push, $pop, $current) = @_;
     return if ($pop);
