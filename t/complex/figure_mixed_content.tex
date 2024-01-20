@@ -7,6 +7,7 @@
 \usepackage{booktabs}
 \usepackage{subcaption}
 \usepackage{tikz}
+\usepackage{algorithmic}
 \usetikzlibrary{spy}
 \usepackage{listings}
 \newtheorem{theorem}{Theorem}
@@ -153,5 +154,125 @@ Testing \ref{array:subfig1} and \ref{array:subfig2} inside \ref{array:fig}.
   \caption{Caption}
 \end{figure}
 \clearpage
+
+% 3 algorithms in minipages, taken from arXiv and anonymized
+\begin{figure*}[tb]
+  \begin{minipage}{0.56\textwidth}
+
+  \vspace{-10px}
+  \begin{algorithm}[H]
+    \caption{Algorithms in minipage}
+    \label{alg:main}
+  \begin{algorithmic}[1]
+    \REQUIRE line
+    \STATE line
+    \STATE line
+    \STATE line
+    \STATE line
+
+    \FOR{$\text{line}$}
+
+      \STATE line
+      \STATE line
+    \ENDFOR
+    \STATE
+    \STATE line
+    \WHILE{line}
+      \STATE line
+      \WHILE{line}
+        \STATE line
+        \STATE \textbf{line}
+        \STATE \hspace{16px} line
+        \STATE \hspace{16px} line
+        \STATE \hspace{16px} line
+        \STATE \hspace{16px} line
+
+        \STATE \textbf{line} line:
+        \STATE \hspace{16px} line
+        \STATE \hspace{16px} line
+        \STATE \hspace{16px} line
+        \STATE \hspace{16px} line
+        \STATE \hspace{16px} \hspace{16px} line
+        \STATE \hspace{16px} \hspace{16px} line
+        \STATE \hspace{16px} line
+        \STATE \hspace{16px} line
+
+      \ENDWHILE
+      \STATE
+      \STATE line
+      \STATE line \COMMENT{line}
+      \STATE line
+      \STATE line
+    \ENDWHILE
+    \STATE
+    \FOR{$\text{line}$}
+      \STATE line
+    \ENDFOR
+
+    \STATE \textbf{return} line
+
+  \end{algorithmic}
+  \end{algorithm}
+  \vspace{-18px}
+  \end{minipage}\hspace{8px}
+  \begin{minipage}{0.42\textwidth}
+
+  \vspace{-10px}
+  \begin{algorithm}[H]
+    \caption{{\color{blue}line}}
+    \label{alg:rpc}
+  \begin{algorithmic}[1]
+    \REQUIRE line
+    \STATE line
+    \FOR{$\text{line}$}
+      \STATE line
+    \ENDFOR
+
+    \WHILE{line}
+      \STATE line
+      \FOR{$\text{line}$}
+        \STATE line
+        \STATE line
+        \STATE \hspace{16px} line
+        \STATE line
+      \ENDFOR
+      \STATE line
+    \ENDWHILE
+
+  \end{algorithmic}
+  \end{algorithm}
+  \vspace{-18px}
+  \begin{algorithm}[H]
+    \caption{{\color{blue}line}}
+    \label{alg:replace}
+  \begin{algorithmic}[1]
+    \REQUIRE line
+    \STATE line
+    \STATE line
+    \STATE line
+    \STATE \hspace{8px} line
+    \STATE line
+    \STATE line
+    \WHILE{line}
+      \STATE \hspace{-4px} line
+      \STATE \hspace{-4px} line
+      \STATE \hspace{4px} line
+      \STATE \hspace{4px} line
+      \STATE \hspace{4px} line
+      \STATE \hspace{4px} line
+      \STATE \hspace{4px} line
+      \STATE \hspace{4px} line
+      \STATE \hspace{-4px} line
+      \STATE \hspace{4px} line
+      \STATE \hspace{4px} line
+      \STATE \hspace{12px} line
+      \STATE \hspace{4px} line
+    \ENDWHILE
+    \STATE \textbf{return} chain
+  \end{algorithmic}
+  \end{algorithm}
+  \vspace{-18px}\end{minipage}
+  \vspace{-5pt}
+\end{figure*}
 
 \end{document}
