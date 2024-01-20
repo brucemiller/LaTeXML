@@ -168,18 +168,9 @@
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
     <xsl:choose>
-      <xsl:when test="count(ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:inline-logical-block | ltx:inline-block | ltx:itemize | ltx:equation | ltx:listing | ltx:p) > 1">
+      <xsl:when test="count(*[contains(@class,'ltx_figure_panel')]) > 1">
         <xsl:text>&#x0A;</xsl:text>
-        <xsl:apply-templates select="ltx:caption[following-sibling::ltx:figure
-                                     | following-sibling::ltx:table
-                                     | following-sibling::ltx:tabular
-                                     | following-sibling::ltx:float
-                                     | following-sibling::ltx:graphics
-                                     | following-sibling::ltx:listing
-                                     | following-sibling::ltx:inline-logical-block
-                                     | following-sibling::ltx:inline-block
-                                     | following-sibling::ltx:itemize
-                                     | following-sibling::ltx:p]">
+        <xsl:apply-templates select="ltx:caption[following-sibling::*[contains(@class,'ltx_figure_panel')]]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
         <xsl:element name="div" namespace="{$html_ns}">
@@ -192,41 +183,51 @@
             </xsl:otherwise>
           </xsl:choose>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:for-each select="ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:break | ltx:itemize | ltx:inline-logical-block | ltx:inline-block | ltx:listing | ltx:p | ltx:rawhtml">
+          <xsl:for-each select="*[not(self::ltx:caption)]">
             <xsl:choose>
               <xsl:when test="self::ltx:break">
                 <xsl:element name="div" namespace="{$html_ns}">
                   <xsl:attribute name="class">ltx_flex_break</xsl:attribute>
                 </xsl:element>
               </xsl:when>
-              <xsl:otherwise>
-                <xsl:text>&#x0A;</xsl:text>
+              <xsl:when test="contains(@class,'ltx_figure_panel')">
+                <xsl:variable name="pre_first_non_panel" select="preceding-sibling::*[not(contains(@class,'ltx_figure_panel'))][1]" />
+                <xsl:variable name="pre_cell_count" select="count(preceding-sibling::*[contains(@class,'ltx_figure_panel')]) -
+                  count($pre_first_non_panel/preceding-sibling::*[contains(@class,'ltx_figure_panel')])"/>
+                <xsl:variable name="post_first_non_panel" select="following-sibling::*[not(contains(@class,'ltx_figure_panel'))][1]" />
+                <xsl:variable name="post_cell_count" select="count(following-sibling::*[contains(@class,'ltx_figure_panel')]) -
+                  count($post_first_non_panel/following-sibling::*[contains(@class,'ltx_figure_panel')])"/>
+                <xsl:variable name="cell_count"><!-- counting scheme: 1,2,3,4,many-->
+                  <xsl:choose>
+                    <xsl:when test="($pre_cell_count + $post_cell_count) > 3">many</xsl:when>
+                    <xsl:otherwise>
+                      <xsl:value-of select="1 + $pre_cell_count + $post_cell_count"></xsl:value-of>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:variable>
                 <xsl:element name="div" namespace="{$html_ns}">
-                  <xsl:attribute name="class">ltx_flex_cell<!--
-                  --><xsl:if test="contains(@class,'ltx_flex_size_1')">ltx_flex_size_1</xsl:if><!--
-                  --><xsl:if test="contains(@class,'ltx_flex_size_2')">ltx_flex_size_2</xsl:if><!--
-                  --><xsl:if test="contains(@class,'ltx_flex_size_3')">ltx_flex_size_3</xsl:if><!--
-                  --><xsl:if test="contains(@class,'ltx_flex_size_4')">ltx_flex_size_4</xsl:if><!--
-                  --><xsl:if test="contains(@class,'ltx_flex_size_many')">ltx_flex_size_many</xsl:if><!--
-                  --></xsl:attribute>
+                  <xsl:attribute name="class">ltx_flex_cell ltx_flex_size_<xsl:value-of select="$cell_count"></xsl:value-of></xsl:attribute>
                   <xsl:apply-templates select=".">
                     <xsl:with-param name="context" select="$context"/>
                   </xsl:apply-templates>
                 </xsl:element>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text>&#x0A;</xsl:text>
+                <xsl:apply-templates select=".">
+                  <xsl:with-param name="context" select="$context"/>
+                </xsl:apply-templates>
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
           <xsl:text>&#x0A;</xsl:text>
         </xsl:element>
-        <xsl:apply-templates select="ltx:caption[preceding-sibling::ltx:figure
-                                     | preceding-sibling::ltx:table
-                                     | preceding-sibling::ltx:tabular
-                                     | preceding-sibling::ltx:float
-                                     | preceding-sibling::ltx:graphics
-                                     | preceding-sibling::ltx:listing
-                                     | preceding-sibling::ltx:inline-logical-block
-                                     | preceding-sibling::ltx:inline-block
-                                     | preceding-sibling::ltx:p]">
+        <xsl:if test="ltx:caption[preceding-sibling::*[contains(@class,'ltx_figure_panel')]]">
+          <xsl:element name="div" namespace="{$html_ns}">
+            <xsl:attribute name="class">ltx_flex_break</xsl:attribute>
+          </xsl:element>
+        </xsl:if>
+        <xsl:apply-templates select="ltx:caption[preceding-sibling::*[contains(@class,'ltx_figure_panel')]]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
       </xsl:when>
