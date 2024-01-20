@@ -21,7 +21,7 @@ use LaTeXML::Common::XML;
 use LaTeXML::Util::Radix;
 use Unicode::Normalize;
 use Scalar::Util qw(blessed);
-use base         qw(LaTeXML::Common::Object);
+use base qw(LaTeXML::Common::Object);
 
 #**********************************************************************
 # These two element names are `leaks' of the document structure into
@@ -1419,8 +1419,17 @@ sub addSSValues {
   return; }
 
 sub addClass {
-  my ($self, $node, $class) = @_;
-  return addSSValues($self, $node, class => $class); }
+  my ($self, $node, $value) = @_;
+  return addSSValues($self, $node, class => $value); }
+
+sub removeClass {
+  my ($self, $node, $value) = @_;
+  if (my $current = $node->getAttribute('class')) {
+    my @new = grep { $_ ne $value } split(/\s/, $current);
+    # note: we need to use the libxml setAttribute directly,
+    # since Document::setAttribute is a no-op on an empty value!
+    $node->setAttribute('class' => join(' ', sort @new)); }
+  return; }
 
 #**********************************************************************
 # Association of nodes and ids (xml:id)
