@@ -155,6 +155,28 @@ Testing \ref{array:subfig1} and \ref{array:subfig2} inside \ref{array:fig}.
 \end{figure}
 \clearpage
 
+% manual 2x2 horizontal panels, with caption in-between
+\begin{figure}
+  \includegraphics[width=0.33\textwidth]{example-image-a}\hspace{2cm}%
+  \includegraphics[width=0.33\textwidth]{example-image-a}\newline
+  \caption{mid-fig caption}
+  \includegraphics[width=0.33\textwidth]{example-image-a}\hspace{2cm}%
+  \includegraphics[width=0.33\textwidth]{example-image-a}%
+\end{figure}
+\clearpage
+
+% 2x2 flex figure with 3 captions, one midway through
+\begin{figure}
+  \caption{leading caption}
+  \includegraphics[width=0.33\textwidth]{example-image-a}\hspace{2cm}%
+  \includegraphics[width=0.33\textwidth]{example-image-a}\newline
+  \caption{mid-fig caption}
+  \includegraphics[width=0.33\textwidth]{example-image-a}\hspace{2cm}%
+  \includegraphics[width=0.33\textwidth]{example-image-a}%
+  \caption{trailing caption}
+\end{figure}
+\clearpage
+
 % 3 algorithms in minipages, taken from arXiv and anonymized
 \begin{figure*}[tb]
   \begin{minipage}{0.56\textwidth}

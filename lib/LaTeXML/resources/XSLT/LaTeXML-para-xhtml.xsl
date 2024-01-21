@@ -170,25 +170,35 @@
     <xsl:choose>
       <xsl:when test="count(*[contains(@class,'ltx_figure_panel')]) > 1">
         <xsl:text>&#x0A;</xsl:text>
-        <xsl:apply-templates select="ltx:caption[following-sibling::*[contains(@class,'ltx_figure_panel')]]">
+        <xsl:apply-templates select="*[self::ltx:caption][not(preceding-sibling::*[contains(@class,'ltx_figure_panel')])]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
         <xsl:element name="div" namespace="{$html_ns}">
-          <xsl:choose>
-            <xsl:when test="self::ltx:table">
-              <xsl:attribute name="class">ltx_flex_figure ltx_flex_table</xsl:attribute>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:attribute name="class">ltx_flex_figure</xsl:attribute>
-            </xsl:otherwise>
-          </xsl:choose>
-          <xsl:text>&#x0A;</xsl:text>
-          <xsl:for-each select="*[not(self::ltx:caption)]">
+          <xsl:attribute name="class">ltx_flex_figure<!--
+            --><xsl:if test="self::ltx:table"> ltx_flex_table</xsl:if>
+          </xsl:attribute>
+          <xsl:for-each select="*">
             <xsl:choose>
               <xsl:when test="self::ltx:break">
                 <xsl:element name="div" namespace="{$html_ns}">
                   <xsl:attribute name="class">ltx_flex_break</xsl:attribute>
                 </xsl:element>
+              </xsl:when>
+              <xsl:when test="self::ltx:caption">
+                <xsl:choose>
+                  <!-- leading/trailing caption handled outside, skip -->
+                  <xsl:when test="not(preceding-sibling::*[contains(@class,'ltx_figure_panel')])
+                    or not(following-sibling::*[contains(@class,'ltx_figure_panel')])"></xsl:when>
+                  <xsl:otherwise>
+                    <!-- mid-figure captions, rare but possible - also force a break -->
+                    <xsl:apply-templates select=".">
+                      <xsl:with-param name="context" select="'inline'"/>
+                    </xsl:apply-templates>
+                    <xsl:element name="div" namespace="{$html_ns}">
+                      <xsl:attribute name="class">ltx_flex_break</xsl:attribute>
+                    </xsl:element>
+                  </xsl:otherwise>
+                </xsl:choose>
               </xsl:when>
               <xsl:when test="contains(@class,'ltx_figure_panel')">
                 <xsl:variable name="pre_first_non_panel" select="preceding-sibling::*[not(contains(@class,'ltx_figure_panel'))][1]" />
@@ -222,12 +232,7 @@
           </xsl:for-each>
           <xsl:text>&#x0A;</xsl:text>
         </xsl:element>
-        <xsl:if test="ltx:caption[preceding-sibling::*[contains(@class,'ltx_figure_panel')]]">
-          <xsl:element name="div" namespace="{$html_ns}">
-            <xsl:attribute name="class">ltx_flex_break</xsl:attribute>
-          </xsl:element>
-        </xsl:if>
-        <xsl:apply-templates select="ltx:caption[preceding-sibling::*[contains(@class,'ltx_figure_panel')]]">
+        <xsl:apply-templates select="*[self::ltx:caption][not(following-sibling::*[contains(@class,'ltx_figure_panel')])]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
       </xsl:when>

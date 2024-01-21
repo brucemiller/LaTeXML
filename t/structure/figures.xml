@@ -43,7 +43,7 @@
       <p>Two figures, <ref labelref="LABEL:fig:B-one"/> and <ref labelref="LABEL:fig:B-two"/>.</p>
     </para>
     <figure placement="ht" xml:id="S0.SS0.SSS0.Px2.fig1">
-      <figure align="center" class="ltx_flex_size_2" labels="LABEL:fig:B-one" xml:id="S0.F3.sf1">
+      <figure align="center" class="ltx_figure_panel" labels="LABEL:fig:B-one" xml:id="S0.F3.sf1">
         <tags>
           <tag><text font="bold" fontsize="80%">(a)</text></tag>
           <tag role="refnum">3(a)</tag>
@@ -52,7 +52,7 @@
         <toccaption><tag close=" ">(a)</tag>This is a figure</toccaption>
         <caption><tag close=" "><text font="bold" fontsize="80%">(a)</text></tag><text font="italic" fontsize="80%">This is a figure</text></caption>
       </figure>
-      <figure align="center" class="ltx_flex_size_2" labels="LABEL:fig:B-two" xml:id="S0.F3.sf2">
+      <figure align="center" class="ltx_figure_panel" labels="LABEL:fig:B-two" xml:id="S0.F3.sf2">
         <tags>
           <tag><text font="bold" fontsize="80%">(b)</text></tag>
           <tag role="refnum">3(b)</tag>
@@ -74,10 +74,10 @@
         <tag role="refnum">3</tag>
         <tag role="typerefnum">Figure 3</tag>
       </tags>
-      <figure align="center" class="ltx_flex_size_2" xml:id="S0.F3.fig1">
+      <figure align="center" class="ltx_figure_panel" xml:id="S0.F3.fig1">
         <p>[Graphic One]</p>
       </figure>
-      <figure align="center" class="ltx_flex_size_2" xml:id="S0.F3.fig2">
+      <figure align="center" class="ltx_figure_panel" xml:id="S0.F3.fig2">
         <p>[Graphic Two]</p>
       </figure>
       <toccaption><tag close=" ">3</tag>Collectively two figures</toccaption>
@@ -96,7 +96,7 @@ and collectively as <ref labelref="LABEL:fig:D"/>.</p>
         <tag role="refnum">4</tag>
         <tag role="typerefnum">Figure 4</tag>
       </tags>
-      <figure align="center" class="ltx_flex_size_2" labels="LABEL:fig:D-one" xml:id="S0.F4.sf1">
+      <figure align="center" class="ltx_figure_panel" labels="LABEL:fig:D-one" xml:id="S0.F4.sf1">
         <tags>
           <tag><text font="bold" fontsize="80%">(a)</text></tag>
           <tag role="refnum">4(a)</tag>
@@ -105,7 +105,7 @@ and collectively as <ref labelref="LABEL:fig:D"/>.</p>
         <toccaption><tag close=" ">(a)</tag>This is a figure</toccaption>
         <caption><tag close=" "><text font="bold" fontsize="80%">(a)</text></tag><text font="italic" fontsize="80%">This is a figure</text></caption>
       </figure>
-      <figure align="center" class="ltx_flex_size_2" labels="LABEL:fig:D-two" xml:id="S0.F4.sf2">
+      <figure align="center" class="ltx_figure_panel" labels="LABEL:fig:D-two" xml:id="S0.F4.sf2">
         <tags>
           <tag><text font="bold" fontsize="80%">(b)</text></tag>
           <tag role="refnum">4(b)</tag>
@@ -124,7 +124,7 @@ and collectively as <ref labelref="LABEL:fig:D"/>.</p>
       <p>Two tables, <ref labelref="LABEL:tab:B-one"/> and <ref labelref="LABEL:tab:B-two"/>.</p>
     </para>
     <table placement="ht" xml:id="S0.SS0.SSS0.Px5.tab1">
-      <table align="center" class="ltx_flex_size_2" labels="LABEL:tab:B-one" xml:id="S0.T0.st1">
+      <table align="center" class="ltx_figure_panel" labels="LABEL:tab:B-one" xml:id="S0.T0.st1">
         <tags>
           <tag><text font="bold" fontsize="80%">(a)</text></tag>
           <tag role="refnum">0(a)</tag>
@@ -133,7 +133,7 @@ and collectively as <ref labelref="LABEL:fig:D"/>.</p>
         <caption><tag close=" "><text font="bold" fontsize="80%">(a)</text></tag><text font="italic" fontsize="80%">This is a table</text></caption>
         <p>[Tabular One]</p>
       </table>
-      <table align="center" class="ltx_flex_size_2" labels="LABEL:tab:B-two" xml:id="S0.T0.st2">
+      <table align="center" class="ltx_figure_panel" labels="LABEL:tab:B-two" xml:id="S0.T0.st2">
         <tags>
           <tag><text font="bold" fontsize="80%">(b)</text></tag>
           <tag role="refnum">0(b)</tag>
@@ -157,10 +157,10 @@ and collectively as <ref labelref="LABEL:fig:D"/>.</p>
       </tags>
       <toccaption><tag close=" ">1</tag>Collectively two tables</toccaption>
       <caption><tag close=": ">Table 1</tag>Collectively two tables</caption>
-      <table align="center" class="ltx_flex_size_2" xml:id="S0.T1.tab1">
+      <table align="center" class="ltx_figure_panel" xml:id="S0.T1.tab1">
         <p>[Tabular One]</p>
       </table>
-      <table align="center" class="ltx_flex_size_2" xml:id="S0.T1.tab2">
+      <table align="center" class="ltx_figure_panel" xml:id="S0.T1.tab2">
         <p>[Tabular Two]</p>
       </table>
     </table>
@@ -179,7 +179,7 @@ and collectively as <ref labelref="LABEL:tab:D"/>.</p>
       </tags>
       <toccaption><tag close=" ">2</tag>Collectively two tables</toccaption>
       <caption><tag close=": ">Table 2</tag>Collectively two tables</caption>
-      <table align="center" class="ltx_flex_size_2" labels="LABEL:tab:D-one" xml:id="S0.T2.st1">
+      <table align="center" class="ltx_figure_panel" labels="LABEL:tab:D-one" xml:id="S0.T2.st1">
         <tags>
           <tag><text font="bold" fontsize="80%">(a)</text></tag>
           <tag role="refnum">2(a)</tag>
@@ -188,7 +188,7 @@ and collectively as <ref labelref="LABEL:tab:D"/>.</p>
         <caption><tag close=" "><text font="bold" fontsize="80%">(a)</text></tag><text font="italic" fontsize="80%">This is a table</text></caption>
         <p>[Tabular One]</p>
       </table>
-      <table align="center" class="ltx_flex_size_2" labels="LABEL:tab:D-two" xml:id="S0.T2.st2">
+      <table align="center" class="ltx_figure_panel" labels="LABEL:tab:D-two" xml:id="S0.T2.st2">
         <tags>
           <tag><text font="bold" fontsize="80%">(b)</text></tag>
           <tag role="refnum">2(b)</tag>

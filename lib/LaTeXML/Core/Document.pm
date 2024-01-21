@@ -1425,10 +1425,13 @@ sub addClass {
 sub removeClass {
   my ($self, $node, $value) = @_;
   if (my $current = $node->getAttribute('class')) {
-    my @new = grep { $_ ne $value } split(/\s/, $current);
+    my $new = join(' ', sort grep { $_ ne $value } split(/\s/, $current));
     # note: we need to use the libxml setAttribute directly,
     # since Document::setAttribute is a no-op on an empty value!
-    $node->setAttribute('class' => join(' ', sort @new)); }
+    if ($new) {
+      $node->setAttribute('class' => $new); }
+    else {
+      $node->removeAttribute('class'); } }
   return; }
 
 #**********************************************************************
