@@ -23,16 +23,16 @@
     \replicate{#1}{\row\\[2mm]}
   \end{figure}
 }
-
+\def\imgfile{../graphics/none.png}
 % just graphicx
 \def\figcell#1{
-  \includegraphics[width={\dimexpr (\textwidth / #1) - 1mm}]{example-image-a}
+  \includegraphics[width={\dimexpr (\textwidth / #1) - 1mm}]{\imgfile}
 }
 %{subfigure}
 \def\subfigcell#1{
   \begin{subfigure}{\dimexpr (\textwidth / #1) - 1mm}
   \centering
-  \includegraphics[width = 0.8\columnwidth]{example-image-a}
+  \includegraphics[width = 0.8\columnwidth]{\imgfile}
   \caption{subcaption}
   \end{subfigure}
 }
@@ -40,7 +40,7 @@
 \def\minicell#1{
   \begin{minipage}[t]{\dimexpr (\textwidth / #1) - 1mm}
     \centering
-    \includegraphics[width = 0.8\columnwidth]{example-image-a}
+    \includegraphics[width = 0.8\columnwidth]{\imgfile}
   \end{minipage}}
 
 % grid shorthands

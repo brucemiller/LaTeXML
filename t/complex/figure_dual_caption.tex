@@ -2,19 +2,20 @@
 % and produce two "logical figures" inside one physical float. Or something equivalent.
 \documentclass{article}
 \usepackage{graphicx}
+\def\imgfile{../graphics/none.png}
 \begin{document}
 % dual figures in a single {figure}
 \begin{figure}
   \centering
   \begin{minipage}{.5\textwidth}
     \centering
-   \includegraphics[width=0.95\linewidth]{example-image-a}
+   \includegraphics[width=0.95\linewidth]{\imgfile}
    \caption{Left figure.}
    \label{fig:dual-left}
   \end{minipage}%
   \begin{minipage}{.5\textwidth}
     \centering
-   \includegraphics[width=0.95\linewidth]{example-image-a}
+   \includegraphics[width=0.95\linewidth]{\imgfile}
    \caption{Right figure.}
    \label{fig:dual-right}
   \end{minipage}

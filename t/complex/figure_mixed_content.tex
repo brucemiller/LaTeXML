@@ -12,7 +12,7 @@
 \usepackage{listings}
 \newtheorem{theorem}{Theorem}
 % Examples of custom/rare figures with mixed content
-
+\def\imgfile{../graphics/none.png}
 \begin{document}
 
 % see issue ar5iv#83
@@ -47,13 +47,13 @@
 \begin{figure*}
   \begin{tikzpicture}
     \begin{scope}[spy using outlines={rectangle,blue,magnification=2.5,size=3cm}]
-    \node {	\includegraphics[height=3cm]{example-image-a}};
+    \node {	\includegraphics[height=3cm]{\imgfile}};
     \end{scope}
   \end{tikzpicture}
 
   \begin{tikzpicture}
     \begin{scope}[spy using outlines={rectangle,blue,magnification=2.5,size=3cm}]
-    \node {	\includegraphics[height=3cm]{example-image-a}};
+    \node {	\includegraphics[height=3cm]{\imgfile}};
     \end{scope}
   \end{tikzpicture}
   \caption{tikz nodes with includegraphics}
@@ -63,8 +63,8 @@
 % math array with subfloat
 \begin{figure}
   $ \begin{array}{cc}
-    \subfloat[]{\includegraphics[width=3cm]{example-image-a} \label{array:subfig1}} &
-    \subfloat[]{\includegraphics[width=3cm]{example-image-a} \label{array:subfig2}}
+    \subfloat[]{\includegraphics[width=3cm]{\imgfile} \label{array:subfig1}} &
+    \subfloat[]{\includegraphics[width=3cm]{\imgfile} \label{array:subfig2}}
   \end{array} $
   \caption{math array figure}
   \label{array:fig}
@@ -93,12 +93,12 @@ Testing \ref{array:subfig1} and \ref{array:subfig2} inside \ref{array:fig}.
 \begin{figure*}[htbp]
 	\centering
   \begin{tabular}{ccc}
- 		\resizebox{5.0cm}{!}{\includegraphics{example-image-a}}&
-		\resizebox{5.0cm}{!}{\includegraphics{example-image-a}}&
-		\resizebox{5.0cm}{!}{\includegraphics{example-image-a}}\\
-		\resizebox{5.0cm}{!}{\includegraphics{example-image-a}}&
-		\resizebox{5.0cm}{!}{\includegraphics{example-image-a}}&
-		\resizebox{5.0cm}{!}{\includegraphics{example-image-a}}
+ 		\resizebox{5.0cm}{!}{\includegraphics{\imgfile}}&
+		\resizebox{5.0cm}{!}{\includegraphics{\imgfile}}&
+		\resizebox{5.0cm}{!}{\includegraphics{\imgfile}}\\
+		\resizebox{5.0cm}{!}{\includegraphics{\imgfile}}&
+		\resizebox{5.0cm}{!}{\includegraphics{\imgfile}}&
+		\resizebox{5.0cm}{!}{\includegraphics{\imgfile}}
    \end{tabular}
 	\caption{a tabular + resizebox}
 \end{figure*}
@@ -108,10 +108,10 @@ Testing \ref{array:subfig1} and \ref{array:subfig2} inside \ref{array:fig}.
 % two subfigures and an itemize
 \begin{figure}
   \begin{minipage}[t]{0.4\textwidth}
-    \includegraphics[width={0.4\textwidth}]{example-image-a}
+    \includegraphics[width={0.4\textwidth}]{\imgfile}
   \end{minipage}
   \begin{minipage}[t]{0.4\textwidth}
-    \includegraphics[width={0.4\textwidth}]{example-image-a}
+    \includegraphics[width={0.4\textwidth}]{\imgfile}
   \end{minipage} \\
   \begin{center}\begin{itemize}
     \item post-minipage item 1
@@ -148,8 +148,8 @@ Testing \ref{array:subfig1} and \ref{array:subfig2} inside \ref{array:fig}.
 
 % manual horizontal panels with a Trailing note and punct
 \begin{figure}
-  \includegraphics[width=0.33\textwidth]{example-image-a}\hspace{2cm}%
-  \includegraphics[width=0.33\textwidth]{example-image-a}%
+  \includegraphics[width=0.33\textwidth]{\imgfile}\hspace{2cm}%
+  \includegraphics[width=0.33\textwidth]{\imgfile}%
   \footnote{Note}.
   \caption{Caption}
 \end{figure}
@@ -157,22 +157,22 @@ Testing \ref{array:subfig1} and \ref{array:subfig2} inside \ref{array:fig}.
 
 % manual 2x2 horizontal panels, with caption in-between
 \begin{figure}
-  \includegraphics[width=0.33\textwidth]{example-image-a}\hspace{2cm}%
-  \includegraphics[width=0.33\textwidth]{example-image-a}\newline
+  \includegraphics[width=0.33\textwidth]{\imgfile}\hspace{2cm}%
+  \includegraphics[width=0.33\textwidth]{\imgfile}\newline
   \caption{mid-fig caption}
-  \includegraphics[width=0.33\textwidth]{example-image-a}\hspace{2cm}%
-  \includegraphics[width=0.33\textwidth]{example-image-a}%
+  \includegraphics[width=0.33\textwidth]{\imgfile}\hspace{2cm}%
+  \includegraphics[width=0.33\textwidth]{\imgfile}%
 \end{figure}
 \clearpage
 
 % 2x2 flex figure with 3 captions, one midway through
 \begin{figure}
   \caption{leading caption}
-  \includegraphics[width=0.33\textwidth]{example-image-a}\hspace{2cm}%
-  \includegraphics[width=0.33\textwidth]{example-image-a}\newline
+  \includegraphics[width=0.33\textwidth]{\imgfile}\hspace{2cm}%
+  \includegraphics[width=0.33\textwidth]{\imgfile}\newline
   \caption{mid-fig caption}
-  \includegraphics[width=0.33\textwidth]{example-image-a}\hspace{2cm}%
-  \includegraphics[width=0.33\textwidth]{example-image-a}%
+  \includegraphics[width=0.33\textwidth]{\imgfile}\hspace{2cm}%
+  \includegraphics[width=0.33\textwidth]{\imgfile}%
   \caption{trailing caption}
 \end{figure}
 \clearpage
