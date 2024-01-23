@@ -252,8 +252,8 @@
     </xsl:variable>
     <xsl:variable name="to_position">
       <xsl:choose>
-        <xsl:when test="$to_position_check">
-          <xsl:value-of select="$to_position_check+1"/>
+        <xsl:when test="$to_position_check>0">
+          <xsl:value-of select="1+$to_position_check"/>
         </xsl:when>
         <xsl:otherwise>
           <xsl:value-of select="count($from_figure/node())+1"/>

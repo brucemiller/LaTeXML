@@ -2292,7 +2292,7 @@ sub insertBlock {
     my @candidates =
       ($inline
       ? (qw(ltx:inline-block ltx:inline-logical-block ltx:inline-sectional-block))
-      : (qw(ltx:block ltx:logical-block ltx:sectional-block)));
+      : (qw(ltx:block ltx:logical-block ltx:sectional-block ltx:figure)));
     my @filtered_candidates = ();    # Filtered containers that can contain the content
     foreach my $candidate (@candidates) {
       push(@filtered_candidates, $candidate)
@@ -2301,6 +2301,10 @@ sub insertBlock {
       = grep { ($document->canContain($context_tag, $_) ? $_ : ()); } @filtered_candidates;
     if (my $tag = $allowed_candidates[0] || $filtered_candidates[0]) {
       $document->renameNode($container, $tag, 1); }    # Rename the capture to the correct container
+    else {                                             # we didn't know what to do?
+      Warn('malformed', '_CaptureBlock_', $document, "Did not find a block-like candidate in $context_tag (with attributes (" . join(";", map { "$_=$blockattr{$_}" } keys %blockattr) . ')');
+      $document->renameNode($container, 'ltx:block', 1);
+    }
   }
   return @nodes; }
 
