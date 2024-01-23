@@ -260,12 +260,10 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:message>from-to panels: <xsl:value-of select="$from_position"/>-<xsl:value-of select="$to_position"/></xsl:message>
     <xsl:variable name="nodes_in_partition"
       select="$from_figure/node()[position()&gt;=$from_position and
         position() &lt; $to_position]"/>
     <xsl:variable name="figure_panels" select="$nodes_in_partition[contains(@class,'ltx_figure_panel')]"></xsl:variable>
-    <xsl:message>subfigure panels: <xsl:value-of select="count($figure_panels)"/></xsl:message>
     <!-- first prepare the caption, if any, outside of the wrapping flex div -->
     <xsl:if test="$from_caption">
       <xsl:apply-templates select="$from_caption">
