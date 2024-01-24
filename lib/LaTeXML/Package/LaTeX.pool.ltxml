@@ -3398,8 +3398,13 @@ our $FIGURE_PANEL_CLASS = 'ltx_figure_panel';
 our %standalone_panel_names = map { $_ => 1 }
   qw(ltx:p ltx:listing ltx:math ltx:itemize ltx:enumerate ltx:quote ltx:theorem ltx:proof
   ltx:description ltx:equation ltx:equationgroup ltx:verbatim);
-our %panel_break_names = map { $_ => 1 }
-  qw(ltx:break ltx:caption ltx:toccaption ltx:tags);
+# this supplements the schema class exclusions
+our %panel_break_names = map { $_ => 1 } ('ltx:break',
+  $STATE->getModel->getSchemaClassNames('Meta'),
+  $STATE->getModel->getSchemaClassNames('SectionalFrontMatter'),
+  $STATE->getModel->getSchemaClassNames('Caption'));
+# what to do with footnotes? Move from Meta to Misc class?
+$panel_break_names{'ltx:note'} = undef;
 
 sub arrange_panels_and_breaks {
   my ($document, $node, $whatsit) = @_;
