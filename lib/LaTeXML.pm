@@ -506,8 +506,9 @@ sub convert_post {
           require LaTeXML::Post::MathML::Presentation;
           push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
               linelength => $$opts{linelength},
-              (defined $$opts{plane1} ? (plane1     => $$opts{plane1}) : (plane1 => 1)),
-              ($$opts{hackplane1}     ? (hackplane1 => 1)              : ()),
+              (defined $$opts{plane1} ? (plane1      => $$opts{plane1})      : (plane1 => 1)),
+              ($$opts{hackplane1}     ? (hackplane1  => 1)                   : ()),
+              ($$opts{mathstylize}    ? (mathstylize => $$opts{mathstylize}) : ()),
               %PostOPS)); }
         elsif ($fmt eq 'cmml') {
           require LaTeXML::Post::MathML::Content;

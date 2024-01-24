@@ -18,8 +18,8 @@ use LaTeXML::Util::Unicode;
 use LaTeXML::Post;
 use LaTeXML::Common::Font;
 use List::Util qw(max);
-use base       qw(LaTeXML::Post::MathProcessor);
-use base       qw(Exporter);
+use base qw(LaTeXML::Post::MathProcessor);
+use base qw(Exporter);
 our @EXPORT = (
   qw( &DefMathML ),
   qw( &pmml &pmml_scriptsize &pmml_smaller
@@ -710,9 +710,10 @@ sub stylizeContent {
   # For each mathvariant, and for each of those 5 groups, there is a linear mapping,
   # EXCEPT for chars defined before Plain 1, which already exist in lower blocks.
   # Get desired mapping strategy
-  my $plane1     = $$LaTeXML::Post::MATHPROCESSOR{plane1};
-  my $plane1hack = $$LaTeXML::Post::MATHPROCESSOR{hackplane1};
-  my $u_variant  = $variant
+  my $plane1      = $$LaTeXML::Post::MATHPROCESSOR{plane1};
+  my $plane1hack  = $$LaTeXML::Post::MATHPROCESSOR{hackplane1};
+  my $mathstylize = $$LaTeXML::Post::MATHPROCESSOR{mathstylize} || '';
+  my $u_variant   = $variant
     && ($plane1hack ? $plane1hackable{$variant}
     : ($plane1 ? $variant : undef));
   my $u_text = ($tag ne 'm:mtext') && $u_variant && unicode_convert($text, $u_variant);
@@ -749,7 +750,11 @@ sub stylizeContent {
   $size     = undef if $stretchy;                    # Ignore size, if we're stretching.
   my $stretchyhack = undef;
   if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {    # invisible get no size or stretchiness
-    $stretchy = $size = undef; }
+    $stretchy = $size = undef;
+    # If requested, switch implied mo to space
+    if ($text eq "\x{2062}" and $mathstylize eq 'mo_implied_space') {
+      $text = "\x{200B}";
+  } }
   if ($size) {
     if ($size eq ($LaTeXML::MathML::SIZE || 'text')) {    # If default size, no need to mention.
       $size = undef; }
@@ -1075,7 +1080,7 @@ sub space_walk {
     space_walk($self, $prev);
     while (my $next = shift(@nodes)) {
       my $invisop;    # Save Invisible operators as potential target for (l|r)space
-      if (($$next[0] eq 'm:mo') && $$next[2] && ($$next[2] =~ /^[\x{2061}\x{2062}\x{2063}]*$/)) {
+      if (($$next[0] eq 'm:mo') && $$next[2] && ($$next[2] =~ /^[\x{200B}\x{2061}\x{2062}\x{2063}]*$/)) {
         $invisop = $next;
         $next    = shift(@nodes);
         last unless $next; }
