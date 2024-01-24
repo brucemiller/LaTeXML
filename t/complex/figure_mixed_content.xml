@@ -233,25 +233,27 @@
       <listing class="ltx_figure_panel ltx_lstlisting" data="ICAgIGxpc3Rpbmc=" dataencoding="base64" datamimetype="text/plain">
         <listingline xml:id="lstnumberx1"><text class="ltx_lst_space">    </text><text class="ltx_lst_identifier">listing</text></listingline>
       </listing>
-      <block class="ltx_figure_panel">
-        <itemize xml:id="S0.I2">
-          <item xml:id="S0.I2.i1">
-            <tags>
-              <tag>•</tag>
-              <tag role="typerefnum">1st item</tag>
-            </tags>
-            <para xml:id="S0.I2.i1.p1">
-              <p>itemize 1</p>
-            </para>
-          </item>
-        </itemize>
-        <note mark="1" role="footnote" xml:id="footnote1"><tags>
-            <tag>1</tag>
-            <tag role="refnum">1</tag>
-            <tag role="typerefnum">footnote 1</tag>
-          </tags>note1</note>
-        <p>.</p>
-      </block>
+      <break class="ltx_break"/>
+      <itemize class="ltx_figure_panel" xml:id="S0.I2">
+        <item xml:id="S0.I2.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S0.I2.i1.p1">
+            <p>itemize 1</p>
+          </para>
+        </item>
+      </itemize>
+      <break class="ltx_break"/>
+      <note class="ltx_figure_panel" mark="1" role="footnote" xml:id="footnote1"><tags>
+          <tag>1</tag>
+          <tag role="refnum">1</tag>
+          <tag role="typerefnum">footnote 1</tag>
+        </tags>note1</note>
+      <break class="ltx_break"/>
+      <p class="ltx_figure_panel">.</p>
+      <break class="ltx_break"/>
       <enumerate class="ltx_figure_panel" xml:id="S0.I3">
         <item xml:id="S0.I3.i1">
           <tags>
@@ -264,6 +266,7 @@
           </para>
         </item>
       </enumerate>
+      <break class="ltx_break"/>
       <p class="ltx_figure_panel"><Math mode="inline" tex="\sqrt{x}=0" text="square-root@(x) = 0" xml:id="S0.F5.m1">
           <XMath>
             <XMApp>
@@ -276,6 +279,7 @@
             </XMApp>
           </XMath>
         </Math></p>
+      <break class="ltx_break"/>
       <equation class="ltx_figure_panel" xml:id="S0.Ex1">
         <Math mode="display" tex="E=mc^{2}" text="E = m * c ^ 2" xml:id="S0.Ex1.m1">
           <XMath>
@@ -295,7 +299,9 @@
           </XMath>
         </Math>
       </equation>
+      <break class="ltx_break"/>
       <p class="ltx_figure_panel">Some paragraph text</p>
+      <break class="ltx_break"/>
       <equationgroup class="ltx_eqn_eqnarray ltx_figure_panel" xml:id="S0.EGx1">
         <equation xml:id="S0.Ex2">
           <MathFork>
@@ -390,6 +396,7 @@
       <quote class="ltx_figure_panel">
         <p>Quote me later</p>
       </quote>
+      <break class="ltx_break"/>
       <theorem class="ltx_figure_panel ltx_theorem_theorem" inlist="thm theorem:theorem" xml:id="Thmtheorem1">
         <tags>
           <tag>Theorem 1</tag>
@@ -401,6 +408,7 @@
           <p><text font="italic">mock theorem</text></p>
         </para>
       </theorem>
+      <break class="ltx_break"/>
       <verbatim class="ltx_figure_panel" font="typewriter"> some verbatim $#! stuff 
 </verbatim>
       <toccaption><tag close=" ">5</tag>Highly mixed figure</toccaption>
@@ -421,8 +429,9 @@
             <tag role="refnum">2</tag>
             <tag role="typerefnum">footnote 2</tag>
           </tags>Note</note>
-        <p>.</p>
       </block>
+      <break class="ltx_break"/>
+      <p class="ltx_figure_panel">.</p>
       <toccaption><tag close=" ">6</tag>Caption</toccaption>
       <caption><tag close=": "><text fontsize="90%">Figure 6</text></tag><text fontsize="90%">Caption</text></caption>
     </figure>

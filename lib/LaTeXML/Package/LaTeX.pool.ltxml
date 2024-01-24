@@ -3393,6 +3393,14 @@ DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:
 
 our $FIGURE_PANEL_CLASS = 'ltx_figure_panel';
 
+# most block-level elements are expected horizontally standalone in a {figure}.
+# (especially ones that directly match LaTeX {envs})
+our %standalone_panel_names = map { $_ => 1 }
+  qw(ltx:p ltx:listing ltx:math ltx:itemize ltx:enumerate ltx:quote ltx:theorem ltx:proof
+  ltx:description ltx:equation ltx:equationgroup ltx:verbatim);
+our %panel_break_names = map { $_ => 1 }
+  qw(ltx:break ltx:caption ltx:toccaption ltx:tags);
+
 sub arrange_panels_and_breaks {
   my ($document, $node, $whatsit) = @_;
   my $float_width = ($whatsit->getProperty('floatwidth') || Dimension('345pt'))->valueOf();
@@ -3407,13 +3415,22 @@ sub arrange_panels_and_breaks {
   my $panels_found = 0;
   for my $child (element_nodes($node)) {
     my $child_name = $document->getNodeQName($child);
-    if ($child_name =~ /^ltx:(?:break|caption|toccaption|tags)$/) {
+    if ($panel_break_names{$child_name}) {
       # reset bookkeeping on prior breaks, be they author-deposited or computed
+      # (caption/metadata bits also flush the current line, but we avoid the explicit break element)
       $current_width = 0;
       push(@all_contents, map { $$_[0] } @row_contents);
       push(@all_contents, $child);
       @row_contents = (); }
     else {
+      my $is_standalone = $standalone_panel_names{$child_name};
+      if ($is_standalone && @row_contents) {
+        # if standalone, finalize current row content, and add a break
+        my $break = $document->insertElementBefore($child, 'break', 'class' => 'ltx_break');
+        push(@all_contents, map { $$_[0] } @row_contents);
+        push(@all_contents, $break);
+        $current_width = 0;
+        @row_contents  = (); }
       my $child_width = $document->getNodeBox($child)->getWidth->valueOf();
       if (@row_contents && ($current_width + $child_width > $float_width)) {
         # break when we exceed the line width, to keep close with the PDF arrangement
@@ -3460,7 +3477,17 @@ sub arrange_panels_and_breaks {
             push(@all_panels,   $child); } }
         else {    # no last panel? just add the child
           push(@row_contents, [$child, $child_name, $child_width]);
-          push(@all_panels,   $child); }
+          push(@all_panels,   $child);
+          # yet if standalone, finalize current row content, and add a break
+          if ($is_standalone && @row_contents) {
+            Note("inserting the trailing standalone break;");
+            push(@all_contents, map { $$_[0] } @row_contents);
+            if (my $trailer = $child->nextSibling) {
+              if (!$panel_break_names{ $document->getNodeQName($trailer) }) {
+                my $break = $document->insertElementBefore($trailer, 'break', 'class' => 'ltx_break');
+                push(@all_contents, $break); } }
+            @row_contents  = ();
+            $current_width = 0; } }
         $current_width += $child_width; } } }
   push(@all_contents, map { $$_[0] } @row_contents);
   # simplify: if we only ever added 1 panel, remove its class (so that we only mark complex figures)
