@@ -224,6 +224,20 @@
       <caption><tag close=": "><text fontsize="90%">Figure 4</text></tag><text fontsize="90%">Two minipages and an itemize</text></caption>
     </figure>
     <pagination role="newpage"/>
+    <figure xml:id="S0.SS0.SSS0.Px1.fig1">
+      <p align="center" class="ltx_figure_panel">First</p>
+      <break class="ltx_break"/>
+      <equation class="ltx_figure_panel" xml:id="S0.Ex1">
+        <Math mode="display" tex="\mathrm{Second}" text="Second" xml:id="S0.Ex1.m1">
+          <XMath>
+            <XMTok role="UNKNOWN">Second</XMTok>
+          </XMath>
+        </Math>
+      </equation>
+      <break class="ltx_break"/>
+      <p align="center" class="ltx_figure_panel">Third</p>
+    </figure>
+    <pagination role="newpage"/>
     <figure inlist="lof" xml:id="S0.F5">
       <tags>
         <tag><text fontsize="90%">Figure 5</text></tag>
@@ -280,8 +294,8 @@
           </XMath>
         </Math></p>
       <break class="ltx_break"/>
-      <equation class="ltx_figure_panel" xml:id="S0.Ex1">
-        <Math mode="display" tex="E=mc^{2}" text="E = m * c ^ 2" xml:id="S0.Ex1.m1">
+      <equation class="ltx_figure_panel" xml:id="S0.Ex2">
+        <Math mode="display" tex="E=mc^{2}" text="E = m * c ^ 2" xml:id="S0.Ex2.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -303,14 +317,14 @@
       <p class="ltx_figure_panel">Some paragraph text</p>
       <break class="ltx_break"/>
       <equationgroup class="ltx_eqn_eqnarray ltx_figure_panel" xml:id="S0.EGx1">
-        <equation xml:id="S0.Ex2">
+        <equation xml:id="S0.Ex3">
           <MathFork>
-            <Math tex="\displaystyle A=B," text="A = B" xml:id="S0.Ex2.m4">
+            <Math tex="\displaystyle A=B," text="A = B" xml:id="S0.Ex3.m4">
               <XMath>
                 <XMDual>
-                  <XMRef idref="S0.Ex2.m4.1"/>
+                  <XMRef idref="S0.Ex3.m4.1"/>
                   <XMWrap>
-                    <XMApp xml:id="S0.Ex2.m4.1">
+                    <XMApp xml:id="S0.Ex3.m4.1">
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                       <XMTok font="italic" role="UNKNOWN">A</XMTok>
                       <XMTok font="italic" role="UNKNOWN">B</XMTok>
@@ -322,22 +336,22 @@
             </Math>
             <MathBranch>
               <tr>
-                <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="S0.Ex2.m1">
+                <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="S0.Ex3.m1">
                     <XMath>
                       <XMTok font="italic" role="UNKNOWN">A</XMTok>
                     </XMath>
                   </Math></td>
-                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S0.Ex2.m2">
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S0.Ex3.m2">
                     <XMath>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                     </XMath>
                   </Math></td>
-                <td align="left"><Math mode="inline" tex="\displaystyle B," text="B" xml:id="S0.Ex2.m3">
+                <td align="left"><Math mode="inline" tex="\displaystyle B," text="B" xml:id="S0.Ex3.m3">
                     <XMath>
                       <XMDual>
-                        <XMRef idref="S0.Ex2.m3.1"/>
+                        <XMRef idref="S0.Ex3.m3.1"/>
                         <XMWrap>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex2.m3.1">B</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex3.m3.1">B</XMTok>
                           <XMTok role="PUNCT">,</XMTok>
                         </XMWrap>
                       </XMDual>
@@ -347,14 +361,14 @@
             </MathBranch>
           </MathFork>
         </equation>
-        <equation xml:id="S0.Ex3">
+        <equation xml:id="S0.Ex4">
           <MathFork>
-            <Math tex="\displaystyle C=D," text="C = D" xml:id="S0.Ex3.m4">
+            <Math tex="\displaystyle C=D," text="C = D" xml:id="S0.Ex4.m4">
               <XMath>
                 <XMDual>
-                  <XMRef idref="S0.Ex3.m4.1"/>
+                  <XMRef idref="S0.Ex4.m4.1"/>
                   <XMWrap>
-                    <XMApp xml:id="S0.Ex3.m4.1">
+                    <XMApp xml:id="S0.Ex4.m4.1">
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                       <XMTok font="italic" role="UNKNOWN">C</XMTok>
                       <XMTok font="italic" role="UNKNOWN">D</XMTok>
@@ -366,22 +380,22 @@
             </Math>
             <MathBranch>
               <tr>
-                <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="S0.Ex3.m1">
+                <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="S0.Ex4.m1">
                     <XMath>
                       <XMTok font="italic" role="UNKNOWN">C</XMTok>
                     </XMath>
                   </Math></td>
-                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S0.Ex3.m2">
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S0.Ex4.m2">
                     <XMath>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                     </XMath>
                   </Math></td>
-                <td align="left"><Math mode="inline" tex="\displaystyle D," text="D" xml:id="S0.Ex3.m3">
+                <td align="left"><Math mode="inline" tex="\displaystyle D," text="D" xml:id="S0.Ex4.m3">
                     <XMath>
                       <XMDual>
-                        <XMRef idref="S0.Ex3.m3.1"/>
+                        <XMRef idref="S0.Ex4.m3.1"/>
                         <XMWrap>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex3.m3.1">D</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex4.m3.1">D</XMTok>
                           <XMTok role="PUNCT">,</XMTok>
                         </XMWrap>
                       </XMDual>
@@ -470,7 +484,7 @@
       <caption><tag close=": "><text fontsize="90%">Figure 10</text></tag><text fontsize="90%">trailing caption</text></caption>
     </figure>
     <pagination role="newpage"/>
-    <figure class="ltx_figure_panel ltx_minipage" placement="tb" vattach="middle" width="182.1pt" xml:id="S0.SS0.SSS0.Px1.fig2">
+    <figure class="ltx_figure_panel ltx_minipage" placement="tb" vattach="middle" width="182.1pt" xml:id="S0.SS0.SSS0.Px1.fig3">
       <float class="ltx_figure_panel ltx_minipage" framed="top" inlist="loa" labels="LABEL:alg:main" placement="H" vattach="middle" width="242.8pt" xml:id="alg2">
         <tags>
           <tag><text font="bold">Algorithm 2</text></tag>

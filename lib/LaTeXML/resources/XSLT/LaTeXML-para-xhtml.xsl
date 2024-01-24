@@ -272,12 +272,6 @@
     </xsl:if>
     <!-- then prepare the flex subfigure(s) -->
     <xsl:choose><xsl:when test="$figure_panels">
-      <xsl:variable name="panel_count_keyword">
-        <xsl:choose>
-          <xsl:when test="count($figure_panels)>4">many</xsl:when>
-          <xsl:otherwise><xsl:value-of select="count($figure_panels)"/></xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
       <xsl:element name="div" namespace="{$html_ns}">
         <xsl:attribute name="class">ltx_flex_figure<!--
         --><xsl:if test="self::ltx:table"> ltx_flex_table</xsl:if>
@@ -291,6 +285,42 @@
               </xsl:element>
             </xsl:when>
             <xsl:when test="contains(@class,'ltx_figure_panel')">
+              <xsl:variable name="break_prior_pos">
+                <xsl:choose>
+                  <xsl:when test="preceding-sibling::ltx:break[1]">
+                    <xsl:value-of select="1+count(preceding-sibling::ltx:break[1]/preceding-sibling::node())"/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:value-of select="$from_position"></xsl:value-of>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:variable name="break_post_pos">
+                <xsl:choose>
+                  <xsl:when test="following-sibling::ltx:break[1]">
+                    <xsl:value-of select="1+count(following-sibling::ltx:break[1]/preceding-sibling::node())"/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:value-of select="$to_position"></xsl:value-of>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>
+              <xsl:variable name="panels_raw_count" select="count($from_figure/node()[
+                  position() &gt;= $break_prior_pos and position() &lt; $break_post_pos
+                  and contains(@class,'ltx_figure_panel')])"/>
+              <xsl:message>
+                pos from <xsl:value-of select="$break_prior_pos"></xsl:value-of>
+                pos to <xsl:value-of select="$break_post_pos"></xsl:value-of>
+                raw count <xsl:value-of select="$panels_raw_count"></xsl:value-of>
+              </xsl:message>
+              <xsl:variable name="panel_count_keyword">
+                <xsl:choose>
+                  <xsl:when test="$panels_raw_count &lt; 5">
+                    <xsl:value-of select="$panels_raw_count"/>
+                  </xsl:when>
+                  <xsl:otherwise>many</xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>
               <xsl:element name="div" namespace="{$html_ns}">
                 <xsl:attribute name="class">ltx_flex_cell ltx_flex_size_<xsl:value-of select="$panel_count_keyword"/></xsl:attribute>
                 <xsl:apply-templates select=".">
