@@ -135,7 +135,7 @@ sub findGraphicFile {
   my ($self, $doc, $node) = @_;
   if (my $source = $node->getAttribute('graphic')) {
     # if we already have a usable candidate, save ourselves the work
-    my @paths = split(',', $node->getAttribute('candidates') || '');
+    my @paths = grep { -e $_ } split(',', $node->getAttribute('candidates') || '');
     if (!scalar(@paths)) {
       # Find all acceptable image files, in order of search paths
       my ($dir, $name, $reqtype) = pathname_split($source);
