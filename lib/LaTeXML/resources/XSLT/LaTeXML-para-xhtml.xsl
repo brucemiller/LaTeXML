@@ -308,11 +308,6 @@
               <xsl:variable name="panels_raw_count" select="count($from_figure/node()[
                   position() &gt;= $break_prior_pos and position() &lt; $break_post_pos
                   and contains(@class,'ltx_figure_panel')])"/>
-              <xsl:message>
-                pos from <xsl:value-of select="$break_prior_pos"></xsl:value-of>
-                pos to <xsl:value-of select="$break_post_pos"></xsl:value-of>
-                raw count <xsl:value-of select="$panels_raw_count"></xsl:value-of>
-              </xsl:message>
               <xsl:variable name="panel_count_keyword">
                 <xsl:choose>
                   <xsl:when test="$panels_raw_count &lt; 5">
