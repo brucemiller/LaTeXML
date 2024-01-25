@@ -3485,7 +3485,6 @@ sub arrange_panels_and_breaks {
           push(@all_panels,   $child);
           # yet if standalone, finalize current row content, and add a break
           if ($is_standalone && @row_contents) {
-            Note("inserting the trailing standalone break;");
             push(@all_contents, map { $$_[0] } @row_contents);
             if (my $trailer = $child->nextSibling) {
               if (!$panel_break_names{ $document->getNodeQName($trailer) }) {
