@@ -2252,8 +2252,12 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
 # from block, logical-block or sectional-block, or the inline- variants.
 sub insertBlock {
   my ($document, $contents, %blockattr) = @_;
-  my $model          = $document->getModel;
-  my $context        = $document->getElement;                  # Where we originally start inserting.
+  my $model   = $document->getModel;
+  my $context = $document->getElement;    # Where we originally start inserting.
+  if (!$context) {
+    # edge case: if we start the doc with a block, the context is empty
+    $document->absorb($contents);
+    return; }
   my $context_tag    = $document->getNodeQName($context);
   my $is_svg         = ($context_tag =~ /^svg:/);              # svg is slightly tricky
   my $ignorable_attr = $is_svg || !scalar(keys %blockattr);    # if we do not REQUIRE the attributes
