@@ -1408,9 +1408,9 @@ sub addSSValues {
   my ($self, $node, $key, $values) = @_;
   $values = $values->toAttribute if ref $values;
   if ((defined $values) && ($values ne '')) {    # Skip if `empty'; but 0 is OK!
-    my @values = split(/\s/, $values);
+    my @values = split(/\s+/, $values);
     if (my $oldvalues = $node->getAttribute($key)) {    # previous values?
-      my @old = split(/\s/, $oldvalues);
+      my @old = split(/\s+/, $oldvalues);
       foreach my $new (@values) {
         push(@old, $new) unless grep { $_ eq $new } @old; }
       setAttribute($self, $node, $key => join(' ', sort @old)); }
@@ -1422,16 +1422,25 @@ sub addClass {
   my ($self, $node, $value) = @_;
   return addSSValues($self, $node, class => $value); }
 
+sub removeSSValues {
+  my ($self, $node, $key, $values) = @_;
+  $values = $values->toAttribute if ref $values;
+  my @to_remove = split(/\s+/, ($values || ''));
+  return unless @to_remove;
+  if (my $current_values = $node->getAttribute($key)) {
+    my @current_values = split(/\s+/, $current_values);
+    my @updated        = ();
+    foreach my $current_value (@current_values) {
+      push(@updated, $current_value) unless grep { $_ eq $current_value } @to_remove; }
+    if (@updated) {
+      setAttribute($self, $node, $key => join(' ', sort @updated)); }
+    else {    # if no remaining values, delete the attribute
+      $node->removeAttribute($key); } }
+  return; }
+
 sub removeClass {
   my ($self, $node, $value) = @_;
-  if (my $current = $node->getAttribute('class')) {
-    my $new = join(' ', sort grep { $_ ne $value } split(/\s/, $current));
-    # note: we need to use the libxml setAttribute directly,
-    # since Document::setAttribute is a no-op on an empty value!
-    if ($new) {
-      $node->setAttribute('class' => $new); }
-    else {
-      $node->removeAttribute('class'); } }
+  removeSSValues($self, $node, class => $value);
   return; }
 
 #**********************************************************************
