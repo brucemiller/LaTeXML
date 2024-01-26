@@ -3398,13 +3398,6 @@ our $FIGURE_PANEL_CLASS = 'ltx_figure_panel';
 our %standalone_panel_names = map { $_ => 1 }
   qw(ltx:p ltx:listing ltx:math ltx:itemize ltx:enumerate ltx:quote ltx:theorem ltx:proof
   ltx:description ltx:equation ltx:equationgroup ltx:verbatim);
-# this supplements the schema class exclusions
-our %panel_break_names = map { $_ => 1 } ('ltx:break',
-  $STATE->getModel->getSchemaClassNames('Meta'),
-  $STATE->getModel->getSchemaClassNames('SectionalFrontMatter'),
-  $STATE->getModel->getSchemaClassNames('Caption'));
-# what to do with footnotes? Move from Meta to Misc class?
-$panel_break_names{'ltx:note'} = undef;
 
 sub arrange_panels_and_breaks {
   my ($document, $node, $whatsit) = @_;
@@ -3416,11 +3409,22 @@ sub arrange_panels_and_breaks {
   my @all_panels      = ();
   my @all_contents    = ();
   # row contents will bookkeep triples of [node, name(optional), width(optional)]
-  my @row_contents = ();
-  my $panels_found = 0;
+  my @row_contents      = ();
+  my $panels_found      = 0;
+  my $panel_break_names = LookupValue('figure_panel_break_names');
+  if (!$panel_break_names) {
+    # initialize schema-based tag names on first call for a given document;
+    my $model = $STATE->getModel;
+    $panel_break_names = { map { $_ => 1 } ('ltx:break',
+        $model->getSchemaClassNames('Meta'),
+        $model->getSchemaClassNames('SectionalFrontMatter'),
+        $model->getSchemaClassNames('Caption')) };
+    # what to do with footnotes? Move from Meta to Misc class?
+    $$panel_break_names{'ltx:note'} = undef;
+    AssignValue('figure_panel_break_names', $panel_break_names, 'global'); }
   for my $child (element_nodes($node)) {
     my $child_name = $document->getNodeQName($child);
-    if ($panel_break_names{$child_name}) {
+    if ($$panel_break_names{$child_name}) {
       # reset bookkeeping on prior breaks, be they author-deposited or computed
       # (caption/metadata bits also flush the current line, but we avoid the explicit break element)
       $current_width = 0;
@@ -3487,7 +3491,7 @@ sub arrange_panels_and_breaks {
           if ($is_standalone && @row_contents) {
             push(@all_contents, map { $$_[0] } @row_contents);
             if (my $trailer = $child->nextSibling) {
-              if (!$panel_break_names{ $document->getNodeQName($trailer) }) {
+              if (!$$panel_break_names{ $document->getNodeQName($trailer) }) {
                 my $break = $document->insertElementBefore($trailer, 'break', 'class' => 'ltx_break');
                 push(@all_contents, $break); } }
             @row_contents  = ();
