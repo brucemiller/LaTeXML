@@ -252,10 +252,12 @@
     </xsl:variable>
     <xsl:variable name="to_position">
       <xsl:choose>
-        <xsl:when test="$to_position_check>0">
+        <!-- note the edge case of a figure starting with an ltx:caption -->
+        <xsl:when test="$to_position_check>0 or count(ltx:caption)>0">
           <xsl:value-of select="1+$to_position_check"/>
         </xsl:when>
         <xsl:otherwise>
+          <!-- otherwise we are in a figure without captions, process in entirety -->
           <xsl:value-of select="count($from_figure/node())+1"/>
         </xsl:otherwise>
       </xsl:choose>
