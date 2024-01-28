@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="graphicx"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <figure inlist="lof" labels="LABEL:fig:dual-left LABEL:fig:dual-right" xml:id="S0.F2">
+    <tags>
+      <tag>Figure 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">Figure 2</tag>
+    </tags>
+    <figure align="center" class="ltx_figure_panel ltx_minipage" vattach="middle" width="216.8pt" xml:id="S0.F2.fig1">
+      <graphics candidates="../graphics/none.png" graphic="../graphics/none.png" options="width=411.93767pt,keepaspectratio=true" xml:id="S0.F2.g1"/>
+      <toccaption class="ltx_centering"><tag close=" ">1</tag>Left figure.</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Figure 1</tag>Left figure.</caption>
+    </figure>
+    <figure align="center" class="ltx_figure_panel ltx_minipage" vattach="middle" width="216.8pt" xml:id="S0.F2.fig2">
+      <graphics candidates="../graphics/none.png" graphic="../graphics/none.png" options="width=411.93767pt,keepaspectratio=true" xml:id="S0.F2.g2"/>
+      <toccaption class="ltx_centering"><tag close=" ">2</tag>Right figure.</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Figure 2</tag>Right figure.</caption>
+    </figure>
+  </figure>
+  <table inlist="lot" labels="LABEL:table:dual-left LABEL:table:dual-right" xml:id="S0.T2">
+    <tags>
+      <tag>Table 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">Table 2</tag>
+    </tags>
+    <figure align="center" class="ltx_figure_panel ltx_minipage" vattach="middle" width="216.8pt" xml:id="S0.T2.fig1">
+      <tabular vattach="middle">
+        <tbody>
+          <tr>
+            <td align="center">a</td>
+            <td align="center">b</td>
+            <td align="center">c</td>
+          </tr>
+          <tr>
+            <td align="center">d</td>
+            <td align="center">e</td>
+            <td align="center">f</td>
+          </tr>
+        </tbody>
+      </tabular>
+      <toccaption class="ltx_centering"><tag close=" ">1</tag>Left table.</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Table 1</tag>Left table.</caption>
+    </figure>
+    <figure align="center" class="ltx_figure_panel ltx_minipage" vattach="middle" width="216.8pt" xml:id="S0.T2.fig2">
+      <tabular vattach="middle">
+        <tbody>
+          <tr>
+            <td align="center">1</td>
+            <td align="center">2</td>
+            <td align="center">3</td>
+          </tr>
+          <tr>
+            <td align="center">4</td>
+            <td align="center">5</td>
+            <td align="center">6</td>
+          </tr>
+        </tbody>
+      </tabular>
+      <toccaption class="ltx_centering"><tag close=" ">2</tag>Right table.</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Table 2</tag>Right table.</caption>
+    </figure>
+  </table>
+  <para xml:id="p1">
+    <p>Ref test:
+Figure <ref labelref="LABEL:fig:dual-left"/> and Figure <ref labelref="LABEL:fig:dual-right"/>.
+Table <ref labelref="LABEL:table:dual-left"/> and Table <ref labelref="LABEL:table:dual-right"/>.</p>
+  </para>
+</document>

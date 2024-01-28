@@ -1,0 +1,50 @@
+% The data model needs to recognize dual captions in the same {figure} float.
+% and produce two "logical figures" inside one physical float. Or something equivalent.
+\documentclass{article}
+\usepackage{graphicx}
+\def\imgfile{../graphics/none.png}
+\begin{document}
+% dual figures in a single {figure}
+\begin{figure}
+  \centering
+  \begin{minipage}{.5\textwidth}
+    \centering
+   \includegraphics[width=0.95\linewidth]{\imgfile}
+   \caption{Left figure.}
+   \label{fig:dual-left}
+  \end{minipage}%
+  \begin{minipage}{.5\textwidth}
+    \centering
+   \includegraphics[width=0.95\linewidth]{\imgfile}
+   \caption{Right figure.}
+   \label{fig:dual-right}
+  \end{minipage}
+  \end{figure}
+% dual tables in a single {table}
+\begin{table}
+  \centering
+  \begin{minipage}{.5\textwidth}
+    \centering
+   \begin{tabular}{ccc}
+   a & b & c \\
+   d & e & f \\
+   \end{tabular}
+   \caption{Left table.}
+   \label{table:dual-left}
+  \end{minipage}%
+  \begin{minipage}{.5\textwidth}
+    \centering
+    \begin{tabular}{ccc}
+      1 & 2 & 3 \\
+      4 & 5 & 6 \\
+      \end{tabular}
+   \caption{Right table.}
+   \label{table:dual-right}
+  \end{minipage}
+\end{table}
+
+Ref test:
+Figure \ref{fig:dual-left} and Figure \ref{fig:dual-right}.
+Table \ref{table:dual-left} and Table \ref{table:dual-right}.
+
+\end{document}

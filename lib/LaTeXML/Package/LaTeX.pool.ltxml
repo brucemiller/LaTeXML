@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
+use List::Util qw(min max);
 
 #**********************************************************************
 # Organized following
@@ -524,6 +525,7 @@ DefConstructor('\lx@note[]{}[]{}',
     . "#4"
     . "</ltx:note>",
   mode         => 'text', bounded => 1,
+  sizer        => '#mark',
   beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
   properties   => sub {
     my $type = ToString($_[2]);
@@ -3389,78 +3391,131 @@ DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:
     Error('unexpected', '\caption', $_[0],
       "Use of \\caption outside any known float"); });
 
-sub add_subfigure_row_breaks {
-  my ($document, $node, $whatsit, @contents) = @_;
-  my $textwidth     = ($whatsit->getProperty('floatwidth') || Dimension('345pt'))->valueOf();
-  my $current_width = 0;
-  my @new_contents  = ();
-  for my $block (@contents) {
-    my $block_name = $document->getNodeQName($block);
-    if ($block_name eq 'ltx:break') {
+our $FIGURE_PANEL_CLASS = 'ltx_figure_panel';
+
+# most block-level elements are expected horizontally standalone in a {figure}.
+# (especially ones that directly match LaTeX {envs})
+our %standalone_panel_names = map { $_ => 1 }
+  qw(ltx:p ltx:listing ltx:math ltx:itemize ltx:enumerate ltx:quote ltx:theorem ltx:proof
+  ltx:description ltx:equation ltx:equationgroup ltx:verbatim);
+
+sub arrange_panels_and_breaks {
+  my ($document, $node, $whatsit) = @_;
+  my $float_width = ($whatsit->getProperty('floatwidth') || Dimension('345pt'))->valueOf();
+  # Note that 0.0625x minimal panel width will naturally enforce a limit of max 16 panels per row.
+  # except that we are currently under-sizing(?) some individual subfigures, so enforce max 32.
+  my $min_panel_width = 0.03125 * $float_width;
+  my $current_width   = 0;
+  my @all_panels      = ();
+  my @all_contents    = ();
+  # row contents will bookkeep triples of [node, name(optional), width(optional)]
+  my @row_contents      = ();
+  my $panels_found      = 0;
+  my $panel_break_names = LookupValue('figure_panel_break_names');
+  if (!$panel_break_names) {
+    # initialize schema-based tag names on first call for a given document;
+    my $model = $STATE->getModel;
+    $panel_break_names = { map { $_ => 1 } ('ltx:break',
+        $model->getSchemaClassNames('Meta'),
+        $model->getSchemaClassNames('SectionalFrontMatter'),
+        $model->getSchemaClassNames('Caption')) };
+    # what to do with footnotes? Move from Meta to Misc class?
+    $$panel_break_names{'ltx:note'} = undef;
+    AssignValue('figure_panel_break_names', $panel_break_names, 'global'); }
+  for my $child (element_nodes($node)) {
+    my $child_name = $document->getNodeQName($child);
+    if ($$panel_break_names{$child_name}) {
       # reset bookkeeping on prior breaks, be they author-deposited or computed
-      $current_width = 0; }
+      # (caption/metadata bits also flush the current line, but we avoid the explicit break element)
+      $current_width = 0;
+      push(@all_contents, map { $$_[0] } @row_contents);
+      push(@all_contents, $child);
+      @row_contents = (); }
     else {
-      my $block_width = $document->getNodeBox($block)->getWidth->valueOf();
-      if (@new_contents && ($current_width + $block_width > $textwidth)) {
+      my $is_standalone = $standalone_panel_names{$child_name};
+      if ($is_standalone && @row_contents) {
+        # if standalone, finalize current row content, and add a break
+        my $break = $document->insertElementBefore($child, 'break', 'class' => 'ltx_break');
+        push(@all_contents, map { $$_[0] } @row_contents);
+        push(@all_contents, $break);
+        $current_width = 0;
+        @row_contents  = (); }
+      my $child_width = $document->getNodeBox($child)->getWidth->valueOf();
+      if (@row_contents && ($current_width + $child_width > $float_width)) {
         # break when we exceed the line width, to keep close with the PDF arrangement
-        my $break = $document->insertElementBefore($block, 'break', 'class' => 'ltx_break');
-        push(@new_contents, $break);
-        $current_width = $block_width; }
+        my $break = $document->insertElementBefore($child, 'break', 'class' => 'ltx_break');
+        push(@all_contents, map { $$_[0] } @row_contents);
+        push(@all_contents, $break);
+        $document->addClass($child, $FIGURE_PANEL_CLASS);
+        @row_contents = ([$child, $child_name, $child_width]);
+        push(@all_panels, $child);
+        $current_width = $child_width; }
       else {
-        $current_width += $block_width; } }
-    push(@new_contents, $block); }
-  return @new_contents; }
+        # check if we can merge into the previous element
+        if (my $prev_panel = pop(@row_contents)) {
+          my $prev_node  = $$prev_panel[0];
+          my $prev_width = $$prev_panel[2] || $document->getNodeBox($prev_node)->getWidth->valueOf();
+          # Heuristic:
+          # Do the widths indicate a large(8x) size discrepancy? Or a very small joint size?
+          # If so, contain the two pieces in a single panel.
+          my $prev_name = $$prev_panel[1] || $document->getNodeQName($prev_node);
+          if (($prev_width > 0 && $child_width > 0 &&
+              (max($prev_width, $child_width) / min($prev_width, $child_width) > 8)) ||
+            ($prev_width + $child_width < $min_panel_width)) {
+            # avoid markup complexity - any time we do a merge, require a ltx:block marked as a panel.
+            # if one exists, reuse, otherwise create a wrapping one.
+            #my $prev_name = $$prev_panel[1] || $document->getNodeQName($prev_node);
+            if ($prev_name eq 'ltx:block') {
+              $child->unbindNode;
+              $prev_node->appendChild($child);
+              push(@row_contents, [$prev_node, $prev_name, $prev_width + $child_width]);
+            } elsif ($child_name eq 'ltx:block') {
+              $prev_node->unbindNode;
+              $child->appendChild($prev_node);
+              push(@row_contents, [$child, $child_name, $prev_width + $child_width]);
+              push(@all_panels,   $child);
+            } else {    # create a new block to hold the two siblings.
+              my $block = $document->wrapNodes('ltx:block', $prev_node, $child);
+              push(@row_contents, [$block, 'ltx:block', $prev_width + $child_width]);
+              pop(@all_panels); push(@all_panels, $block);
+          } }
+          else {
+            # otherwise keep the last panel as-is, and append a sibling
+            push(@row_contents, $prev_panel);
+            push(@row_contents, [$child, $child_name, $child_width]);
+            push(@all_panels,   $child); } }
+        else {    # no last panel? just add the child
+          push(@row_contents, [$child, $child_name, $child_width]);
+          push(@all_panels,   $child);
+          # yet if standalone, finalize current row content, and add a break
+          if ($is_standalone && @row_contents) {
+            push(@all_contents, map { $$_[0] } @row_contents);
+            if (my $trailer = $child->nextSibling) {
+              if (!$$panel_break_names{ $document->getNodeQName($trailer) }) {
+                my $break = $document->insertElementBefore($trailer, 'break', 'class' => 'ltx_break');
+                push(@all_contents, $break); } }
+            @row_contents  = ();
+            $current_width = 0; } }
+        $current_width += $child_width; } } }
+  push(@all_contents, map { $$_[0] } @row_contents);
+  # simplify: if we only ever added 1 panel, remove its class (so that we only mark complex figures)
+  if (scalar(@all_panels) > 1) {
+    for my $panel (@all_panels) {
+      $document->addClass($panel, $FIGURE_PANEL_CLASS); } }
+  return @all_contents; }
 
-sub add_subfigure_row_sizes {
-  my ($document, $node, $whatsit, @contents) = @_;
-  my @row = ();
-  for my $child (@contents) {
-    if ($document->getNodeQName($child) eq 'ltx:break') {
-      next unless @row;
-      my $row_size      = scalar(@row);
-      my $row_size_attr = "ltx_flex_size_$row_size";
-      if ($row_size > 4) {    # add a generic class for larger rows, to style together easily
-        $row_size_attr .= " ltx_flex_size_many"; }
-      for my $cell (@row) {
-        my $class = $cell->getAttribute('class') || '';
-        $class .= ' ' if $class;
-        $cell->setAttribute('class', $class . $row_size_attr); }
-      @row = (); }
-    else {
-      push(@row, $child); } }
-  # Don't forget the last row, if any
-  if (@row) {
-    my $row_size      = scalar(@row);
-    my $row_size_attr = "ltx_flex_size_$row_size";
-    if ($row_size > 4) {    # add a generic class for larger rows, to style together easily
-      $row_size_attr .= " ltx_flex_size_many"; }
-    for my $cell (@row) {
-      my $class = $cell->getAttribute('class') || '';
-      $class .= ' ' if $class;
-      $cell->setAttribute('class', $class . $row_size_attr); } }
-  return; }
-
-# Feature 1: Add flex classes to each subfigure cell in a figure.
-# Feature 2: Add identifiers on each figure
-sub SubfigureAndID {
+sub BuildPanelsAndID {
   my ($document, $node, $whatsit, $id_kind) = @_;
-  # 1. Flex
-  # A little verbose, but much easier to do than XSLT 1.0 would allow.
-  my $contents_count = 0;    # count with author breaks excluded
-  my @contents       = grep { my $name = $document->getNodeQName($_);
-    my $ok = ($name =~ /^ltx:(?:graphics|float|figure|table|tabular|break|inline-logical-block|inline-block|listing)$/);
-    $contents_count += 1 if $ok and $name ne 'ltx:break';
-    $ok; } element_nodes($node);
-  if ($contents_count > 1) {
-    @contents = add_subfigure_row_breaks($document, $node, $whatsit, @contents);
-    add_subfigure_row_sizes($document, $node, $whatsit, @contents); }
+  # 1. Each figure/table/float is comprised of 1 or more "panels", possibly separated by line-breaks,
+  #     where multiple panels tend to correspond to subfigures/subtables/subfloats.
+  my @contents = arrange_panels_and_breaks($document, $node, $whatsit);
   # 2. IDs
   # Note that even without \caption, we'd probably like to have xml:id.
   return GenerateID($document, $node, $whatsit, $id_kind); }
 
-Tag('ltx:figure', afterClose => sub { SubfigureAndID(@_, 'fig'); });
-Tag('ltx:float',  afterClose => sub { SubfigureAndID(@_, 'tab'); });
-Tag('ltx:table',  afterClose => sub { SubfigureAndID(@_, 'tab'); });
+Tag('ltx:figure', afterClose => sub { BuildPanelsAndID(@_, 'fig'); });
+Tag('ltx:float',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
+Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.

@@ -146,7 +146,7 @@ sub loadCompiledSchema {
       $self->addTagAttribute($tag, split(/,/, $attr));
       $self->addTagContent($tag, split(/,/, $children)); }
 
-    elsif ($line =~ /^([^:=]+):=(.*?)$/) {
+    elsif ($line =~ /^([^:=]+):=\(?([^)]*?)\)?$/) {
       my ($classname, $elements) = ($1, $2);
       $self->setSchemaClass($classname, { map { ($_ => 1) } split(/,/, $elements) }); }
     elsif ($line =~ /^([^=]+)=(.*?)$/) {
@@ -475,8 +475,15 @@ sub canHaveAttribute {
           : ($$attr{'*'} ? 1
             : 0)))); } }
 
+sub getSchemaClassNames {
+  my ($self, $classname) = @_;
+  $self->loadSchema unless $$self{schema_loaded};
+  my $class_data = $$self{schemaclass}{$classname};
+  return $class_data ? (keys %$class_data) : (); }
+
 sub isInSchemaClass {
   my ($self, $classname, $tag) = @_;
+  $self->loadSchema unless $$self{schema_loaded};
   $tag = $self->getNodeQName($tag) if ref $tag;    # In case tag is a node.
   my $class = $$self{schemaclass}{$classname};
   return $class && $$class{$tag}; }

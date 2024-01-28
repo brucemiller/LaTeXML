@@ -46,6 +46,11 @@ sub image_candidates {
   $path =~ s/^("+)(.+)\g1$/$2/;    # unwrap if in quotes
   my $searchpaths = $STATE->lookupValue('GRAPHICSPATHS');
   my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
+  if (!@candidates) {
+    # if we have no candidates, also consult kpsewhich,
+    # e.g. for "example-image-a"
+    if (my $kpse_found = pathname_kpsewhich("$path.png", "$path.pdf")) {
+      @candidates = ($kpse_found); } }
   if (my $base = $STATE->lookupValue('SOURCEDIRECTORY')) {
     @candidates = map { pathname_relative($_, $base) } @candidates; }
   return ($path, @candidates); }

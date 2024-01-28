@@ -1,0 +1,91 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\iflatexml\else
+\usepackage{alphalph}
+\usepackage{fullpage}
+\renewcommand*{\thesubfigure}{\alphalph{\value{subfigure}}}
+\fi
+
+\makeatletter
+\long\def\replicate#1#2{%
+  \ifnum\numexpr#1>0%
+    #2\expandafter\replicate\expandafter{\number\numexpr#1-1\expandafter}%
+  \else%
+    \expandafter\@gobble
+  \fi{#2}}
+\makeatother
+
+\def\compoundfigure#1#2#3{
+  \begin{figure}\centering
+    \def\row{\replicate{#2}{#3{#2}}}
+    \replicate{#1}{\row\\[2mm]}
+  \end{figure}
+}
+\def\imgfile{../graphics/none.png}
+% just graphicx
+\def\figcell#1{
+  \includegraphics[width={\dimexpr (\textwidth / #1) - 1mm}]{\imgfile}
+}
+%{subfigure}
+\def\subfigcell#1{
+  \begin{subfigure}{\dimexpr (\textwidth / #1) - 1mm}
+  \centering
+  \includegraphics[width = 0.8\columnwidth]{\imgfile}
+  \caption{subcaption}
+  \end{subfigure}
+}
+% minipage
+\def\minicell#1{
+  \begin{minipage}[t]{\dimexpr (\textwidth / #1) - 1mm}
+    \centering
+    \includegraphics[width = 0.8\columnwidth]{\imgfile}
+  \end{minipage}}
+
+% grid shorthands
+\def\grid#1#2{\compoundfigure#1#2\figcell}
+\def\subgrid#1#2{\compoundfigure#1#2\subfigcell}
+\def\minigrid#1#2{\compoundfigure#1#2\minicell}
+
+\def\setupgrid#1{
+  % 1x2 grid
+  #1{1}{2}
+  \clearpage
+  % 2x1 grid
+  #1{2}{1}
+  \clearpage
+  % 2x2 grid
+  #1{2}{2}
+  \clearpage
+  % 3x3 grid
+  #1{3}{3}
+  \clearpage
+  % 4x4 grid
+  #1{4}{4}
+  \clearpage
+  % 2x4 grid
+  #1{2}{4}
+  \clearpage
+  % 4x2 grid
+  #1{4}{2}
+  \clearpage
+  % 5x5 grid
+  #1{5}{5}
+  \clearpage
+  % 6x6 grid
+  #1{6}{6}
+  \clearpage}
+
+\begin{document}
+% plain {figure}
+\setupgrid\grid
+% {subfigure}
+\setupgrid\subgrid
+% {minipage}
+\setupgrid\minigrid
+
+% Side-example: consider manually adjusted sub-sub figures as in:
+% https://tex.stackexchange.com/a/78100
+
+\end{document}
