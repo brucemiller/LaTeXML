@@ -75,9 +75,11 @@ WriteMakefile(NAME => 'LaTeXML',
     'URI'               => 0,
     'version'           => 0,
     # Windows terminal handling (see Common::Error)
+    # Windows argument escaping (see Util::Pathname)
     ($^O eq 'MSWin32'
       ? ('Win32::Console' => 0,
-        'Win32::Console::ANSI' => 0)
+        'Win32::Console::ANSI' => 0,
+        'Win32::ShellQuote'    => 0)
       : ()),
     # If we have an "old" version of XML::LibXML,
     # we also need XPathContext.

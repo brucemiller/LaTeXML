@@ -2016,8 +2016,6 @@ sub FindFile_aux {
       return $file . '.ltxml' if -f ($file . '.ltxml'); }    # No need to search, just check if it exists.
     return $file if -f $file;    # No need to search, just check if it exists.
     return; }                    # otherwise we're never going to find it.
-  elsif (pathname_is_nasty($file)) {    # If it is a nasty filename, we won't touch it.
-    return; }                           # we DO NOT want to pass this to kpathse or such!
 
   # Note that the strategy is complicated by the fact that
   # (1) we prefer .ltxml bindings, if present
@@ -2026,7 +2024,7 @@ sub FindFile_aux {
   # (4) depending on switches we may EXCLUDE .ltxml OR raw tex OR allow both.
   # (5) we may allow interpreting raw TeX/sty/whatever files individually or broadly
   # (6) but we may also want to override an apparently "versioned" file, preferring the ltxml
-  my $paths         = LookupValue('SEARCHPATHS');
+  my $paths         = LookupValue('SEARCHPATHS') // [];
   my $urlbase       = LookupValue('URLBASE');
   my $nopaths       = LookupValue('REMOTE_REQUEST');
   my $ltxml_paths   = $nopaths ? [] : $paths;
@@ -2053,8 +2051,7 @@ sub FindFile_aux {
   # Otherwise, pass on to kpsewhich
   # Depending on flags, maybe search for ltxml in texmf or for plain tex in ours!
   # The main point, though, is to we make only ONE (more) call.
-  return if grep { pathname_is_nasty($_) } @$paths;    # SECURITY! No nasty paths in cmdline
-      # Do we need to sanitize these environment variables?
+  # Do we need to sanitize these environment variables?
   my @candidates = (((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
     (!$options{notex} ? ($file) : ()));
   local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
@@ -2137,10 +2134,6 @@ sub FindFile_fallback {
         return $path; } } }
   else {
     return; } }
-
-sub pathname_is_nasty {
-  my ($pathname) = @_;
-  return $pathname =~ /[^\w\-_\+\=\/\\\.~\:\s]/; }
 
 sub maybeReportSearchPaths {
   if (LookupValue('SEARCHPATHS_REPORTED')) {
