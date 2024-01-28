@@ -94,7 +94,7 @@ sub getopt_specification {
     # However, IF combining, then will need to support a id/ref mechanism.
     "mathimagemagnification=f"    => \$$opts{mathimagemag},
     "linelength=i"                => \$$opts{linelength},
-    "mathstylize=s"               => \$$opts{mathstylize},
+    "invisibletimes!"             => \$$opts{invisibletimes},
     "plane1!"                     => \$$opts{plane1},
     "hackplane1!"                 => \$$opts{hackplane1},
     "mathimages"                  => sub { addMathFormat($opts, 'images'); },

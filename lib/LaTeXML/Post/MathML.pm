@@ -710,10 +710,12 @@ sub stylizeContent {
   # For each mathvariant, and for each of those 5 groups, there is a linear mapping,
   # EXCEPT for chars defined before Plain 1, which already exist in lower blocks.
   # Get desired mapping strategy
-  my $plane1      = $$LaTeXML::Post::MATHPROCESSOR{plane1};
-  my $plane1hack  = $$LaTeXML::Post::MATHPROCESSOR{hackplane1};
-  my $mathstylize = $$LaTeXML::Post::MATHPROCESSOR{mathstylize} || '';
-  my $u_variant   = $variant
+  my $plane1         = $$LaTeXML::Post::MATHPROCESSOR{plane1};
+  my $plane1hack     = $$LaTeXML::Post::MATHPROCESSOR{hackplane1};
+  my $invisibletimes = $$LaTeXML::Post::MATHPROCESSOR{invisibletimes};
+  # just in case, default to "true" (classic behavior), if not specified
+  $invisibletimes = 1 unless defined $invisibletimes;
+  my $u_variant = $variant
     && ($plane1hack ? $plane1hackable{$variant}
     : ($plane1 ? $variant : undef));
   my $u_text = ($tag ne 'm:mtext') && $u_variant && unicode_convert($text, $u_variant);
@@ -752,9 +754,8 @@ sub stylizeContent {
   if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {    # invisible get no size or stretchiness
     $stretchy = $size = undef;
     # If requested, switch implied mo to space
-    if ($text eq "\x{2062}" and $mathstylize eq 'mo_implied_space') {
-      $text = "\x{200B}";
-  } }
+    if ($text eq "\x{2062}" and not($invisibletimes)) {
+      $text = "\x{200B}"; } }
   if ($size) {
     if ($size eq ($LaTeXML::MathML::SIZE || 'text')) {    # If default size, no need to mention.
       $size = undef; }
