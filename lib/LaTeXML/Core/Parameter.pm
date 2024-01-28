@@ -95,6 +95,9 @@ sub read {
       "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
       "Ended at " . ToString($gullet->getLocator));
     $value = T_OTHER('missing'); }
+  elsif ($value && $$self{optional} && $$self{type} =~ /^OptionalMatch/) {
+    # experiment: skip spaces after a successful OptionalMatch read
+    $gullet->skipSpaces; }
   return $value; }
 
 # This is needed by structured parameter types like KeyVals
