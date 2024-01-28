@@ -519,6 +519,21 @@ sub pgfmath_getdepth {
   my $stuff = $box && LookupValue($box);
   return ($stuff ? $stuff->getDepth->valueOf / 65536 : Dimension(0)); }
 
+sub pgfmath_sizer {
+  my ($dimension, $rawtex) = @_;
+  $rawtex =~ s/^"//;
+  $rawtex =~ s/"$//;
+  my $result;
+  if (my $boxed = Digest($rawtex)) {
+    if ($dimension eq 'height') {
+      $result = $boxed->getHeight; }
+    elsif ($dimension eq 'depth') {
+      $result = $boxed->getDepth; }
+    else {
+      $result = $boxed->getWidth; } }
+  else {
+    $result = Dimension(0); }
+  return $result->ptValue; }
 # Presumably should hook into \pgfmathnotifynewdeclarefunction
 # as possibility to register a function, instead of checking at parse time?
 sub pgfmath_checkuserconstant {
@@ -660,6 +675,7 @@ expr :
   simplefactor :
       /\(/ formula /(?:\)|^\Z)/     { $item[2]; } # Let unclosed () succeed at end?
     | PREFIX simplefactor   { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
+    | SIZER /\(/ QTEX /\)/ { LaTeXML::Package::Pool::pgfmath_sizer($item[1], $item[3]); }
     | FUNCTION /\(/ formula (/,/ formula { $item[2]; })(s?) /\)/
            { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[3], @{$item[4]}); }
     | FUNCTION simplefactor
@@ -698,9 +714,10 @@ expr :
 
     FUNCTION : /(?:abs|acos|asin|atan2|atan|angle|bin|ceil|cos|cosec|cosh|cot|deg|exp|factorial|floor|frac|hex|Hex|int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|rad|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse|veclen)/
         | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserfunction($item[1]); }
-# ? array|scalar
-# These take boxes!  depth|height|width
-
+    # ? array|scalar
+    # These take boxes!
+    SIZER : /(?:depth|height|width)/
+    QTEX : /"[^"]*"/
     CMP     : /==/ | /\>/ | /\</ | /!=/ | /\>=/ | /\<=/ | /&&/ | /||/
     PREFIX  : /\-/ | /!/ | /\+/
     POSTFIX : /!/ | /r/
