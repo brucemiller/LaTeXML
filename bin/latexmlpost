@@ -36,8 +36,8 @@ my ($format, $extension, $is_html, $urlstyle) = (undef, undef, undef, 'server');
 my ($numbersections) = (1);
 my ($stylesheet, $defaultresources, $icon, @css, @javascript, @xsltparameters);
 my ($mathimagemag) = (1.75);
-my ($linelength, $plane1, $hackplane1) = (undef, undef, undef);
-my ($dographics, $svg, $picimages)     = (undef, undef, undef);
+my ($linelength, $plane1, $hackplane1, $invisibletimes) = (undef, undef, undef, undef);
+my ($dographics, $svg, $picimages) = (undef, undef, undef);
 my @graphicsmaps = ();
 my ($split, $splitat, $splitpath, $splitnaming) = (undef, 'section', undef, 'id');
 my ($navtoc) = (undef);
@@ -123,6 +123,7 @@ GetOptions("quiet" => sub { $verbosity--; },
   "mathsvg"                     => sub { addMathFormat('svg'); },
   "nomathsvg"                   => sub { removeMathFormat('svg'); },
   "linelength=i"                => \$linelength,
+  "invisibletimes!"             => \$invisibletimes,
   "plane1!"                     => \$plane1,
   "hackplane1!"                 => \$hackplane1,
   "presentationmathml|pmml"     => sub { addMathFormat('pmml'); },
@@ -472,8 +473,10 @@ sub assemble_postprocessors {
           require LaTeXML::Post::MathML::Presentation;
           push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
               linelength => $linelength,
-              (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
-              ($hackplane1     ? (hackplane1 => 1)       : ()),
+              (defined $plane1         ? (plane1         => $plane1) : (plane1 => 1)),
+              ($hackplane1             ? (hackplane1     => 1)       : ()),
+              (defined $invisibletimes ? (invisibletimes => $invisibletimes) :
+                  (invisibletimes => 1)),
               %OPTIONS)); }
         elsif ($fmt eq 'cmml') {
           require LaTeXML::Post::MathML::Content;
