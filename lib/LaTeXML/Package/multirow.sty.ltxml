@@ -16,11 +16,22 @@ use warnings;
 use LaTeXML::Package;
 
 DefPrimitive('\multirowsetup', undef);
-DefPrimitive('\multirow[]{Number}[Number]{}[Dimension]{}', sub {
+DefPrimitive('\multirow[]{Float}[Number]{}[Dimension]{}', sub {
     my ($stomach, $attachment, $nrows, $bigstruts, $width, $fixup, $content) = @_;
     if (my $alignment = LookupValue('Alignment')) {
       my $colspec = $alignment->currentColumn;
-      $$colspec{rowspan} = $nrows->valueOf;
+      my $rowspan = $nrows->valueOf;
+      if ($rowspan < 0) {
+        # Example from arXiv:2210.15835
+        # \multirow{-8.2}{*}{\includegraphics[width=0.398\linewidth]{figures/NoPredict0msDelayRef}}
+        Warn("unsupported", "multirow", $stomach,
+          "Negative row sizes for \\multirow are not yet supported.");
+        $rowspan = 1; }
+      elsif ($rowspan != int($rowspan)) {
+        Warn("unsupported", "multirow", $stomach,
+          "Fractional row sizes for \\multirow are not yet supported.");
+        $rowspan = int($rowspan); }
+      $$colspec{rowspan} = $rowspan;
       $$colspec{vattach} = translateAttachment($attachment) if $attachment;
     }
     Digest(Tokens(T_CS('\hbox'), T_BEGIN, T_CS('\multirowsetup'), $content->unlist, T_END)); });
