@@ -456,6 +456,7 @@ DefParameterType('BalancedParen', sub {
 # in order to correctly deal with catcodes.
 # BEWARE: This is NOT a shorthand for a simple digested {}!
 DefParameterType('Digested', sub {
+    no warnings 'recursion';
     my ($gullet) = @_;
     $gullet->skipSpaces;
     my $ismath = $STATE->lookupValue('IN_MATH');
