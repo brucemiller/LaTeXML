@@ -4455,8 +4455,9 @@ sub revertScript {
     $l++; shift(@t); }
   while (@t && $l) {
     my $t = shift(@t);
-    if    ($t->defined_as(T_BEGIN)) { $l++; }
-    elsif ($t->defined_as(T_END))   { $l--; } }
+    if (ref $t eq 'LaTeXML::Core::Token') {    # jump over pre-wrapped Tokens, see arXiv:2210.11051
+      if    ($t->defined_as(T_BEGIN)) { $l++; }
+      elsif ($t->defined_as(T_END))   { $l--; } } }
   return (@tokens && !@t ? @tokens : (T_BEGIN, @tokens, T_END)); }
 
 # Compute the 'advance' of this script.
