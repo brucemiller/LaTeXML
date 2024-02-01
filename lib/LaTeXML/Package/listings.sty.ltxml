@@ -1286,13 +1286,11 @@ sub lstProcess {
       grep { $$delimiters{$_}{escape} } sort keys %$delimiters);
   local $LaTeXML::QUOTED_RE = "\\\\\\\\";    # start w/ backslashed backslash?
   local $LaTeXML::SPACE     = (lstGetBoolean('showspaces') ? T_CS('\@lst@visible@space') : T_CS(" "));
-  local $LaTeXML::CASE_SENSITIVE = lstGetBoolean('sensitive');
-  # Don't these need \Q,\E?
-  #  local $LaTeXML::LITERATE_RE    = join('|', map { "\\Q" . $$_[0] . "\\E"; } @$literate);
-  local $LaTeXML::LITERATE_RE       = join('|', map { $$_[0]; } @$literate);
-  local $LaTeXML::LITERATE_INNER_RE = join('|', map { $$_[0]; } grep { !$$_[2]; } @$literate);
-  if (!$LaTeXML::CASE_SENSITIVE) {    # Clunky, inefficient, but until we know, we don't know
-    foreach my $word (keys %$words) {    # Modify in place (they'll get rebuilt if/when needed)
+  local $LaTeXML::CASE_SENSITIVE    = lstGetBoolean('sensitive');
+  local $LaTeXML::LITERATE_RE       = join('|', map { quotemeta($$_[0]); } @$literate);
+  local $LaTeXML::LITERATE_INNER_RE = join('|', map { quotemeta($$_[0]); } grep { !$$_[2]; } @$literate);
+  if (!$LaTeXML::CASE_SENSITIVE) {           # Clunky, inefficient, but until we know, we don't know
+    foreach my $word (keys %$words) {        # Modify in place (they'll get rebuilt if/when needed)
       $$words{ uc($word) } = $$words{$word}; } }
 
 # === Start processing
