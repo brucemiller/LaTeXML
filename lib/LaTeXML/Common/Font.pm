@@ -22,7 +22,7 @@ use LaTeXML::Common::Font::Metric;
 use LaTeXML::Common::Font::StandardMetrics;
 use LaTeXML::Common::Color;
 use List::Util qw(min max sum);
-use base       qw(LaTeXML::Common::Object);
+use base qw(LaTeXML::Common::Object);
 
 # Note that this has evolved way beynond just "font",
 # but covers text properties (or even display properties) in general
@@ -263,6 +263,7 @@ sub toString {
 
 # Perhaps it is more useful to list only the non-default components?
 sub stringify {
+  no warnings 'recursion';
   my ($self) = @_;
   my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc, $lang, $mstyle, $flags) = @$self;
   $fam = 'serif' if $fam && ($fam eq 'math');
