@@ -755,6 +755,8 @@ sub stylizeContent {
     $stretchy = $size = undef;
     # If requested, switch implied mo to space
     if ($text eq "\x{2062}" and not($invisibletimes)) {
+      # and set lspace/rspace to 0 until we have browser interop.
+      $props{lspace} = $props{rspace} = $props{force_lspace} = $props{force_rspace} = '0em';
       $text = "\x{200B}"; } }
   if ($size) {
     if ($size eq ($LaTeXML::MathML::SIZE || 'text')) {    # If default size, no need to mention.
@@ -801,6 +803,9 @@ sub stylizeContent {
     # Store spacing for later spacing resolution
     (defined $props{lspace} ? (_lspace => $props{lspace}) : ()),
     (defined $props{rspace} ? (_rspace => $props{rspace}) : ()),
+    # explicitly set for zero-width space, until we get browser interop
+    (defined $props{force_lspace} ? (lspace => $props{force_lspace}) : ()),
+    (defined $props{force_rspace} ? (rspace => $props{force_rspace}) : ()),
   ); }
 
 # Generally, $item in the following ought to be a string.
