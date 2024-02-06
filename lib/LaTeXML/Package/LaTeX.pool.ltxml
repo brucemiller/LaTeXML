@@ -4971,6 +4971,8 @@ DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
   beforeDigest => sub { reenterTextMode(); },
   sizer        => sub { raisedSizer($_[0]->getArg(4), $_[0]->getArg(1)); });
 
+DefMacro('\@finalstrut{}', '\unskip\ifhmode\nobreak\fi\vrule\@width\z@\@height\z@\@depth\dp#1');
+
 #**********************************************************************
 # C.14 Pictures and Color
 #**********************************************************************
@@ -5514,6 +5516,8 @@ DefPrimitiveI('\textregistered', undef, UTF(0xAE));     # REGISTERED SIGN
 DefPrimitiveI('\texttrademark',  undef, "\x{2122}");    # TRADE MARK SIGN
 DefConstructor('\textsuperscript{}', "<ltx:sup>#1</ltx:sup>",
   mode => 'text');
+DefConstructor('\@textsuperscript{}', "<ltx:sup>#1</ltx:sup>",
+  mode => 'text', locked => 1);
 # This is something coming from xetex/xelatex ? Why define this way?
 #DefConstructor('\realsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
 DefConstructor('\realsuperscript{}', "<ltx:sup>#1</ltx:sup>",
