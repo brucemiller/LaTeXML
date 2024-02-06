@@ -1355,7 +1355,16 @@ sub lstProcess_internal {
   my $classes    = LookupValue('LST_CLASSES');
   my $literate   = LookupValue('LST_LITERATE');
   my $lit_re     = ($end_re ? $LaTeXML::LITERATE_INNER_RE : $LaTeXML::LITERATE_RE);
+  my $loop_guard = 'loop guard';
+
   while ($LaTeXML::listing ne '') {
+    if ($LaTeXML::listing eq $loop_guard) {
+      # we must make headway on every step, or we risk infinite loops
+      Error('listing', 'infinite_loop', undef,
+        "lstProcess_internal failed to execute correctly.", "content was: '$loop_guard'");
+      $LaTeXML::listing = '';
+      last; }
+    $loop_guard = $LaTeXML::listing;
     # Matched the ending regular expression? (typically a close delimiter)
     if ($end_re && $LaTeXML::listing =~ s/^($end_re)//s) {
       $LaTeXML::colnum += length($1);
@@ -1449,7 +1458,6 @@ sub lstProcess_internal {
     elsif ($LaTeXML::QUOTED_RE && $LaTeXML::listing =~ s/^($LaTeXML::QUOTED_RE)//) { # Something quoted.
           # Don't just past together, and watch for leading \ (a common quoter)
       lstProcessPush(map { ($_ eq '\\' ? T_CS('\textbackslash') : T_OTHER($_)) } split('', $1));
-
       $LaTeXML::colnum += length($1); }
     else {
       if ($LaTeXML::listing =~ s/^(.)//s) {    # Anything else, just pass through.
