@@ -693,7 +693,8 @@ sub stylizeContent {
     if (my $default = $role && $default_token_content{$role}) {
       $text = $default; }
     else {
-      $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $role : '?');
+      $text = ($iselement ? ($item->getAttribute('name') || $item->getAttribute('meaning')
+            || $role || '') : '?');
       $color = 'red'; } }
   elsif (($text eq '-') && $role && (($role eq 'ADDOP') || ($role eq 'OPERATOR'))) { # MathML Core prefers unicode minus
     $text = "\x{2212}"; }
@@ -720,7 +721,7 @@ sub stylizeContent {
     : ($plane1 ? $variant : undef));
   my $u_text = ($tag ne 'm:mtext') && $u_variant && unicode_convert($text, $u_variant);
   if ((defined $u_text) && ($u_text ne '')) {    # didn't remap the text ? Keep text & variant
-    $text    = $u_text;
+    $text    = $u_text || '';
     $variant = ($plane1hack && ($variant ne $u_variant) && ($variant =~ /^bold/)
       ? 'bold' : undef); }                       # Possibly keep variant bold
                                                  # Use class (css) to patchup some weak translations
