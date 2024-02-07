@@ -1,0 +1,25 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{spy}
+\def\imgfile{../graphics/none.png}
+
+\begin{document}
+
+% \includegraphics as a node in tikz, see ar5iv#215
+\begin{figure*}
+  \begin{tikzpicture}
+    \begin{scope}[spy using outlines={rectangle,blue,magnification=2.5,size=3cm}]
+    \node {	\includegraphics[height=3cm]{\imgfile}};
+    \end{scope}
+  \end{tikzpicture}
+
+  \begin{tikzpicture}
+    \begin{scope}[spy using outlines={rectangle,blue,magnification=2.5,size=3cm}]
+    \node {	\includegraphics[height=3cm]{\imgfile}};
+    \end{scope}
+  \end{tikzpicture}
+  \caption{tikz nodes with includegraphics}
+\end{figure*}
+
+\end{document}
