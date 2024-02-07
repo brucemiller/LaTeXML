@@ -6,9 +6,8 @@
 \usepackage{algorithm}
 \usepackage{booktabs}
 \usepackage{subcaption}
-\usepackage{tikz}
+\usepackage{xcolor}
 \usepackage{algorithmic}
-\usetikzlibrary{spy}
 \usepackage{listings}
 \newtheorem{theorem}{Theorem}
 % Examples of custom/rare figures with mixed content
@@ -41,23 +40,6 @@
   \end{minipage}}
   \caption{table with two resized, minipage, tabulars}
 \end{table*}
-\clearpage
-
-% \includegraphics as a node in tikz, see ar5iv#215
-\begin{figure*}
-  \begin{tikzpicture}
-    \begin{scope}[spy using outlines={rectangle,blue,magnification=2.5,size=3cm}]
-    \node {	\includegraphics[height=3cm]{\imgfile}};
-    \end{scope}
-  \end{tikzpicture}
-
-  \begin{tikzpicture}
-    \begin{scope}[spy using outlines={rectangle,blue,magnification=2.5,size=3cm}]
-    \node {	\includegraphics[height=3cm]{\imgfile}};
-    \end{scope}
-  \end{tikzpicture}
-  \caption{tikz nodes with includegraphics}
-\end{figure*}
 \clearpage
 
 % math array with subfloat
