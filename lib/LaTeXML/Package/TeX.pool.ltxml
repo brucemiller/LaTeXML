@@ -4444,19 +4444,19 @@ DefPrimitiveI(T_SUB,   undef, sub { scriptHandler($_[0], 'SUBSCRIPT'); });
 # at the least they're ugly; in some applications they affect "round trip" processing.
 # OTOH, direct use of \@@POSTSUPERSCRIPT, etal, MAY need to have extra braces around them.
 # So, when reverting, we're going to a bit of extra trouble to make sure we have ONE set
-# of braces, but no extras!!  [Worry about lists of lists...]
+# of braces, but no extras!!
 sub revertScript {
   my ($script) = @_;
-  my @tokens   = $script->revert;
-  my @t        = @tokens;
+  # We need to handle lists of lists, see arXiv:2210.11051
+  my @tokens = Tokens($script->revert)->unlist;
+  my @t      = @tokens;
   my $l;
   if ($t[0]->defined_as(T_BEGIN)) {
     $l++; shift(@t); }
   while (@t && $l) {
     my $t = shift(@t);
-    if (ref $t eq 'LaTeXML::Core::Token') {    # jump over pre-wrapped Tokens, see arXiv:2210.11051
-      if    ($t->defined_as(T_BEGIN)) { $l++; }
-      elsif ($t->defined_as(T_END))   { $l--; } } }
+    if    ($t->defined_as(T_BEGIN)) { $l++; }
+    elsif ($t->defined_as(T_END))   { $l--; } }
   return (@tokens && !@t ? @tokens : (T_BEGIN, @tokens, T_END)); }
 
 # Compute the 'advance' of this script.
