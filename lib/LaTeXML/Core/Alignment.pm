@@ -21,8 +21,8 @@ use LaTeXML::Common::XML;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Core::Alignment::Template;
 use List::Util qw(max sum);
-use base       qw(LaTeXML::Core::Whatsit);
-use base       qw(Exporter);
+use base qw(LaTeXML::Core::Whatsit);
+use base qw(Exporter);
 our @EXPORT = (qw(
     &ReadAlignmentTemplate &MatrixTemplate));
 
@@ -1407,7 +1407,7 @@ sub summarize_alignment {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

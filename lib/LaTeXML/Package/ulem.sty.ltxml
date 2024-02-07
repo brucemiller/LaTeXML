@@ -18,20 +18,22 @@ use LaTeXML::Package;
 RequireResource('ltx-ulem.css');
 
 #======================================================================
-DefConstructor('\uline{}',
-  "<ltx:text class='ltx_ulem_uline'>#1</ltx:text>");
-DefConstructor('\uuline{}',
-  "<ltx:text class='ltx_ulem_uuline'>#1</ltx:text>");
-DefConstructor('\uwave{}',
-  "<ltx:text class='ltx_ulem_uwave'>#1</ltx:text>");
-DefConstructor('\sout{}',
-  "<ltx:text class='ltx_ulem_sout'>#1</ltx:text>");
-DefConstructor('\xout{}',
-  "<ltx:text class='ltx_ulem_xout'>#1</ltx:text>");
-DefConstructor('\dashuline{}',
-  "<ltx:text class='ltx_ulem_dashuline'>#1</ltx:text>");
-DefConstructor('\dotuline{}',
-  "<ltx:text class='ltx_ulem_dotuline'>#1</ltx:text>");
+# TODO: We still need to propagate the XMWrap class to the inner argument,
+#       not yet implemented in MathParser?
+DefConstructor('\uline{}', "?#isMath(<ltx:XMWrap class='ltx_ulem_uline'>#1</ltx:XMWrap>)"
+    . "(<ltx:text class='ltx_ulem_uline'>#1</ltx:text>)");
+DefConstructor('\uuline{}', "?#isMath(<ltx:XMWrap class='ltx_ulem_uuline'>#1</ltx:XMWrap>)"
+    . "(<ltx:text class='ltx_ulem_uuline'>#1</ltx:text>)");
+DefConstructor('\uwave{}', "?#isMath(<ltx:XMWrap class='ltx_ulem_uwave'>#1</ltx:XMWrap>)"
+    . "(<ltx:text class='ltx_ulem_uwave'>#1</ltx:text>)");
+DefConstructor('\sout{}', "?#isMath(<ltx:XMWrap class='ltx_ulem_sout'>#1</ltx:XMWrap>)"
+    . "(<ltx:text class='ltx_ulem_sout'>#1</ltx:text>)");
+DefConstructor('\xout{}', "?#isMath(<ltx:XMWrap class='ltx_ulem_xout'>#1</ltx:XMWrap>)"
+    . "(<ltx:text class='ltx_ulem_xout'>#1</ltx:text>)");
+DefConstructor('\dashuline{}', "?#isMath(<ltx:XMWrap class='ltx_ulem_dashuline'>#1</ltx:XMWrap>)"
+    . "(<ltx:text class='ltx_ulem_dashuline'>#1</ltx:text>)");
+DefConstructor('\dotuline{}', "?#isMath(<ltx:XMWrap class='ltx_ulem_dotuline'>#1</ltx:XMWrap>)"
+    . "(<ltx:text class='ltx_ulem_dotuline'>#1</ltx:text>)");
 
 DefMacro('\normalem', '');
 #======================================================================

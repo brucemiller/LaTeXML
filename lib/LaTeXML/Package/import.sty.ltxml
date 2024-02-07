@@ -20,6 +20,8 @@ use LaTeXML::Util::Pathname;
 DefPrimitive('\lx@set@path OptionalMatch:* {}', sub {
     my ($stomach, $star, $path) = @_;
     $path = ToString(Expand($path));
+    if (!pathname_is_absolute($path)) {
+      $path = pathname_absolute($path, LookupValue('SOURCEDIRECTORY')); }
     if ($star) {    # * omits TEXINPUTS!
       AssignValue(SEARCHPATHS => [pathname_canonical($path)]); }
     else {
@@ -46,4 +48,3 @@ Let('\subinputfrom', '\subimport');
 
 #======================================================================
 1;
-

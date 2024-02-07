@@ -15,6 +15,6 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-LoadPool('expl3');
+RequirePackage('xparse');
 InputDefinitions('lipsum', type => 'sty', noltxml => 1);
 1;

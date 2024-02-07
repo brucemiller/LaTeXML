@@ -74,6 +74,7 @@ sub getNumArgs {
 # Digest the constructor; This should occur in the Stomach to create a Whatsit.
 # The whatsit which will be further processed to create the document.
 sub invoke {
+  no warnings 'recursion';
   my ($self, $stomach) = @_;
   # Call any `Before' code.
   my $_tracing = $STATE->lookupValue('TRACING') || 0;

@@ -36,7 +36,15 @@ DefMacro('\xyoption{}', sub {
     elsif ($xy_unsupported{$option}) {
       Warn('xy', 'unsupported', $gullet,
         "The xy extension/feature $option_s may not be supported"); }
-    return Tokens(T_CS('\lx@xy@xyoption@orig'), T_BEGIN, $option, T_END); });
+    my $cache_key = "loaded_xyoption_$option_s";
+    if (LookupValue($cache_key)) {
+      Info('xy', 'ignored', "xyoption $option_s was requested twice, not reloading");
+      return ();
+    } else {
+      Note("loading xyoption $option_s.");
+      AssignValue($cache_key, 1, 'global');
+      return Tokens(T_CS('\lx@xy@xyoption@orig'), T_BEGIN, $option, T_END); }
+}, locked => 1);
 
 # Redefine so we get more tracable/debugable info
 DefPrimitive('\xywarning@{}', sub { Info('xy', 'warning', $_[0], ToString($_[1])); });

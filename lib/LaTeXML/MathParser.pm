@@ -1008,7 +1008,11 @@ sub is_genuinely_unparsed {
     if (!$node->getAttribute('idref')) {
       return 1; }
     else {
-      return is_genuinely_unparsed(realizeXMNode($node), $document); } }
+      my $real_node = realizeXMNode($node);
+      # Note that some parses fail with an ARRAY ref [ltx:Error,...]
+      # so realizeXMNode may fail!
+      return 1 if (ref $real_node) !~ /^XML::LibXML/;
+      return is_genuinely_unparsed($real_node, $document); } }
   elsif ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
     return is_genuinely_unparsed($content, $document); }
