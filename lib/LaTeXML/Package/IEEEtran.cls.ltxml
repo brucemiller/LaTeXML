@@ -180,8 +180,13 @@ RawTeX(<<'EoTeX');
 \def\theparagraph{\thesubsubsection\alph{paragraph}}         % I-A1a
 \fi
 EoTeX
-DefMacro('\format@title@font@section',    '\sc');
-DefMacro('\format@title@font@subsection', '\it');
+DefPrimitiveI('\ltx@ieeetran@it', undef, undef,
+  font => { shape => 'italic', family => 'serif', series => 'medium' }, locked => 1);
+DefPrimitiveI('\ltx@ieeetran@sc', undef, undef,
+  font => { shape => 'smallcaps', family => 'serif', series => 'medium' }, locked => 1);
+
+DefMacro('\format@title@font@section',    '\ltx@ieeetran@sc');
+DefMacro('\format@title@font@subsection', '\ltx@ieeetran@it');
 DefMacro('\figurename',                   'Fig.');
 DefMacro('\tablename',                    'TABLE');
 DefMacro('\thetable',                     '\Roman{table}');
