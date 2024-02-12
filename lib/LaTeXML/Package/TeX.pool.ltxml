@@ -4806,12 +4806,12 @@ DefMathI('+', undef, '+', role => 'ADDOP', meaning => 'plus');
 DefMathI('-', undef, '-', role => 'ADDOP', meaning => 'minus');
 ## Redefine, if we want Unicode minus
 ##DefMathI('-', undef, "\x{2212}", role => 'ADDOP',   meaning  => 'minus');
-DefMathI('*', undef, '*', role => 'MULOP',   meaning => 'times');
-DefMathI('/', undef, '/', role => 'MULOP',   meaning => 'divide');
-DefMathI('!', undef, '!', role => 'POSTFIX', meaning => 'factorial');
-DefMathI(',', undef, ',', role => 'PUNCT');
-DefMathI('.', undef, '.', role => 'PERIOD');
-DefMathI(';', undef, ';', role => 'PUNCT');
+DefMathI('*', undef, "\x{2217}", role => 'MULOP',   meaning => 'times');
+DefMathI('/', undef, '/',        role => 'MULOP',   meaning => 'divide');
+DefMathI('!', undef, '!',        role => 'POSTFIX', meaning => 'factorial');
+DefMathI(',', undef, ',',        role => 'PUNCT');
+DefMathI('.', undef, '.',        role => 'PERIOD');
+DefMathI(';', undef, ';',        role => 'PUNCT');
 DefMathI('(', undef, '(', role => 'OPEN',      stretchy => 'false');
 DefMathI(')', undef, ')', role => 'CLOSE',     stretchy => 'false');
 DefMathI('[', undef, '[', role => 'OPEN',      stretchy => 'false');
