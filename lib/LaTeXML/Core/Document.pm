@@ -1529,6 +1529,7 @@ sub markXMNodeVisibility {
   return; }
 
 sub markXMNodeVisibility_aux {
+  no warnings 'recursion';
   my ($self, $node, $cvis, $pvis) = @_;
   my $qname = getNodeQName($self, $node);
   return if (!$cvis || $node->getAttribute('_cvis')) && (!$pvis || $node->getAttribute('_pvis'));
@@ -2042,6 +2043,7 @@ sub replaceTree {
   return $inserted; }
 
 sub appendTree {
+  no warnings 'recursion';
   my ($self, $node, @data) = @_;
   foreach my $child (@data) {
     if (ref $child eq 'ARRAY') {

@@ -1083,6 +1083,7 @@ sub getQName {
 # we have to orient everything towards appending.
 # In particular, see the perversity in the following few methods.
 sub addNodes {
+  no warnings 'recursion';
   my ($self, $node, @data) = @_;
   foreach my $child (@data) {
     if (ref $child eq 'ARRAY') {
@@ -1319,6 +1320,7 @@ sub markXMNodeVisibility {
   return; }
 
 sub markXMNodeVisibility_aux {
+  no warnings 'recursion';
   my ($self, $node, $cvis, $pvis) = @_;
   return unless $node;
   my $qname = $self->getQName($node);
