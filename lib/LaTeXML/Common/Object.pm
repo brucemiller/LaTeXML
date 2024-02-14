@@ -28,6 +28,7 @@ my %NOBLESS = map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);    
 # Since the next two are used in debugging and error messages,
 # be careful to avoid recursive errors
 sub Stringify {
+  no warnings 'recursion';
   my ($object) = @_;
   my $string = eval {
     local $LaTeXML::IGNORE_ERRORS = 1;

@@ -126,6 +126,7 @@ sub reparse {
         return $value; }); } }
 
 sub digest {
+  no warnings 'recursion';
   my ($self, $stomach, $value, $fordefn) = @_;
   # If semiverbatim, Expand (before digest), so tokens can be neutralized; BLECH!!!!
   if ($$self{semiverbatim}) {

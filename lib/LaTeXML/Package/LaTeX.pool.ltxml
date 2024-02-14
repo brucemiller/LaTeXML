@@ -290,7 +290,7 @@ DefConstructor('\lx@newline OptionalMatch:* [Glue]', sub {
       $document->insertElement('ltx:XMHint', undef, name => 'newline'); }
     else {
       my $context = $document->getElement;
-      if    ($context->getAttribute('_vertical_mode_')) { }
+      if    (!$context || $context->getAttribute('_vertical_mode_')) { }
       elsif (($document->getNodeQName($context) eq 'ltx:p')
         && $context->parentNode->getAttribute('_vertical_mode_')) {
         $document->maybeCloseElement('ltx:p'); }
@@ -1372,7 +1372,7 @@ DefEnvironment('{flushright}', sub {
 sub setupAligningContext {
   my ($document) = @_;
   my $node = $document->getElement;
-  AssignValue(ALIGNING_NODE => [$node, $node->lastChild]);
+  AssignValue(ALIGNING_NODE => [$node, $node->lastChild]) if $node;
   return; }
 
 sub applyAligningContext {
@@ -4971,6 +4971,8 @@ DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
   beforeDigest => sub { reenterTextMode(); },
   sizer        => sub { raisedSizer($_[0]->getArg(4), $_[0]->getArg(1)); });
 
+DefMacro('\@finalstrut{}', '\unskip\ifhmode\nobreak\fi\vrule\@width\z@\@height\z@\@depth\dp#1');
+
 #**********************************************************************
 # C.14 Pictures and Color
 #**********************************************************************
@@ -5514,6 +5516,8 @@ DefPrimitiveI('\textregistered', undef, UTF(0xAE));     # REGISTERED SIGN
 DefPrimitiveI('\texttrademark',  undef, "\x{2122}");    # TRADE MARK SIGN
 DefConstructor('\textsuperscript{}', "<ltx:sup>#1</ltx:sup>",
   mode => 'text');
+DefConstructor('\@textsuperscript{}', "<ltx:sup>#1</ltx:sup>",
+  mode => 'text', locked => 1);
 # This is something coming from xetex/xelatex ? Why define this way?
 #DefConstructor('\realsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
 DefConstructor('\realsuperscript{}', "<ltx:sup>#1</ltx:sup>",

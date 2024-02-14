@@ -485,10 +485,13 @@ DefMacro('\shortcites Semiverbatim', '');
 #   \bibitem[\protect\citename{Jones et al., }1990]{key}...
 #   \harvarditem[Jones et al.]{Jones, Baker, and Williams}{1990}{key}...
 
-DefMacro('\bibitem',
+DefMacro('\lx@nat@bibitem',
 ##         '\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}',
   '\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[]}',
   locked => 1);
+# Careful: since OmniBus also defines \bibitem and LaTeX.pool has a save/restore mechanism,
+# it is safer to \let to a constant natbib-specific macro definition. Test with arXiv:2007.09909
+Let('\bibitem', '\lx@nat@bibitem');
 
 RawTeX(<<'EOTeX');
 %%%

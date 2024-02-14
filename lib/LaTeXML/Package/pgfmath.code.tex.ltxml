@@ -705,6 +705,7 @@ expr :
     | /0b[01]+/                  { oct($item[1]); } # !!!
     | /0x[0-9a-fA-F]+/           { hex($item[1]); }
     | /0[0-9]+/                  { oct($item[1]); }
+    | /\./                       { 0.0; } # pgf treats a single dot as a zero
 
     UNIT :
       /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/

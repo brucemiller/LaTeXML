@@ -175,6 +175,7 @@ sub getString {
 
 # Methods for overloaded operators
 sub stringify {
+  no warnings 'recursion';
   my ($self) = @_;
   my $hasbody = defined $$self{properties}{body};
   return "Whatsit[" . join(',', $self->getDefinition->getCS->getCSName,
@@ -243,6 +244,7 @@ sub computeSize {
         @boxes = $boxes[0]->unlist; } }
     else {
       push(@boxes, $sizer); }
+    no warnings 'recursion';
     return $$props{font}->computeBoxesSize([@boxes], %options); } }
 
 #======================================================================

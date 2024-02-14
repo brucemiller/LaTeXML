@@ -73,6 +73,7 @@ sub toString {
 
 # Methods for overloaded operators
 sub stringify {
+  no warnings 'recursion';
   my ($self) = @_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;

@@ -81,6 +81,7 @@ sub stringify {
   return "Tokens[" . join(',', map { $_->toString } @$self) . "]"; }
 
 sub beDigested {
+  no warnings 'recursion';
   my ($self, $stomach) = @_;
   return $stomach->digest($self); }
 

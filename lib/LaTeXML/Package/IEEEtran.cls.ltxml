@@ -180,8 +180,13 @@ RawTeX(<<'EoTeX');
 \def\theparagraph{\thesubsubsection\alph{paragraph}}         % I-A1a
 \fi
 EoTeX
-DefMacro('\format@title@font@section',    '\sc');
-DefMacro('\format@title@font@subsection', '\it');
+DefPrimitiveI('\ltx@ieeetran@it', undef, undef,
+  font => { shape => 'italic', family => 'serif', series => 'medium' }, locked => 1);
+DefPrimitiveI('\ltx@ieeetran@sc', undef, undef,
+  font => { shape => 'smallcaps', family => 'serif', series => 'medium' }, locked => 1);
+
+DefMacro('\format@title@font@section',    '\ltx@ieeetran@sc');
+DefMacro('\format@title@font@subsection', '\ltx@ieeetran@it');
 DefMacro('\figurename',                   'Fig.');
 DefMacro('\tablename',                    'TABLE');
 DefMacro('\thetable',                     '\Roman{table}');
@@ -340,22 +345,38 @@ DefMacro('\IEEEiedlabeljustifyc', '');
 DefMacro('\IEEEiedlabeljustifyl', '');
 DefMacro('\IEEEiedlabeljustifyr', '');
 
-DefEnvironment('{IEEEitemize}',
+# TODO: Use the optional argument.
+# also, we skip the internal @-named variants for now.
+DefEnvironment('{IEEEitemize}[]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties      => sub { beginItemize('itemize', '@item'); },
   beforeDigestEnd => sub { Digest('\par'); },
   locked          => 1, mode => 'text');
-DefEnvironment('{IEEEenumerate}',
+DefEnvironment('{IEEEenumerate}[]',
   "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
   properties      => sub { beginItemize('enumerate', 'enum'); },
   beforeDigestEnd => sub { Digest('\par'); },
   locked          => 1, mode => 'text');
-DefEnvironment('{IEEEdescription}',
+DefEnvironment('{IEEEdescription}[]',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
   beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
   properties      => sub { beginItemize('description', '@desc'); },
   beforeDigestEnd => sub { Digest('\par'); },
   locked          => 1, mode => 'text');
+
+# override LaTeX's default IED lists
+Let('\itemize',                  '\IEEEitemize');
+Let('\enditemize',               '\endIEEEitemize');
+Let('\enumerate',                '\IEEEenumerate');
+Let('\endenumerate',             '\endIEEEenumerate');
+Let('\description',              '\IEEEdescription');
+Let('\enddescription',           '\endIEEEdescription');
+Let(T_CS('\begin{itemize}'),     '\IEEEitemize');
+Let(T_CS('\end{itemize}'),       '\endIEEEitemize');
+Let(T_CS('\begin{enumerate}'),   '\IEEEenumerate');
+Let(T_CS('\end{enumerate}'),     '\endIEEEenumerate');
+Let(T_CS('\begin{description}'), '\IEEEdescription');
+Let(T_CS('\end{description}'),   '\endIEEEdescription');
 
 # V1.7 provide string macros as article.cls does
 DefMacro('\contentsname',     'Contents');
