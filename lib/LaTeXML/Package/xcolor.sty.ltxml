@@ -290,7 +290,7 @@ sub DecodeColor {
   my $color_re = qr/($color_expr_re)(($func_expr_re)*)/;
 
   my $color;
-  if ($expression =~ /^$color_re$/) {
+  if ($expression =~ /^$color_re\s*$/) {
     #DG: Dear reader, I present to you: maintenance hell:
     my $prefix     = $2 || $10;
     my $name       = $3 || $11;
