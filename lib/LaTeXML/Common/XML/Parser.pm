@@ -24,6 +24,8 @@ sub parseFile {
   my ($self, $file) = @_;
   LaTeXML::Common::XML::initialize_catalogs();
   #  LaTeXML::Common::XML::initialize_input_callbacks($$self{parser});
+  if ((-s $file) > 20_000_000) {
+    $$self{parser}->set_option('huge', 1); }
   return $$self{parser}->parse_file($file); }
 
 sub parseString {

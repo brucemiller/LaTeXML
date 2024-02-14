@@ -308,12 +308,14 @@ sub pmml_smaller {
 # Convert a node that will automatically be made scriptsize,
 # such as sub- or superscripts.
 sub pmml_scriptsize {
+  no warnings 'recursion';
   my ($script) = @_;
   local $LaTeXML::MathML::STYLE = $style_script_step{$LaTeXML::MathML::STYLE};
   local $LaTeXML::MathML::SIZE  = $stylesize{$LaTeXML::MathML::STYLE};
   return ($script ? pmml($script) : ['m:mrow']); }
 
 sub pmml {
+  no warnings 'recursion';
   my ($node) = @_;
   return unless $node;
   # [since we follow split/scan, use the fragid, not xml:id! TO SOLVE LATER]
@@ -384,6 +386,7 @@ sub getXMHintSpacing {
 my $NBSP = pack('U', 0xA0);                                               # CONSTANT
 
 sub pmml_internal {
+  no warnings 'recursion';
   my ($node) = @_;
   return ['m:merror', {}, ['m:mtext', {}, "Missing Subexpression"]] unless $node;
   my $self = $LaTeXML::Post::MATHPROCESSOR;
@@ -508,6 +511,7 @@ sub pmml_internal {
     return ['m:mtext', {}, $text]; } }
 
 sub needsMathstyle {
+  no warnings 'recursion';
   my ($node) = @_;
   if (ref $node eq 'ARRAY') {
     my ($tag, $attr, @children) = @$node;
@@ -613,6 +617,7 @@ sub pmml_punctuate {
 # args are XMath nodes
 # This is suitable for use as an Apply handler.
 sub pmml_infix {
+  no warnings 'recursion';
   my ($op, @args) = @_;
   $op = realize($op) if ref $op;
   return ['m:mrow', {}] unless $op && @args;    # ??
@@ -874,6 +879,7 @@ sub pmml_script {
       $prescripts, $postscripts); } }
 
 sub pmml_script_mid_layout {
+  no warnings 'recursion';
   my ($base, $midscripts, $emb_left, $emb_right) = @_;
 
   if (scalar(@$midscripts) == 0) {
@@ -1278,6 +1284,7 @@ sub cmml_top {
   return cmml_contents($node); }
 
 sub cmml {
+  no warnings 'recursion';
   my ($node) = @_;
   if (getQName($node) eq 'ltx:XMRef') {
     $node = realize($node); }
@@ -1287,6 +1294,7 @@ sub cmml {
   return $result; }
 
 sub cmml_internal {
+  no warnings 'recursion';
   my ($node) = @_;
   return ['m:merror', {}, ['m:mtext', {}, "Missing Subexpression"]] unless $node;
   $node = realize($node) if getQName($node) eq 'ltx:XMRef';
@@ -1498,6 +1506,7 @@ DefMathML("Token:APPLYOP:?",  \&pmml_mo, undef);  # APPLYOP is (only) \x{2061}; 
 DefMathML("Token:OPERATOR:?", \&pmml_mo, undef);
 
 DefMathML('Apply:?:?', sub {
+    no warnings 'recursion';
     my ($op, @args) = @_;
     my $pop   = pmml($op);
     my $inner = $pop;
@@ -1509,6 +1518,7 @@ DefMathML('Apply:?:?', sub {
       $pop, ($is_mo ? () : pmml_mo("\x{2061}")),    # FUNCTION APPLICATION only if not an m:mo
       map { pmml($_) } @args]; },
   sub {
+    no warnings 'recursion';
     my ($op, @args) = @_;
     return ['m:apply', {}, cmml($op), map { cmml($_) } @args]; });
 
