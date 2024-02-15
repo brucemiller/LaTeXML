@@ -15,7 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-#RequirePackage('ifthen');
+RequirePackage('ifthen');
 
 # Handy for cases where macros want to use math, but track the current text font
 # (examples, nicefrac, units...)
