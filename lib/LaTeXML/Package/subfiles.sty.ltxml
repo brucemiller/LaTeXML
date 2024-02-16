@@ -16,12 +16,14 @@ use warnings;
 use LaTeXML::Package;
 
 #======================================================================
-# Redefine \documentclass to do nothring
+# Redefine \documentclass to do nothing
 DefMacro('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []', undef);
-# And {document} environment likewise
-DefEnvironment('{document}', "#body", beforeDigest => sub {
-    AssignValue(inPreamble => 0);
-    return; });
+# And {document} environment likewise, but only after the main document starts.
+AtBeginDocument(sub {
+    DefEnvironment('{document}', "#body", beforeDigest => sub {
+        AssignValue(inPreamble => 0);
+        return; });
+});
 # Define \subfiles to be \input
 Let('\subfile', '\input');
 
