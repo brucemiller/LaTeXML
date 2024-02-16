@@ -2831,7 +2831,7 @@ DefColumnType('@{}', sub {
 #----------------------------------------------------------------------
 # This is where ALL alignments start & finish
 # This creates the object representing the entire alignment!
-DefConstructor('\@start@alignment SkipSpaces',
+DefConstructor('\@start@alignment',
   "#alignment",
   reversion => sub { Revert($_[0]->getProperty('alignment')); },
   sizer     => '#alignment',
@@ -3192,6 +3192,7 @@ DefConstructor('\halign BoxSpecification',
       attributes => { width => orNull(GetKeyVal($spec, 'to')) });
     digestAlignmentBody($stomach, $whatsit);
     $stomach->egroup;
+    $LaTeXML::ALIGN_STATE--;    # Balance the opening { OUTSIDE of the masking of ALIGN_STATE
     return; });
 
 # Parse an \halign style alignment template from Gullet

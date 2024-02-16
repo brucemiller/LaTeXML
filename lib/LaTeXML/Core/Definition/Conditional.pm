@@ -117,13 +117,16 @@ sub skipConditionalBody {
   my $level = 1;
   my $n_ors = 0;
   my $start = $gullet->getLocator;
-  # NOTE: Open-coded manipulation of if_stack!, Gullet and Token's
+  # NOTE: Open-coded manipulation of if_stack!, Gullet and Token's; Must be fast!
   # [we're only reading tokens & looking up, so State shouldn't change behind our backs]
   my $stack = $STATE->lookupValue('if_stack');
   while (1) {
     my ($t, $cond_type);
     while ($t = shift(@{ $$gullet{pushback} }) || $$gullet{mouth}->readToken()) {
-      if ($LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$$t[1]]
+      my $cc = $$t[1];
+      if    ($cc == CC_BEGIN) { $LaTeXML::ALIGN_STATE++; }
+      elsif ($cc == CC_END)   { $LaTeXML::ALIGN_STATE--; }
+      elsif ($LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$cc]
         && ($cond_type = $STATE->lookupConditional($t))) {
         last; } }
     last unless $cond_type;
