@@ -24,9 +24,8 @@ ProcessOptions();
 # counterclockwise clockwise anticlockwise
 #  DeclareOption($option,undef); }
 
-# expected...
 RequirePackage('graphicx');
-#RequirePackage('ifthen');
+RequirePackage('ifthen');
 
 DefRegister('\rotFPtop' => Dimension('0pt'));
 DefRegister('\rotFPbot' => Dimension('0pt'));

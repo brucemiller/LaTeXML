@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+RequirePackage('ifthen');
 
 #======================================================================
 DefMacro('\Input{}',          '\input{#1}');
@@ -24,4 +25,3 @@ DefMacro('\srcInputHook{}',   '');
 DefConditional('\ifSRCOK');
 #======================================================================
 1;
-

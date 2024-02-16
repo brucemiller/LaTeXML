@@ -15,6 +15,11 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+RequirePackage('ifthen');
+RequirePackage('calc');
+RequirePackage('eso-pic');
+RequirePackage('graphicx');
+
 #================================================================================
 # Includes a pdf into the output, possibly a subset of pages from the pdf.
 # Two options here

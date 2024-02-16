@@ -21,6 +21,7 @@ use LaTeXML::Package;
 #   endmarks
 #   list of theorem (which should actually be covered in some postprocessor?)
 RequirePackage('amsthm');
+RequirePackage('ifthen');
 # but re-redefine from amsthm from LaTeX; use save note font as head font
 DefRegister('\thm@notefont' => Tokens(T_CS('\the'), T_CS('\thm@headfont')));
 
