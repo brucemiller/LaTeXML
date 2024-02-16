@@ -312,11 +312,6 @@ sub currentFrameMessage {
 sub bgroup {
   my ($self) = @_;
   pushStackFrame($self, 0);
-  # NOTE: This is WRONG; should really only track "scanned" (not digested) braces
-  # Alas, there're too many code structuring differences between TeX and LaTeXML
-  # to find all the places to manage it.
-  # So, let's try this for now...
-  $LaTeXML::ALIGN_STATE++;
   return; }
 
 sub egroup {
@@ -327,7 +322,6 @@ sub egroup {
       currentFrameMessage($self)); }
   else {                                        # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 0); }
-  $LaTeXML::ALIGN_STATE--;
   return; }
 
 sub begingroup {
