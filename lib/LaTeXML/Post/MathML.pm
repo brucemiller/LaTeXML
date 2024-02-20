@@ -18,8 +18,8 @@ use LaTeXML::Util::Unicode;
 use LaTeXML::Post;
 use LaTeXML::Common::Font;
 use List::Util qw(max);
-use base qw(LaTeXML::Post::MathProcessor);
-use base qw(Exporter);
+use base       qw(LaTeXML::Post::MathProcessor);
+use base       qw(Exporter);
 our @EXPORT = (
   qw( &DefMathML ),
   qw( &pmml &pmml_scriptsize &pmml_smaller
@@ -1045,6 +1045,9 @@ sub pmml_text_aux {
     elsif (($tag eq 'ltx:text')    # ltx:text element is fine, if we can manage the attributes!
       && (!grep { $node->hasAttribute($_) } qw(framed framecolor))) {
       return pmml_maybe_resize($node, pmml_row(map { pmml_text_aux($_, %attr) } $node->childNodes)); }
+    elsif ($tag eq 'ltx:picture') {    # Embeded pictures might legitimately have nested math?
+      return ['m:mtext', {},
+        $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT, 1, $node)]; }
     else {
       # We could just recurse on raw content like this, but it loses a lot...
       ###      map(pmml_text_aux($_,%attr), $node->childNodes); }}
