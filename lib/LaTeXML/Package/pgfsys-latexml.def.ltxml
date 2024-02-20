@@ -905,6 +905,7 @@ DefConstructor('\lxSVG@halign BoxSpecification',
         width => orNull(GetKeyVal($spec, 'to')) });
     digestAlignmentBody($stomach, $whatsit);
     $stomach->egroup;
+    $LaTeXML::ALIGN_STATE--;    # Balance the opening { OUTSIDE of the masking of ALIGN_STATE
     return; });
 
 sub tikzAlignmentBindings {
