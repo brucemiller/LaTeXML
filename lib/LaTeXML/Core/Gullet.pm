@@ -315,7 +315,8 @@ sub unread {
   while (@tokens) {
     my $token = pop(@tokens);
     my $r     = ref $token;
-    if ($r eq 'LaTeXML::Core::Tokens') {
+    if    (!defined $token) { }
+    elsif ($r eq 'LaTeXML::Core::Tokens') {
       push(@tokens, @$token); }
     elsif ($r eq 'LaTeXML::Core::Token') {
       my $cc = $$token[1];
