@@ -185,7 +185,8 @@ DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
 %%%   \lxSVG@insertpicture{\box#1\lxSVG@closescope}%
   \pgf@ya=\pgf@shift@baseline\relax%
   \advance\pgf@ya by-\pgf@picminy\relax%
-   \lxSVG@insertpicture{\raise-\pgf@ya\box#1\lxSVG@closescope}%
+%%%   \lxSVG@insertpicture{\raise-\pgf@ya\box#1\lxSVG@closescope}%
+   \lxSVG@insertpicture{\box#1\lxSVG@closescope}%
 EoTeX
 
 DefMacro('\pgfsys@beginpicture', '');
