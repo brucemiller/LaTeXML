@@ -20,14 +20,20 @@ use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-RequirePackage('hyperref');
-RequirePackage('color');
-RequirePackage('natbib');
 RequirePackage('amsmath');
 RequirePackage('amssymb');
+RequirePackage('amsthm');
+# RequirePackage('aliascnt');
 RequirePackage('epsfig');
 RequirePackage('graphicx');
+PassOptions('natbib', 'sty', 'numbers', 'compress');
+RequirePackage('natbib');
+RequirePackage('xcolor');
+RequirePackage('hyperref');
 RequirePackage('inst_support');
+RequirePackage('tikz');
+RequirePackage('tikz-cd');
+
 # \author[]{}
 DefMacro('\author[]{}',
   '\ifx.#1.\else\@institutemark{#1}\fi'
@@ -107,6 +113,8 @@ DefMacro('\subheader{}',         '');
 DefMacro('\xtumfont{}',          '\textsc{#1}');
 Let('\oldthebibliography',    '\thebibliography');
 Let('\endoldthebibliography', '\endthebibliography');
+DefMacro('\@fpheader', '');
+DefMacro('\@journal',  'jhep');
 
 #======================================================================
 1;
