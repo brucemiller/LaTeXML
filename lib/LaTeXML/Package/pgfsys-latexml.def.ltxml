@@ -185,7 +185,8 @@ DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
 %%%   \lxSVG@insertpicture{\box#1\lxSVG@closescope}%
   \pgf@ya=\pgf@shift@baseline\relax%
   \advance\pgf@ya by-\pgf@picminy\relax%
-   \lxSVG@insertpicture{\raise-\pgf@ya\box#1\lxSVG@closescope}%
+%%%   \lxSVG@insertpicture{\raise-\pgf@ya\box#1\lxSVG@closescope}%
+   \lxSVG@insertpicture{\box#1\lxSVG@closescope}%
 EoTeX
 
 DefMacro('\pgfsys@beginpicture', '');
@@ -905,6 +906,7 @@ DefConstructor('\lxSVG@halign BoxSpecification',
         width => orNull(GetKeyVal($spec, 'to')) });
     digestAlignmentBody($stomach, $whatsit);
     $stomach->egroup;
+    $LaTeXML::ALIGN_STATE--;    # Balance the opening { OUTSIDE of the masking of ALIGN_STATE
     return; });
 
 sub tikzAlignmentBindings {

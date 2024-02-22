@@ -640,6 +640,9 @@ BEGIN {
     true     => sub { 1; },
     veclen   => sub { sqrt($_[0] * $_[0] + $_[1] * $_[1]); },
     #    width    => sub { },
+    # Additional functions from tikz-cd; these need to get parameters from the current math font!
+    axis_height    => sub { "2.5"; },        # sigma[22]
+    rule_thickness => sub { "0.39998"; },    # xi[8]
   };
 
   $::RD_HINT = 1;
@@ -710,7 +713,7 @@ expr :
     UNIT :
       /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/
 
-    FUNCTION0 : /(?:e|pi|false|rand|rnd|true)/
+    FUNCTION0 : /(?:e|pi|false|rand|rnd|true|axis_height|rule_thickness)/
         | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserconstant($item[1]); }
 
     FUNCTION : /(?:abs|acos|asin|atan2|atan|angle|bin|ceil|cos|cosec|cosh|cot|deg|exp|factorial|floor|frac|hex|Hex|int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|rad|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse|veclen)/

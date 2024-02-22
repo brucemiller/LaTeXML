@@ -300,18 +300,33 @@ sub readToken {
       return T_CS('\special_relax'); }
     else {
       last; } }
+  if ($token) {
+    $cc = $$token[1];
+    if    ($cc == CC_BEGIN) { $LaTeXML::ALIGN_STATE++; }
+    elsif ($cc == CC_END)   { $LaTeXML::ALIGN_STATE--; }
+  }
   return $token; }
 
 # Unread tokens are assumed to be not-yet expanded.
 sub unread {
   my ($self, @tokens) = @_;
-  my $r;
-  unshift(@{ $$self{pushback} },
-    map { (!defined $_ ? ()
-        : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
-          : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-            : Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)) || T_OTHER(Stringify($_))))) }
-      @tokens);
+  my $level = 0;
+  my $pb    = $$self{pushback};
+  while (@tokens) {
+    my $token = pop(@tokens);
+    my $r     = ref $token;
+    if    (!defined $token) { }
+    elsif ($r eq 'LaTeXML::Core::Tokens') {
+      push(@tokens, @$token); }
+    elsif ($r eq 'LaTeXML::Core::Token') {
+      my $cc = $$token[1];
+      if    ($cc == CC_BEGIN) { $level--; }    # Retract scanned braces
+      elsif ($cc == CC_END)   { $level++; }
+      unshift(@$pb, $token); }
+    else {
+      Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_));
+      unshift(@$pb, T_OTHER($token)); } }
+  $LaTeXML::ALIGN_STATE += $level;
   return; }
 
 # Read the next non-expandable token (expanding tokens until there's a non-expandable one).
@@ -368,11 +383,13 @@ sub readXToken {
         no warnings 'recursion';
         my $expansion = $defn->invoke($self);
         # add the newly expanded tokens back into the gullet stream, in the ordinary case.
-        unshift(@{ $$self{pushback} }, @$expansion) if $expansion; } }
+        unread($self, $expansion) if $expansion; } }
     elsif ($$token[1] == CC_CS && !(defined $defn)) {
       $STATE->generateErrorStub($self, $token);       # cs SHOULD have defn by now; report early!
       return $token; }
     else {
+      if    ($cc == CC_BEGIN) { $LaTeXML::ALIGN_STATE++; }
+      elsif ($cc == CC_END)   { $LaTeXML::ALIGN_STATE--; }
       return $token; }                                # just return it
   }
   return; }                                           # never get here.
@@ -392,6 +409,7 @@ our $DEFERRED_COMMANDS = {
 
 sub readBalanced {
   my ($self, $expanded, $macrodef, $require_open) = @_;
+  $LaTeXML::ALIGN_STATE-- unless $require_open;    # assume matching } [BEFORE masking ALIGN_STATE]
   local $LaTeXML::ALIGN_STATE = 1000000;
   my $startloc = ($$self{verbosity} > 0) && getLocator($self);
   # Does we need to expand to get the { ???
@@ -423,11 +441,13 @@ sub readBalanced {
     elsif (($cc == CC_CS) && ($$token[0] eq '\dont_expand')) {
       push(@tokens, readToken($self)); }    # Pass on NEXT token, unchanged.
     elsif ($cc == CC_END) {
+      $LaTeXML::ALIGN_STATE--;
       $level--;
       if (!$level) {
         last; }
       push(@tokens, $token); }
     elsif ($cc == CC_BEGIN) {
+      $LaTeXML::ALIGN_STATE++;
       $level++;
       push(@tokens, $token); }
     ## Wow!!!!! See TeX the Program \S 309
@@ -460,7 +480,7 @@ sub readBalanced {
             push(@tokens, $t); } }
       }
       else {    # otherwise, prepend to pushback to be expanded further.
-        unshift(@{ $$self{pushback} }, @$expansion); } }
+        unread($self, $expansion) if $expansion; } }
     else {
       if ($expanded && ($$token[1] == CC_CS) && !(defined $defn)) {
         $STATE->generateErrorStub($self, $token); }    # cs SHOULD have defn by now; report early!
@@ -520,7 +540,7 @@ sub readXNonSpace {
 sub skipSpaces {
   my ($self) = @_;
   my $tok = readNonSpace($self);
-  unshift(@{ $$self{pushback} }, $tok) if defined $tok;    # Unread
+  unread($self, $tok) if defined $tok;
   return; }
 
 # Skip one space
@@ -528,7 +548,7 @@ sub skipSpaces {
 sub skip1Space {
   my ($self, $expanded) = @_;
   my $token = ($expanded ? readXToken($self) : readToken($self));
-  unshift(@{ $$self{pushback} }, $token) if $token && !$token->defined_as(T_SPACE);
+  unread($self, $token) if $token && !$token->defined_as(T_SPACE);
   return; }
 
 # <filler> = <optional spaces> | <filler>\relax<optional spaces>
@@ -539,7 +559,7 @@ sub skipFiller {
     return unless defined $tok;
     # Should \foo work too (where \let\foo\relax) ??
     if (!$tok->equals(T_CS('\relax'))) {
-      unshift(@{ $$self{pushback} }, $tok);    # Unread
+      unread($self, $tok);
       return; }
   }
   return; }
@@ -547,7 +567,7 @@ sub skipFiller {
 sub ifNext {
   my ($self, $token) = @_;
   if (my $tok = readToken($self)) {
-    unshift(@{ $$self{pushback} }, $tok);    # Unread
+    unread($self, $tok);
     return $tok->equals($token); }
   else { return 0; } }
 
@@ -564,10 +584,9 @@ sub readMatch {
       if ($$token[1] == CC_SPACE) {    # If this was space, SKIP any following!!!
         while (defined($token = readToken($self)) && ($$token[1] == CC_SPACE)) {
           push(@matched, $token); }
-        unshift(@{ $$self{pushback} }, $token) if $token; }    # Unread
-    }
-    return $choice unless @tomatch;                            # All matched!!!
-    unshift(@{ $$self{pushback} }, @matched);                  # Put 'em back and try next!
+        unread($self, $token) if defined $token; } }
+    return $choice unless @tomatch;    # All matched!!!
+    unread($self, @matched);           # Put 'em back and try next!
   }
   return; }
 
@@ -585,9 +604,8 @@ sub readKeyword {
     while (@tomatch && defined($tok = readXToken($self, 0)) && push(@matched, $tok)
       && (uc($$tok[0]) eq $tomatch[0])) {
       shift(@tomatch); }
-    return $keyword unless @tomatch;             # All matched!!!
-    unshift(@{ $$self{pushback} }, @matched);    # Put 'em back and try next!
-  }
+    return $keyword unless @tomatch;    # All matched!!!
+    unread($self, @matched); }          # Put 'em back tand try next!
   return; }
 
 # Return a (balanced) sequence tokens until a match against one of the Tokens in @delims.
@@ -603,9 +621,7 @@ sub readUntil {
   my $ntomatch = scalar(@want);
   if ($ntomatch == 1) {    # Common, easy case: read till we match a single token
     my $want = $want[0];
-    #    while(($token = readToken($self)) && !$token->equals($want)){
-    while (($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken())
-      && !$token->equals($want)) {
+    while (($token = readToken($self)) && !$token->equals($want)) {
       my $cc = $$token[1];
       if ($cc == CC_MARKER) {    # would have been handled by readToken, but we're bypassing
         handleMarker($self, $token); }
@@ -647,6 +663,7 @@ sub readUntilBrace {
   my $token;
   while (defined($token = readToken($self))) {
     if ($$token[1] == CC_BEGIN) {    # INLINE Catcode
+      $LaTeXML::ALIGN_STATE--;
       unshift(@{ $$self{pushback} }, $token);    # Unread
       last; }
     push(@tokens, $token); }
@@ -700,7 +717,7 @@ sub readOptional {
   elsif (($tok->equals(T_OTHER('[')))) {
     return readUntil($self, T_OTHER(']')); }
   else {
-    unshift(@{ $$self{pushback} }, $tok);    # Unread
+    unread($self, $tok);
     return $default; } }
 
 #**********************************************************************
@@ -752,7 +769,7 @@ sub readRegisterValue {
     else {
       return &$coercer($sign * $value->valueOf); } }
   else {
-    unshift(@{ $$self{pushback} }, $token);    # Unread
+    unread($self, $token);
     return; } }
 
 # Apparent behaviour of a token value (ie \toks#=<arg>)
@@ -791,7 +808,7 @@ sub readOptionalSigns {
   while (defined($t = readXToken($self))
     && (($$t[0] eq '+') || ($$t[0] eq '-') || $t->defined_as(T_SPACE))) {
     $sign = -$sign if ($$t[0] eq '-'); }
-  unshift(@{ $$self{pushback} }, $t) if $t;    # Unread
+  unread($self, $t) if $t;
   return $sign; }
 
 # Read digits (within $range), while expanding and if $skip, skip <one optional space> (expanded!)
@@ -801,7 +818,7 @@ sub readDigits {
   my ($token, $digit);
   while (($token = readXToken($self)) && (($digit = $$token[0]) =~ /^[$range]$/)) {
     $string .= $digit; }
-  unshift(@{ $$self{pushback} }, $token) if $token && !($skip && $token->defined_as(T_SPACE)); #Inline
+  unread($self, $token) if $token && !($skip && $token->defined_as(T_SPACE));    #Inline
   return $string; }
 
 # <factor> = <normal integer> | <decimal constant>
@@ -815,10 +832,10 @@ sub readFactor {
     $string .= '.' . readDigits($self, '0-9');
     $token = readXToken($self); }
   if (length($string) > 0) {
-    unshift(@{ $$self{pushback} }, $token) if $token && $$token[1] != CC_SPACE; # Inline ->getCatcode, unread
+    unread($self, $token) if $token && $$token[1] != CC_SPACE;
     return $string; }
   else {
-    unshift(@{ $$self{pushback} }, $token);                                     # Unread
+    unread($self, $token);
     my $n = readNormalInteger($self);
     return (defined $n ? $n->valueOf : undef); } }
 
@@ -836,7 +853,7 @@ sub readNumber {
   elsif (defined($n = readRegisterValue($self, 'Number', $s, 1))) { return $n; }
   else {
     my $next = readToken($self);
-    unshift(@{ $$self{pushback} }, $next);    # Unread
+    unread($self, $next);
     Warn('expected', '<number>', $self, "Missing number, treated as zero",
       "while processing " . ToString($LaTeXML::CURRENT_TOKEN), showUnexpected($self));
     return Number(0); } }
@@ -863,7 +880,7 @@ sub readNormalInteger {
     skip1Space($self, 1);
     return Number(ord($s)); }    # Only a character token!!! NOT expanded!!!!
   else {
-    unshift(@{ $$self{pushback} }, $token);    # Unread
+    unread($self, $token);
     return readRegisterValue($self, 'Number'); } }
 
 #======================================================================
@@ -880,10 +897,10 @@ sub readFloat {
     $token = readXToken($self); }
   my $n;
   if (length($string) > 0) {
-    unshift(@{ $$self{pushback} }, $token) if $token && $$token[1] != CC_SPACE; # Inline ->getCatcode, unread
+    unread($self, $token) if $token && $$token[1] != CC_SPACE;
     $n = $string; }
   else {
-    unshift(@{ $$self{pushback} }, $token) if $token;                           # Unread
+    unread($self, $token) if $token;
     $n = readNormalInteger($self);
     $n = $n->valueOf if defined $n; }
   return (defined $n ? Float($s * $n) : undef); }
