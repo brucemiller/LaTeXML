@@ -6,7 +6,7 @@ use Test::More;
 BEGIN { use_ok('LaTeXML::Util::Image'); }
 
 my $image_converter = image_object();
-my $is_image_magick = $image_converter and ((ref $image_converter) eq "Image::Magick");
+my $is_image_magick = $image_converter && ((ref $image_converter) eq "Image::Magick");
 if (!$is_image_magick) {
   diag("Skip: This unit test only examines basic Image::Magick conversion, when installed."); }
 else {
