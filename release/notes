@@ -96,13 +96,14 @@ Chocolatey: Ronald Tse <tse@ribose.com>
 
  * Modify ~/Macports/tex/LaTeXML/Portfile
   - Change version number
+  - Set revision to 0
   - regen portindex
     cd ~/Macports ; portindex
   - recompute checksums
     (use port -v install and it suggests checksums for you to cut'n'paste!)
     (Be careful of cached tarballs: use port clean --all)
   - Test Portfile; PR requirements:
-    sudo port lint LaTeXML
+    sudo port lint --nitpick LaTeXML
     sudo port test LaTeXML
     sudo port -vst install LaTeXML
     test basic functionality
