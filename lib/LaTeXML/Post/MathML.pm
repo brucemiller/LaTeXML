@@ -648,6 +648,7 @@ my %default_token_content = (
 # Remaps some mathvariants to a simpler subset of Unicode
 my %plane1hackable = (    # CONSTANT
   script          => 'script',
+  caligraphic     => 'caligraphic',
   'bold-script'   => 'script',
   fraktur         => 'fraktur',
   'bold-fraktur'  => 'fraktur',
@@ -734,6 +735,8 @@ sub stylizeContent {
     $font = $variant = $color = $bgcolor = $opacity = undef; }    # Needs no viz. styling attributes
   elsif (!$font) { }
   elsif ($font =~ /caligraphic/) {
+    # caligraphic is not a true mathvariant (see Unicode.pm), reset to script
+    $variant =~ s/caligraphic/script/;
     # Note that this is unlikely to have effect when plane1 chars are used!
     $class = ($class ? $class . ' ' : '') . 'ltx_font_mathcaligraphic'; }
   elsif ($font =~ /script/) {
