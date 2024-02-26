@@ -1,3 +1,49 @@
+0.8.8 2024-02-29
+      - This release addresses a large variety of usability, fidelity, robustness,
+        portability and output-quality issues.
+      - Improved CSS, html, accessibility affecting
+        * framing, position & rotation, color
+        * figure/subfigure grouping
+      -  MathML (closer to MathML Core)
+         * avoid gratuitous math mode (simple sub/superscripts); mathvariant
+         * option to avoid InvisibleTimes, when not certain (--noinvisibletimes)
+      - Improved emulation of TeX internals affecting
+        registers, \chardef, accents, intarray, tracing
+      - More TeX-like "scanning" of tokens affecting
+        * expansion, input,
+        * alignments (\halign,tabular)
+      - improved block mode processing
+        * affecting \parbox, {minipage}, \centering, \raggedright/left
+        * More consistent set of block elements:
+            ltx:block, ltx:logical-block, ltx:sectional-block,
+        * along with their inline variants:
+            ltx:inline-block, ltx:inline-logical-block, ltx:inline-sectional-block
+        * NOTE: breaking change: ltx:inline-para has been renamed ltx:inline-logical-block
+      - Improvements to processing alignments (\halign, tabular),
+        more TeX-like (processing templates, spacing)
+      - Improved processing of images, graphics, svg generation
+        * image post-processing
+        * pgf, tikz, pgfplots, tikz-cd
+      - initial support for Vietnamese, t5enc
+      - improved Windows portability
+      - improved schema documentation
+      - Improvements to test cases.
+
+      - New bindings: boxedminipage, cmap, ifdraft, marginnote, tikz-cd.
+      - Improvements to bindings: aa, aas, algorithm2e, amsmath, amsthm,
+        cleverref, comment, csquotes,  elsarticle, enumitem, expl3, framed,
+        hyperref, hyperxmp, IEEEtran, lineno, listing, longtable, mn2e,
+        nicefrac, ntheorem, pdfpages, pgfmath, pgfplots, rotating, srcltx,
+        sidecap, subcaption, subfiles, thmtools, tikz, url, xfrac, xypic.
+
+      Thanks to Deyan Ginev and Tom Wiesing for ongoing development and support;
+      Special thanks to Christoph Hauert, Tim Prescott, Vincenzo Mantova for patches and bindings;
+      Reports from Felix Benning, Miles Cranmer, circlestarzero, Dan Frankow, giovanni111,
+      goska, Duc A. Hoang, Ramnath Karthekesan, Pedro Konzen, Joseph Long, Greg Meyer,
+      molke-productions, Dennis Mueller, David Poole, Hilmar Preusse, Nico Schloemer,
+      Neil M. Sheldon, Heinrich Stammerjohanns, Henrik Tidefelt, Andrew Tonks,
+      userrand, Eelco van Vliet, Richard Zach, |8|.
+
 0.8.7 2022-12-16
       - This release addresses a large variety of usability, fidelity, robustness,
         portability and output-quality issues.
