@@ -274,19 +274,19 @@ meta-data is stored.
 
 =item C<< $keyval->defineOrdinary($code); >>
 
-Helper function to define $STATE neccesary for an ordinary key. 
+Helper function to define $STATE necessary for an ordinary key. 
 
 =item C<< $keyval->defineCommand($code, $macroprefix); >>
 
-Helper function to define $STATE neccesary for a command key. 
+Helper function to define $STATE necessary for a command key. 
 
 =item C<< $keyval->defineChoice($code, $mismatch, $choices, $normalize, $bin); >>
 
-Helper function to define $STATE neccesary for an choice key. 
+Helper function to define $STATE necessary for an choice key. 
 
 =item C<< $keyval->defineBoolean($code, $mismatch, $macroprefix); >>
 
-Helper function to define $STATE neccesary for a boolean key. 
+Helper function to define $STATE necessary for a boolean key. 
 
 =back
 

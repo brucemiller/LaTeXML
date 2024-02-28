@@ -524,7 +524,7 @@ I<prefix> is the given prefix all key-value pairs operate in and defaults to
 C<'KV'>. If given, prefix should be a string. 
 
 I<keysets> should be a list of keysets to find keys inside of. If given, it
-should either be reference to a list of strings or a comma-seperated string. 
+should either be reference to a list of strings or a comma-separated string. 
 This argument defaults to C<'_anonymous_'>. 
 
 Furthermore, the KeyVals constructor accepts a variety of options that can
@@ -532,7 +532,7 @@ be used to customize its behaviour. These are I<setAll>, I<setInternals>,
 I<skip>, I<skipMissing>, I<hookMissing>, I<open>, I<close>.
 
 I<setAll> is a flag that, if set, ensures that keys will be set in all existing
-keysets, instad of only in the first one. 
+keysets, instead of only in the first one. 
 
 I<setInternals> is a flag that, if set, ensures that certain 'xkeyval' package
 internals are set during key digestion. 
@@ -547,7 +547,7 @@ such a key, if set to C<1> they are ignored. Alternatively, this can be set to a
 key macro which is then extended to contain a comman-separated list of the
 undefined keys. 
 
-I<hookMissing> allows to call a specific macro if a single key is unknown during
+I<hookMissing> allows one to call a specific macro if a single key is unknown during
 key digestion. 
 
 =back
@@ -695,7 +695,7 @@ sequence of Tokens that was used to be read it from the gullet.
 
 =item C<< $str = $keyvals->toString(); >>
 
-Turns this object into a key=value comma seperated string. 
+Turns this object into a key=value comma separated string. 
 
 =back
 
