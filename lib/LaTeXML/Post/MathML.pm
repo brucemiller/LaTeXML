@@ -645,6 +645,9 @@ sub pmml_infix {
 my %default_token_content = (
   MULOP => "\x{2062}", ADDOP => "\x{2064}", PUNCT => "\x{2063}");
 
+# chars that all browsers will know are stretchy (notably, apparently, NOT "|")
+my %safe_stretchy = map { $_ => 1; } "(", ")", "[", "]", "{", "}";
+
 # Remaps some mathvariants to a simpler subset of Unicode
 my %plane1hackable = (    # CONSTANT
   script          => 'script',
@@ -777,11 +780,15 @@ sub stylizeContent {
     # (Thanks Peter Krautzberger)
     # Really we should check the Operator Dictionary to see if it's expected to be symmetric
     if ($size) {    # if non-default size
+      if ($size =~ /^(.*?)%$/) {    # Convert to em, as safari apparently ignores %
+        $size = fmt_em($1 / 100); }
       if ($issymm || $props{symmetric}) {    # but should be symmetric?
         $stretchyhack = 1;
-        $stretchy     = 1; }                 # so, pretend we asked for stretchy
+        # BUT force attribute to avoid browser bugs. (esp "|")
+        $props{stretchy} = undef unless $safe_stretchy{$text};
+        $stretchy = 1; }                                         # so, pretend we asked for stretchy
       elsif ($tag eq 'm:mo') {
-        $stretchy = undef; } } }             # Conversely, if size specifically set, don't stretch it!
+        $stretchy = undef; } } }    # Conversely, if size specifically set, don't stretch it!
 
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
