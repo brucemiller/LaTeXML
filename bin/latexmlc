@@ -154,7 +154,7 @@ if ((!$sock) && $local && ($expire == -1)) {
     : process_remote($address, $port, $route, $message, $sock));
   if ($http_response->is_success) {
     my $response = decode_json($http_response->content);
-    ($result, $status, $log) = map { $$response{$_} } qw(result status log) if defined $response;
+    ($result, $status, $status_code, $log) = map { $$response{$_} } qw(result status status_code log) if defined $response;
     NoteSTDERR("Conversion complete: " . $$response{status});
   } else {
     die("Fatal:HTTP:" . $http_response->code() . " " . $http_response->message() . "\n");
