@@ -222,6 +222,7 @@ sub image_graphicx_size {
     elsif ($op eq 'scale-to') {
       # $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
       if ($a3) {             # If keeping aspect ratio, ignore the most extreme request
+        return unless $w && $h;
         if ($a1 / $w < $a2 / $h) { $a2 = $h * $a1 / $w; }
         else                     { $a1 = $w * $a2 / $h; } }
       ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt)); }

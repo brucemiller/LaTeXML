@@ -48,7 +48,7 @@ DefConstructor('\epsfbox[] Semiverbatim',
   properties => sub {
     my ($document, $bb, $graphic) = @_;
     my $clip    = LookupValue('epsf_clip');
-    my $options = ($clip ? ($bb ? "viewport=$bb, clip" : "clip") : '');
+    my $options = ($clip ? ($bb ? "viewport=" . ToString($bb) . ", clip" : "clip") : '');
     my ($file, @candidates) = image_candidates(ToString($graphic));
     my $w = LookupRegister('\epsfxsize');
     my $h = LookupRegister('\epsfysize');
