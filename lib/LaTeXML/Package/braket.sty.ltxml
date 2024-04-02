@@ -55,13 +55,13 @@ sub splitBraketArg {
 
 #======================================================================
 DefMacro('\braket{}', sub {
-    my ($gullet, $arg) = @_;
-    my ($codes, @args) = splitBraketArg($arg, 2);
+    my ($gullet, $arg)  = @_;
+    my ($codes,  @args) = splitBraketArg($arg, 2);
     my $n = scalar(@args);
     return Invocation(T_CS('\lx@braket@' . $codes), @args)->unlist; });
 DefMacro('\Braket{}', sub {
-    my ($gullet, $arg) = @_;
-    my ($codes, @args) = splitBraketArg($arg, 2);
+    my ($gullet, $arg)  = @_;
+    my ($codes,  @args) = splitBraketArg($arg, 2);
     my $n = scalar(@args);
     return Invocation(T_CS('\lx@Braket@' . $codes), @args)->unlist; });
 
@@ -75,53 +75,53 @@ DefMath('\lx@Braket@{}', '\left\langle#1\right\rangle',
 # seperate macros since single vs double bars could have different meanings?
 #(but we assume the same for now)
 DefMath('\lx@braket@V{}{}', '\langle#1\,|\,#2\rangle',
-  meaning => 'inner-product',
-  alias   => '\braket');
+  meaning   => 'inner-product',
+  reversion => '\braket{#1|#2}');
 DefMath('\lx@braket@D{}{}', '\langle#1\,\|\,#2\rangle',
-  meaning => 'inner-product',
-  alias   => '\braket');
+  meaning   => 'inner-product',
+  reversion => '\braket{#1\|#2}');
 DefMath('\lx@Braket@V{}{}', '\left\langle#1\,\middle|\,#2\right\rangle',
-  meaning => 'inner-product',
-  alias   => '\Braket');
+  meaning   => 'inner-product',
+  reversion => '\Braket{#1|#2}');
 DefMath('\lx@Braket@D{}{}', '\left\langle#1\,\middle\|\,#2\right\rangle',
-  meaning => 'inner-product',
-  alias   => '\Braket');
+  meaning   => 'inner-product',
+  reversion => '\Braket{#1\|#2}');
 
 DefMath('\lx@braket@VV{}{}{}', '\langle#1\,|#2\,|\,#3\rangle',
-  meaning => 'quantum-operator-product',
-  alias   => '\braket');
+  meaning   => 'quantum-operator-product',
+  reversion => '\braket{#1|#2|#3}');
 DefMath('\lx@braket@VD{}{}{}', '\langle#1\,|\,#2\,\|\,#3\rangle',
-  meaning => 'quantum-operator-product',
-  alias   => '\braket');
+  meaning   => 'quantum-operator-product',
+  reversion => '\braket{#1|#2\|#3}');
 DefMath('\lx@braket@DV{}{}{}', '\langle#1\,\|\,#2\,|\,#3\rangle',
-  meaning => 'quantum-operator-product',
-  alias   => '\braket');
+  meaning   => 'quantum-operator-product',
+  reversion => '\braket{#1\|#2|#3}');
 DefMath('\lx@braket@DD{}{}{}', '\langle#1\,\|\,#2\,\|\,#3\rangle',
-  meaning => 'quantum-operator-product',
-  alias   => '\braket');
+  meaning   => 'quantum-operator-product',
+  reversion => '\braket{#1\|#2\|#3}');
 
 DefMath('\lx@Braket@VV{}{}{}', '\left\langle#1\,\middle|\,#2\,\middle|\,#3\right\rangle',
-  meaning => 'quantum-operator-product',
-  alias   => '\Braket');
+  meaning   => 'quantum-operator-product',
+  reversion => '\Braket{#1|#2|#3}');
 DefMath('\lx@Braket@VD{}{}{}', '\left\langle#1\,\middle|\,#2\,\middle\|\,#3\right\rangle',
-  meaning => 'quantum-operator-product',
-  alias   => '\Braket');
+  meaning   => 'quantum-operator-product',
+  reversion => '\Braket{#1|#2\|#3}');
 DefMath('\lx@Braket@DV{}{}{}', '\left\langle#1\,\middle\|\,#2\,\middle|\,#3\right\rangle',
-  meaning => 'quantum-operator-product',
-  alias   => '\Braket');
+  meaning   => 'quantum-operator-product',
+  reversion => '\Braket{#1\|#2|#3}');
 DefMath('\lx@Braket@DD{}{}{}', '\left\langle#1\,\middle\|\,#2\,\middle\|\,#3\right\rangle',
-  meaning => 'quantum-operator-product',
-  alias   => '\Braket');
+  meaning   => 'quantum-operator-product',
+  reversion => '\Braket{#1\|#2\|#3}');
 
 #======================================================================
 DefMacro('\set{}', sub {
-    my ($gullet, $arg) = @_;
-    my ($codes, @args) = splitBraketArg($arg, 1);
+    my ($gullet, $arg)  = @_;
+    my ($codes,  @args) = splitBraketArg($arg, 1);
     my $n = scalar(@args);
     return Invocation(T_CS('\lx@set@' . $codes), @args)->unlist; });
 DefMacro('\Set{}', sub {
-    my ($gullet, $arg) = @_;
-    my ($codes, @args) = splitBraketArg($arg, 1);
+    my ($gullet, $arg)  = @_;
+    my ($codes,  @args) = splitBraketArg($arg, 1);
     my $n = scalar(@args);
     return Invocation(T_CS('\lx@Set@' . $codes), @args)->unlist; });
 
