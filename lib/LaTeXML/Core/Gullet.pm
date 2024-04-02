@@ -415,7 +415,7 @@ sub readBalanced {
   # Does we need to expand to get the { ???
   if ($require_open) {
     my $token = ($expanded ? readXToken($self, 0) : readToken($self));
-    if ((!$token) || ($$token[1] != CC_BEGIN)) {
+    if ((!$token) || ($$token[1] != CC_BEGIN && !Equals($STATE->lookupMeaning($token), T_BEGIN))) {
       Error('expected', '{', $self, "Expected opening '{'");
       return TokensI(); } }
   my @tokens = ();
@@ -1168,11 +1168,15 @@ Skip the next spaces from the input.
 Skip the next token from the input if it is a space.
 If C($expanded> is true, expands ( like C< <one optional space> > ).
 
-=item C<< $tokens = $gullet->readBalanced; >>
+=item C<< $tokens = $gullet->readBalanced($expanded, $macrodef, $require_open); >>
 
-Read a sequence of tokens from the input until the balancing '}' (assuming the '{' has
-already been read). Returns a L<LaTeXML::Core::Tokens>,
-except in an array context, returns the collected tokens and the closing token.
+Read a sequence of tokens from the input until the balancing '}'.
+By default assumes the '{' has already been read.
+
+It optionally (C<$expand>) expands while reading, but deferring \the and related.
+The C<$macrodef> flag affects whether # parameters are "packed" for macro bodies.
+If C<$require_open> is true, the opening C<T_BEGIN> has not yet been read, and is required.
+Returns a L<LaTeXML::Core::Tokens>.
 
 =item C<< $boole = $gullet->ifNext($token); >>
 
