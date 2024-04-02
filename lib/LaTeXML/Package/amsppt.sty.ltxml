@@ -335,7 +335,7 @@ DefMacro('\Refsname', 'References');
 DefConstructor('\cite Semiverbatim', "<ltx:cite>[<ltx:bibref show='refnum' bibrefs='#1'/>]</ltx:cite>");
 
 # arg or no arg?
-DefMacro('\thebibliography@ID', '\ifx.\thedocument@id.\thedocument@id.bib\else bib\fi');
+DefMacro('\the@lx@bibliography@ID', '\ifx.\thedocument@id.\thedocument@id.bib\else bib\fi');
 
 DefMacro('\@auto@Refs', '\Refs');
 DefMacro('\Refs',       '\@Refs\def\@auto@Refs{}');
@@ -344,7 +344,7 @@ DefConstructor('\@Refs',
     . "<ltx:title>References</ltx:title>"
     . "<ltx:biblist>",
   afterDigest => sub {
-    $_[1]->setProperty(id => ToString(Expand(T_CS('\thebibliography@ID')))); });
+    $_[1]->setProperty(id => ToString(Expand(T_CS('\the@lx@bibliography@ID')))); });
 DefMacro('\endRefs', '\def\@auto@Refs{\Refs}\end@Refs');
 DefConstructor('\end@Refs', "</ltx:bibliography>");
 

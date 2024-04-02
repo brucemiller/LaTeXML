@@ -4011,7 +4011,8 @@ Let('\pageref', '\ref');
 # Note that it's called \refname in LaTeX's article, but \bibname in report & book.
 # And likewise, mixed up in various other classes!
 
-DefMacroI('\thebibliography@ID', undef, Tokens());
+NewCounter('@lx@bibliography');    # Just for @ID
+DefMacroI('\the@lx@bibliography@ID', undef, Tokens());
 
 # Do this before digesting the body of a bibliography
 sub beforeDigestBibliography {
@@ -4059,8 +4060,7 @@ sub beginBibliography_clean {
   AssignValue(n_bibliographies => ++$bibnumber, 'global');
   my $docid = ToString(Expand(T_CS('\thedocument@ID')));
   my $bibid = ($docid ? $docid . '.' : '') . 'bib' . radix_alpha($bibnumber - 1);
-  DefMacroI(T_CS('\thebibliography@ID'), undef, T_OTHER($bibid), scope => 'global');
-  #  $whatsit->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
+  DefMacroI(T_CS('\the@lx@bibliography@ID'), undef, T_OTHER($bibid), scope => 'global');
   $whatsit->setProperty(id => $bibid);
   my $title = ($bibtitle ? Digest($bibtitle)
     : DigestIf('\refname') || DigestIf('\bibname'));
@@ -4243,7 +4243,7 @@ DefMacroI('\item@in@bibliography', undef, '\save@bibitem{}');
 DefMacro('\restoring@bibitem',
   '\let\bibitem\save@bibitem\let\par\save@par\let\\\\\save@backbackslash\bibitem');
 
-NewCounter('@bibitem', 'bibliography', idprefix => 'bib');
+NewCounter('@bibitem', '@lx@bibliography', idprefix => 'bib');
 DefMacroI('\the@bibitem', undef, '\arabic{@bibitem}');
 DefMacro('\@biblabel{}', '[#1]');
 DefMacroI('\fnum@@bibitem', undef, '{\@biblabel{\the@bibitem}}');
