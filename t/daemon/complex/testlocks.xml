@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml package="testlocks"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>testlocks FOO-A:testlocks FOO-A</p>
+  </para>
+  <para xml:id="p2">
+    <p>testlocks FOO-B:testlocks FOO-B</p>
+  </para>
+  <para xml:id="p3">
+    <p>testlocks FOO-C:testlocks FOO-C</p>
+  </para>
+  <para xml:id="p4">
+    <p>testlocks-b FOO-D:testlocks-b FOO-D</p>
+  </para>
+  <para xml:id="p5">
+    <p>testlocks FOO-E:testlocks FOO-E</p>
+  </para>
+</document>

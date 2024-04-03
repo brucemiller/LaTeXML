@@ -1,0 +1,12 @@
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# RE-defintions (allowed)
+DefMacro('\fooD', "testlocks-b FOO-D", locked => 1);
+
+# Definition, BUT will be RE-defined by testlocks.sty
+DefMacro('\fooE', "testlocks-b FOO-E", locked => 1);
+
+1;
