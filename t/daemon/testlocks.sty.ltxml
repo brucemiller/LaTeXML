@@ -1,0 +1,16 @@
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+DefMacro('\fooA', "testlocks FOO-A", locked => 1);
+DefMacro('\fooB', "testlocks FOO-B", locked => 1);
+DefMacro('\fooC', "testlocks FOO-C", locked => 1);
+DefMacro('\fooD', "testlocks FOO-D", locked => 1);
+
+InputDefinitions("testlocks-a", type => 'sty', noltxml => 1);
+
+# This gets defined in testlocks-b.sty.ltxml, input from testlocks-a.sty
+DefMacro('\fooE', "testlocks FOO-E", locked => 1);
+
+1;

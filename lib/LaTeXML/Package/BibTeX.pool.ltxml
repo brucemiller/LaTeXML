@@ -170,7 +170,7 @@ DefPrimitive('\bibentry@create Semiverbatim', sub {
 # Processing Entries
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Math ID's within the bibliography.
-DefMacro('\the@XMARG@ID', '\thebibliography@ID.XM\arabic{@XMARG}');
+DefMacro('\the@XMARG@ID', '\the@lx@bibliography@ID.XM\arabic{@XMARG}');
 
 DefEnvironment('{bibtex@bibliography}',
   "<ltx:bibliography xml:id='#id' "
@@ -524,7 +524,7 @@ DefMacro('\bib@field@proceedings@booktitle', sub {
 #   required: author, title, institution, year
 #   optional: type, number, address, month, note.
 DefMacro('\bib@entry@techreport@alias', 'report');
-DefMacro('\bib@entry@report@prepare', sub { copyCrossrefFields(qw(author title institution)); });
+DefMacro('\bib@entry@report@prepare',   sub { copyCrossrefFields(qw(author title institution)); });
 DefMacro('\bib@entry@techreport@complete', '\bib@addtype{Technical report}');
 
 #======================================================================
@@ -616,18 +616,18 @@ our %months = (    # Standard abbreviations (usually would appear in raw form of
   jan => "1", feb => "2", mar => "3", apr => "4",  may => "5",  jun => "6",
   jul => "7", aug => "8", sep => "9", oct => "10", nov => "11", dec => "12",
   # English month names, perhaps in expanded form of month field
-  january => "1", february => "2", march => "3", april => "4", may => "5", june => "6",
-  july => "7", august => "8", september => "9", october => "10", november => "11", december => "12");
+  january => "1", february => "2", march => "3", april   => "4",  may      => "5",  june     => "6",
+  july => "7", august => "8", september  => "9", october => "10", november => "11", december => "12");
 # Is there any sane way of looking up month names from other languages; maybe something from babel?
 
 DefMacro('\bib@field@default@year {}', sub {
     if (currentBibEntryField('date')) {
-      (); }        # Ignore this, if we've already been given a date field.
+      (); }    # Ignore this, if we've already been given a date field.
     else {
       my $date = currentBibEntryField('year');
       my $x;
       my $month;
-      if (($x = currentBibEntryRawField('month')) && ($x = $months{ lc($x) })) { $month = $x; }
+      if    (($x = currentBibEntryRawField('month')) && ($x = $months{ lc($x) })) { $month = $x; }
       elsif ($x = currentBibEntryField('month')) { $month = $months{ lc($x) } || $x; }
       my $day = currentBibEntryField('day');
       # What if month or day is given, but not year ???
@@ -913,8 +913,8 @@ sub processBibNameList {
         ($given ? Invocation(T_CS('\bib@given'),   Tokenize($given)) : ()),
         ($jr    ? Invocation(T_CS('\bib@lineage'), Tokenize($jr))    : ())));
   }
-  if($etal){
-    push(@names, Invocation(T_CS('\bib@surname'),Tokenize('others'))); }
+  if ($etal) {
+    push(@names, Invocation(T_CS('\bib@surname'), Tokenize('others'))); }
   return @names; }
 
 # Split into space separated words, but ignore spaces within {}

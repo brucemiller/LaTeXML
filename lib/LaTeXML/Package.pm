@@ -2239,6 +2239,7 @@ sub loadLTXML {
   AssignValue($request . '_loaded' => 1, 'global');
   AssignValue($ltxname . '_loaded' => 1, 'global') if $ltxname ne $request;
   ClearAutoLoad($request);
+  local $LaTeXML::Core::State::UNLOCKED = 1;
   $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth::Binding->new($pathname), sub {
       do $pathname;
       Fatal('die', $pathname, $STATE->getStomach->getGullet,
@@ -2446,6 +2447,7 @@ sub AddToMacro {
     Warn('unexpected', $cs, $STATE->getStomach->getGullet,
       ToString($cs) . " is not an expandable control sequence", "Ignoring addition"); }
   else {
+    local $LaTeXML::Core::State::UNLOCKED = 1;    # ALLOW redefinitions that only adding to the macro
     DefMacroI($cs, undef, Tokens(map { $_->unlist }
           map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
       nopackParameters => 1, scope => 'global', locked => $$defn{locked}); }
