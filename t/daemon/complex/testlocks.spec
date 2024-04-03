@@ -1,3 +1,4 @@
+path = ../
 preload = testlocks.sty
-source = testlocks.tex
+source = ../testlocks.tex
 format = xml
