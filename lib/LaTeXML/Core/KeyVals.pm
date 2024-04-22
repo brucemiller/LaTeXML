@@ -111,7 +111,7 @@ sub canResolveKeyValFor {
 
 # Return the 1st of the keysets, or the 1st one of the KeyVals itself
 sub getPrimaryKeyValOf {
-  my ($self, $key, @keysets) = @_;
+  my ($self, @keysets) = @_;
   return (@keysets ? $keysets[0] : $$self{keysets}[0]); }
 
 #======================================================================
@@ -123,7 +123,7 @@ sub addValue {
 
   # figure out the keyset(s) for the key to be added
   my @keysets = $self->resolveKeyValFor($key);
-  my $pkeyset = $self->getPrimaryKeyValOf($key, @keysets);
+  my $pkeyset = $self->getPrimaryKeyValOf(@keysets);
 
   # and add the new tuple to the set of tuples
   push(@{ $$self{tuples} },
@@ -238,7 +238,7 @@ sub readFrom {
       if ($delim->equals(T_OTHER('='))) {
         $isDefault = 0;
         # setup the key-codes to properly read
-        my $keyset  = $self->getPrimaryKeyValOf($key, $self->resolveKeyValFor($key));
+        my $keyset  = $self->getPrimaryKeyValOf($self->resolveKeyValFor($key));
         my $keytype = keyval_get(keyval_qname($$self{prefix}, $keyset, $key), 'type');
         $keytype->setupCatcodes if $keytype;
         # read until comma
@@ -552,20 +552,6 @@ key digestion.
 
 =back
 
-=head2 KeyVals Accessors (intended for internal usage)
-
-=over 4
-
-=item C<< $keyvals->setTuples(@tuples) >>
-
-Sets the I<tuples> which should be a list of five-tuples (array references) representing
-the key-value pairs this KeyVals object is seeded with. See the I<getTuples>
-function on details of the structure of this list. 
-I<rebuild> is called automatically to populate the other caches. 
-Typically, the tuples is set by I<readFrom>.
-
-=back
-
 =head2 Resolution to KeySets
 
 =over 4
@@ -582,10 +568,10 @@ this function.
 Checks if this I<KeyVals> object can resolve a KeyVal for I<key>. Ignores
 I<setAll> and I<skipMissing> parameters. 
 
-=item C<< my $keyval = $keyvals->getPrimaryKeyValOf($key, @keysets) >>
+=item C<< my $keyval = $keyvals->getPrimaryKeyValOf(@keysets) >>
 
-Gets the primary keyset to be used for interacting a a single I<key>,
-given that it resolves to I<keysets>. Defaults to first keyset in KeyVals, if none given.
+Gets the primary keyset given that it resolves to I<keysets>. 
+Defaults to first keyset in KeyVals, if none given.
 
 =back
 
