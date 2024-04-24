@@ -433,6 +433,7 @@ sub build_kpse_cache {
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
     push(@filters, $path) if -d $path; }
+  my $filterre = '(?:' . join('|', map { "\Q$_\E"; } @filters) . ')';
   $texmf =~ s/^["']//; $texmf =~ s/["']$//;
   $texmf =~ s/^\s*\\\{(.+?)}\s*$/$1/s;
   $texmf =~ s/\{\}//g;
@@ -447,13 +448,12 @@ sub build_kpse_cache {
       open($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
       while (<$LSR>) {
         chop;
-        next unless $_;
-        if    (/^%/) { }
-        elsif (/^(.*?):$/) {    # Move to a new subdirectory
+        next if !$_ || /^%/;
+        if (/^(.*?):$/) {    # Move to a new subdirectory
           $subdir = $1;
-          $subdir =~ s|^\./||;                           # remove prefix
-          my $d = $dir . '/' . $subdir;                  # Hopefully OS safe, for comparison?
-          $skip = !grep { $d =~ /^\Q$_\E/ } @filters;    # check if one of the TeX paths
+          $subdir =~ s|^\./||;             # remove prefix
+          my $d = $dir . '/' . $subdir;    # Hopefully OS safe, for comparison?
+          $skip = $d !~ /$filterre/;
           $skip |= ($d =~ m|-dev[$//]|) unless $LaTeXML::DEBUG{'latex-dev'};
         }
         elsif (!$skip) {
