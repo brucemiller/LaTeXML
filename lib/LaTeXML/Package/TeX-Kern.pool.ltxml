@@ -1,0 +1,100 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX-Kern                                                            | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Kern Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Basic kerning
+#----------------------------------------------------------------------
+# \kern             c  adds a kern item to the current list.
+# \unkern           c  removes a kern from the current list.
+# \lastkern         iq is 0.0 pt or the last kern on the current list.
+
+# \kern is heavily used by xy.
+# Completely HACK version for the moment
+# Note that \kern should add vertical spacing in vertical modes!
+DefConstructor('\kern Dimension', sub {
+    my ($document, $length) = @_;
+    my $parent = $document->getNode;
+    if ($document->getNodeQName($parent) eq 'svg:g') {
+      if (my $x = $length->pxValue) {
+        # HACK HACK HACK
+        my $transform = $parent->getAttribute('transform');
+        $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
+    } }
+    elsif (inSVG()) {
+      Warn('unexpected', 'kern', $_[0], "Lost kern in SVG " . ToString($length)); }
+});
+DefPrimitiveI('\unkern', undef, undef);
+DefRegister('\lastkern' => Dimension(0), readonly => 1);
+
+#======================================================================
+# Moving Vertically
+#----------------------------------------------------------------------
+# \raise            c  shifts a box up and appends it to the current horizontal or math list.
+# \lower            c  shifts a box down and appends it to the current horizontal or math list.
+# \lower <dimen> <box>
+# \raise <dimen> <box>
+# But <box> apparently must really explicitly be an \hbox, \vbox or \vtop (?)
+# OR something that expands into one!!
+sub raisedSizer {
+  my ($box, $y) = @_;
+  my ($w, $h, $d) = $box->getSize;
+  my $z = Dimension(0);
+  $h = $h->add($y)->larger($z);
+  $d = $d->subtract($y)->larger($z);
+  return ($w, $h, $d); }
+
+DefConstructor('\lower Dimension MoveableBox',
+  "?&inSVG()(<svg:g transform='#transform' _noautoclose='1'>#2</svg:g>)"
+    . "(<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>)",
+  sizer       => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)->negate); },
+  afterDigest => sub {
+    my $y         = $_[1]->getArg(1)->multiply(-1);
+    my $ypx       = $y->pxValue;
+    my $transform = ($ypx ? "translate(0,$ypx)" : undef);
+    $_[1]->setProperties(y => $y, transform => $transform); });
+
+DefConstructor('\raise Dimension MoveableBox',
+  "?&inSVG()(<svg:g transform='#transform' _noautoclose='1'>#2</svg:g>)"
+    . "(<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>)",
+  sizer       => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)); },
+  afterDigest => sub {
+    my $y         = $_[1]->getArg(1);
+    my $ypx       = $y->pxValue;
+    my $transform = ($ypx ? "translate(0,$ypx)" : undef);
+    $_[1]->setProperties(y => $y, transform => $transform); });
+
+#======================================================================
+# Moving Horizontally
+#----------------------------------------------------------------------
+# \moveleft         c  shifts a box left and appends it to the current vertical list.
+# \moveright        c  shifts a box right and appends it to the current vertical list.
+# \moveleft<dimen><box>, \moveright<dimen><box>
+DefConstructor('\moveleft Dimension MoveableBox',
+  "<ltx:text xoffset='#x' _noautoclose='1'>#2</ltx:text>",
+  afterDigest => sub {
+    $_[1]->setProperty(x => $_[1]->getArg(1)->multiply(-1)); });
+DefConstructor('\moveright Dimension MoveableBox',
+  "<ltx:text xoffset='#x' _noautoclose='1'>#2</ltx:text>",
+  afterDigest => sub {
+    $_[1]->setProperty(x => $_[1]->getArg(1)); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

@@ -1,0 +1,37 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX-Marks                                                           | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Marks Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Marks
+#----------------------------------------------------------------------
+# \mark             c  specifies text which should be marked.
+# \topmark          c  is the value of \botmark on the previous page.
+# \botmark          c  is the mark text most recently encountered on a page.
+# \firstmark        c  is the mark text first encountered on a page.
+
+DefPrimitive('\mark{}', undef);
+
+DefMacroI('\topmark',   undef, Tokens());
+DefMacroI('\botmark',   undef, Tokens());
+DefMacroI('\firstmark', undef, Tokens());
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

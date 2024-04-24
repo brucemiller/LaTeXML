@@ -1,0 +1,139 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX-Logic                                                           | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Logic Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+# Basic logic
+#----------------------------------------------------------------------
+# \iftrue           c  is a conditional which is always true.
+# \iffalse          c  is a conditional which is always false.
+# \else             c  begins the false part of a conditional.
+# \fi               c  is the concluding command of a conditional.
+# \or               c  separates cases in an \ifcase conditional.
+
+DefConditionalI('\iftrue',  undef, sub { 1; });
+DefConditionalI('\iffalse', undef, sub { 0; });
+DefConditional('\else', undef);    # BUILT-IN to Definition
+DefConditional('\or',   undef);    # BUILT-IN to Definition
+DefConditional('\fi',   undef);    # BUILT-IN to Definition
+
+#======================================================================
+# Token testing
+#----------------------------------------------------------------------
+# \if               c  tests if two tokens have the same character codes (i.e., values 0-256).
+# \ifx              c  tests if two tokens are the same.
+# \ifcat            c  tests if two tokens have the same category codes (i.e., values 0-16).
+DefParameterType('ExpandedIfToken', sub {
+    my ($gullet) = @_;
+    my $token = $gullet->readXToken(0, 1);
+    if (!$token) {
+      Error('expected', 'ExpandedIfToken', $gullet,
+        "conditional expected a token argument, readXToken came back empty. Falling back to \\\@empty");
+      $token = T_CS('\@empty'); }
+    return $token; });
+
+DefConditional('\if ExpandedIfToken ExpandedIfToken', sub { $_[1]->getCharcode == $_[2]->getCharcode; });
+DefConditional('\ifx Token Token',                    sub { XEquals($_[1], $_[2]); });
+DefConditional('\ifcat ExpandedIfToken ExpandedIfToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
+
+#======================================================================
+# Number testing
+#----------------------------------------------------------------------
+# \ifnum            c  compares two integers.
+# \ifodd            c  tests for an odd integer.
+# \ifcase           c  begins a multi-case conditional.
+
+sub compare {
+  my ($u, $rel, $v) = @_;
+  $u = $u->valueOf if ref $u;
+  $v = $v->valueOf if ref $v;
+  if ($rel->equals(T_OTHER('<')) || $rel->equals(T_CS('\@@<'))) {
+    return $u < $v; }
+  elsif ($rel->equals(T_OTHER('='))) {
+    return $u == $v; }
+  elsif ($rel->equals(T_OTHER('>')) || $rel->equals(T_CS('\@@>'))) {
+    return $u > $v; }
+  else {
+    Error('expected', '<relationaltoken>', $STATE->getStomach->getGullet,
+      "Expected a relational token for comparision", "Got " . Stringify($rel));
+    return; } }
+
+DefConditional('\ifnum Number Token Number', sub { compare($_[1], $_[2], $_[3]); });
+DefConditional('\ifodd Number',              sub { $_[1]->valueOf % 2; });
+DefConditional('\ifcase Number',             undef);    # BUILT-IN to Definition
+#======================================================================
+# Dimension testing
+#----------------------------------------------------------------------
+# \ifdim            c  compares two dimensions.
+DefConditional('\ifdim Dimension Token Dimension', sub { compare($_[1], $_[2], $_[3]); });
+
+#======================================================================
+# Box testing
+#----------------------------------------------------------------------
+# \ifhbox           c  is true if a box register contains an \hbox.
+# \ifvbox           c  is true if a box register contains a \vbox.
+# \ifvoid           c  is true if a box register is void.
+
+# Kinda rough: We don't really keep track of modes as carefully as TeX does.
+# We'll assume that a box is horizontal if there's anything at all,
+# but it's not a vbox (!?!?)
+sub classify_box {
+  my ($boxnum) = @_;
+  my $box = LookupValue('box' . $boxnum->valueOf);
+  if (!$box) {
+    return ''; }
+  elsif ($box->isa('LaTeXML::Core::Whatsit') && ($box->getDefinition eq LookupDefinition(T_CS('\vbox')))) {
+    return 'vbox'; }
+  else {
+    return 'hbox'; } }
+
+DefConditional('\ifvoid Number', sub { !classify_box($_[1]); });
+DefConditional('\ifhbox Number', sub { classify_box($_[1]) eq 'hbox'; });
+DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox'; });
+
+#======================================================================
+# Mode testing
+#----------------------------------------------------------------------
+# \ifhmode          c  is true if TeX is in horizontal or restricted horizontal mode.
+# \ifinner          c  is true if TeX is in internal vertical, restricted horizontal, or nondisplay math mode.
+# \ifmmode          c  is true if TeX is in math or display math mode.
+# \ifvmode          c  is true if TeX is in vertical or internal vertical mode.
+
+# NOTE: We don't KNOW if we're in vertical, horizontal or inner mode!!!!!!!
+DefConditionalI('\ifvmode', undef, sub { 0; });
+DefConditionalI('\ifhmode', undef, sub { 0; });
+DefConditionalI('\ifinner', undef, sub { 0; });
+
+DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
+
+#======================================================================
+# I/O testing
+#----------------------------------------------------------------------
+# \ifeof c tests for the end of a file .
+
+DefConditional('\ifeof Number', sub {
+    my ($gullet, $port) = @_;
+    $port = ToString($port);
+    if (my $mouth = LookupValue('input_file:' . $port)) {
+      return $$mouth{at_eof}; }
+    else {
+      return 1; } });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

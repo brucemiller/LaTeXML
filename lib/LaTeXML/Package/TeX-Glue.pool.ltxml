@@ -1,0 +1,128 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX-Glue                                                            | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Glue Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Inserting, removing glue
+#----------------------------------------------------------------------
+# \hskip            c  inserts horizontal glue in a horizontal or math list.
+# \vskip            c  inserts vertical glue in a vertical list.
+# \unskip           c  removes a glue item from the current list.
+
+# a candidate for use by \hskip, \hspace, etc... ?
+sub DimensionToSpaces {
+  my ($dimen) = @_;
+  my $fs      = LookupValue('font')->getSize;    # 1 em
+  my $pt      = $dimen->ptValue;
+  my $ems     = $pt / $fs;
+  if    ($ems < 0.01) { return; }
+  elsif ($ems < 0.17) { return "\x{2006}"; }     # 6/em
+  elsif ($ems < 0.30) { return "\x{2005}"; }     # 4/em
+  elsif ($ems < 0.40) { return "\x{2004}"; }     # 3/em (same as nbsp?)
+  else {
+    my $n = int(($ems + 0.3) / 0.333);           # 10pts per space...?
+    return (UTF(0xA0) x $n); } }
+
+# \hskip handled similarly to \kern
+# \hskip can be ignored in certain situations...
+DefConstructor('\hskip Glue', sub {
+    my ($document, $length, %props) = @_;
+    my $parent = $document->getNode;
+    #    Debug("HSKIP ".ToString($length)." at ".$document->getNodeQName($parent));
+    if ($document->getNodeQName($parent) eq 'svg:g') {
+      if (my $x = $length->pxValue) {
+        # HACK HACK HACK
+        my $transform = $parent->getAttribute('transform');
+        $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
+    } }
+    elsif (inSVG()) {
+      Warn('unexpected', 'kern', $_[0], "Lost hskip in SVG " . ToString($length)); }
+
+    else {
+      #      $document->openText(DimensionToSpaces($length), $props{font}); } },
+      $document->absorb(DimensionToSpaces($length)); } },
+  properties => sub {
+    my ($stomach, $length) = @_;
+    (width => $length, isSpace => 1); });
+
+# If this is the right solution...
+# then we also should put the desired spacing on a style attribute?!?!?!
+DefConstructor('\vskip Glue', sub {
+    my ($document, $length) = @_;
+    $length = $length->ptValue;
+    if ($length > 10) {    # Or what!?!?!?!
+      if ($document->isCloseable('ltx:para')) {
+        $document->closeElement('ltx:para'); }
+      elsif ($document->isOpenable('ltx:break')) {
+        $document->insertElement('ltx:break'); } }
+    return; },
+  properties => sub { (height => $_[1], isSpace => 1, isVerticalSpace => 1, isBreak => 1); });
+
+## Worrisome, but...
+DefPrimitiveI('\unskip', undef, sub {
+    my ($stomach) = @_;
+    my $box;
+    while (($box = $LaTeXML::LIST[-1]) && IsEmpty($box)) {
+      pop(@LaTeXML::LIST); }
+    return; });
+
+#======================================================================
+# Horizontal skips
+#----------------------------------------------------------------------
+# \hfil             d  inserts first order infinitely stretchable horizontal glue in a horizontal or math list.
+# \hfill            d  inserts second order infinitely stretchable horizontal glue in a horizontal or math list.
+# \hfilneg          d  cancels the stretchability of \hfil.
+# \hss              d  inserts infinitely stretchable and shrinkable horizontal glue in a horizontal or math list.
+
+DefPrimitiveI('\hss',     undef, undef);
+DefPrimitiveI('\hfilneg', undef, undef);
+
+DefPrimitiveI('\hfil', undef, sub {
+    Box(' ', undef, undef, T_CS('\hfil'), isSpace => 1, isFill => 1); });
+###    Box("\x{200B}", undef, undef, T_CS('\hfil'), isSpace => 1, isFill => 1); });
+###    Box("\x{200A}", undef, undef, T_CS('\hfil'), isSpace => 1, isFill => 1); });
+DefPrimitiveI('\hfill', undef, sub {
+    Box(' ', undef, undef, T_CS('\hfill'), isSpace => 1, isFill => 1); });
+####    Box("\x{200B}", undef, undef, T_CS('\hfill'), isSpace => 1, isFill => 1); });
+###    Box("\x{200A}", undef, undef, T_CS('\hfill'), isSpace => 1, isFill => 1); });
+
+#======================================================================
+# Vertical skips
+#----------------------------------------------------------------------
+# \vfil             d  inserts first order infinitely stretchable vertical glue in a vertical list.
+# \vfill            d  inserts second order infinitely stretchable vertical glue in a vertical list.
+# \vfilneg          d  cancels the stretchability of \vfil.
+# \vss              d  insert infinitely stretchable and shrinkable vertical glue in a vertical list.
+
+# Stuff to ignore for now...
+DefPrimitiveI('\vfil',    undef, undef);
+DefPrimitiveI('\vfill',   undef, undef);
+DefPrimitiveI('\vss',     undef, undef);
+DefPrimitiveI('\vfilneg', undef, undef);
+
+#======================================================================
+# Lastskip
+#----------------------------------------------------------------------
+# \lastskip         iq is 0.0 pt or the last glue or muglue on the current list.
+
+DefRegister('\lastskip' => Glue(0), readonly => 1);
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
