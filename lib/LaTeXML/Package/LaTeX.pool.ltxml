@@ -368,7 +368,7 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     if (my $ops = LookupValue('@at@end@document')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
     # Should we try to indent the last paragraph? If so, it goes like this:
-    push(@boxes, $stomach->digest(T_CS('\normal@par')));
+    push(@boxes, $stomach->digest(T_CS('\lx@normal@par')));
     # Now we check whether we're down to the last stack frame.
     # It is common for unclosed { or even environments
     # and we want to at least compress & avoid unnecessary errors & warnings.
@@ -1467,7 +1467,7 @@ sub beginItemize {
   my $postfix     = ToString(Tokens(roman($level)));
   my $usecounter  = ($options{nolevel} ? $counter : $counter . $postfix);
   Let('\item' => "\\" . $type . '@item') if defined $type;
-  Let('\par', '\normal@par');                                     # In case within odd environment.
+  Let('\par', '\lx@normal@par');                                  # In case within odd environment.
   DefMacroI('\@listctr', undef, Tokens(Explode($usecounter)));
   # Now arrange that this list's id's are relative to the current (outer) item (if any)
   # And that the items within this list's id's are relative to this (new) list.
