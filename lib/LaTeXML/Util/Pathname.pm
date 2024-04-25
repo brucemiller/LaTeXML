@@ -433,7 +433,7 @@ sub build_kpse_cache {
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
     push(@filters, $path) if -d $path; }
-  my $filterre = '(?:' . join('|', map { "\Q$_\E"; } @filters) . ')';
+  my $filterre = scalar(@filters) && '(?:' . join('|', map { "\Q$_\E"; } @filters) . ')';
   $texmf =~ s/^["']//; $texmf =~ s/["']$//;
   $texmf =~ s/^\s*\\\{(.+?)}\s*$/$1/s;
   $texmf =~ s/\{\}//g;
@@ -453,7 +453,7 @@ sub build_kpse_cache {
           $subdir = $1;
           $subdir =~ s|^\./||;             # remove prefix
           my $d = $dir . '/' . $subdir;    # Hopefully OS safe, for comparison?
-          $skip = $d !~ /$filterre/;
+          $skip = $d !~ /$filterre/ if $filterre;
           $skip |= ($d =~ m|-dev[$//]|) unless $LaTeXML::DEBUG{'latex-dev'};
         }
         elsif (!$skip) {
