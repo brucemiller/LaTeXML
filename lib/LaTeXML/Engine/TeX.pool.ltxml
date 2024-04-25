@@ -23,33 +23,34 @@ use List::Util qw(min max);
 #**********************************************************************
 # CORE TeX; Built-in commands.
 #**********************************************************************
-LoadPool('LaTeXML-Schema');
-LoadPool('LaTeXML-Types');
-LoadPool('LaTeXML-Utility');
-LoadPool('LaTeXML-Math');
-LoadPool('TeX-Box');
-LoadPool('TeX-Character');
-LoadPool('TeX-Debugging');
-LoadPool('TeX-FileIO');
-LoadPool('TeX-Fonts');
-LoadPool('TeX-Glue');
-LoadPool('TeX-Hyphenation');
-LoadPool('TeX-Inserts');
-LoadPool('TeX-Job');
-LoadPool('TeX-Kern');
-LoadPool('TeX-Logic');
-LoadPool('TeX-Macro');
-LoadPool('TeX-Marks');
-LoadPool('TeX-Math');
-LoadPool('TeX-Page');
-LoadPool('TeX-Paragraph');
-LoadPool('TeX-Penalties');
-LoadPool('TeX-Registers');
-LoadPool('TeX-Tables');
+#LaTeXML::Package::LoadPoolX('foo');
+LoadPool('Schema');
+LoadPool('ParameterTypes');
+LoadPool('Utility');
+LoadPool('XMath');
+LoadPool('Box');
+LoadPool('Character');
+LoadPool('Debugging');
+LoadPool('FileIO');
+LoadPool('Fonts');
+LoadPool('Glue');
+LoadPool('Hyphenation');
+LoadPool('Inserts');
+LoadPool('Job');
+LoadPool('Kern');
+LoadPool('Logic');
+LoadPool('Macro');
+LoadPool('Marks');
+LoadPool('Math');
+LoadPool('Page');
+LoadPool('Paragraph');
+LoadPool('Penalties');
+LoadPool('Registers');
+LoadPool('Tables');
 LoadPool('eTeX');      # unless.... ?
 LoadPool('pdfTeX');    # unless.... ?
 
-LoadPool('LaTeXML-Deprecated');
+LoadPool('Deprecated');
 
 ##if ($LaTeXML::DEBUG{compiled}) {
 ##    loadDump('plain.tex'); }

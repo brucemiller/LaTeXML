@@ -29,7 +29,7 @@ use List::Util qw(min max);
 #**********************************************************************
 
 LoadPool('TeX');
-
+LOAD_LATEX();
 # Apparently LaTeX does NOT define \magnification,
 # and babel uses that to determine whether we're runing LaTeX!!!
 Let('\magnification', '\@undefined');
@@ -4384,8 +4384,10 @@ DefConstructor('\lx@mark@nocite Semiverbatim',
 #======================================================================
 # C.11.4 Splitting the input
 #======================================================================
-Let('\@@input', '\input');    # Save TeX's version.
-                              # LaTeX's \input is a bit different...
+if (!($LaTeXML::DEBUG{compiled} || $LaTeXML::DEBUG{compiling})) {
+  Let('\@@input', '\input');    # Save TeX's version.
+                                # LaTeX's \input is a bit different...
+}
 # Input, now
 DefPrimitive('\ltx@input {}', sub { Input(Expand($_[1])); });
 DefMacroI('\input', undef, '\@ifnextchar\bgroup\@iinput\@@input');
@@ -4885,8 +4887,8 @@ DefPrimitive('\newsavebox DefToken', sub {
     AssignValue(allocated_boxes => $n, 'global');
     DefRegisterI($_[1], undef, Number($n));
     AssignValue('box' . $n, List()); });
-
-RawTeX(<<'EOL');
+if (!($LaTeXML::DEBUG{compiled} || $LaTeXML::DEBUG{compiling})) {
+  RawTeX(<<'EOL');
 \def\newsavebox#1{\@ifdefinable{#1}{\newbox#1}}
 \DeclareRobustCommand\savebox[1]{%
   \@ifnextchar(%)
@@ -4916,7 +4918,7 @@ RawTeX(<<'EOL');
 \def\endlrbox{\unskip\color@endgroup}
 \DeclareRobustCommand\usebox[1]{\leavevmode\copy #1\relax}
 EOL
-
+}
 Let('\lx@parboxnewline', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring inner-pos, for now, though.
@@ -6402,39 +6404,41 @@ RequirePackage('textcomp');
 # of pre-read/pre-processed latex.ltx !
 #
 # For now, a few macros required by other packages will be included:
-DefMacroI(T_CS('\hook_gput_code:nnn'), '{}{}{}', '');
-DefMacro('\NewHook{}',                    '');
-DefMacro('\NewReversedHook{}',            '');
-DefMacro('\NewMirroredHookPair{}{}',      '');
-DefMacro('\ActivateGenericHook{}',        '');
-DefMacro('\DisableGenericHook{}',         '');
-DefMacro('\AddToHook{}[]{}',              '');
-DefMacro('\AddToHookNext{}{}',            '');
-DefMacro('\ClearHookNext{}',              '');
-DefMacro('\RemoveFromHook{}[]',           '');
-DefMacro('\SetDefaultHookLabel{}',        '');
-DefMacro('\PushDefaultHookLabel{}',       '');
-DefMacro('\PopDefaultHookLabel',          '');
-DefMacro('\UseHook{}',                    '');
-DefMacro('\UseOneTimeHook{}',             '');
-DefMacro('\ShowHook{}',                   '');
-DefMacro('\LogHook{}',                    '');
-DefMacro('\DebugHooksOn',                 '');
-DefMacro('\DebugHooksOff',                '');
-DefMacro('\DeclareHookRule{}{}{}{}',      '');
-DefMacro('\DeclareDefaultHookRule{}{}{}', '');
-DefMacro('\ClearHookRule{}{}{}',          '');
-DefMacro('\IfHookEmptyTF{}{}{}',          '#3');
-DefMacro('\IfHookExistsTF{}{}{}',         '#3');
-DefMacro('\MakeTextLowercase',            '\lowercase');
-DefMacro('\MakeTextUppercase',            '\uppercase');
+if (!($LaTeXML::DEBUG{compiled} || $LaTeXML::DEBUG{compiling})) {
+  DefMacroI(T_CS('\hook_gput_code:nnn'), '{}{}{}', '');
+  DefMacro('\NewHook{}',                    '');
+  DefMacro('\NewReversedHook{}',            '');
+  DefMacro('\NewMirroredHookPair{}{}',      '');
+  DefMacro('\ActivateGenericHook{}',        '');
+  DefMacro('\DisableGenericHook{}',         '');
+  DefMacro('\AddToHook{}[]{}',              '');
+  DefMacro('\AddToHookNext{}{}',            '');
+  DefMacro('\ClearHookNext{}',              '');
+  DefMacro('\RemoveFromHook{}[]',           '');
+  DefMacro('\SetDefaultHookLabel{}',        '');
+  DefMacro('\PushDefaultHookLabel{}',       '');
+  DefMacro('\PopDefaultHookLabel',          '');
+  DefMacro('\UseHook{}',                    '');
+  DefMacro('\UseOneTimeHook{}',             '');
+  DefMacro('\ShowHook{}',                   '');
+  DefMacro('\LogHook{}',                    '');
+  DefMacro('\DebugHooksOn',                 '');
+  DefMacro('\DebugHooksOff',                '');
+  DefMacro('\DeclareHookRule{}{}{}{}',      '');
+  DefMacro('\DeclareDefaultHookRule{}{}{}', '');
+  DefMacro('\ClearHookRule{}{}{}',          '');
+  DefMacro('\IfHookEmptyTF{}{}{}',          '#3');
+  DefMacro('\IfHookExistsTF{}{}{}',         '#3');
+  DefMacro('\MakeTextLowercase',            '\lowercase');
+  DefMacro('\MakeTextUppercase',            '\uppercase');
 
-DefConditional('\if@includeinrelease');
-Let('\@kernel@after@enddocument',               '\@empty');
-Let('\@kernel@after@enddocument@afterlastpage', '\@empty');
-Let('\@kernel@before@begindocument',            '\@empty');
-Let('\@kernel@after@begindocument',             '\@empty');
-Let('\conditionally@traceon',                   '\@empty');
-Let('\conditionally@traceoff',                  '\@empty');
+  DefConditional('\if@includeinrelease');
+  Let('\@kernel@after@enddocument',               '\@empty');
+  Let('\@kernel@after@enddocument@afterlastpage', '\@empty');
+  Let('\@kernel@before@begindocument',            '\@empty');
+  Let('\@kernel@after@begindocument',             '\@empty');
+  Let('\conditionally@traceon',                   '\@empty');
+  Let('\conditionally@traceoff',                  '\@empty');
+}
 #**********************************************************************
 1;
