@@ -429,7 +429,7 @@ sub build_kpse_cache {
   # These are directories which contain the tex related files we're interested in.
   # (but they're typically below where the ls-R indexes are!)
   my $texpaths = `"$kpsewhich" --show-path tex $kpse_toolchain`; chomp($texpaths);
-  my @filters  = ();
+  my @filters  = ();    # Really shouldn't end up empty.
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
     push(@filters, $path) if -d $path; }
@@ -453,7 +453,7 @@ sub build_kpse_cache {
           $subdir = $1;
           $subdir =~ s|^\./||;             # remove prefix
           my $d = $dir . '/' . $subdir;    # Hopefully OS safe, for comparison?
-          $skip = $d !~ /$filterre/ if $filterre;
+          $skip = !$filterre || $d !~ /$filterre/;
           $skip |= ($d =~ m|-dev[$//]|) unless $LaTeXML::DEBUG{'latex-dev'};
         }
         elsif (!$skip) {
