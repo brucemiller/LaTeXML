@@ -24,29 +24,29 @@ use List::Util qw(min max);
 # CORE TeX; Built-in commands.
 #**********************************************************************
 #LaTeXML::Package::LoadPoolX('foo');
-LoadPool('Schema');
-LoadPool('ParameterTypes');
-LoadPool('Utility');
-LoadPool('XMath');
-LoadPool('Box');
-LoadPool('Character');
-LoadPool('Debugging');
-LoadPool('FileIO');
-LoadPool('Fonts');
-LoadPool('Glue');
-LoadPool('Hyphenation');
-LoadPool('Inserts');
-LoadPool('Job');
-LoadPool('Kern');
-LoadPool('Logic');
-LoadPool('Macro');
-LoadPool('Marks');
-LoadPool('Math');
-LoadPool('Page');
-LoadPool('Paragraph');
-LoadPool('Penalties');
-LoadPool('Registers');
-LoadPool('Tables');
+LoadPool('Base_Schema');
+LoadPool('Base_ParameterTypes');
+LoadPool('Base_Utility');
+LoadPool('Base_XMath');
+LoadPool('TeX_Box');
+LoadPool('TeX_Character');
+LoadPool('TeX_Debugging');
+LoadPool('TeX_FileIO');
+LoadPool('TeX_Fonts');
+LoadPool('TeX_Glue');
+LoadPool('TeX_Hyphenation');
+LoadPool('TeX_Inserts');
+LoadPool('TeX_Job');
+LoadPool('TeX_Kern');
+LoadPool('TeX_Logic');
+LoadPool('TeX_Macro');
+LoadPool('TeX_Marks');
+LoadPool('TeX_Math');
+LoadPool('TeX_Page');
+LoadPool('TeX_Paragraph');
+LoadPool('TeX_Penalties');
+LoadPool('TeX_Registers');
+LoadPool('TeX_Tables');
 LoadPool('eTeX');      # unless.... ?
 LoadPool('pdfTeX');    # unless.... ?
 
