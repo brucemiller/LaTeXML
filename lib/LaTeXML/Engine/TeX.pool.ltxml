@@ -50,7 +50,7 @@ LoadPool('TeX_Tables');
 LoadPool('eTeX');      # unless.... ?
 LoadPool('pdfTeX');    # unless.... ?
 
-LoadPool('Deprecated');
+LoadPool('Base_Deprecated');
 
 ##if ($LaTeXML::DEBUG{compiled}) {
 ##    loadDump('plain.tex'); }
