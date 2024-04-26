@@ -1,0 +1,1145 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX_Math                                                            | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#use Unicode::Normalize;
+#use LaTeXML::Util::Pathname;
+#use List::Util qw(min max);
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Math Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# NOT YET IMPLEMENTED !?!?!
+#----------------------------------------------------------------------
+# \radical                c  makes a radical atom from the delimiter (27-bit number) and the math field.
+# \muskipdef              c  creates a symbolic name for a \muskip register.
+# \muskip                 iq assigns <muglue> to a \muskip register.
+# \nonscript              c  ignores immediately following glue or kern in script and scriptscript styles.
+
+#======================================================================
+# The next two sections are the basic LaTeXML Infrastructure for math.
+# There are several internal control sequences which need to be renamed!
+#======================================================================
+
+# Decide whether we're going into or out of math, inline or display.
+Tag('ltx:XMText', autoOpen => 1, autoClose => 1);
+# This really should be T_MATH
+# and it should (or not) check for a second $ only if not in restricted horizontal mode!
+# (and then all the \@dollar@in@(text|math|normal)mode defns would not be needed.
+DefPrimitiveI('\@dollar@in@normalmode', undef, sub {
+    my ($stomach) = @_;
+    my $gullet    = $stomach->getGullet;
+    my $mode      = LookupValue('MODE');
+    my $op        = '\@@BEGININLINEMATH';
+    if ($mode eq 'display_math') {
+      if ($gullet->ifNext(T_MATH)) {
+        $gullet->readToken;
+        $op = '\@@ENDDISPLAYMATH'; }
+      else {
+        # Avoid a Fatal, but we're likely in trouble.
+        # Should we switch to text mode? (LaTeX normally wouldn't)
+        # Did we miss something and would should have already been in text mode? Possibly...
+        # OR, were we in a lenient package that allowed inline math mixed in with display?
+        Error('expected', '$', $stomach,
+          "Missing \$ closing display math.",
+          "Ignoring; expect to be in wrong math/text mode.");
+        $op = undef; } }
+    elsif ($mode eq 'inline_math') {
+      $op = '\@@ENDINLINEMATH'; }
+    #  elsif(!LookupValue('Alignment') && $gullet->ifNext(T_MATH)){
+    elsif ($gullet->ifNext(T_MATH)) {
+      $gullet->readToken;
+      $op = '\@@BEGINDISPLAYMATH'; }
+    $stomach->invokeToken(T_CS($op)) if $op; });
+# Let this be the default, conventional $
+Let(T_MATH, T_CS('\@dollar@in@normalmode'));
+
+# Effectively these are the math hooks, redefine these to do what you want with math?
+DefConstructorI('\@@BEGINDISPLAYMATH', undef,
+  "<ltx:equation>"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  reversion    => Tokens(T_MATH, T_MATH),
+  beforeDigest => sub {
+    $_[0]->beginMode('display_math');
+    if (my @everymath_toks = $STATE->lookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
+      $_[0]->getGullet->unread(@everymath_toks); }
+    if (my @everydisplay_toks = $STATE->lookupDefinition(T_CS('\everydisplay'))->valueOf->unlist()) {
+      $_[0]->getGullet->unread(@everydisplay_toks); }
+    return; }, captureBody => 1);
+DefConstructorI('\@@ENDDISPLAYMATH', undef, "",
+  reversion    => Tokens(T_MATH, T_MATH),
+  beforeDigest => sub { $_[0]->endMode('display_math'); });
+
+DefConstructorI('\@@BEGININLINEMATH', undef,
+  "<ltx:Math mode='inline'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>",
+  reversion    => Tokens(T_MATH),
+  beforeDigest => sub {
+    $_[0]->beginMode('inline_math');
+    if (my @everymath_toks = $STATE->lookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
+      $_[0]->getGullet->unread(@everymath_toks); }
+    return; }, captureBody => 1);
+DefConstructorI('\@@ENDINLINEMATH', undef, "",
+  reversion    => Tokens(T_MATH),
+  beforeDigest => sub { $_[0]->endMode('inline_math'); });
+
+# Add the TeX code from the object that created this node,
+# unless it has already been recorded on another node.
+sub add_TeX {
+  my ($document, $node, $thing) = @_;
+  if ($thing) {
+    local $LaTeXML::DUAL_BRANCH = 'presentation';
+    my $tex = UnTeX($thing);
+    $LaTeXML::DUAL_BRANCH = 'content';
+    my $ctex = UnTeX($thing);
+    $document->setAttribute($node, tex           => $tex);
+    $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex; }
+  return; }
+
+# Same as add_TeX, but add the code from the body of the object.
+sub add_body_TeX {
+  my ($document, $node, $thing) = @_;
+  if ($thing) {
+    if (defined(my $body = $thing->getProperty('body'))) {
+      local $LaTeXML::DUAL_BRANCH = 'presentation';
+      my $tex = UnTeX($body);
+      $LaTeXML::DUAL_BRANCH = 'content';
+      my $ctex = UnTeX($body);
+      $document->setAttribute($node, tex           => $tex);
+      $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex; } }
+  return; }
+
+Tag('ltx:Math', afterClose => \&add_body_TeX);
+Tag('ltx:Math', afterClose => \&cleanup_Math);
+
+# Cleanup ltx:Math elements; particularly if they aren't "really" math.
+# But record the oddity with class=ltx_markedasmath
+sub cleanup_Math {
+  my ($document, $mathnode) = @_;
+  # If the Math ONLY contains XMath/XMText, it apparently isn't math at all!?!
+  # Single token PUNCTs can also be taken out of math.
+  if (!$document->findnodes('ltx:XMath/ltx:*'
+        . '[local-name() != "XMText" and local-name() != "XMHint" '
+        . 'and not('
+        . 'local-name() = "XMTok" and (@role="PUNCT" or @role="PERIOD") '
+        . 'and not(preceding-sibling::*) and not(following-sibling::*) )]', $mathnode)) {
+    # So unwrap down to the contents of the XMText's.
+    my @texts = ();
+    foreach my $xmnode (map { $_->childNodes } $mathnode->childNodes) {
+      if ($document->getNodeQName($xmnode) eq 'ltx:XMHint') {
+        if (my $width = $xmnode->getAttribute('width')) {
+          if (my $space = DimensionToSpaces(Glue($width))) {
+            push(@texts, $space); } } }
+      else {    # is XMText
+        foreach my $child ($xmnode->childNodes) {
+          my $t = $child->nodeType;
+          if    ($t == XML_COMMENT_NODE) { }
+          elsif ($t != XML_ELEMENT_NODE) {     # Make sure we've got an element
+            push(@texts, ['ltx:text', { class => 'ltx_markedasmath' }, $child]); }
+          else {
+            $document->addClass($child, 'ltx_markedasmath');
+            push(@texts, $child); } } } }
+    # and replace the whole Math with the pieces
+    $document->replaceTree([undef, undef, @texts], $mathnode); }
+  else {    # Cleanup any remaining XMTexts
+    cleanup_XMText_outer($document, $mathnode); }
+  return; }
+
+# Here's for an inverse case: when an XMText isn't "really" just text
+# if it only contains an Math  ORR, a tabular with only Math in the cells?
+# First case: pull it back into the math, but in an XMWrap to isolate it for parsing.
+# Should we just pull any mixed text math up or only a single Math?
+# For the tabular case, convert it to an XMArray.
+
+# Note that normally, we'd do afterClose on ltx:XMText,
+# but since the ltx:XMText closes before the outer ltx:Math,
+# we would keep cleanup_Math from recognizing the trivial case of
+# a single ltx:tabular in an equation (perverse, but people do that).
+# So, we put this one on ltx:Math also, and scan for any contained XMText to fixup.
+
+sub cleanup_XMText_outer {
+  my ($document, $mathnode) = @_;
+  foreach my $textnode ($document->findnodes('descendant::ltx:XMText', $mathnode)) {
+    cleanup_XMText($document, $textnode); }
+  return; }
+
+sub cleanup_XMText {
+  my ($document, $textnode) = @_;
+  # We're really only interested in reducing nested math, right?
+  # But actually also collapsing ltx:XMText/ltx:text
+  # Apply "outer" simplifications: remove ltx:text or ltx:p wrappings.
+  my $model = $document->getModel;
+  # A single "simple" element, with a single child
+  my %simple_element = ('ltx:text' => 1, 'ltx:p' => 1, 'ltx:inline-block' => 1);
+  my @preserved      = (qw(yoffset xoffset));
+  my @children;
+  while ((@children = $textnode->childNodes) && (scalar(@children) == 1)
+    && $document->findnodes('ltx:text'
+        . ' | ltx:inline-block[count(*)=1]'
+        . ' | ltx:p',
+      $textnode)) {
+    my $child = $children[0];
+    $document->setNodeFont($textnode, $document->getNodeFont($child));
+    foreach my $attr ($child->attributes) {    # Copy the child's attributes (should Merge!!)
+      $textnode->setAttribute($attr->nodeName => $attr->getValue) unless $attr->nodeName eq 'xml:id'; }
+    $document->unwrapNodes($child); }
+
+  # Now apply a simplifying rule for nested Math
+  # If the XMText contains a single Math, pull it's content up in
+  if ((scalar(@children) == 1) && $document->findnodes('ltx:Math', $textnode)) {
+    # Replace XMText by XMWrap/*  (this should preserve the parse?)
+    $textnode = $document->renameNode($textnode, 'ltx:XMWrap');
+    $document->replaceNode($children[0], map { $_->childNodes } $children[0]->childNodes); }
+  # # # RISKY!!!! If SOME nodes are math...
+  # # # pull the whole sequence up, unwrap the math and putting the rest back in XMText.
+  # # # Even with the XMWrap, this seems to wreak havoc on parsing and structure?
+  # # if($document->findnodes('ltx:Math',$textnode)){
+  # #   # Replace XMText by XMWrap/*  (this should preserve the parse?)
+  # #   $textnode=$document->renameNode($textnode,'ltx:XMWrap');
+  # #   foreach my $child (@children){
+  # #     if($model->getNodeQName($child) eq 'ltx:Math'){
+  # #       $document->replaceNode($child,map($_->childNodes,$child->childNodes)); }
+  # #     else {
+  # #       $document->wrapNodes('ltx:XMText',$child); }}}
+  # If a single tabular that ONLY(?) contains Math, turn into an XMArray
+  # Well, a tabular REALLY shouldn't be in math;
+  # How much math should determine the switch?
+  # [will alignment attributes be lost?]
+  elsif ((scalar(@children) == 1) && ($model->getNodeQName($children[0]) eq 'ltx:tabular')
+## Should we ALWAYS do this, or just for some minimal amount of math???
+##        && !$document->findnodes('ltx:tabular/ltx:tr/ltx:td/text()'
+##                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td/text()'
+##                                 .' | ltx:tabular/ltx:tr/ltx:td[not(ltx:Math)]'
+##                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td[not(ltx:Math)]',
+##                                 $textnode)
+  ) {
+    # First step is remove any ltx:tbody from the tabular!
+    foreach my $tb ($document->findnodes('ltx:tabular/ltx:tbody', $textnode)) {
+      $document->unwrapNodes($tb); }
+    # Now, we can start replacing tabular=>XMArray, tr=>XMRow, td=>XMCell
+    my $table = $document->renameNode($children[0], 'ltx:XMArray');
+    foreach my $row ($table->childNodes) {
+      $row = $document->renameNode($row, 'ltx:XMRow');
+      foreach my $cell ($row->childNodes) {
+        $cell = $document->renameNode($cell, 'ltx:XMCell');
+        foreach my $m ($cell->childNodes) {
+          if ($model->getNodeQName($m) eq 'ltx:Math') {    # Math cell, unwrap the Math/XMath layer
+            $document->replaceNode($m, map { $_->childNodes } $m->childNodes); }
+          else {                                           # Otherwise, wrap whatever it is in an XMText
+            $document->wrapNodes('ltx:XMText', $m); }
+    } } }
+    # And now we don't need the XMText any more.
+    foreach my $attr ($textnode->attributes) {    # Copy the child's attributes (should Merge!!)
+      $table->setAttribute($attr->nodeName => $attr->getValue); }
+    my $newtable = $document->unwrapNodes($textnode);
+    if (my $id = $textnode->getAttribute('xml:id')) {
+      $document->unRecordID($id);
+      $document->recordID($id, $newtable); } }
+  return; }
+
+#======================================================================
+# Scripts are a bit of a strange beast, with respect to when the arguments
+# are processed, and what kind of object should be created.
+#
+# While scripts look like they take a normal TeX argument, they really
+# take the next BOX (AFTER expansion & digestion)!  Thus, while
+#   a^\frac{b}{c} and a^\mathcal{B}
+# DO work in TeX, other things like
+#   a^\sqrt{3} or a^\acute{b}
+# DO NOT! (Hint: consider the expansions)
+# Note that with
+#  \def\xyz{xyz}
+#   a^\xyz   =>  a^{x}yz
+# So, we try to mimic, but note that our boxes don't correspond 100% to TeX's
+#
+# Normally, sub/super scripts should be turned into a sort of postfix operator:
+# The parser will attach the script to the appropriate preceding object.
+# However, there are a few special cases involving empty boxes {}.
+# If the argument is an empty box $x^{}$, the whole script should just disappear.
+# If the PRECEDING box is {} (in ${}^{p}$, a sort of `floating' script should be created.
+# This may combine, in the parser, with the following object to generate
+# a prescript.
+
+# Remember a "safe" way to test a script Whatsit.
+# Returns [ (FLOATING|POST) , (SUBSCRIPT|SUPERSCRIPT) ] or nothing
+sub IsScript {
+  my ($object) = @_;
+  if (ref $object eq 'LaTeXML::Core::List') {
+    $object = [$object->unlist]->[-1]; }
+  if ((ref $object eq 'LaTeXML::Core::Whatsit')    # careful w/alias in getCSName!
+    && ($object->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)) {
+    return [$1, $2]; }
+  return; }
+
+sub scriptHandler {
+  no warnings 'recursion';
+  my ($stomach, $op) = @_;
+  my $gullet = $stomach->getGullet;
+  $gullet->skipSpaces;
+  my $font     = LookupValue('font');
+  my $style    = $font->getMathstyle;
+  my @putback  = ();
+  my $nscripts = 0;
+
+  if (defined $style) {
+    my $cs = '\@@FLOATING' . $op;
+    my ($prevscript, $prevspace, $base);
+    # Check preceding boxes to determine possible attachment (floating vs post),
+    # Note that this analysis has to be done now (or sometime like it) before grouping lists go away;
+    # and whether there are conflicting preceding scripts, which is an error
+    # Parsing is too late!
+    while (my $prev = pop(@LaTeXML::LIST)) {
+      if (($prev->getProperty('isSpace'))
+        || ($prev->getProperty('isEmpty'))              # EXPLICITLY empty, rather than {}
+        || (ref $prev eq 'LaTeXML::Core::Comment')) {
+        $prevspace = 1;              # a space avoids double-scripts
+        unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
+        next; }
+      elsif (IsEmpty($prev)) {       # If empty, the script floats, can't conflict, but don't put back
+        last; }
+      elsif (my $prevop = IsScript($prev)) {
+        unshift(@putback, $prev);
+        if ($$prevop[1] eq $op) {    # Whoops, duplicated; better use FLOATING
+          Error('unexpected', "double-" . lc($$prevop[1]), $stomach, "Double " . lc($$prevop[1]))
+            unless $prevspace;
+          $cs = '\@@FLOATING' . $op;
+          last; }
+        else {                       # Else, is OK (so far) assume POST (it will stack previous script)
+          $prevscript = $prev;               # we'll overlap the width of the previous.
+          $cs         = '\@@POST' . $op; }
+        # if we hit a FLOATING script, terminate, as the floating empty group avoids double scripts
+        last if ($$prevop[0] eq 'FLOATING');
+        last if ++$nscripts > 1; }
+      else {
+        # We found something "normal", so assume we'll attach to it, and we're done.
+        $base = $prev;
+        unshift(@putback, $prev);
+        $cs = '\@@POST' . $op;
+        last; } }
+    push(@LaTeXML::LIST, @putback);
+
+    MergeFont(scripted => 1);
+    # Now, get following boxes (may have to process several tokens!)
+    my @stuff = ();
+    while (my $tok = $gullet->readXToken(0)) {
+      @stuff = $stomach->invokeToken($tok);
+      last if @stuff; }
+    if (!@stuff) {
+      Error('expected', '{', $stomach, "Missing sub/superscript argument", $gullet->showUnexpected);
+      push(@stuff, Box()); }
+    my $script = shift(@stuff);    # ONLY the first box is the script!
+    unshift(@stuff,
+      LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
+        locator     => $gullet->getLocator,
+        font        => $script->getFont, isMath => 1,
+        level       => $stomach->getBoxingLevel,
+        scriptlevel => $stomach->getScriptLevel,
+        base        => $base,                      # for sizing/positioning
+        prevscript  => $prevscript))
+      unless IsEmpty($script);
+    AssignValue(font => $font);                    # revert
+    return @stuff; }
+  else {                                           # Non math use of _ ??
+    my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
+    Error('unexpected', $c, $stomach, "Script $c can only appear in math mode");
+    return Box($c, undef, undef, (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
+} }
+
+DefPrimitiveI(T_SUPER, undef, sub { scriptHandler($_[0], 'SUPERSCRIPT'); });
+DefPrimitiveI(T_SUB,   undef, sub { scriptHandler($_[0], 'SUBSCRIPT'); });
+
+# The `argument' to a sub or superscript will typically be processed as a box,
+# and either has braces, or is something that results in a single box.
+# When we revert these, we DON'T want to wrap extra braces around, because they'll accumulate;
+# at the least they're ugly; in some applications they affect "round trip" processing.
+# OTOH, direct use of \@@POSTSUPERSCRIPT, etal, MAY need to have extra braces around them.
+# So, when reverting, we're going to a bit of extra trouble to make sure we have ONE set
+# of braces, but no extras!!
+sub revertScript {
+  my ($script) = @_;
+  # We need to handle lists of lists, see arXiv:2210.11051
+  my @tokens = Tokens($script->revert)->unlist;
+  my @t      = @tokens;
+  my $l;
+  if ($t[0]->defined_as(T_BEGIN)) {
+    $l++; shift(@t); }
+  while (@t && $l) {
+    my $t = shift(@t);
+    if    ($t->defined_as(T_BEGIN)) { $l++; }
+    elsif ($t->defined_as(T_END))   { $l--; } }
+  return (@tokens && !@t ? @tokens : (T_BEGIN, @tokens, T_END)); }
+
+# Compute the 'advance' of this script.
+# can we do this before parsing? we can do the advance or something.... Hmmmm.
+# * Need to know scriptpos (mid or post) to determine position.
+# * need to know sub/super
+sub scriptSizer {
+  my ($script, $base, $prev, $op, $pos) = @_;
+
+  # NOTE: Currently, the mathstyle is NOT reflected in the font of the script!!!!
+  # Or is it now ?????
+  # [unless it's different from the 'expected' style!!!]
+  my ($ws, $hs, $ds) = map { $_->valueOf } $script->getSize;
+  $ws *= 0.8; $hs *= 0.8; $ds *= 0.8;    # HACK!@!!
+  my ($wb, $hb, $db) = map { $_->valueOf } ($base ? $base->getSize
+    : LookupValue('font')->getNominalSize);
+  my ($w, $h, $d) = (0, 0, 0);
+  # Fishing for the scriptpos on the base (if any)
+  my $attr;
+  $pos = $base->getProperty('scriptpos') if !defined $pos && defined $base;
+  $pos = 'post'                          if !defined $pos;
+  if ($pos eq 'mid') {
+    $w = max(0, $ws - $wb);    # as if max width of base & script
+    if ($op eq 'SUPERSCRIPT') {
+      $h = $hb + $ds + $hs; }
+    else {
+      $d = $db + $hs + $ds; } }
+  else {
+    my $wp = ($prev && $prev->getWidth) || 0;    # as if max of width & prev script's width
+    $w = max(0, $ws - $wp);
+    if ($op eq 'SUPERSCRIPT') {
+      $h = $hb + $hs / 2; }
+    else {
+      $d = $hs / 2 + $ds; } }
+  $w = Dimension($w); $h = Dimension($h); $d = Dimension($d);
+  return ($w, $h, $d); }
+
+# NOTE: The When reverting these, the
+DefConstructor('\@@POSTSUPERSCRIPT InScriptStyle',
+  "<ltx:XMApp role='POSTSUPERSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
+    . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  reversion => sub { (T_SUPER, revertScript($_[1])); },
+  sizer     => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
+      $_[0]->getProperty('prevscript'), 'SUPERSCRIPT', 'post'); });
+DefConstructor('\@@POSTSUBSCRIPT InScriptStyle',
+  "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
+    . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  reversion => sub { (T_SUB, revertScript($_[1])); },
+  sizer     => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
+      $_[0]->getProperty('prevscript'),
+      'SUBSCRIPT', 'post'); });
+DefConstructor('\@@FLOATINGSUPERSCRIPT InScriptStyle',
+  "<ltx:XMApp role='FLOATSUPERSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
+    . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  reversion => sub { (T_BEGIN, T_END, T_SUPER, revertScript($_[1])); },
+  sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUPERSCRIPT', 'post'); });
+DefConstructor('\@@FLOATINGSUBSCRIPT InScriptStyle',
+  "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
+    . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); },
+  sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUBSCRIPT', 'post'); });
+
+DefMacroI('\active@math@prime', undef, sub {
+    my ($gullet) = @_;
+    my @sup = (T_CS('\prime'));
+    # Collect up all ', convering to \prime
+    while ($gullet->ifNext(T_OTHER('\''))) {
+      $gullet->readToken;
+      push(@sup, T_CS('\prime')); }
+    # Combine with any following superscript!
+    # However, this is semantically screwed up!
+    # We really need to set up separate superscripts, but at same level!
+    if ($gullet->ifNext(T_SUPER)) {
+      $gullet->readToken;
+      push(@sup, $gullet->readArg->unlist); }
+    (T_SUPER, T_BEGIN, @sup, T_END); },
+  locked => 1);    # Only in math!
+AssignMathcode("'" => 0x8000);
+Let("'", '\active@math@prime');
+
+# Experiment: When we detect a math element containing solely a floating superscript in the
+#             *Frontmatter* of a document, assume it is a note mark, and normalize it down to
+#             plain text.
+DefRewrite(xpath => 'descendant::ltx:Math[child::ltx:XMath[child::ltx:XMApp[' .
+    '(@role="FLOATSUPERSCRIPT" or @role="FLOATSUBSCRIPT") and ' .
+    'not(preceding-sibling::*) and not(following-sibling::*) ' .
+    'and not(./*/*[not(self::ltx:XMTok)]) ]]]',
+  replace => sub {
+    my ($document, $math) = @_;
+    # We can assume the grandchild of the XMath node is the XMArg,
+    # which we need to normalize to scripted Unicode.
+    if (my @xmath = element_nodes($math)) {
+      if (my @xmapp = element_nodes($xmath[0])) {
+        if (my @xmarg = element_nodes($xmapp[0])) {
+          if (my $role = $xmapp[0]->getAttribute('role')) {
+            my $text = $xmarg[0]->textContent;
+            local $LaTeXML::BOX = $document->getNodeBox($xmarg[0]);
+            if ($role eq 'FLOATSUPERSCRIPT') {
+              $document->insertElement('ltx:sup', $text);
+              return; }
+            elsif ($role eq 'FLOATSUBSCRIPT') {
+              $document->insertElement('ltx:sub', $text);
+              return; }
+    } } } }
+    # should never happen, but just in case:
+    Info("rewrite", "footnotemark", "Failed to find floating node in: " . $math->toString(1));
+    $document->getNode->appendChild($math);
+    return; });
+
+#======================================================================
+# General
+#----------------------------------------------------------------------
+# \everydisplay         pt holds tokens inserted at the start of every switch to display math mode.
+# \everymath            pt holds tokens inserted at the start of every switch to math mode.
+DefRegister('\everymath',    Tokens());
+DefRegister('\everydisplay', Tokens());
+
+#======================================================================
+# Creating mathematical tokens/characters
+#----------------------------------------------------------------------
+# \mathchar               c  specifies a math character by giving its class, family, and font position.
+# \delimiter              c  specifies a delimiter.
+
+# \mathchardef            d  provides an alternate way to define a control sequence that returns a math character.
+# \mathaccent             c  makes an accent atom from the mathchar and the following item.
+# \fam                    pi if 0-15, specifies the font family of class 7 (variable) math symbols.
+# \delcode                iq is -1 or the delimiter code for a character.
+# \mathcode               iq holds the math character (15-bit number) for each of the 256 characters with which TeX works.
+
+our @mathclassrole = (undef, 'BIGOP', 'BINOP', 'RELOP', 'OPEN', 'CLOSE', 'PUNCT', undef);
+# Is this "fontinfo" stuff sufficient to maintain a math font "family" ??
+# What we're really after is a connectio nto a font encoding mapping.
+sub decodeMathChar {
+  my ($n)   = @_;
+  my $class = int($n / (16 * 256)); $n = $n % (16 * 256);
+  my $fam   = int($n / 256);        $n = $n % 256;
+  my $font  = LookupValue('textfont_' . $fam)
+    || LookupValue('scriptfont_' . $fam)
+    || LookupValue('scriptscriptfont_' . $fam);
+  my $char = chr($n);
+  # If no specific class, Lookup properties from a DefMath?
+  my $charinfo = LookupValue('math_token_attributes_' . $char);
+  my $fontinfo = lookupFontinfo($font);
+  my $role     = $mathclassrole[$class];
+  $role = $$charinfo{role} if (!defined $role) && $charinfo;
+  return ($role,
+    ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : $char)); }
+
+DefPrimitive('\mathchar Number', sub {
+    my ($stomach, $code)  = @_;
+    my ($role,    $glyph) = decodeMathChar($code->valueOf);
+    Box($glyph, undef, undef,
+      Tokens(T_CS('\mathchar'), $_[1]->revert, T_CS('\relax')),
+      role => $role); });
+
+DefConstructor('\delimiter Number',
+  "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
+  sizer       => '#glyph',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $n = $whatsit->getArg(1)->valueOf;
+    $n = $n >> 12;    # Ignore 3 rightmost digits and treat as \mathchar
+    my ($role, $glyph) = decodeMathChar($n);
+    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
+    $whatsit->setProperty(role  => $role)                                   if defined $role;
+    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
+    return; });
+
+# Almost like a register, but different...
+DefPrimitive('\mathchardef Token SkipSpaces SkipMatch:=', sub {
+    my ($stomach, $newcs) = @_;
+    $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
+    my $value = $stomach->getGullet->readNumber();
+    my ($role, $glyph) = decodeMathChar($value->valueOf);
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value,
+        $glyph, role => $role));
+    AfterAssignment();
+    return; });
+
+DefConstructor('\mathaccent Number Digested',
+  "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
+  sizer       => '#2',    # Close enough?
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $n = $whatsit->getArg(1)->valueOf;
+    my ($role, $glyph) = decodeMathChar($n);
+    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
+    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
+    return; });
+
+# # Only used for active math characters, so far
+DefRegister('\mathcode Number', Number(0),
+  getter => sub {
+    my $ch   = $_[0]->valueOf;
+    my $code = $STATE->lookupMathcode(chr($ch));
+    Number(defined $code ? $code : $ch); },    # defaults to the char's code itself(?)
+  setter => sub { $STATE->assignMathcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
+# Not used anywhere (yet)
+DefRegister('\delcode Number', Number(0),
+  getter => sub { my $code = $STATE->lookupDelcode(chr($_[0]->valueOf));
+    Number(defined $code ? $code : 0); },
+  setter => sub { $STATE->assignDelcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
+
+DefRegister('\fam' => Number(-1));
+
+#======================================================================
+# TeX-level grammatical roles
+#----------------------------------------------------------------------
+# \mathbin                c  assigns class 2 (binary operation) to the following character or subformula.
+# \mathclose              c  assigns class 5 (closing) to the following character or subformula.
+# \mathinner              c  makes an inner atom holding the math field.
+# \mathop                 c  assigns class 1 (large operator) to following character or subformula.
+# \mathopen               c  assigns class 4 (opening) to following character or subformula.
+# \mathord                c  assigns class 0 (ordinary) to following character or subformula.
+# \mathpunct              c  assigns class 6 (punctuation) to following character or subformula.
+# \mathrel                c  assigns class 3 (relation) to following character or subformula.
+
+# Is XMWrap the right thing to wrap with (instead of XMArg)?
+# We can't really assume that the stuff inside is sensible math.
+# NOTE that \mathord and \mathbin aren't really right here.
+# We need a finer granularity than TeX does: an ORD could be several things,
+# a BIN could be a MULOP or ADDOP.
+# AND, rarely, they're empty.... Is it wrong to drop them?
+DefConstructor('\mathord{}', "?#1(<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathop{}', "?#1(<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>)()",
+  bounded => 1, properties => { scriptpos => \&doScriptpos });
+DefConstructor('\mathbin{}',   "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathrel{}',   "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathopen{}',  "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathclose{}', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathpunct{}', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathinner{}', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()",  bounded => 1);
+
+#======================================================================
+# Delimiters
+#----------------------------------------------------------------------
+# \left     c  makes TeX calculate the size of the delimiter needed at the left of a subformula.
+# \right    c  makes TeX calculate the size of the delimiter needed at the right of a subformula.
+
+# This duplicates in slightly different way what DefMath has put together.
+# [duplication seems like a bad idea!]
+our %DELIMITER_MAP =
+  ('(' => { char => "(", lrole => 'OPEN', rrole => 'CLOSE' },
+  ')'          => { char => ")",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  '['          => { char => "[",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  ']'          => { char => "]",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  '\{'         => { char => "{",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  '\}'         => { char => "}",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  '\lfloor'    => { char => "\x{230A}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'lfloor' },
+  '\rfloor'    => { char => "\x{230B}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rfloor' },
+  '\lceil'     => { char => "\x{2308}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'lceil' },
+  '\rceil'     => { char => "\x{2309}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rceil' },
+  '\langle'    => { char => "\x{27E8}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'langle' },
+  '\rangle'    => { char => "\x{27E9}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rangle' },
+  '<'          => { char => "\x{27E8}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'langle' },
+  '>'          => { char => "\x{27E9}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rangle' },
+  '/'          => { char => "/",        lrole => 'MULOP',   rrole => 'MULOP' },
+  '\backslash' => { char => UTF(0x5C),  lrole => 'MULOP',   rrole => 'MULOP', name => 'backslash' },
+  '|'          => { char => "|",        lrole => 'VERTBAR', rrole => 'VERTBAR' },
+  '\|'         => { char => "\x{2225}", lrole => 'VERTBAR', rrole => 'VERTBAR' },
+  '\uparrow'   => { char => "\x{2191}", lrole => 'OPEN', rrole => 'CLOSE', name => 'uparrow' },   # ??
+  '\Uparrow'   => { char => "\x{21D1}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Uparrow' },   # ??
+  '\downarrow' => { char => "\x{2193}", lrole => 'OPEN', rrole => 'CLOSE', name => 'downarrow' }, # ??
+  '\Downarrow' => { char => "\x{21D3}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Downarrow' }, # ??
+  '\updownarrow' => { char => "\x{2195}", lrole => 'OPEN', rrole => 'CLOSE', name => 'updownarrow' }, # ??
+  '\Updownarrow' => { char => "\x{21D5}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Updownarrow' }, # ??
+  );
+
+# With new treatment of Simple Symbols as just Box's with assigned attributes,
+# we're not getting whatsits, and so we're not looking them up the same way!!!
+# TEMPORARILY (?) hack the Delimiter map
+foreach my $entry (values %DELIMITER_MAP) {
+  $DELIMITER_MAP{ $$entry{char} } = $entry; }
+
+sub lookup_delimiter {
+  my ($delim) = @_;
+  return $DELIMITER_MAP{$delim}; }
+
+# This is a little messier than you'd think.
+# These effectively create a group between the \left,\right.
+# And this also gives us a single list of things to parse separately.
+# Since \left,\right are TeX, primitives and must be paired up,
+# we use a bit of macro trickery to simulate.
+# [The \@hidden@bgroup/egroup keep from putting a {} into the UnTeX]
+# HOWEVER, an additional complication is that it is a common mistake to omit the balancing \right!
+# Using an \egroup (or hidden) makes it hard to recover, so use a special egroup
+DefMacro('\left XToken', '\@left #1\@hidden@bgroup');
+# Like \@hidden@egroup, but softer about missing \left
+DefConstructor('\right@hidden@egroup', '',
+  afterDigest => sub {
+    my ($stomach) = @_;
+    if ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
+      || $STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \begingroup
+      Error('unexpected', '\right', undef, "Unbalanced \\right, no balancing \\left."); }
+    else {
+      $stomach->egroup; } },
+  reversion => '');
+
+DefMacro('\right XToken', '\right@hidden@egroup\@right #1');
+
+DefConstructor('\@left Token',
+  "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
+    . "(?#hint(<ltx:XMHint/>)(#1))",
+  afterDigest => sub { my ($stomach, $whatsit) = @_;
+    my $arg   = $whatsit->getArg(1);
+    my $delim = ToString($arg);
+    if ($delim eq '.') {
+      $whatsit->setProperty(hint => 1); }
+    elsif (my $entry = $DELIMITER_MAP{$delim}) {
+      $whatsit->setProperties(role => $$entry{lrole},
+        char     => $$entry{char},
+        name     => $$entry{name},
+        stretchy => 'true');
+      $whatsit->setFont($arg->getFont()); }
+    elsif (($arg->getProperty('role') || '') eq 'OPEN') {
+      $arg->setProperty(stretchy => 'true'); }
+    else {
+      Warn('unexpected', $delim, $stomach,
+        "Missing delimiter; '.' inserted"); }
+    return; },
+  alias => '\left');
+DefConstructor('\@right Token',
+  "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
+    . "(?#hint(<ltx:XMHint/>)(#1))",
+  afterDigest => sub { my ($stomach, $whatsit) = @_;
+    my $arg   = $whatsit->getArg(1);
+    my $delim = ToString($arg);
+    if ($delim eq '.') {
+      $whatsit->setProperty(hint => 1); }
+    elsif (my $entry = $DELIMITER_MAP{$delim}) {
+      $whatsit->setProperties(role => $$entry{rrole},
+        char     => $$entry{char},
+        name     => $$entry{name},
+        stretchy => 'true');
+      $whatsit->setFont($arg->getFont()); }
+    elsif (($arg->getProperty('role') || '') eq 'CLOSE') {
+      $arg->setProperty(stretchy => 'true'); }
+    else {
+      Warn('unexpected', $delim, $stomach,
+        "Missing delimiter; '.' inserted)"); }
+    return; },
+  alias => '\right');
+
+#======================================================================
+# Limit placement
+#----------------------------------------------------------------------
+# \limits                 c  displays limits above and below large operators (class 1).
+# \nolimits               c  displays limits to the right of large operators (class 1).
+# \displaylimits          c  restores normal conventions for using limits with operators.
+
+DefConstructorI('\limits', undef, '',
+  afterDigest => sub { mergeLimits('mid'); },
+  properties  => { isEmpty => 1 });
+DefConstructorI('\nolimits', undef, '',
+  afterDigest => sub { mergeLimits('post'); },
+  properties  => { isEmpty => 1 });
+DefConstructorI('\displaylimits', undef, '',
+  afterDigest => sub {
+    mergeLimits((($_[1]->getProperty('mathstyle') || '') eq 'display' ? 'mid' : 'post')); },
+  properties => { isEmpty => 1 });
+
+sub mergeLimits {
+  my ($pos) = @_;
+  for (my $i = scalar(@LaTeXML::LIST) - 1 ; $i >= 0 ; $i--) {
+    my $box   = $LaTeXML::LIST[$i];
+    my $prev  = $box->getProperty('scriptpos') || '';
+    my $level = ($prev =~ /^\w*(\d+)$/ ? $1 : $STATE->getStomach->getScriptLevel || '');
+    $box->setProperty(scriptpos => $pos . $level);
+    last unless IsEmpty($box) || IsScript($box); }
+  return; }
+
+#======================================================================
+# Math script fonts
+#----------------------------------------------------------------------
+# \textfont               iq specifies the text font for a family.
+# \scriptfont             iq specifies the script font for a family.
+# \scriptscriptfont       iq specifies the scriptscript font for a family.
+
+# Doubtful that we can do anything useful with these.
+# These look essentially like Registers, although Knuth doesn't call them that.
+# NOTE: These should just point to a CS token, right????
+# (although it SHOULD be one defined to be a font switch??)
+# NOTE: These should NOT be global(?)
+DefRegister('\textfont Number' => T_CS('\tenrm'),
+  getter => sub {
+    my ($fam) = @_;
+    LookupValue('textfont_' . $fam->valueOf); },
+  setter => sub {
+    my ($font, $scope, $fam) = @_;
+    AssignValue('textfont_' . $fam->valueOf => $font, $scope); });
+DefRegister('\scriptfont Number' => T_CS('\sevenrm'),
+  getter => sub {
+    my ($fam) = @_;
+    LookupValue('scriptfont_' . $fam->valueOf); },
+  setter => sub {
+    my ($font, $scope, $fam) = @_;
+    AssignValue('scriptfont_' . $fam->valueOf => $font, $scope); });
+DefRegister('\scriptscriptfont Number' => T_CS('\fiverm'),
+  getter => sub {
+    my ($fam) = @_;
+    LookupValue('scriptscriptfont_' . $fam->valueOf); },
+  setter => sub {
+    my ($font, $scope, $fam) = @_;
+    AssignValue('scriptscriptfont_' . $fam->valueOf => $font, $scope); });
+
+#======================================================================
+# Math script styles
+#----------------------------------------------------------------------
+# \displaystyle           c  selects display style: D or D'.
+# \scriptscriptstyle      c  selects scriptscript style: SS or SS'.
+# \scriptstyle            c  selects script style: S or S'.
+# \textstyle              c  selects text style: T or T'.
+
+# Also record that this explicitly sets the mathstyle (support for \over, etal)
+DefPrimitiveI('\displaystyle', undef, sub {
+    MergeFont(mathstyle => 'display');
+    Box(undef, undef, undef, T_CS('\displaystyle'), explicit_mathstyle => 1); });
+DefPrimitiveI('\textstyle', undef, sub {
+    MergeFont(mathstyle => 'text');
+    Box(undef, undef, undef, T_CS('\textstyle'), explicit_mathstyle => 1); });
+DefPrimitiveI('\scriptstyle', undef, sub {
+    MergeFont(mathstyle => 'script');
+    Box(undef, undef, undef, T_CS('\scriptstyle'), explicit_mathstyle => 1); });
+DefPrimitiveI('\scriptscriptstyle', undef, sub {
+    MergeFont(mathstyle => 'scriptscript');
+    Box(undef, undef, undef, T_CS('\scriptscriptstyle'), explicit_mathstyle => 1); });
+
+#======================================================================
+#
+#----------------------------------------------------------------------
+# \mathchoice             c  specifies specific subformulas for the 4 main styles.
+# \vcenter                c  centers material with respect to the axis.
+
+# Note that in TeX, all 4 args get digested(!)
+# and the choice is made when absorbing!
+DefConstructor('\mathchoice Digested Digested Digested Digested', sub {
+    my ($document, $d, $t, $s, $ss, %props) = @_;
+    my $style  = $props{mathstyle};
+    my $choice = ($style eq 'display' ? $d
+      : ($style eq 'text' ? $t
+        : ($style eq 'script' ? $s
+          : $ss)));
+    $document->absorb($choice); },
+  properties => { mathstyle => sub { LookupValue('font')->getMathstyle; } });
+
+# THIS IS WRONG!!!!
+Let('\vcenter', '\vbox');
+
+#======================================================================
+#
+#----------------------------------------------------------------------
+# \overline               c  puts a line over the following character or subformula.
+# \underline              c  puts a line under the following character or subformula.
+
+DefMath('\overline Digested', UTF(0xAF), operator_role => 'OVERACCENT');    # MACRON
+DefMath('\math@underline{}', UTF(0xAF), operator_role => 'UNDERACCENT',
+  name => 'underline', alias => '\underline');
+DefConstructor('\text@underline{}', "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>");
+DefMath('\math@overrightarrow{}', "\x{2192}", operator_role => 'OVERACCENT',
+  name => 'overrightarrow', alias => '\overrightarrow');
+DefMath('\math@overleftarrow{}', "\x{2190}", operator_role => 'OVERACCENT',
+  name => 'overleftarrow', alias => '\overleftarrow');
+
+# Careful: Use \protect so that it doesn't expand too early in alignments, etc.
+# [Really shouldn't use \protect, since this is a TeX primitive and \protect is LaTeX]
+DefMacro('\underline{}', '\protect\ifmmode\math@underline{#1}\else\text@underline{#1}\fi');
+
+#======================================================================
+# fraction-like things
+#----------------------------------------------------------------------
+# \above                  d  is equivalent to `\abovewithdelims..'.
+# \abovewithdelims        c  is a generalized fraction command.
+# \atop                   d  is equivalent to `\atopwithdelims..'.
+# \atopwithdelims         d  is a generalized fraction command with an invisible fraction bar.
+# \over                   d  is equivalent to `\overwithdelims..'.
+# \overwithdelims         d  is a generalized fraction command with preset fraction bar thickness.
+# After digesting the \choose (or whatever), grab the previous and following material
+# and store as args in the whatsit.
+
+# Increment the mathstyle stored in any boxes & whatsits.
+# The tricky part is to know when NOT to increment!
+# \displaystyle, constructors that set their own specific style,...
+# And, any collateral adjustments that had been done in digestion depending on mathstyle
+# WONT be adjusted!
+# We don't have a clear API to find the displayable Boxes within;
+# and we don't have a good handle on grouping...
+
+# ARGH!!!!!!!!! RETHINK!!!!!!
+sub adjustMathstyle {
+  my ($outerstyle, $adjusted, @boxes) = @_;
+  foreach my $box (@boxes) {
+    next unless defined $box;
+    next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
+    $$adjusted{$box} = 1;
+    my $r = ref $box;
+    next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
+    return if $box->getProperty('explicit_mathstyle');
+    next   if $box->getProperty('own_mathstyle');
+
+    if ($r eq 'LaTeXML::Core::Box') {
+      adjustMathStyle_internal($outerstyle, $box); }
+    elsif ($r eq 'LaTeXML::Core::List') {
+      adjustMathstyle($outerstyle, $adjusted, $box->unlist); }
+    elsif ($r eq 'LaTeXML::Core::Whatsit') {
+      my $style = adjustMathStyle_internal($outerstyle, $box) || $outerstyle;
+      # now recurse on contained boxes (args AND properties!)
+      adjustMathstyle($style, $adjusted, $box->getArgs);
+      adjustMathstyle($style, $adjusted, values %{ $box->getPropertiesRef }); } }
+  return; }
+
+# Heursitic;
+# we're wanting to adjust the style AS IF the numerator had been already in the next mathstyle
+# This isn't the same as just shifting the mathstyle!
+# we're sorta trying to infer WHY the box has a given style...?
+our %mathstyle_adjust_map = (
+  display => { display => 'text', text => 'script', script => 'script', scriptscript => 'scriptscript' },
+  text => { display => 'text', text => 'script', script => 'scriptscript', scriptscript => 'scriptscript' },
+  script => { display => 'display', text => 'text', script => 'scriptscript', scriptscript => 'scriptscript' },
+  scriptscript => { display => 'display', text => 'text', script => 'scriptscript', scriptscript => 'scriptscript' });
+
+sub adjustMathStyle_internal {
+  my ($outerstyle, $box) = @_;
+  $outerstyle = 'display' unless $outerstyle;
+  if (my $font = $box->getFont) {
+    my $origstyle = $font->getMathstyle || 'display';
+    my $newstyle  = $mathstyle_adjust_map{$outerstyle}{$origstyle};
+    $box->setFont($font->merge(mathstyle => $newstyle));
+    if (my $recstyle = $box->getProperty('mathstyle')) {    # And adjust here, if recorded.
+      $box->setProperty(mathstyle => $newstyle);
+      return $newstyle; } }
+  return; }
+
+sub fracSizer {
+  my ($numerator, $denominator) = @_;
+  my $w = $numerator->getWidth->larger($denominator->getWidth);
+  my $d = $denominator->getTotalHeight->multiply(0.5);
+  my $h = $numerator->getTotalHeight->add($d);
+  return ($w, $h, $d); }
+
+# \lx@generalized@over{reversion}{keyvals}{top}{bottom}
+# keyvals: role,meaning, left,right, thickness
+DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
+  "?#needXMDual("
+    . "<ltx:XMDual>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMRef _xmkey='#xmkey0'/>"
+    . "<ltx:XMRef _xmkey='#xmkey1'/>"
+    . "<ltx:XMRef _xmkey='#xmkey2'/>"
+    . "</ltx:XMApp>"
+    . "<ltx:XMWrap>"
+    . "#left)()"
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok _xmkey='#xmkey0' role='#role' meaning='#meaning' mathstyle='#mathstyle' thickness='#thickness'/>"
+    . "<ltx:XMArg _xmkey='#xmkey1'>#top</ltx:XMArg>"
+    . "<ltx:XMArg _xmkey='#xmkey2'>#bottom</ltx:XMArg>"
+    . "</ltx:XMApp>"
+    . "?#needXMDual(#right"
+    . "</ltx:XMWrap>"
+    . "</ltx:XMDual>)()",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $kv = $whatsit->getArg(2);
+    # Really, we want the mathstyle that was in effect BEFORE the group starting the numerator!
+    # (there could be a \displaystyle INSIDE the numerator, but that's not the one we want)
+    # Of course the group that started the numerator may be the start of the Math, itself!
+    # AND, the numerator, which was already digested, needs it's mathstyle ADJUSTED
+    my $font = ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
+      ? $STATE->lookupValue('font')                # then just use whatever font we've got
+      : ($STATE->isValueBound('font', 0)           # else if font was set in numerator
+          && $STATE->valueInFrame('font', 1))
+        || $STATE->lookupValue('font')             # then just use whatever font we've got
+    );
+    my $style     = $font->getMathstyle;
+    my $role      = ToString($kv->getValue('role'));
+    my $meaning   = ToString($kv->getValue('meaning'));
+    my $thickness = ToString($kv->getValue('thickness'));
+    $role    = 'FRACOP' unless $role;
+    $meaning = 'divide' if (!$meaning) && ($thickness ne '0pt');
+    # Unfortunately, the numerator's already digested! We have to adjust it's mathstyle
+    my @top = $stomach->regurgitate;
+    # really have to pass +/-1, +/-2 etc..!
+    adjustMathstyle($style, {}, @top);
+    MergeFont(fraction => 1);
+    my @bot     = $stomach->digestNextBody();
+    my $closing = pop(@bot);    # We'll leave whatever closed the list (endmath, endgroup...)
+    $whatsit->setProperties(
+      top       => List(@top, mode => 'math'),
+      bottom    => List(@bot, mode => 'math'),
+      role      => $role,
+      meaning   => $meaning,
+      thickness => $thickness,
+      mathstyle => $style);
+    if ($kv->getValue('left') || $kv->getValue('right')) {
+      $whatsit->setProperties(needXMDual => 1,
+        xmkey0 => LaTeXML::Package::getXMArgID(),
+        xmkey1 => LaTeXML::Package::getXMArgID(),
+        xmkey2 => LaTeXML::Package::getXMArgID()); }
+    return $closing; },    # and leave the closing bit, whatever it is.
+  properties => sub { %{ $_[2]->getKeyVals }; },
+  sizer      => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
+  reversion  => sub {
+    my ($whatsit) = @_;
+    (Revert($whatsit->getProperty('top')),
+      $whatsit->getArg(1)->unlist,
+      Revert($whatsit->getProperty('bottom'))); });
+
+DefMacro('\above Dimension',
+  '\lx@generalized@over{\above #1}{meaning=divide,thickness=#1}');
+DefMacro('\abovewithdelims Token Token Dimension',
+'\lx@generalized@over{\abovewithdelims #1 #2 #3}{left={\@left#1},right={\@right#2},meaning=divide,thickness=#3}');
+DefMacro('\atop',
+  '\lx@generalized@over{\atop}{thickness=0pt}');
+DefMacro('\atopwithdelims Token Token',
+  '\lx@generalized@over{\atopwithdelims #1 #2}{thickness=0pt,left={\@left#1},right={\@right#2}}');
+DefMacro('\over',
+  '\lx@generalized@over{\over}{meaning=divide}');
+DefMacro('\overwithdelims Token Token',
+  '\lx@generalized@over{\overwithdelims #1 #2}{left={\@left#1},right={\@right#2},meaning=divide}');
+# My thinking was that this is a "fraction" providing the dimension is > 0!
+
+#======================================================================
+#
+#----------------------------------------------------------------------
+# \mkern                  c  adds a math kern item to the current math list.
+# \mskip                  c  adds math glue to the current math list.
+# \thinmuskip             pm is ``thin'' math glue inserted into formulas.
+# \medmuskip              pm is ``medium'' math glue inserted into formulas.
+# \thickmuskip            pm is ``thick'' math glue inserted into formulas.
+# \abovedisplayskip       pg is normal glue placed before a displayed equation.
+# \abovedisplayshortskip  pg is alternate glue placed before a displayed equation.
+# \belowdisplayskip       pg is normal glue placed after a displayed equation.
+# \belowdisplayshortskip  pg is alternate glue placed after a displayed equation.
+
+DefPrimitive('\mkern MuGlue', sub {
+    my ($stomach, $length) = @_;
+    my $s = DimensionToSpaces($length);
+    Box($s, undef, undef, Invocation(T_CS('\mkern'), $length),
+      width => $length, isSpace => 1); });
+
+DefPrimitive('\mskip MuGlue', sub {
+    my ($stomach, $length) = @_;
+    my $s = DimensionToSpaces($length);
+    Box($s, undef, undef, Invocation(T_CS('\mskip'), $length),
+      width => $length, isSpace => 1); });
+
+# MuGlue registers; TeXBook p.274
+DefRegister('\thinmuskip'  => MuGlue("3mu"));
+DefRegister('\medmuskip'   => MuGlue("4mu plus 2mu minus 4mu"));
+DefRegister('\thickmuskip' => MuGlue("5mu plus 5mu"));
+
+DefRegister('\abovedisplayskip'      => Glue('12pt plus 3pt minus 9pt'));
+DefRegister('\abovedisplayshortskip' => Glue('0pt plus 3pt'));
+DefRegister('\belowdisplayskip'      => Glue('12pt plus 3pt minus 9pt'));
+DefRegister('\belowdisplayshortskip' => Glue('0pt plus 3pt'));
+
+#======================================================================
+#
+#----------------------------------------------------------------------
+# \binoppenalty           pi is the penalty for a line break after a binary operation.
+# \postdisplaypenalty     pi is the penalty added immediately after a math display.
+# \predisplaypenalty      pi is the penalty added immediately before a math display.
+# \relpenalty             pi is the penalty for a line break after a relation.
+# \displaywidowpenalty    pi is the penalty added after the penultimate line immediately preceeding a display.
+# \skewchar               iq is -1 or the character used to fine-tune the positioning of math accents     .
+# \defaultskewchar        pi is -1 or the \skewchar value for a font when it is loaded.
+# \delimitershortfall     pd is the second parameter used to compute the size of delimeters required by \left and \right.
+# \displayindent          pd is the amount to shift a line holding a displayed equation.
+# \displaywidth           pd is the width of the line holding a displayed equation.
+# \mathsurround           pd is extra space added when switching in and out of math mode.
+# \nulldelimiterspace     pd is the width of a null or missing delimiter.
+# \predisplaysize         pd is the effective width of the line preceeding a displayed equation.
+# \scriptspace            pd is extra space added after a subscript or a superscript.
+# \delimiterfactor        pi is the first parameter used to compute the size of delimeters required by \left and \right.
+
+DefRegister('\binoppenalty'        => Number(700));
+DefRegister('\relpenalty'          => Number(500));
+DefRegister('\relpenalty'          => Number(700));
+DefRegister('\displaywidowpenalty' => Number(50));
+DefRegister('\predisplaypenalty'   => Number(10000));
+DefRegister('\postdisplaypenalty'  => Number(0));
+
+DefRegister('\skewchar FontToken' => Number(0),
+  getter => sub {
+    my ($font) = @_;
+    my $info = lookupFontinfo($font);
+    return ($info && $$info{skewchar}) || Number(0); },
+  setter => sub {
+    my ($value, $scope, $font) = @_;
+    if (my $info = lookupFontinfo($font)) {
+      $$info{skewchar} = $value; } }
+);
+DefRegister('\defaultskewchar' => Number(-1));
+
+# Dimen registers; TeXBook p. 274
+DefRegister('\delimitershortfall' => Dimension('5pt'));
+DefRegister('\nulldelimiterspace' => Dimension('1.2pt'));
+DefRegister('\scriptspace'        => Dimension('0.5pt'));
+DefRegister('\mathsurround'       => Dimension(0));
+DefRegister('\predisplaysize'     => Dimension(0));
+DefRegister('\displaywidth'       => Dimension(0));
+DefRegister('\displayindent'      => Dimension(0));
+DefRegister('\delimiterfactor'    => Number(0));
+
+#======================================================================
+# Equation numbers
+#----------------------------------------------------------------------
+# \eqno                   c  puts an equation number at the right-hand margin.
+# \leqno                  c  puts an equation number at the left-hand margin.
+
+# \eqno & \leqno are really bizzare.
+# They should seemingly digest until $ (or while still in math mode),
+# and use that stuff as the reference number.
+# However, since people abuse this, and we're really not quite TeX,
+# we really can't do it Right.
+# Even a \begin{array} ends up expanding into a $ !!!
+DefMacroI('\eqno', undef, sub {
+    my ($gullet) = @_;
+    my $locator  = $gullet->getLocator;
+    my @stuff    = ();
+    # This is risky!!!
+    while (my $t = $gullet->readXToken(0)) {
+      if ($t->defined_as(T_BEGIN)) {
+        push(@stuff, $t, $gullet->readBalanced, T_END); }
+      # What do I need to explicitly list here!?!?!? UGGH!
+      elsif ($t->defined_as(T_MATH)
+        || $t->defined_as(T_CS('\]'))
+        # UGH from 2022: also don't jump over rows
+        || $t->defined_as(T_CS('\cr'))
+        # see arXiv:math/0001062, for one example
+        || $t->defined_as(T_CS('\hidden@cr'))
+        || $t->defined_as(T_CS('\@@ENDDISPLAYMATH'))
+        || $t->defined_as(T_CS('\begingroup'))       # Totally wrong, but to catch expanded environments
+        || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
+                                                     # This seems needed within AmSTeX environs
+      ) {
+        return (Invocation(T_CS('\@@eqno'), Tokens(@stuff)), $t); }
+      else {
+        push(@stuff, $t); } }
+    Error('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!",
+      "started " . ToString($locator));
+    return Tokens(@stuff); });
+
+Let('\leqno', '\eqno');
+# Revert to nothing, since it really doesn't belong in the TeX string(?)
+DefConstructor('\@@eqno{}',
+  "^ <ltx:tags><ltx:tag><ltx:Math><ltx:XMath>#1</ltx:XMath></ltx:Math></ltx:tag></ltx:tags>",
+  reversion => '');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

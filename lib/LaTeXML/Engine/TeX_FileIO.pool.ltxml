@@ -1,0 +1,232 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX_FileIO                                                          | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#use Unicode::Normalize;
+use LaTeXML::Util::Pathname;
+#use List::Util qw(min max);
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# File I/O Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+# Low-level input
+#----------------------------------------------------------------------
+# \openin           c  opens an auxiliary file for reading.
+# \closein          c  closes an auxiliary file opened for reading.
+# \read             c  reads one or more lines from an auxiliary file.
+# \endinput         c  stops input from a file at the end of the current line.
+# \inputlineno      iq holds the line number of the line last read in the current input file.
+
+# TeX I/O primitives
+DefPrimitive('\openin Number SkipSpaces SkipMatch:= SkipSpaces TeXFileName', sub {
+    my ($stomach, $port, $filename) = @_;
+    # possibly should close $port if it's already been opened?
+    $port     = ToString($port);
+    $filename = ToString($filename);
+    # Rely on FindFile to enforce any access restrictions
+    # It's tempting to pout noltxml=>1 here, since who would want to read in an .ltxml file's perl?
+    # However, \openin is often used by low-level code to check for existence of a file
+    # when we SHOULD find an .ltxml version!
+    # Hopefully, if they get one, they won't actually try to read its content...
+    if (my $path = FindFile($filename)) {
+      my $mouth = LaTeXML::Core::Mouth->create($path,
+        content => LookupValue($path . '_contents'));
+      AssignValue('input_file:' . $port => $mouth, 'global'); }
+    return; });
+
+DefPrimitive('\closein Number', sub {
+    my ($stomach, $port, $filename) = @_;
+    #   close the mouth (if any) and clear the variable
+    $port = ToString($port);
+    if (my $mouth = LookupValue('input_file:' . $port)) {
+      $mouth->finish;
+      AssignValue('input_file:' . $port => undef, 'global'); }
+    return; });
+
+DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
+    my ($stomach, $port, $token) = @_;
+    $port = ToString($port);
+    if (my $mouth = LookupValue('input_file:' . $port)) {
+      $stomach->bgroup;
+      AssignValue(PRESERVE_NEWLINES => 2);    # Special EOL/EOF treatment for \read
+      AssignValue(INCLUDE_COMMENTS  => 0);
+      my @tokens = ();
+      my ($t, $level) = (undef, 0);
+      while ($t = $mouth->readToken) {
+        my $cc = $t->getCatcode;
+        push(@tokens, $t) unless $cc == CC_MARKER;    # End of line marker
+        $level++ if $cc == CC_BEGIN;
+        $level-- if $cc == CC_END;
+        last     if !$level && $mouth->isEOL; }
+      $stomach->egroup;
+      DefMacroI($token, undef, Tokens(@tokens), nopackParameters => 1); }
+    return; });
+
+# Note that TeX doesn't actually close the mouth;
+# it just flushes it so that it will close the next time it's read!
+DefMacroI('\endinput', undef, sub { $_[0]->flushMouth; });
+
+DefRegister('\inputlineno', Number(0),
+  getter => sub {
+    my $locator = $STATE->getStomach->getGullet->getLocator();
+    Number($locator ? $$locator{fromLine} : 0); },
+  readonly => 1);
+
+#======================================================================
+# Low-level output
+#----------------------------------------------------------------------
+# \openout          c  opens an auxiliary file for writing.
+# \closeout         c  closes an auxiliary file opened for writing.
+# \write            c  writes material to an auxiliary file.
+# \immediate        c  performs the following output command without waiting for \shipout.
+
+# For output files, we'll write the data to a cached internal copy
+# rather than to the actual file system.
+DefPrimitive('\openout Number SkipSpaces SkipMatch:= SkipSpaces TeXFileName', sub {
+    my ($stomach, $port, $filename) = @_;
+    $port     = ToString($port);
+    $filename = ToString($filename);
+    AssignValue('output_file:' . $port  => $filename, 'global');
+    AssignValue($filename . '_contents' => "",        'global');
+    return; });
+
+DefPrimitive('\closeout Number', sub {
+    my ($stomach, $port) = @_;
+    $port = ToString($port);
+    AssignValue('output_file:' . $port => undef, 'global');
+    return; });
+
+DefPrimitive('\write Number {}', sub {
+    my ($stomach, $port, $tokens) = @_;
+    $port = ToString($port);
+    if (my $filename = LookupValue('output_file:' . $port)) {
+      my $handle   = $filename . '_contents';
+      my $contents = LookupValue($handle);
+      AssignValue($handle => $contents . UnTeX(Expand($tokens), 1) . "\n", 'global'); }
+    else {
+      Note(UnTeX(Expand($tokens))); }
+    return; });
+
+# Since we don't paginate, we're effectively always "shipping out",
+# so all operations are \immediate
+DefPrimitive('\immediate', undef);
+
+#======================================================================
+# High-level input
+#----------------------------------------------------------------------
+# \input            c  inserts a file at the current position in the source file.
+
+DefMacro('\input TeXFileName', sub {
+    my $filename = $_[1];
+    my @t        = $filename->unlist;
+    # If given a LaTeX-style argument, strip braces
+    if (@t && $t[0] && $t[0]->getCatcode == CC_BEGIN && $t[-1]->getCatcode == CC_END) {
+      $filename = Tokens(@t[1 .. $#t - 1]);
+      # and load LaTeX.pool if not already
+      if (!LookupValue('LaTeX.pool_loaded')) {
+        LoadPool("LaTeX"); } }
+    Input($filename, reloadable => 1); });
+
+#======================================================================
+# Special output
+#----------------------------------------------------------------------
+# \special          c  sends material to the dvi file for special processing.
+
+DefPrimitive('\special {}', sub {
+    my ($stomach, $arg) = @_;
+    my $special_str = ToString($arg);
+    # recognize one special graphics inclusion case
+    if ($special_str =~ /\bpsfile=(.+?)(?:\s|\})/) {
+      my $graphic = $1;
+      RequirePackage('graphicx', searchpaths_only => 1);
+      my @kv;
+      for my $prop (qw(voffset hoffset hscale vscale hsize vsize angle)) {
+        if ($special_str =~ /\b$prop=(.+?)(?:\s|\})/) {
+          push(@kv, T_OTHER(',')) if @kv;
+          push(@kv, T_OTHER($prop), T_OTHER("="), T_OTHER($1)); } }
+      @kv = (T_OTHER("["), @kv, T_OTHER("]")) if @kv;
+      $stomach->getGullet->unread(
+        T_CS('\ltx@special@graphics'), @kv, T_BEGIN, T_OTHER($graphic), T_END); }
+    else {
+      Info('ignored', 'special', $stomach, 'Unrecognized TeX Special', $arg); }
+    return; });
+
+# adapted from graphicx.sty.ltxml
+DefKeyVal('SpecialPS', 'angle',   '');
+DefKeyVal('SpecialPS', 'voffset', '');
+DefKeyVal('SpecialPS', 'hoffset', '');
+DefKeyVal('SpecialPS', 'hsize',   '');
+DefKeyVal('SpecialPS', 'vsize',   '');
+DefKeyVal('SpecialPS', 'hscale',  '');
+DefKeyVal('SpecialPS', 'vscale',  '');
+DefConstructor('\ltx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
+  "<ltx:graphics graphic='#path' candidates='#candidates' options='#options'/>",
+  sizer      => \&image_graphicx_sizer,
+  properties => sub {
+    my ($stomach, $kv, $path) = @_;
+    $path = ToString($path); $path =~ s/^\s+//; $path =~ s/\s+$//;
+    $path =~ s/("+)(.+)\g1/$2/;
+    my $searchpaths = LookupValue('GRAPHICSPATHS');
+    my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
+    if (my $base = LookupValue('SOURCEDIRECTORY')) {
+      @candidates = map { pathname_relative($_, $base) } @candidates; }
+    my $options = '';
+    if ($kv) {    # remap psfile options to includegraphics options:
+      if (my $hscale = $kv->getValue('hscale')) {
+        $hscale = $hscale && int(ToString($hscale)) / 100;
+        $options .= ',' if $options;
+        $options .= "xscale=$hscale"; }
+      if (my $vscale = $kv->getValue('vscale')) {
+        $vscale = $vscale && int(ToString($vscale)) / 100;
+        $options .= ',' if $options;
+        $options .= "yscale=$vscale"; }
+      if (my $hsize = $kv->getValue('hsize')) {
+        $hsize = ToString($hsize);
+        $options .= ',' if $options;
+        $options .= "width=$hsize"; }
+      if (my $vsize = $kv->getValue('vsize')) {
+        $vsize = ToString($vsize);
+        $options .= ',' if $options;
+        $options .= "height=$vsize"; }
+      if (my $angle = $kv->getValue('angle')) {
+        $angle = ToString($angle);
+        $options .= ',' if $options;
+        $options .= "angle=$angle"; }
+      my $voffset = $kv->getValue('voffset') || 0;
+      $voffset = $voffset && int(ToString($voffset));
+      my $hoffset = $kv->getValue('hoffset') || 0;
+      $hoffset = $hoffset && int(ToString($hoffset));
+      if ($voffset || $hoffset) {
+        my $left   = -$hoffset;
+        my $bottom = -$voffset;
+        $options .= "," if $options;
+        $options .= "trim=$left $bottom 0 0,clip=true"; } }
+    (options => $options, path => $path, candidates => join(',', @candidates)); },
+  mode => 'text');
+# Since these ultimately generate external resources, it can be useful to have a handle on them.
+Tag('ltx:graphics', afterOpen => sub { GenerateID(@_, 'g'); });
+
+#======================================================================
+# output processing
+#----------------------------------------------------------------------
+# \shipout          c  sends the contents of a box to the dvi file.
+# \output           pt holds the token list used to typeset one page.
+
+# DefPrimitive('\shipout ??
+DefRegister('\output', Tokens());
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

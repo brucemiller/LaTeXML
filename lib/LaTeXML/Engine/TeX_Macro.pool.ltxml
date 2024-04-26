@@ -1,0 +1,282 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX_Macro                                                           | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Macro Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Bosics
+#----------------------------------------------------------------------
+# \begingroup       c  starts a group that must be ended by \endgroup.
+# \endgroup         c  ends a group that was begun by \begingroup.
+# \relax            c  is a control sequence which typesets nothing.
+# \afterassignment  c  saves a token and inserts it after the next assignment.
+# \aftergroup       c  saves a token and inserts it after the current group is complete.
+
+DefPrimitive('\begingroup', sub { $_[0]->begingroup; });
+DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
+
+# This makes \relax disappear completely after digestion
+# (which seems most TeX like).
+DefPrimitive('\relax', sub { (); });
+### However, this keeps a box, so it can appear in UnTeX
+### DefPrimitive('\relax',undef);
+## But if you do that, you've got to watch out since it usually
+### shouldn't be a box; See the isRelax code in handleScripts, below
+
+# NON-STANDARD: Internal token produced by Gullet in response to \dont_expand;
+# Acts like \relax, but isn't equal to it.
+DefPrimitiveI('\special_relax', undef, sub { (); });
+
+# \afterassignment saves ONE token (globally!) to execute after the next assignment
+DefPrimitive('\afterassignment Token', sub { AssignValue(afterAssignment => $_[1], 'global'); });
+# \aftergroup saves ALL tokens (from repeated calls) to be executed IN ORDER after the next egroup or }
+DefPrimitive('\aftergroup Token', sub { PushValue(afterGroup => $_[1]); });
+
+#======================================================================
+# CSName
+#----------------------------------------------------------------------
+# \csname           c  forms a control sequence name from the characters making up a collection of tokens.
+# \endcsname        c  is used with \csname to make a control sequence name.
+
+DefParameterType('CSName', sub { $_[0]->readCSName; });
+
+DefMacro('\csname CSName', sub {
+    my ($gullet, $token) = @_;
+    $STATE->assignMeaning($token, $STATE->lookupMeaning(T_CS('\relax'))) unless defined LookupMeaning($token);
+    $token; });
+
+DefPrimitive('\endcsname', sub {
+    my ($stomach) = @_;
+    Error('unexpected', '\endcsname', $_[0], "Extra \\endcsname",
+      $stomach->getGullet->showUnexpected);
+    return; });
+
+#======================================================================
+# Definition flags
+#----------------------------------------------------------------------
+# \global        c  is an assignment prefix which makes the assignment transcend its group.
+# \long          c  is a prefix for definitions which require multi-paragraph arguments.
+# \outer         c  is a prefix for a definition which restricts where the definition may be used.
+# \globaldefs    pi if positive, all assignments are global; if negative, \global is ignored.
+
+# See Stomach.pm & Stomach.pm
+DefPrimitiveI('\global', undef, sub { $STATE->setPrefix('global'); return; }, isPrefix => 1);
+DefPrimitiveI('\long',   undef, sub { $STATE->setPrefix('long');   return; }, isPrefix => 1);
+DefPrimitiveI('\outer',  undef, sub { $STATE->setPrefix('outer');  return; }, isPrefix => 1);
+
+DefRegister('\globaldefs' => Number(0));
+
+#======================================================================
+# Definitions
+#----------------------------------------------------------------------
+# \def          c  defines a macro.
+# \edef         c  is similar to \def, except control sequences in the replacement
+#                  text are expanded when the definition is made.
+# \gdef         d  is equivalent to `\global\def'.
+# \xdef         d  is equivalent to `\global\edef'.
+
+sub parseDefParameters {
+  my ($cs, $params) = @_;
+  my @tokens = $params->packParameters->unlist;
+  # Now, recognize parameters and delimiters.
+  my @params = ();
+  my $n      = 0;
+  while (@tokens) {
+    my $t  = shift(@tokens);
+    my $cc = $$t[1];
+    if ($cc == CC_PARAM || $cc == CC_ARG) {
+      if ($cc == CC_PARAM) {
+        if (!@tokens) {    # Special case: lone # NOT following a numbered parameter
+                           # Note that we require a { to appear next, but do NOT read it!
+          push(@params, LaTeXML::Core::Parameter->new('RequireBrace', 'RequireBrace'));
+          last; }
+        else {
+          $n++; $t = shift(@tokens); } }
+      else {    # CC_ARG case, keep looking at this token
+        $n++; }
+      Fatal('expected', "#$n", $STATE->getStomach,
+        "Parameters for '" . ToString($cs) . "' not in order in " . ToString($params))
+        unless (defined $t) && ($n == int($$t[0]));
+      # Check for delimiting text following the parameter #n
+      my @delim = ();
+      my $pc    = -1;
+    INNER_DELIM: while (@tokens) {
+        my $inner_cc = $tokens[0]->getCatcode;
+        last INNER_DELIM if $inner_cc == CC_PARAM || $inner_cc == CC_ARG;
+        my $d = shift(@tokens);
+        push(@delim, $d) unless $pc == CC_SPACE && $inner_cc == CC_SPACE;    # BUT collapse whitespace!
+        $pc = $inner_cc; }
+      # Found text that marks the end of the parameter
+      if (@delim) {
+        my $expected = Tokens(@delim);
+        push(@params, LaTeXML::Core::Parameter->new('Until',
+            'Until:' . ToString($expected),
+            extra => [$expected])); }
+      # Special case: trailing sole # => delimited by next opening brace.
+      elsif ((scalar(@tokens) == 1) && ($tokens[0]->getCatcode == CC_PARAM)) {
+        shift(@tokens);
+        push(@params, LaTeXML::Core::Parameter->new('UntilBrace', 'UntilBrace')); }
+      # Nothing? Just a plain parameter.
+      else {
+        push(@params, LaTeXML::Core::Parameter->new('Plain', '{}')); } }
+    else {
+      # Initial delimiting text is required.
+      my @lit = ($t);
+      my $lit_cc;
+      while (@tokens && ($lit_cc = $tokens[0]->getCatcode) &&
+        ($lit_cc != CC_PARAM && $lit_cc != CC_ARG)) {
+        push(@lit, shift(@tokens)); }
+      my $expected = Tokens(@lit);
+      push(@params, LaTeXML::Core::Parameter->new('Match',
+          'Match:' . ToString($expected),
+          extra   => [$expected],
+          novalue => 1)); }
+  }
+  return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
+
+sub do_def {
+  my ($globally, $gullet, $cs, $params, $body) = @_;
+  if (!$cs) {
+    Error('expected', 'Token', $gullet, "Expected definition token");
+    return; }
+  elsif (!$params) {
+    Error('misdefined', $cs, $gullet, "Expected definition parameter list");
+    return; }
+  $params = parseDefParameters($cs, $params);
+  # noprep=>1 : leave preparing the ##, #1-#9 tokens to the Def parameter types
+  # to avoid carrying around the masks around and keep core code simple
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body,
+      nopackParameters => 1),
+    ($globally ? 'global' : undef));
+  AfterAssignment();
+  return; }
+
+DefPrimitive('\def  SkipSpaces Token UntilBrace DefPlain',    sub { do_def(0, @_); }, locked => 1);
+DefPrimitive('\gdef SkipSpaces Token UntilBrace DefPlain',    sub { do_def(1, @_); }, locked => 1);
+DefPrimitive('\edef SkipSpaces Token UntilBrace DefExpanded', sub { do_def(0, @_); }, locked => 1);
+DefPrimitive('\xdef SkipSpaces Token UntilBrace DefExpanded', sub { do_def(1, @_); }, locked => 1);
+
+#======================================================================
+# Copying definitions
+#----------------------------------------------------------------------
+#  \let       c  gives a control sequence a token's current meaning.
+# \futurelet  c  `<cs> <token1> <token2>' is equivalent to `\let <cs> = <token2> <token1> <token2>'.
+DefPrimitive('\let SkipSpaces Token SkipSpaces SkipMatch:= Skip1Space Token', sub {
+    my ($stomach, $token1, $token2) = @_;
+    Let($token1, $token2);
+    return; });
+
+DefPrimitive('\futurelet Token Token Token', sub {
+    my ($stomach, $cs, $token1, $token2) = @_;
+    $stomach->getGullet->unread($token1, $token2);    # NOT expandable, but puts tokens back
+    Let($cs, $token2);
+    return; });
+
+#======================================================================
+# Expansion control
+#----------------------------------------------------------------------
+# \expandafter      c  `<token1><token2>' is equivalent to `<token1> expansion of <token2>'.
+# \noexpand         c  prevents the expansion of the following token.
+
+DefMacro('\expandafter Token Token', sub {
+    no warnings 'recursion';
+    my ($gullet, $tok, $xtok) = @_;
+    my $defn;
+    if (defined($defn = $STATE->lookupExpandable($xtok))) {
+      my @x = ();
+      {
+        local $LaTeXML::CURRENT_TOKEN = $xtok;
+        @x = $defn->invoke($gullet, 1);    # Expand $xtok ONCE ONLY!
+      }
+      ($tok, @x); }
+    elsif (!$STATE->lookupMeaning($xtok)) {
+      # Undefined token is an error, as expansion is expected.
+      # BUT The unknown token is NOT consumed, (see TeX B book, item 367)
+      # since probably in a real TeX run it would have been defined.
+      $STATE->generateErrorStub($gullet, $xtok);
+      ($tok, $xtok); }
+    else {
+      ($tok, $xtok); } });
+
+use constant T_expandafter => T_CS('\expandafter');
+DefMacro('\expandafter Token Token', sub {
+    no warnings 'recursion';
+    my ($gullet, $tok, $xtok) = @_;
+    my $defn;
+    my @skipped = ($tok);
+    while ($xtok->defined_as(T_expandafter)) {
+      push(@skipped, $gullet->readToken);
+      $xtok = $gullet->readToken; }
+    if (defined($defn = $STATE->lookupExpandable($xtok))) {
+      my @x = ();
+      {
+        local $LaTeXML::CURRENT_TOKEN = $xtok;
+        @x = $defn->invoke($gullet, 1);    # Expand $xtok ONCE ONLY!
+      }
+      (@skipped, @x); }
+    elsif (!$STATE->lookupMeaning($xtok)) {
+      # Undefined token is an error, as expansion is expected.
+      # BUT The unknown token is NOT consumed, (see TeX B book, item 367)
+      # since probably in a real TeX run it would have been defined.
+      $STATE->generateErrorStub($gullet, $xtok);
+      (@skipped, $xtok); }
+    else {
+      (@skipped, $xtok); } });
+
+# If next token is expandable, prefix it with the internal marker \dont_expand
+# That token is never defined, explicitly handled in Gullet & should never escape the Gullet
+DefMacroI('\noexpand', undef, sub {
+    my $token = $_[0]->readToken;
+    # Missing token likely the result of "{\noexpand}" for which TeX would be unperturbed
+    return ($token
+      ? ((($$token[1] == CC_CS) || ($$token[1] == CC_ACTIVE)) && $STATE->isDontExpandable($token)
+        ? (T_CS('\dont_expand'), $token)
+        : $token)
+      : ()); });
+
+# NON-STANDARD:
+DefPrimitiveI('\dont_expand', undef, sub {
+    Error('misdefined', '\dont_expand', $_[0],
+      "The token \\dont_expand should never reach Stomach!"); });
+
+#======================================================================
+# \the
+#----------------------------------------------------------------------
+# \the              c  returns character tokens for an internal quantity's or parameter's current value.
+
+# \the<internal quantity>
+DefMacro('\the Register', sub {
+    my ($gullet, $variable) = @_;
+    return () unless $variable;
+    my ($defn, @args) = @$variable;
+    if (!$defn || $defn eq 'missing') {
+      Error('expected', "<register>", $gullet, "a register was expected to be here"); return (); }
+    my $type = $defn->isRegister;
+    if (!$type) {
+      my $cs = ToString($defn->getCS);
+      if ($cs eq '\font') {    # what to do here?
+        return T_CS('\tenrm'); }
+      Error('unexpected', "\\the$cs", $gullet, "You can't use $cs after \\the"); return (); }
+    my $value = $defn->valueOf(@args);
+    ## In all cases, these should be OTHER, except for space. (!?)
+    my @tokens = ($type eq 'Tokens' ? ($value ? $value->unlist : ()) : Explode(ToString($value)));
+    return @tokens; });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
