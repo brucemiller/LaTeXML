@@ -1,0 +1,634 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | Base_ParameterTypes                                                 | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+# Define parsers for standard parameter types.
+
+DefParameterType('Plain', sub {
+    my ($gullet, $inner) = @_;
+    my $value = $gullet->readArg();
+    if ($inner) {
+      ($value) = $inner->reparseArgument($gullet, $value); }
+    $value; },
+  reversion => sub {
+    my ($arg, $inner) = @_;
+    (T_BEGIN,
+      ($inner ? $inner->revertArguments($arg) : Revert($arg)),
+      T_END); });
+
+DefParameterType('DefPlain', sub {
+    my ($gullet, $inner) = @_;
+    my $value = $gullet->readBalanced(0, 1, 1);
+    if ($inner) {
+      ($value) = $inner->reparseArgument($gullet, $value); }
+    return $value; },
+  reversion => sub {
+    my ($arg, $inner) = @_;
+    (T_BEGIN,
+      ($inner ? $inner->revertArguments($arg) : Revert($arg)),
+      T_END); });
+
+DefParameterType('Optional', sub {
+    my ($gullet, $default, $inner) = @_;
+    my $value = $gullet->readOptional;
+    if (!$value && $default) {
+      $value = $default; }
+    elsif ($inner) {
+      ($value) = $inner->reparseArgument($gullet, $value); }
+    $value; },
+  optional  => 1,
+  reversion => sub {
+    my ($arg, $default, $inner) = @_;
+    my @rev_arg = $arg ? (
+      $inner ? $inner->revertArguments($arg) : Revert($arg))
+      : ();
+    if (@rev_arg) {
+      return (T_OTHER('['), @rev_arg, T_OTHER(']')); }
+    else { return (); } });
+
+# This is a peculiar type of argument of the form
+#   <general text> = <filler>{<balanced text><right brace>
+# however, <filler> does get expanded while searching for the initial {
+# which IS required in contrast to a general argument; ie a single token is not correct.
+DefParameterType('GeneralText', sub {
+    my ($gullet) = @_;
+    $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
+
+    return $gullet->readBalanced(0, 0, 1); });
+
+DefParameterType('Until', sub {
+    my ($gullet, $until) = @_;
+    $gullet->readUntil($until); },
+  reversion => sub {
+    my ($arg, $until) = @_;
+    (Revert($arg), Revert($until)); });
+
+# Skip any spaces, but don't contribute an argument.
+DefParameterType('SkipSpaces', sub { $_[0]->skipSpaces; 1; }, novalue => 1);
+
+DefParameterType('Skip1Space', sub { $_[0]->skip1Space; 1; }, novalue => 1);
+
+# Read the next token
+DefParameterType('Token', sub { $_[0]->readToken; });
+
+# Read the next token, after expanding any expandable ones.
+DefParameterType('XToken', sub { $_[0]->readXToken; });
+
+# Read a number
+DefParameterType('Number', sub { $_[0]->readNumber; });
+
+# Read a floating point number
+DefParameterType('Float', sub { $_[0]->readFloat; });
+
+sub ReadFloat {
+  my ($gullet) = @_;
+  $gullet->skipSpaces;
+  return ($gullet->readFloat || Float(0)); }
+
+# Read a dimension
+DefParameterType('Dimension', sub { $_[0]->readDimension; });
+
+# Read a Glue (aka skip)
+DefParameterType('Glue', sub { $_[0]->readGlue; });
+
+# Read a MuDimension (math)
+DefParameterType('MuDimension', sub { $_[0]->readMuDimension; });
+
+# Read a MuGlue (math)
+DefParameterType('MuGlue', sub { $_[0]->readMuGlue; });
+
+# Read until the next (balanced) open brace {
+# used for the last TeX-style delimited argument
+DefParameterType('UntilBrace', sub {
+    my ($gullet) = @_;
+    $gullet->readUntilBrace; });
+
+# Yet another special case: Require a { but do not read it!!!
+DefParameterType('RequireBrace', sub {
+    my ($gullet) = @_;
+    if (my $tok = $gullet->readToken) {
+      $gullet->unread($tok);
+      if ($tok->getCatcode != CC_BEGIN) {
+        Error('expected', '{', $gullet, "Expected a { here; Got " . Stringify($tok)); }
+      $tok; } },
+  novalue => 1);
+
+DefParameterType('XUntil', sub {
+    my ($gullet, $until) = @_;
+    ($until) = $until->unlist;    # Make sure it's a single token!!!
+    my ($token, @tokens) = ();
+    while ($token = $gullet->readXToken(0)) {
+      if ($token->equals($until)) {
+        last; }
+      elsif ($token->getCatcode == CC_BEGIN) {
+        push(@tokens, $token, $gullet->readBalanced, T_END); }
+      elsif (my $defn = LookupDefinition($token)) {
+        push(@tokens, Invocation($token,
+            ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ()))); }
+      else {
+        push(@tokens, $token); } }
+    Tokens(@tokens); });
+
+# This reads a braced tokens list, expanding as it goes,
+# but expanding \the-like commands only once.
+DefParameterType('Expanded', sub {
+    my ($gullet) = @_;
+    $gullet->readBalanced(1, 0, 1); },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+# This reads an expanded definition body,
+# a braced tokens list, expanding as it goes,
+# but expanding \the-like commands only once,
+# and also packing # parameters
+DefParameterType('DefExpanded', sub {
+    my ($gullet) = @_;
+    return $gullet->readBalanced(1, 1, 1); },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+# Read a matching keyword, eg. Match:=
+DefParameterType('Match', sub { shift->readMatch(@_); });
+
+# Read a keyword; eg. Keyword:to
+# (like Match, but ignores catcodes)
+DefParameterType('Keyword', sub { shift->readKeyword(@_); });
+
+# Read balanced material (?)
+DefParameterType('Balanced', sub { $_[0]->readBalanced; });
+
+# Read a Semiverbatim argument; ie w/ most catcodes neutralized.
+DefParameterType('Semiverbatim', sub { $_[0]->readArg; }, semiverbatim => 1,
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+# Read a LaTeX-style optional argument (ie. in []), but the contents read as Semiverbatim.
+DefParameterType('OptionalSemiverbatim', sub { $_[0]->readOptional; },
+  semiverbatim => 1, optional => 1,
+  reversion    => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+
+# Be careful here: if % appears before the initial {, it's still a comment!
+# Also, note that non-typewriter fonts will mess up some chars on digestion!
+DefParameterType('Verbatim', sub {
+    my ($gullet) = @_;
+    $gullet->readUntil(T_BEGIN);
+    StartSemiverbatim('%', '\\');
+    my $arg = $gullet->readBalanced();
+    EndSemiverbatim();
+    return $arg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(family => 'typewriter'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+# Read Verbatim, but allows expanding command sequences
+DefParameterType('HyperVerbatim', sub {
+    my ($gullet) = @_;
+    $gullet->readUntil(T_BEGIN);
+    StartSemiverbatim('%');
+    DefMacroI('\%',              undef, T_OTHER('%'), scope => 'local');
+    DefMacroI('\#',              undef, T_OTHER('#'), scope => 'local');
+    DefMacroI('\&',              undef, T_OTHER('&'), scope => 'local');
+    DefMacroI('\textunderscore', undef, T_OTHER('_'), scope => 'local');
+    Let('\_', '\textunderscore');
+    DefMacroI('\hyper@tilde', undef, T_OTHER('~'), scope => 'local');
+    Let('\~',              '\hyper@tilde');
+    Let('\textasciitilde', '\hyper@tilde');
+    Let('\\\\',            '\@backslashchar');
+    my $arg = $gullet->readBalanced(1);
+    EndSemiverbatim();
+    return $arg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(family => 'typewriter'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+# Read an argument that will not be digested.
+DefParameterType('Undigested', sub { $_[0]->readArg; }, undigested => 1,
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+# Read a LaTeX-style optional argument (ie. in []), but it will not be digested.
+DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
+  undigested => 1, optional => 1,
+  reversion  => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+
+# Read a keyword value (KeyVals), that will not be digested.
+DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
+DefParameterType('UndigestedDefKey', sub {
+    $_[0]->readArg->packParameters; }, undigested => 1);
+
+# Read a token as used when defining it, ie. it may be enclosed in braces.
+DefParameterType('DefToken', sub {
+    my ($gullet) = @_;
+    my $token = $gullet->readToken;
+    while ($token && ($token->getCatcode == CC_BEGIN)) {
+      my $cc;
+      my @toks = grep { ($cc = $$_[1]) && ($cc != CC_SPACE) && ($cc != CC_COMMENT); }
+        $gullet->readBalanced->unlist;
+      $token = shift(@toks);
+      $gullet->unread(@toks); }
+    $token; },
+  undigested => 1);
+
+# Stub register for misdefinitions, to avoid a cascade of Errors.
+DefRegisterI('\lx@DUMMY@REGISTER', undef, Tokens());
+
+# Read a variable, ie. a token (after expansion) that is a writable register.
+DefParameterType('Variable', sub {
+    my ($gullet) = @_;
+    my $token    = $gullet->readXToken;
+    my $defn     = $token && LookupDefinition($token);
+    if ((defined $defn) && $defn->isRegister && !$defn->isReadonly) {
+      [$defn, ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ())]; }
+    else {
+      DefRegisterI($token, undef, Dimension(0));    # Don't really know what KIND of variable!
+      if ($token && ($token->getCatcode == CC_CS)) {
+        Error('expected', '<variable>', $gullet,
+          "A <variable> was supposed to be here", "Got " . Stringify($token),
+          "Defining it now.");
+        DefRegisterI($token, undef, Dimension(0));    # Dimension, or what?
+        return [LookupDefinition($token)]; }
+      else {
+        Error('expected', '<variable>', $gullet,
+          "A <variable> was supposed to be here", "Got " . Stringify($token),
+          "But it is not even definable.");
+        return [LookupDefinition(T_CS('\lx@DUMMY@REGISTER'))]; } } },
+  reversion => sub {
+    my ($var) = @_;
+    my ($defn, @args) = @$var;
+    my $params = $defn->getParameters;
+    return Tokens($defn->getCS, ($params ? $params->revertArguments(@args) : ())); });
+
+# Same, but not necessarily writable
+DefParameterType('Register', sub {
+    my ($gullet) = @_;
+    my $token    = $gullet->readXToken;
+    my $defn     = $token && LookupDefinition($token);
+    if ((defined $defn) && $defn->isRegister) {
+      [$defn, ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ())]; }
+    else {
+      if ($token && ($token->getCatcode == CC_CS)) {
+        if ($token->getString eq '\font') {
+          # \font is a bit of a register-like exception
+          return [$defn]; }
+        Error('expected', '<register>', $gullet,
+          "A <register> was supposed to be here", "Got " . Stringify($token),
+          "Defining it now.");
+        DefRegisterI($token, undef, Dimension(0));    # Dimension, or what?
+        return [LookupDefinition($token)]; }
+      else {
+        Error('expected', '<register>', $gullet,
+          "A <register> was supposed to be here", "Got " . Stringify($token),
+          "But it is not even definable.");
+        return [LookupDefinition(T_CS('\lx@DUMMY@REGISTER'))]; } } },
+  reversion => sub {
+    my ($var) = @_;
+    my ($defn, @args) = @$var;
+    my $params = $defn->getParameters;
+    return Tokens($defn->getCS, ($params ? $params->revertArguments(@args) : ())); });
+
+DefParameterType('TeXFileName', sub {
+    my ($gullet) = @_;
+    my ($token, $cc, @tokens) = ();
+    $gullet->skipSpaces;
+    while (($token = $gullet->readXToken(0))
+      && (($cc = $token->getCatcode) != CC_SPACE) && ($cc != CC_EOL) && ($cc != CC_COMMENT) && ($cc != CC_CS)) {
+      push(@tokens, $token); }
+    $gullet->unread($token) unless ($cc == CC_SPACE) || ($cc == CC_EOL) || ($cc == CC_COMMENT);
+    # Strip outer "" ???
+    if ((scalar(@tokens) > 1) && ($tokens[0]->equals(T_OTHER('"'))) && ($tokens[-1]->equals(T_OTHER('"')))) {
+      shift(@tokens); pop(@tokens); }
+    Tokens(@tokens); });
+
+# A LaTeX style directory List
+DefParameterType('DirectoryList', sub {
+    my ($gullet)   = @_;
+    my $arg_string = ToString($gullet->readArg);
+    my @dirs       = ();
+    for my $dir (split(/,|\\par|\n+/, $arg_string)) {
+      $dir =~ s/^\s+//;
+      $dir =~ s/\s+$//;
+      next unless $dir;
+      while ($dir =~ s/^\s*\{([^\}]*)\}//) {
+        push @dirs, $1 if $1; }
+      push @dirs, $dir if $dir; }
+    LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, itemopen => T_BEGIN, itemclose => T_END,
+      type   => LaTeXML::Package::parseParameters(ToString("Semiverbatim"), "CommaList")->[0],
+      values => [@dirs]); });
+
+# This reads a Box as needed by \raise, \lower, \moveleft, \moveright.
+# Hopefully there are no issues with the box being digested
+# as part of the reader???
+DefParameterType('MoveableBox', sub {
+    my ($gullet) = @_;
+    $gullet->skipSpaces;
+    my ($box, @stuff) = $STATE->getStomach->invokeToken($gullet->readXToken);
+    Error('expected', '<box>', $gullet,
+      "A <box> was supposed to be here", "Got " . Stringify($box))
+      unless $box;
+####      && $box->isa('LaTeXML::Core::Whatsit')
+####      && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
+    $box; });
+
+# Read a parenthesis delimited argument.
+# Note that this does NOT balance () within the argument.
+DefParameterType('BalancedParen', sub {
+    my ($gullet) = @_;
+    my $tok = $gullet->readXToken;
+    if (ref $tok && ToString($tok) eq '(') {
+      $gullet->readUntil(T_OTHER(')'));
+    } else {
+      $gullet->unread($tok) if ref $tok;
+      undef; } },
+  reversion => sub {
+    (T_OTHER('('), Revert($_[0]), T_OTHER(')')); });
+
+# Read a digested argument, digesting as it is being read.
+# The usual macro parameter (generally written as {}) gets tokenized and digested
+# in separate stages, w/o recognizing any special macros or catcode changes within (eg. \url).
+# Rarely, you need a parameter that gets digested AS IT'S READ until ending }.
+# Note that this also recognizes args as \bgroup ... \engroup
+# It is useful when the content would usually need to have been \protect'd
+# in order to correctly deal with catcodes.
+# BEWARE: This is NOT a shorthand for a simple digested {}!
+DefParameterType('Digested', sub {
+    no warnings 'recursion';
+    my ($gullet) = @_;
+    $gullet->skipSpaces;
+    my $ismath = $STATE->lookupValue('IN_MATH');
+    my @list   = ();
+    my $token;
+    do { $token = $gullet->readXToken(0);
+    } while (defined $token && (($token->getCatcode == CC_SPACE) || $token->equals(T_CS('\relax'))));
+    if    (!defined $token) { }
+    elsif ($token->getCatcode == CC_BEGIN) {
+      Digest($token);
+      push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }    # content w/o the braces
+    else {
+      push(@list, $STATE->getStomach->invokeToken($token)); }
+    @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
+    List(@list, mode => ($ismath ? 'math' : 'text')); },
+  undigested => 1,                                           # since _already_ digested.
+  reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+# A variation: Digest until we encounter a given token!
+DefParameterType('DigestUntil', sub {
+    my ($gullet, $until) = @_;
+    ($until) = $until->unlist;    # Make sure it's a single token!!!
+    $gullet->skipSpaces;
+    my $ismath = $STATE->lookupValue('IN_MATH');
+    my @list   = $STATE->getStomach->digestNextBody($until);
+    @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
+    List(@list, mode => ($ismath ? 'math' : 'text')); },
+  undigested => 1,                                           # since _already_ digested.
+  reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+# Reads until the current group has ended.
+# This is useful for environment-like constructs,
+# particularly alignments (which may or may not be actual environments),
+# but which need special treatment of some of their content
+# as the expansion is carried out.
+DefParameterType('DigestedBody', sub {
+    my ($gullet) = @_;
+    my $ismath   = $STATE->lookupValue('IN_MATH');
+    my @list     = $STATE->getStomach->digestNextBody();
+    # In most (all?) cases, we're really looking for a single Whatsit here...
+    @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
+    List(@list, mode => ($ismath ? 'math' : 'text')); },
+  undigested => 1);
+
+# In addition to the standard TeX Dimension, there are various LaTeX constructs
+# (particularly, the LaTeX picture environment, and the various pstricks packages)
+# that take a different sort of length.  They differ in two ways.
+#   (1) They do not accept a comma as decimal separator
+#      (they generally use it to separate coordinates), and
+#   (2) They accept a plain float which is scaled against a Dimension register.
+#      Actually, there are two subcases:
+#     (a) picture accepts a float, which is scaled against \unitlength
+#     (b) pstricks accepts a float, and optionally a unit,
+#        If the unit is omitted, it is relative to \psxunit or \psyunit.
+# How to capture these ?
+## DefParameterType('Length', sub {
+##   my($gullet,$unit)=@_;
+
+# CommaList expects something like {balancedstuff,...}
+DefParameterType('CommaList', sub {
+    my ($gullet, $type) = @_;
+    my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList")->[0];
+    my @items   = ();
+    if ($gullet->ifNext(T_BEGIN)) {
+      $gullet->readToken;
+      my @tokens = ();
+      my $comma  = T_OTHER(',');
+      while (my $token = $gullet->readToken) {
+        my $cc = $token->getCatcode;
+        if ($cc == CC_END) {
+          push(@items, Tokens(@tokens));
+          last; }
+        elsif ($token->equals($comma)) {
+          push(@items, Tokens(@tokens)); @tokens = (); }
+        elsif ($cc == CC_BEGIN) {
+          push(@tokens, $token, $gullet->readBalanced, T_END); }
+        else {
+          push(@tokens, $token); } }
+      if ($typedef) {
+        @items = map { [$typedef->reparseArgument($gullet, $_)]->[0] } @items; } }
+    else {
+      # If no brace, just read one item or token, but still make Array!
+      push(@items, ($typedef ? $typedef->readArguments($gullet, "CommaList")
+          : ($gullet->readToken))); }
+    LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $typedef,
+      values => [@items]); });
+
+### Support for Key / Value arguments.
+## The very basic form is
+##   RequiredKeyVals: $keyset
+##   OptionalKeyVals: $keyset
+## to parse Key-Value pairs from a given keyset (see the 'keyval' package
+## documentation for more information). These types of KeyVal
+## parameters will return a LaTeXML::Core::KeyVals object, which can then be
+## used to access the values of the individual items.
+## The difference between the two forms is that RequiredKeyVals expects a set of
+## key-value pairs wrapped in T_BEGIN T_END, where as OptionalKeyVals optionally
+## expects a set of KeyValue pairs wrapped in T_OTHER('[') T_OTHER(']')
+##
+## Several extension of the keyval package exist, the most common one we support
+## is the xkeyval package. This introduces further variations on the keyval
+## arguments parsing, in particular it allows to read keys from more than one
+## keyset at once. These can be specified by giving comma-seperated values in
+## the keyset argument. By default, a key will only be set in the **first**
+## keyset it occurs in. By using
+##   RequiredKeyVals+: $keysets
+##   OptionalKeyVals+: $keysets
+## the key will be set in all keysets instead.
+##
+## All keys to be parsed with these arguments should be declared using
+## DefKeyVal in LaTeXML::Package. By default, an error is thrown if an unknown
+## key is encountered. To surpress this behaviour, and instead store all
+## undefined keys, use
+##   RequiredKeyVals*: $keysets
+##   OptionalKeyVals*: $keysets
+## instead. The '*' and '+' modifiers can be combined by using:
+##   RequiredKeyVals*+: $keysets
+##   OptionalKeyVals*+: $keysets
+##
+## Furthermore, the xkeyval package supports giving prefixes to keys,
+##   RequiredKeyVals[*][+]: $prefix|$keysets
+##   OptionalKeyVals[*][+]: $prefix|$keysets
+##
+## Finally, it is possible to specify specific keys to skip when digesting the
+## object. This can be achieved using comma-seperated key values in
+##   RequiredKeyVals[*][+]: $prefix|$keysets|$skip
+##   OptionalKeyVals[*][+]: $prefix|$keysets|$skip
+
+# function to handle all the
+sub KeyVals_aux {
+  my ($gullet, $until, $spec, %options) = @_;
+  my ($star, $plus, $prefix, $keysets, $skip) = @{$spec};
+
+  # support both "keysets" and "prefix|keysets"
+  unless (defined($keysets)) {
+    $keysets = $prefix;
+    $prefix  = undef;
+
+    # to emulate old behaviour, throw no errors
+    # when we have a single keyset and no prefix (or no keyset at all)
+    $star = 1 if (!defined($keysets) || index(',', $keysets) == -1); }
+
+  # create a new set of Key-Value arguments
+  my $keyvals = LaTeXML::Core::KeyVals->new(
+    $prefix, $keysets,
+    setAll => $plus, setInternals => 1,
+    skip   => $skip, skipMissing  => $star);
+
+  # and read it from the gullet
+  $keyvals->readFrom($gullet, $until) if defined($until);
+
+  # we still want to make use of the hash
+  return $keyvals; }
+
+sub RequiredKeyVals {
+  my ($star, $plus, $gullet, @keyspec) = @_;
+  my $until;
+
+  if ($gullet->ifNext(T_BEGIN)) {
+    $until = T_END; }
+  else {
+    Error('expected', '{', $gullet, "Missing keyval arguments"); }
+
+  return (KeyVals_aux($gullet, $until, [$star, $plus, @keyspec])); }
+
+DefParameterType('RequiredKeyVals', sub { RequiredKeyVals(0, 0, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('RequiredKeyVals*', sub { RequiredKeyVals(1, 0, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('RequiredKeyVals+', sub { RequiredKeyVals(0, 1, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('RequiredKeyVals*+', sub { RequiredKeyVals(1, 1, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+sub OptionalKeyVals {
+  my ($star, $plus, $gullet, @keyspec) = @_;
+  if ($gullet->ifNext(T_OTHER('['))) {
+    return (KeyVals_aux($gullet, T_OTHER(']'), [$star, $plus, @keyspec])); }
+  else { return (undef); } }
+
+sub revert_optional_keyvals {
+  my @r = grep { defined $_ } ($_[0] && Revert($_[0]));
+  return @r ? (T_OTHER('['), @r, T_OTHER(']')) : (); }
+
+DefParameterType('OptionalKeyVals', sub { OptionalKeyVals(0, 0, @_); },
+  optional => 1, reversion => \&revert_optional_keyvals);
+DefParameterType('OptionalKeyVals*', sub { OptionalKeyVals(1, 0, @_); },
+  optional => 1, reversion => \&revert_optional_keyvals);
+DefParameterType('OptionalKeyVals+', sub { OptionalKeyVals(0, 1, @_); },
+  optional => 1, reversion => \&revert_optional_keyvals);
+DefParameterType('OptionalKeyVals*+', sub { OptionalKeyVals(1, 1, @_); },
+  optional => 1, reversion => \&revert_optional_keyvals);
+
+# Not sure that this is the most elegant solution, but...
+# What I'd really like are some sort of parameter modifiers, mathstyle, font... until...?
+DefParameterType('DisplayStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(mathstyle => 'display'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('TextStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(mathstyle => 'text'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('ScriptStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(mathstyle => 'script'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('ScriptscriptStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(mathstyle => 'scriptscript'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+# Perverse naming convention: not script style, but in the style of a script relative to current.
+DefParameterType('InScriptStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(scripted => 1); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+# NOTE: the various parameter features don't combine easily!!
+# I need a ScriptStyleUntil for \root!!!
+# I also need to redo fractions using these new types....
+DefParameterType('OptionalInScriptStyle', sub {
+    $_[0]->readOptional; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(scripted => 1); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  optional  => 1,
+  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+DefParameterType('InFractionStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(fraction => 1); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

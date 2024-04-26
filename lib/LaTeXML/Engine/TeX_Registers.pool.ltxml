@@ -1,0 +1,106 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX_Registers                                                       | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Registers Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Accessing Registers
+#----------------------------------------------------------------------
+# \count            iq assigns an integer to a \count register.
+# \dimen            iq assigns a <dimen> to a \dimen register.
+# \skip             iq assigns <glue> to a \skip register.
+# \toks             iq assigns <replacement text> to a \toks register.
+
+DefRegister('\count Number'  => Number(0));
+DefRegister('\dimen Number'  => Dimension(0));
+DefRegister('\skip Number'   => Glue(0));
+DefRegister('\muskip Number' => MuGlue(0));
+DefRegister('\toks Number'   => Tokens());
+
+#======================================================================
+# Defining Registers, shorthands
+#----------------------------------------------------------------------
+# \countdef         c  creates a symbolic name for a \count register.
+# \dimendef         c  creates a symbolic name for a \dimen register.
+# \skipdef          c  creates a symbolic name for a \skip register.
+# \toksdef          c  creates a symbolic name for a \toks register.
+
+# Note that before \countdef, \dimendef, \skipdef, \muskipdef, \chardef, \mathchardef, \toksdef
+# read the <number>, they let the token to \relax in case the def is immediately followed
+# by a use or assignment;  See TeX Program \s 1224
+# See below for \chardef & \mathchardef
+# Note that these define a "shorthand" for eg. \count123, but are NOT macros!
+sub shorthandDef {
+  my ($stomach, $cs, $type, $init) = @_;
+  $STATE->assignMeaning($cs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssign
+  my $num     = $stomach->getGullet->readNumber();
+  my $address = $type . $num->valueOf;
+  DefRegisterI($cs, undef, $init, address => $address);
+  AfterAssignment();
+  return; }
+
+DefPrimitive('\countdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\count', Number(0)); });
+
+DefPrimitive('\dimendef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\dimen', Dimension(0)); });
+
+DefPrimitive('\skipdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\skip', Glue(0)); });
+
+DefPrimitive('\muskipdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\muskip', MuGlue(0)); });
+
+DefPrimitive('\toksdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\toks', Tokens()); });
+
+#======================================================================
+# Numeric Registers
+#----------------------------------------------------------------------
+# \advance          c  increases or decreases a numeric variable.
+# \multiply         c  multiplies a register by an integer.
+# \divide           c  divides a register by an integer.
+
+DefPrimitive('\advance Variable SkipKeyword:by', sub {
+    my ($stomach, $var) = @_;
+    return () unless $var;
+    my ($defn, @args) = @$var;
+    return () if !$defn || $defn eq "missing";
+    local $LaTeXML::CURRENT_TOKEN = $defn;
+    $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)),
+      undef, @args); });
+
+DefPrimitive('\multiply Variable SkipKeyword:by Number', sub {
+    my ($stomach, $var, $scale) = @_;
+    return () unless $var;
+    my ($defn, @args) = @$var;
+    $defn->setValue($defn->valueOf(@args)->multiply($scale->valueOf), undef, @args); });
+
+DefPrimitive('\divide Variable SkipKeyword:by Number', sub {
+    my ($stomach, $var, $scale) = @_;
+    return () unless $var;
+    my ($defn, @args) = @$var;
+    my $denom = $scale->valueOf;
+    if ($denom == 0) {
+      Error('misdefined', $scale, $stomach, "Illegal \\divide by 0; assuming 1");
+      $denom = 1; }
+    $defn->setValue($defn->valueOf(@args)->divide($denom), undef, @args); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

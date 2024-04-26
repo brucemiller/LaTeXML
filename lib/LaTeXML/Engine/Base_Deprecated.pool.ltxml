@@ -1,0 +1,95 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | Base_Deprecated                                                     | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sub Deprecate {
+  my ($source, $deprecated, $better) = @_;
+  # Eventually, just Warn; and in fact, Warn ONCE only
+  $deprecated = ToString($deprecated);
+  if (!LookupMapping('DEPRECATED', $deprecated)) {
+    AssignMapping('DEPRECATED', $deprecated => 1);
+    Warn('deprecated', $deprecated, $source,
+      "The command $deprecated has been deprecated; Please use " . ToString($better)); }
+  return; }
+
+DefMacro('\lx@DEPRECATE{}{}', \&Deprecate);
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DefMacro('\@ERROR',
+  '\lx@DEPRECATE{\@ERROR}{\lx@ERROR}\lx@ERROR');
+
+DefMacro('\normal@par',
+  '\lx@DEPRECATE{\normnal@par}{\lx@normal@par}\lx@normal@par');
+DefMacro('\inner@par',
+  '\lx@DEPRECATE{\inner@par}{\lx@normal@par}\lx@normal@par');    # Obsolete, but in case still used...
+
+#----------------------------------------------------------------------
+# This group should be renamed to \lx@somethings and deprecated
+# NOTE: work through this systematically!
+DefMacro('\FCN{}',
+  '\lx@DEPRECATE{\Fcn}{\lx@wrap}{\lx@wrap[role=FUNCTION]{#1}');
+DefMacro('\ROLE{}{}',
+  '\lx@DEPRECATE{\ROLE}{\lx@wrap}\lx@wrap[role={#1}]{#2}');
+DefMacro('\@SYMBOL{}',
+  '\lx@DEPRECATE{\@SYMBOL}{\lx@wrap}\lx@wrap[role=ID]{#1}');
+DefMacro('\@CSYMBOL{}',
+  '\lx@DEPRECATE{\@CSYMBOL}{\lx@symbol}\lx@symbol[meaning={#1}]{}');
+DefMacro('\@APPLY{}',
+  '\lx@DEPRECATE{\@APPLY}{\lx@apply}\lx@apply[]{#1}{}');    # Sorta broken?
+DefMacro('\@MAYBEAPPLY{}{}',
+  '\lx@DEPRECATE{\@MAYBEAPPLY}{\lx@apply}\ifx.#2.#1\else\lx@apply{#1}{#2}\fi');
+DefMacro('\@WRAP{}',
+  '\lx@DEPRECATE{\@WRAP}{\lx@wrap}\lx@wrap[]{#1}');
+DefMacro('\@TOKEN{}',
+  '\lx@DEPRECATE{\@TOKEN}{\lx@symbol}\lx@symbol[name={#1}]{}');
+DefMacro('\@SUPERSCRIPT{}{}',
+  '\lx@DEPRECATE{\@SUPERSCRIPT}{\lx@superscipt}\ifx.#2.#1\else\lx@superscript[]{#1}{#2}\fi');
+DefMacro('\@SUBSCRIPT{}{}',
+  '\lx@DEPRECATE{\@SUBSCRIPT}{\lx@subscript}\ifx.#2.#1\else\lx@subscript[]{#1}{#2}\fi');
+# Let('\@PADDED',         '\lx@padded');
+# Let('\DUAL',            '\lx@dual');
+# Let('\@XMArg',          '\lx@xmarg');
+# Let('\@XMRef',          '\lx@xmref');
+# Let('\@APPLYFUNCTION',  '\lx@ApplyFunction');
+# Let('\@INVISIBLETIMES', '\lx@InvisibleTimes');
+# Let('\@INVISIBLECOMMA', '\lx@InvisibleComma');
+# Let('\@INVISIBLEPLUS',  '\lx@InvisiblePlus');
+
+DefMacro('\@PADDED',
+  '\lx@DEPRECATE{\@PADDED}{\lx@padded}\lx@padded');
+DefMacro('\DUAL',
+  '\lx@DEPRECATE{\DUAL}{\lx@dual}\lx@dual');
+DefMacro('\@XMArg',
+  '\lx@DEPRECATE{\@XMArg}{\lx@xmarg}\lx@xmarg');
+DefMacro('\@XMRef',
+  '\lx@DEPRECATE{\@XMRef}{\lx@xmref}\lx@xmref');
+DefMacro('\@APPLYFUNCTION',
+  '\lx@DEPRECATE{\@APPLYFUNCTION}{\lx@ApplyFunction}\lx@ApplyFunction');
+DefMacro('\@INVISIBLETIMES',
+  '\lx@DEPRECATE{\@INVISIBLETIMES}{\lx@InvisibleTimes}\lx@InvisibleTimes');
+DefMacro('\@INVISIBLECOMMA',
+  '\lx@DEPRECATE{\@INVISIBLECOMMA}{\lx@InvisibleComma}\lx@InvisibleComma');
+DefMacro('\@INVISIBLEPLUS',
+  '\lx@DEPRECATE{\@INVISIBLEPLUS}{\lx@InvisiblePlus}\lx@InvisiblePlus');
+
+# End of stuff to be deprecated.
+#----------------------------------------------------------------------
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+

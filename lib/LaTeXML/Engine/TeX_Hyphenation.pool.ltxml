@@ -1,0 +1,75 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX_Hyphenation                                                     | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Hyphenation Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# explicit hyphenation
+#----------------------------------------------------------------------
+# - (discretionary hyphen)        d       inserts a discretionary hyphen.
+# \discretionary    c  specifies a discretionary break in a paragraph.
+DefPrimitiveI('\-', undef, undef);
+DefMacro('\discretionary{}{}{}', '#3');    # No hyphenation here!
+
+#======================================================================
+# hyphenation tables
+#----------------------------------------------------------------------
+# \hyphenation      c  adds words to the hyphenation exception dictionary for the current language.
+# \patterns         c  is used in INITEX to add patterns to the pattern dictionary for the current language.
+
+# Stub definitions ???
+DefMacro('\hyphenation GeneralText', Tokens());
+DefMacro('\patterns{}',              Tokens());
+
+#======================================================================
+# language choice
+#----------------------------------------------------------------------
+# \setlanguage      c  inserts a language whatsit in restricted horizontal mode.
+# \language         pi selects a language to use with hyphenation and \patterns.
+
+DefRegister('\language' => Number(0));
+DefPrimitive('\setlanguage Number', undef);
+
+#======================================================================
+# codepoints used for hyphenation
+#----------------------------------------------------------------------
+# \hyphenchar       iq holds the current hyphen character used with hyphenation.
+# \defaulthyphenchar pi is the \hyphenchar value to use when a new font is loaded.
+# \lefthyphenmin    pi is the minimum number of characters that must appear before the first hyphen in an hyphenated word.
+# \righthyphenmin   pi is the minimum number of characters that must appear after the last hyphen in an hyphenated word.
+# \uchyph           pi prevents hyphenation of uppercase words unless this is positive.
+
+DefRegister('\hyphenchar FontToken' => Number(ord('-')),
+  getter => sub {
+    my ($font) = @_;
+    my $info = lookupFontinfo($font);
+    return ($info && $$info{hyphenchar}) || Number(ord('-')); },
+  setter => sub {
+    my ($value, $scope, $font) = @_;
+    if (my $info = lookupFontinfo($font)) {
+      $$info{hyphenchar} = $value; } }
+);
+
+DefRegister('\defaulthyphenchar' => Number(ord('-')));
+DefRegister('\lefthyphenmin'     => Number(0));
+DefRegister('\righthyphenmin'    => Number(0));
+DefRegister('\uchyph'            => Number(1));
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

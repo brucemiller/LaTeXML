@@ -279,6 +279,7 @@ sub initializeState {
       $preload .= '.' . $type;
     }
     LaTeXML::Package::InputDefinitions($preload, type => $type,
+      ($type eq 'pool' ? (installation_subdir => 'Engine') : ()),
       handleoptions => $handleoptions, options => $options);
   }
   $state->assignValue('InitialPreloads' => undef, 'global');

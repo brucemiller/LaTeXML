@@ -1,0 +1,211 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX_Character                                                       | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use Unicode::Normalize;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Character Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# \ (ctrl space)    c  inserts a control space.
+# \char           c  provides access to one of the 256 characters in a font.
+#----------------------------------------------------------------------
+DefPrimitiveI('\ ', undef, sub {
+    Box(UTF(0xA0), undef, undef, T_CS('\ '),
+      name => 'space', isSpace => 1, width => Dimension('0.5em')); });
+
+DefPrimitive('\char Number', sub {
+    Box(FontDecode($_[1]->valueOf), undef, undef,
+      Tokens(T_CS('\char'), $_[1]->revert, T_CS('\relax'))); });
+
+#======================================================================
+# \accent         c  places an accent on a character.
+#----------------------------------------------------------------------
+
+#----------------------------------------------------------------------
+# Accents.  LaTeX Table 3.1, p.38
+#----------------------------------------------------------------------
+# All of TeX's accents can (sorta) be handled by Unicode's combining accents
+# (which follow the character to be accented).
+# We'll let unicode normalization do the combination, if needed.
+# Also, note that \t is intended to combine multiple chars, but it appears to
+# work (via mozilla !?) best when the combining char is after the 1st char.
+# Further, the accents \d and \b seem to center the under dot or bar under multiple
+# chars --- how should this be handled in Unicode?
+
+# Since people sometimes try to get fancy by using an empty argument,
+# for each, I'm providing the combining code and an equivalent(?) spacing one.
+# (doesn't look quite the same to use a combining char after a space)
+
+# Create a box applying an accent to a letter
+# Hopefully, we'll get a Box from digestion with a plain string.
+# Then we can apply combining accents to it.
+sub applyAccent {
+  my ($stomach, $letter, $combiningchar, $standalonechar, $reversion) = @_;
+  my $box     = $stomach->digest($letter);
+  my $locator = $box->getLocator;
+  my $font    = $box->getFont;
+  my $string  = $box->toString;
+  $string =~ tr/\x{0131}\x{0237}/ij/;
+  $string =~ s/\s/ /g;
+  my @letters = split(//, $string);
+  return Box(($string =~ /^\s*$/
+      ? $standalonechar
+      : NFC($letters[0] . $combiningchar . join('', @letters[1 .. $#letters]))),
+    $font, $locator, $reversion); }
+
+# Defines an accent command using a combining char that follows the
+# 1st char of the argument.  In cases where there is no argument, $standalonechar is used.
+sub DefAccent {
+  my ($accent, $combiningchar, $standalonechar, %options) = @_;
+  $options{above} = 1 if !(defined $options{above}) && !$options{below};
+  # Used for converting a char used as an above-accent to a combining char (See \accent)
+  AssignMapping('accent_combiner_above', $standalonechar => $combiningchar) if $options{above};
+  AssignMapping('accent_combiner_below', $standalonechar => $combiningchar) unless $options{above};
+  DefMacroI($accent, "{}",
+    Tokens(T_CS('\lx@applyaccent'), T_OTHER($accent),
+      T_OTHER($combiningchar), T_OTHER($standalonechar),
+      T_BEGIN, T_ARG(1), T_END),
+    protected => 1);
+  return; }
+
+DefPrimitiveI('\lx@applyaccent', "DefToken Token Token {}", sub {
+    my ($stomach, $accent, $combiningchar, $standalonechar, $letter) = @_;
+    applyAccent($stomach, $letter, $combiningchar->getString, $standalonechar->getString,
+      Tokens(T_CS($accent->getString), T_BEGIN, $letter, T_END)); },
+  mode => 'text');
+
+# This will fail if there really are "assignments" after the number!
+# We're given a number pointing into the font, from which we can derive the standalone char.
+# From that, we want to figure out the combining character, but there could be one for
+# both the above & below cases!  We'll prefer the above case.
+DefPrimitive('\accent Number {}', sub {
+    my ($stomach, $num, $letter) = @_;
+    my $n        = $num->valueOf;
+    my $fontinfo = lookupFontinfo(LookupValue('textfont_0'));
+    my $acc      = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : chr($n));
+    my $reversion = Invocation(T_CS('\accent'), $num, $letter);
+    # NOTE: REVERSE LOOKUP in above accent list for the non-spacing accent char
+    # BUT, \accent always (?) makes an above type accent... doesn't it?
+    if (my $combiner = LookupMapping('accent_combiner_above', $acc)
+      || LookupMapping('accent_combiner_below', $acc)) {
+      applyAccent($stomach, $letter, $combiner, $acc, $reversion); }
+    else {
+      Warn('unexpected', "accent$n", $stomach, "Accent '$n' not recognized");
+      Box(ToString($letter), undef, undef, $reversion); } });
+
+#======================================================================
+# \chardef        iq provides an alternate way to define a control sequence that returns a character.
+#----------------------------------------------------------------------
+
+# Almost like a register (and \countdef), but different...
+# (including the preassignment to \relax!)
+DefPrimitive('\chardef Token SkipSpaces SkipMatch:=', sub {
+    my ($stomach, $newcs) = @_;
+    $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
+    my $value = $stomach->getGullet->readNumber();
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value));
+    AfterAssignment();
+    return; });
+
+#======================================================================
+# Upper/Lowercase
+#----------------------------------------------------------------------
+# \lowercase      c  converts tokens to lowercase.
+# \uppercase      c  converts tokens to uppercase.
+# \uppercase<general text>, \lowercase<general text>
+sub ucToken {
+  my ($token) = @_;
+  my $code = $STATE->lookupUCcode($token->getString);
+  return ((defined $code) && ($code != 0) ? Token(chr($code), $token->getCatcode) : $token); }
+
+sub lcToken {
+  my ($token) = @_;
+  my $code = $STATE->lookupLCcode($token->getString);
+  return ((defined $code) && ($code != 0) ? Token(chr($code), $token->getCatcode) : $token); }
+
+# Note that these are NOT expandable, even though the "return" tokens!
+DefPrimitive('\uppercase GeneralText', sub {
+    my ($stomach, $tokens) = @_;
+    $stomach->getGullet->unread(map { ucToken($_) } $tokens->unlist);
+    return; });
+
+DefPrimitive('\lowercase GeneralText', sub {
+    my ($stomach, $tokens) = @_;
+    $stomach->getGullet->unread(map { lcToken($_) } $tokens->unlist);
+    return; });
+
+#======================================================================
+# Converting things to strings (tokens, really)
+#----------------------------------------------------------------------
+# \number         c  produces the decimal equivalent of numbers.
+# \romannumeral   c  converts a number to lowercase roman numerals.
+# \string         c  converts a control sequence to characters.
+
+DefMacro('\number Number',       sub { Explode($_[1]->valueOf); });
+DefMacro('\romannumeral Number', sub { roman($_[1]->valueOf); });
+
+# Hmm... I wonder, should getString itself be dealing with escapechar?
+sub escapechar {
+  my $code = LookupRegister('\escapechar')->valueOf;
+  return (($code >= 0) && ($code <= 255) ? chr($code) : ''); }
+
+# 1) Knuth, The TeXBook, page 40, paragraph 1, Chapter 7: How TEX Reads What You Type.
+# suggests all characters except spaces are returned in category code Other, i.e. Explode()
+DefMacro('\string Token', sub {
+    my $s = $_[1]->toString;
+    if ($s =~ s/^\\//) {
+      $s = escapechar() . $s; }
+    Explode($s); });
+#======================================================================
+# Character properties
+#----------------------------------------------------------------------
+# \catcode        iq holds the category code for a character.
+# \lccode                 iq holds the lowercase value for a character.
+# \sfcode                 iq holds the space factor value for a character.
+# \uccode                 iq holds the uppercase value for a character.
+DefRegister('\catcode Number', Number(0),
+  getter => sub { my $code = LookupCatcode(chr($_[0]->valueOf));
+    Number(defined $code ? $code : CC_OTHER); },
+  setter => sub { AssignCatcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
+# Not used anywhere (yet)
+DefRegister('\sfcode Number', Number(0),
+  getter => sub { my $code = $STATE->lookupSFcode(chr($_[0]->valueOf));
+    Number(defined $code ? $code : 0); },
+  setter => sub { $STATE->assignSFcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
+DefRegister('\lccode Number', Number(0),
+  getter => sub { my $code = $STATE->lookupLCcode(chr($_[0]->valueOf));
+    Number(defined $code ? $code : 0); },
+  setter => sub { $STATE->assignLCcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
+DefRegister('\uccode Number', Number(0),
+  getter => sub { my $code = $STATE->lookupUCcode(chr($_[0]->valueOf));
+    Number(defined $code ? $code : 0); },
+  setter => sub { $STATE->assignUCcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
+
+#======================================================================
+# Special character codes
+#----------------------------------------------------------------------
+# \endlinechar    pi is the character added to the end of input lines.
+# \escapechar     pi is the character used for category 0 characters when outputting control sequences.
+# \newlinechar    pi is the character which begins a new line of output.
+
+DefRegister('\endlinechar' => Number(ord("\r")));
+DefRegister('\escapechar'  => Number(ord('\\')));
+DefRegister('\newlinechar' => Number(-1));
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

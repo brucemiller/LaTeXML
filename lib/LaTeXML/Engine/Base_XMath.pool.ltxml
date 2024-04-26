@@ -1,0 +1,929 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | Base_XMath                                                          | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# LaTeXML Enhancemens to Math Representation to preserve Semantics
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Some of this stuff is more semantic versions of declarations in
+# plain or latex. Is this the right place for them?
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Normally, the content branch contains the pure structure and meaning of a construct,
+# and the presentation is generated from lower level TeX macros that only concern
+# themselves with how to display the object.
+# Nevertheless, it is sometimes useful to know where the tokens in the presentation branch
+# came from;  particularly what their presumed "meaning" is.
+# For example, when search-indexing pmml, or providing links to definitions from the pmml.
+#
+# The following constructor (see how it's used in DefMath), adds meaning attributes
+# whereever it seems sensible on the presentation branch, after it has been generated.
+DefConstructor('\@ASSERT@MEANING{}{}', '#2',
+  reversion      => '#2',
+  afterConstruct => sub {
+    my ($document, $whatsit) = @_;
+    my $node    = $document->getNode;              # This should be the wrapper just added.
+    my $meaning = ToString($whatsit->getArg(1));
+    addMeaningRec($document, $node, $meaning);
+    $node; });
+
+sub addMeaningRec {
+  my ($document, $node, $meaning) = @_;
+  if ($node->nodeType == XML_ELEMENT_NODE) {
+    my $qname = $document->getModel->getNodeQName($node);
+    if    ($qname eq 'ltx:XMArg') { }              # DONT cross through into arguments!
+    elsif ($qname eq 'ltx:XMTok') {
+      if ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
+        && !$node->getAttribute('meaning')) {
+        $document->setAttribute($node, meaning => $meaning); } }
+    else {
+      foreach my $c ($node->childNodes) {
+        addMeaningRec($document, $c, $meaning); } } }
+  return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Support for constructing mathematical expressions
+
+# Common XMath pattern for assigning attributes from Whatsit properties.
+our $XMath_attributes =
+  " role='#role' name='#name' meaning='#meaning' omcd='#omcd'"
+  . " width='#width' height='#height' xoffset='#xoffset' yoffset='#yoffset'"
+  . " lpadding='#lpadding' rpadding='#rpadding'";
+
+sub XMath_copy_keyvals {
+  my ($stomach, $whatsit) = @_;
+  my $kv = $whatsit->getArg(1);
+  $whatsit->setProperties($kv->getPairs) if $kv;
+  return; }
+
+# Build an ltx:XMApp, application of function/operator to arguments
+# first piece of (TeX) argument is expected to be the operator
+# Usually used on content side, but at least the arguments should be properly encapsulated:
+# They should build individual subtrees; use ltx::XMArg, ltx:XMWrap ... if needed
+DefConstructor('\lx@apply OptionalKeyVals:XMath {}{}',
+  "<ltx:XMApp $XMath_attributes>#2#3</ltx:XMApp>",
+  reversion   => '#2#3',
+  afterDigest => sub { XMath_copy_keyvals(@_); });
+
+# Build an ltx:XMTok, a mathematical symbol, with given attributes
+# the argument should create text to be the content of the token.
+DefConstructor('\lx@symbol OptionalKeyVals:XMath {}',
+  "<ltx:XMTok $XMath_attributes>#2</ltx:XMTok>",
+  reversion   => '#2',
+  afterDigest => sub {
+    $_[1]->setFont($_[1]->getArg(2)->getFont);
+    XMath_copy_keyvals(@_); });
+
+# Wrap the contents in an ltx:XMWrap, to stand as a single subtree & providing attributes
+# The ltx:XMWrap may be collapsed, later, by parsing
+DefConstructor('\lx@wrap OptionalKeyVals:XMath {}',
+  "<ltx:XMWrap $XMath_attributes>#2</ltx:XMWrap>",
+  reversion   => '#2',
+  afterDigest => sub { XMath_copy_keyvals(@_); });
+
+# Convert a hashref into a list of tokens of the form key=value,...
+sub I_keyvals {
+  my ($keyvals) = @_;
+  my @options = ();
+  if ($keyvals) {
+    while (my ($key, $value) = each %$keyvals) {
+      $value = TokenizeInternal($value) if defined $value && !ref $value;
+      push(@options, T_OTHER(',')) if @options;
+      push(@options, T_OTHER($key), T_OTHER('='), T_BEGIN, $value, T_END); } }
+  return (@options ? Tokens(T_OTHER('['), @options, T_OTHER(']')) : ()); }
+
+sub I_apply {
+  my ($kv, $op, @args) = @_;
+  return Tokens(T_CS('\lx@apply'), I_keyvals($kv),
+    T_BEGIN, T_CS('\lx@wrap'), T_BEGIN, $op, T_END, T_END,
+    T_BEGIN, (map { (T_CS('\lx@wrap'), T_BEGIN, $_, T_END); } @args), T_END); }
+
+sub I_symbol {
+  my ($kv, $text) = @_;
+  return Tokens(T_CS('\lx@symbol'), I_keyvals($kv), T_BEGIN, (defined $text ? $text : ()), T_END); }
+
+sub I_wrap {
+  my ($kv, @stuff) = @_;
+  return Tokens(T_CS('\lx@wrap'), I_keyvals($kv), T_BEGIN, @stuff, T_END); }
+
+# These two accept key operator_meaning, operator_omcd to give a meaning to the sub/superscript
+# NOTE (BUG): We SHOULD nest paired sub/superscripts, but avoid conflicting double scripts
+# To do that we need to sniff at the base, whether it already contains scripts.
+# However, IsScript isn't quite sufficient if the scripts are hidden within Whatsits, duals, etc.
+# Currently, LaTeXML manages to deal with the double scripts anyway;
+# The reversion ALWAYS wraps the base (which will render non-optimally in images but avoid Errors)
+DefConstructor('\lx@superscript OptionalKeyVals:XMath {} InScriptStyle',
+  "<ltx:XMApp $XMath_attributes>"
+    . "<ltx:XMTok role='SUPERSCRIPTOP' meaning='#operator_meaning' omcd='#operator_omcd' scriptpos='#scriptpos'/>"
+    . "<ltx:XMArg>#2</ltx:XMArg>"
+    . "<ltx:XMArg rule='Superscript'>#3</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  afterDigest => sub { XMath_copy_keyvals(@_); },
+  reversion   => sub {
+    my ($whatsit, $kv, $base, $sup) = @_;
+    my $bump = $whatsit->getProperty('bump');
+    $bump = 1;    # For now: ALWAYS {} wrap base in the reversion!
+    (IsEmpty($sup)
+      ? Revert($base)
+      : (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUPER, revertScript($sup))); },
+  properties => sub {
+    my ($stomach, $kv, $base, $script) = @_;
+    my $basetype = IsScript($base);
+    my $bump     = ($basetype && ($$basetype[1] eq 'SUPERSCRIPT') ? 1 : 0);
+    (scriptpos => "post" . ($_[0]->getScriptLevel + $bump),
+      bump => $bump); },
+  sizer => sub { scriptSizer($_[0]->getArg(3), $_[0]->getArg(2), undef, 'SUPERSCRIPT', 'post'); });
+
+DefConstructor('\lx@subscript OptionalKeyVals:XMath {} InScriptStyle',
+  "<ltx:XMApp $XMath_attributes>"
+    . "<ltx:XMTok role='SUBSCRIPTOP' meaning='#operator_meaning' omcd='#operator_omcd' scriptpos='#scriptpos'/>"
+    . "<ltx:XMArg>#2</ltx:XMArg>"
+    . "<ltx:XMArg rule='Subscript'>#3</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  afterDigest => sub { XMath_copy_keyvals(@_); },
+  reversion   => sub {
+    my ($whatsit, $kv, $base, $sub) = @_;
+    my $bump = $whatsit->getProperty('bump');
+    $bump = 1;    # For now: ALWAYS {} wrap base in the reversion!
+    (IsEmpty($sub)
+      ? Revert($base)
+      : (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUB, revertScript($sub))); },
+  properties => sub {
+    my ($stomach, $kv, $base, $script) = @_;
+    my $basetype = IsScript($base);
+    my $bump     = ($basetype && ($$basetype[1] eq 'SUBSCRIPT') ? 1 : 0);
+    (scriptpos => "post" . ($_[0]->getScriptLevel + $bump),
+      bump => $bump); },
+  sizer => sub { scriptSizer($_[0]->getArg(3), $_[0]->getArg(2), undef, 'SUBSCRIPT', 'post'); });
+
+# Ignore $kv for the moment?????
+sub I_subscript {
+  my ($kv, $base, $script) = @_;
+  return Tokens(T_CS('\lx@subscript'), I_keyvals($kv), T_BEGIN, $base, T_END, T_BEGIN, $script, T_END); }
+
+sub I_superscript {
+  my ($kv, $base, $script) = @_;
+  return Tokens(T_CS('\lx@superscript'), I_keyvals($kv), T_BEGIN, $base, T_END, T_BEGIN, $script, T_END); }
+
+# Superscript meaning power
+DefMacro('\lx@power{}{}', '\lx@superscript[operator_meaning=power]{#1}{#2}');
+# Superscript meaning functional (or applicative) power; iterated function/operator application
+DefMacro('\lx@functionalpower{}{}', '\lx@superscript[operator_meaning=functional-power]{#1}{#2}');
+
+# These to be used in presentation side
+DefMathI('\lx@ApplyFunction', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
+DefMathI('\lx@InvisibleTimes', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
+DefMathI('\lx@InvisibleComma', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');
+DefMathI('\lx@InvisiblePlus', undef, "\x{2064}", reversion => '', name => '', meaning => 'plus', role => 'ADDOP');
+
+DefConstructor('\lx@kludged{}',
+  "?#isMath(<ltx:XMWrap rule='kludge'>#1</ltx:XMWrap>)(#1)",
+  reversion => '#1');
+DefConstructor('\lx@padded[MuDimension]{MuDimension}{}',
+  '#3',
+  afterConstruct => sub {
+    my ($document, $whatsit) = @_;
+    my $node = $document->getLastChildElement($document->getNode);
+    if ($document->getNodeQName($node) eq 'ltx:XMDual') {
+      my (@ch) = $node->childNodes;
+      $node = $ch[1]; }
+    if (my $lpadding = $whatsit->getArg(1)) {
+      $document->setAttribute($node, lpadding => $lpadding); }
+    if (my $rpadding = $whatsit->getArg(2)) {
+      $document->setAttribute($node, rpadding => $rpadding); } },
+  reversion => '#3');
+
+#======================================================================
+# Building XMDuals for Mathematical Parallel markup
+# Used when the content and presentation forms have different structure.
+
+DefKeyVal('XMath', 'reversion',              'UndigestedDefKey');
+DefKeyVal('XMath', 'content_reversion',      'UndigestedDefKey');
+DefKeyVal('XMath', 'presentation_reversion', 'UndigestedDefKey');
+DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
+  "<ltx:XMDual $XMath_attributes>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
+  beforeDigest => sub {
+    PushValue(PENDING_DUAL_XMARGS => {});
+    return; },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $kv     = $whatsit->getArg(1);
+    my $xmargs = PopValue('PENDING_DUAL_XMARGS');            # Really SHOULD be a hash
+    $whatsit->setProperties(%$xmargs)      if $xmargs;       # Hopefully no name class with XM<digits>
+    $whatsit->setProperties($kv->getPairs) if $kv;
+    my %props = $whatsit->getProperties;
+    my $cr    = $props{content_reversion};
+    my $pr    = $props{presentation_reversion};
+    my $r     = ToString($props{revert_as}) || 'content';    # ?????
+
+    if (!defined $props{reversion}) {
+      $whatsit->setProperty(reversion => sub {
+          my ($self, $kvs, $c, $p) = @_;
+          ($r eq 'content' ? $cr || Revert($c)
+            : ($r eq 'presentation' ? $pr || Revert($p)
+              : ($r eq 'dual'
+                ? Tokens(T_CS('\lx@dual'), I_keyvals($kvs),
+                  T_BEGIN, ($cr || Revert($c)), T_END,
+                  T_BEGIN, ($pr || Revert($p)), T_END)
+                : (($LaTeXML::DUAL_BRANCH || '') eq 'presentation'    # Context dependent reversion
+                  ? $pr || Revert($p)
+                  : $cr || Revert($c))))); }); }
+    return; },
+  sizer => '#3');    # size according to presentation
+
+# These are used within XMDual
+# The XMDual represents both a content & presentation representation of some
+# possibly exotic structure ("Transfix notation"),
+# or just a somewhat complex presentation that corresponds (often) to a simpler
+# applicative content structure.
+# Invoking such a mathematical object to "arguments" requires that both the
+# content & presentation branches contain those arguments.
+# There will be an XMArg, with an ID, containing the actual markup, and an XMRef that referrs to it.
+# The XMArg will usually be in the presentation branch (so that it inherits appropriate style),
+# unless the arg is "hidden" (ie. semantic, but not displayed).
+# This means that we don't know which one appears first! (See Package's dualize_arglist)
+#
+# To get a "proper id", we'll use a temporary label-like attribute (_xmkey)
+# and establish an id and idref later.
+DefConstructor('\lx@xmarg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
+  reversion   => '#2',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($xmid,    $arg)     = $whatsit->getArgs();
+    $xmid = ToString($xmid);
+    if (my $pending = LookupValue('PENDING_DUAL_XMARGS')) {
+      if (my $xmargs = $$pending[-1]) {
+        $$xmargs{$xmid} = $arg; } }
+    AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
+
+DefConstructor('\lx@xmref{}', "<ltx:XMRef _xmkey='#1'/>",
+  reversion => sub {
+    Revert(LookupValue('xref:' . ToString($_[1]))); },
+  sizer => sub { LookupValue('xref:' . ToString($_[0]->getArg(1)))->getSize; });
+
+# Connect up the XMRef/XMArg pairs (actually can be multiple XMRef's)
+# We want to set the idref of the XMRef's to point to the id of the XMArg (or other XM element),
+# but usually the XMRef is created first, and we want to let the referred to element
+# get it's id computed by whatever means it prefers.
+# so we have to work both ways (use state to record associations, to avoid expensive xpath)
+# Set id's on any non-XMRef nodes that have an _xmkey
+# This gets a more natural ordering
+Tag('ltx:*', 'afterOpen:late' => sub {
+    my ($document, $node) = @_;
+    if (my $key = $node->getAttribute('_xmkey')) {
+      my $qname = $document->getNodeQName($node);
+      if (($qname ne 'ltx:XMRef') && ($qname =~ /^ltx:XM/) && !$node->hasAttribute('xml:id')) {
+        GenerateID($document, $node, undef, ''); } } });
+
+Tag('ltx:XMDual', 'afterClose:late' => sub {
+    my ($document, $node) = @_;
+    my %ids  = ();
+    my @refs = ();
+    # Collect all children with _xmkey attribute
+    foreach my $n ($document->findnodes('descendant::*[@_xmkey]', $node)) {
+      if (($document->getNodeQName($n) eq 'ltx:XMRef') && !$n->hasAttribute('idref')) {
+        push(@refs, $n); }    # we'll fill these in next
+      else {                  # generate & record ids for all referenced noces
+        my $key = $n->getAttribute('_xmkey');
+        if (!$ids{$key}) {
+          GenerateID($document, $n, undef, '');    # Generate id if none already.
+          $ids{$key} = $n->getAttribute('xml:id'); } } }
+    foreach my $r (@refs) {                        # Now fill in the references
+      $document->setAttribute($r, idref => $ids{ $r->getAttribute('_xmkey') });
+      $r->removeAttribute('_xmkey'); }
+});
+
+# Construction aids
+# Build an XMDual (via \lx@dual) given the content & presentation forms.
+# These forms are provided as Tokens, invoking the appropriate constructor macros,
+# and refering to any arguments using #1, #2.... (see T_XMArg for syntactic sugar)
+# The arguments (if any) are given separately; within the content & presentation
+# they are replaced by \lx@xmref and \lx@xmarg, appropriately,
+# so that they will be linked/shared in the XML tree.
+# The keyvals argument is a hash containing any properties of the construct,
+# along with reversion, content_reversion  & presentation_reversion, which are
+# substituted for arguments as well.
+sub I_dual {
+  my ($keyvals, $content, $presentation, @args) = @_;
+  $content      = TokenizeInternal($content)      if $content      && !ref $content;
+  $presentation = TokenizeInternal($presentation) if $presentation && !ref $presentation;
+  my (@revargs, @pargs, @cargs);
+  foreach my $arg (@args) {
+    my $id = LaTeXML::Package::getXMArgID();
+    push(@revargs, Tokens(I_arg(ToString($id))));
+    push(@pargs,   Invocation(T_CS('\lx@xmarg'), $id, $arg));
+    push(@cargs,   Invocation(T_CS('\lx@xmref'), $id)); }
+  my $optional = undef;
+  if ($keyvals) {
+    my @options = ();
+    while (my ($key, $value) = each %$keyvals) {
+      $value = TokenizeInternal($value) if $value && !ref $value;
+      if ($key =~ /^(?:presentation_|content_|)reversion$/) {
+        $value = $value->substituteParameters(@revargs); }
+      push(@options, T_OTHER(',')) if @options;
+      push(@options, T_OTHER($key), T_OTHER('='), T_BEGIN, $value, T_END); }
+    $optional = Tokens(@options); }
+  return
+    Invocation(T_CS('\lx@dual'), $optional,
+    $content->substituteParameters(@cargs),
+    I_wrap({}, $presentation->substituteParameters(@pargs))); }
+
+# A little helper to shorten things up a bit; simply generates #1 (or whatever)
+sub I_arg {    # uncoditionally create an arg token
+  return bless ["$_[0]", CC_ARG], 'LaTeXML::Core::Token'; }
+
+sub I_xmarg {
+  my ($id, $arg) = @_;
+  return Tokens(T_CS('\lx@xmarg'),
+    T_BEGIN, (ref $id ? $id : T_OTHER($id)), T_END, T_BEGIN, $arg, T_END); }
+
+sub I_xmref {
+  my ($id) = @_;
+  return Tokens(T_CS('\lx@xmref'), T_BEGIN, (ref $id ? $id : T_OTHER($id)), T_END); }
+
+#======================================================================
+# We OUGHT to be able to do this using \llap,\rlap,\hss...
+DefMacro('\lx@tweaked{}{}', '\ifmmode\lx@math@tweaked{#1}{#2}\else\lx@text@tweaked{#1}{#2}\fi');
+DefConstructor('\lx@math@tweaked RequiredKeyVals {}',
+  "<ltx:XMWrap $XMath_attributes>#2</ltx:XMWrap>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($kv,      $body)    = $whatsit->getArgs;
+    XMath_copy_keyvals($stomach, $whatsit);
+    $whatsit->setFont($body->getFont);
+    return; },
+  reversion => '#2');
+
+DefConstructor('\lx@text@tweaked RequiredKeyVals {}',
+  "<ltx:text _noautoclose='1' %&GetKeyVals(#1)>#2</ltx:text>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($kv,      $body)    = $whatsit->getArgs;
+    $whatsit->setProperties($kv->getPairs); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Support for rewrite rules
+#**********************************************************************
+DefConstructor('\WildCard[]', "<_WildCard_>#1</_WildCard_>");
+DefConstructorI('\WildCardA', undef, "<_WildCard_/>");
+DefConstructorI('\WildCardB', undef, "<_WildCard_/>");
+DefConstructorI('\WildCardC', undef, "<_WildCard_/>");
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Properties for plain characters.
+# These are allowed in plain text, but need to act a bit special in math.
+DefMathI('=', undef, '=', role => 'RELOP', meaning => 'equals');
+DefMathI('+', undef, '+', role => 'ADDOP', meaning => 'plus');
+DefMathI('-', undef, '-', role => 'ADDOP', meaning => 'minus');
+## Redefine, if we want Unicode minus
+##DefMathI('-', undef, "\x{2212}", role => 'ADDOP',   meaning  => 'minus');
+DefMathI('*', undef, "\x{2217}", role => 'MULOP',   meaning => 'times');
+DefMathI('/', undef, '/',        role => 'MULOP',   meaning => 'divide');
+DefMathI('!', undef, '!',        role => 'POSTFIX', meaning => 'factorial');
+DefMathI(',', undef, ',',        role => 'PUNCT');
+DefMathI('.', undef, '.',        role => 'PERIOD');
+DefMathI(';', undef, ';',        role => 'PUNCT');
+DefMathI('(', undef, '(', role => 'OPEN',      stretchy => 'false');
+DefMathI(')', undef, ')', role => 'CLOSE',     stretchy => 'false');
+DefMathI('[', undef, '[', role => 'OPEN',      stretchy => 'false');
+DefMathI(']', undef, ']', role => 'CLOSE',     stretchy => 'false');
+DefMathI('|', undef, '|', role => 'VERTBAR',   stretchy => 'false');
+DefMathI(':', undef, ':', role => 'METARELOP', name     => 'colon');  # Seems like good default role
+DefMathI('<', undef, '<', role => 'RELOP',     meaning  => 'less-than');
+DefMathI('>', undef, '>', role => 'RELOP',     meaning  => 'greater-than');
+
+# NOTE: Need to evolve Ligatures to be easier to write.
+# rough draft of tool to make ligatures more sane to write...
+# It is tempting to handle these with macros,
+# But that tends to run afoul of tricky packages like babel that make : active as well!
+# Even using mathactive doesn't help.
+sub TestNode {
+  my ($node, $qname, $content, %attrib) = @_;
+  return $node
+    && ($LaTeXML::DOCUMENT->getModel->getNodeQName($node) eq $qname)
+    && ((!defined $content) || (($node->textContent || '') eq $content))
+    && !grep { $node->getAttribute($_) ne $attrib{$_} } keys %attrib; }
+
+# Recognize !!
+DefMathLigature("!!" => "!!", role => 'POSTFIX', meaning => 'double-factorial');
+
+# Recognize :=
+DefMathLigature(":=" => ":=", role => 'RELOP', meaning => 'assign');
+
+#======================================================================
+# Combine letters, when the fonts are right. (sorta related to mathcode)
+# well, maybe a letter followed by letters & digits?
+DefMathLigature(matcher => sub { my ($document, $node) = @_;
+    my @chars = ();
+    my $font  = $document->getNodeFont($node);
+    if ($font->isSticky) {
+      my $n      = 0;
+      my $string = '';
+      my $s      = '';
+      while ($node
+        && ($document->getModel->getNodeQName($node) eq 'ltx:XMTok')
+        && ($document->getNodeFont($node)->equals($font))
+        && (!$node->hasAttribute('name'))
+        && ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
+          || (($node->getAttribute('role') || 'UNKNOWN') eq 'NUMBER'))
+        && (($s = $node->textContent . $s) =~ /^[0-9a-zA-Z]+$/)) {
+        $string = $s;
+        do { $node = $node->previousSibling; $n++;
+        } while $node && ($node->nodeType == XML_COMMENT_NODE); }
+      (($string =~ /^[a-zA-Z]/) && ($n > 1) ? ($n, $string, role => 'UNKNOWN', meaning => undef) : undef);
+} });
+
+#======================================================================
+# Combine digits in math.
+
+foreach my $digit (qw(0 1 2 3 4 5 6 7 8 9)) {
+  DefMathI($digit, undef, $digit, role => 'NUMBER', meaning => $digit); }
+
+# Would probably be best to collapse all XMHint/spaces at the earliest stage.
+our %space_chars = (negthinspace => '', thinspace => "\x{2009}",
+  medspace => "\x{2005}", thickspace => "\x{2004}", space => ' ');
+
+# This is getting out-of-hand;
+# (1) this gets done after document build, so we query the document/node for language
+# rather than using something specified during digestion (eg. macros, roles...)
+# (2) the way we've specified the decimal & thousands separators (language dependent)
+# is completely insufficient; should leverage numprint or babel or ... ?
+# (3) the way we're detecting the chars is a mess: a mix of string content & role!
+# If we could accommodate multiple roles, maybe a separate role could be set on the tokens
+# (a period could be a PERIOD or a DECIMAL_SEPARATOR, eg)
+
+my %decimal_separator   = (en => '.', de => ',', fr => ',', nl => ',', pt => ',', es => ',');
+my %thousands_separator = (en => ',', de => '.', fr => '.', nl => '.', pt => '.', es => '.');
+DefMathLigature(matcher => sub { my ($document, $node) = @_;
+    my $lang = $document->getNodeLanguage($node);
+    $lang =~ s/-\w+$// if $lang;    # strip off region code, if any.
+    my $dec     = ($lang && $decimal_separator{$lang})   || '.';
+    my $thou    = ($lang && $thousands_separator{$lang}) || ',';
+    my $decrole = ($dec eq '.' ? 'PERIOD' : '');
+    # my $skip  = Dimension('5mu')->valueOf;
+    my @chars = ();
+    my ($n, $string, $number, $w, $font) = (0, '', '', 0, undef);
+    # NOTE: We're scanning chars from END!
+    while ($node) {
+      my $qn = $document->getModel->getNodeQName($node);
+      if ($qn =~ /^(ltx:XMTok|ltx:XMWrap)$/) {
+        my $r    = ($node->getAttribute('role') || '');
+        my $f    = $document->getNodeFont($node);
+        my $text = $node->textContent;
+        if (($r eq 'NUMBER') && (!$font || ($f->equals($font)))) {    # A number in same font?
+          $font   = $f;
+          $string = $text . $string;
+          $number = $node->getAttribute('meaning') . $number; }
+        elsif (!$n) {    # any following cases are not allowed as LAST char
+          last; }
+        # if thousands separator (but NOT simultaneously PUNCT!!!! Be paranoid about lists)
+        elsif (($text eq $thou) && ($r ne 'PUNCT')) {
+          $string = $text . $string; }    # Add to string, but omit from number
+                                          # if decimal separator, turn it into "standard" "."
+        elsif (($text eq $dec) || ($r eq $decrole)) {    # was $r eq 'PERIOD'
+          $string = $node->textContent . $string;
+          $number = '.' . $number; }
+        else {
+          last; } }
+      # OR if XMHint with 0 <= width <= thickmuskip (5mu == ?)
+      elsif ($qn eq 'ltx:XMHint') {
+        my $s;
+        if (($s = $node->getAttribute('name')) && ($s = $space_chars{$s})) {
+          $string = $s . $string; }
+        else {
+          last; } }
+      else {
+        last; }
+      do { $node = $node->previousSibling; $n++;
+      } while $node && ($node->nodeType == XML_COMMENT_NODE); }
+    if (($n > 1) && ($number =~ /\d/)) {
+      ($n, $string, meaning => $number, role => 'NUMBER'); } });
+
+# This needs to be applied AFTER numbers have been resolved!
+# If we have a non-negative integer (no signs, decimals,...)
+# followed by a fraction dividing two non-negative integers,
+# Figure it's a mixed fraction --- ADDING the fraction to the number, not multiplying!
+DefRewrite(select => ['descendant-or-self::ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+      . '[ following-sibling::*[1][self::ltx:XMApp]'
+      . ' [child::*[1][self::ltx:XMTok[@meaning="divide"]]]'
+      . ' [child::*[2]['
+      . 'self::ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+      . 'or self::ltx:XMArg[count(child::*)=1]/ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+      . ']]'
+      . ' [child::*[3]['
+      . 'self::ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+      . 'or self::ltx:XMArg[count(child::*)=1]/ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+      . ']]'
+      . ']',
+    2],
+  replace => sub { my ($document, $number, $frac) = @_;
+    my $box = $document->getNodeBox($number);
+    $document->openElement('ltx:XMApp', _box => $box);
+    $document->insertMathToken("\x{2064}",    # Invisible Plus!
+      meaning => 'plus', role => "ADDOP", _box => $box);
+    $document->getNode->appendChild($number);
+    $document->getNode->appendChild($frac);
+    $document->closeElement('ltx:XMApp'); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Matrices;  Generalized
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# The delimiters around a matrix may simply be notational, or for readability,
+# and don't affect the "meaning" of the array structure as a matrix.
+# In that case, we'll use an XMDual to indidate the content is simply the matrix,
+# but the presentation includes the delimiters.
+# HOWEVER, the delimeters may also signify an OPERATION on the matrix
+# in which case the application & meaning of that operator must be supplied.
+
+# keys are
+#  name  : the name of the environment (for reversion)
+#  datameaning: the (presumed) meaning of the array construct (typically 'matrix')
+#  delimitermeaning  : the operator meaning due to delimiters (eg. norm)(as applied to the array)
+#  style : typically \displaystyle, \textstyle...
+#  left  : TeX code for left of matrix
+#  right  : TeX code for right
+#  ncolumns : the number of columns (default is not limited)
+DefKeyVal('lx@GEN', 'style', 'UndigestedKey');
+
+DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
+    my ($stomach, $kv) = @_;
+    $stomach->bgroup;
+    my $style = $kv->getValue('style')               || T_CS('\textstyle');
+    my $align = ToString($kv->getValue('alignment')) || 'c';
+    # We really should be using ReadAlignmentTemplate (LaTeXML::Core::Alignment)
+    # but we'd have to convert it to a repeating spec somehow.
+    my @colspec = (before => Tokens(($align =~ /^(?:c|r)/ ? (T_CS('\hfil')) : ()), $style),
+      after => Tokens(($align =~ /^(?:c|l)/ ? (T_CS('\hfil')) : ())));
+    my $ncols      = ToString($kv->getValue('ncolumns'));
+    my %attributes = ();
+    foreach my $key (qw(rowsep)) {    # Probably more?
+      if (my $value = $kv->getValue($key)) {
+        $attributes{$key} = $value; } }
+    alignmentBindings(LaTeXML::Core::Alignment::Template->new(
+        ($ncols ? (columns => [map { { @colspec } } 1 .. $ncols])
+          : (repeated => [{@colspec}]))),
+      'math',
+      (keys %attributes ? (attributes => {%attributes}) : ()));    # });
+    Let("\\\\",         '\@alignment@newline');
+    Let('\lx@intercol', '\lx@math@intercol');
+    Let('\@row@before', '\@empty');    # Disable special row treatment (eg. numbering) unless requested
+    Let('\@row@after',  '\@empty');
+});
+
+DefPrimitive('\lx@end@gen@matrix', sub { $_[0]->egroup; });
+
+DefMacro('\lx@gen@plain@matrix{}{}',
+  '\lx@gen@matrix@bindings{#1}'
+    . '\lx@gen@plain@matrix@{#1}{\@start@alignment#2\@finish@alignment}'
+    #    . '\lx@gen@plain@matrix@{#1}{\@start@alignment#2\cr\@finish@alignment}'
+    . '\lx@end@gen@matrix');
+
+# The delimiters on a matrix are presumably just for notation or readability (not an operator);
+# the array data itself is the matrix.
+DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
+  "?#needXMDual("
+    . "<ltx:XMDual>"
+    . "?#delimitermeaning(<ltx:XMApp><ltx:XMTok meaning='#delimitermeaning'/>)()"
+    . "?#datameaning(<ltx:XMApp><ltx:XMTok meaning='#datameaning'/>)()"
+    . "<ltx:XMRef _xmkey='#xmkey'/>"
+    . "?#delimitermeaning(</ltx:XMApp>)()"
+    . "?#datameaning(</ltx:XMApp>)()"
+    . "<ltx:XMWrap>#left<ltx:XMArg _xmkey='#xmkey'>#2</ltx:XMArg>#right</ltx:XMWrap>"
+    . "</ltx:XMDual>"
+    . ")("
+    . "#2"
+    . ")",
+  properties => sub { %{ $_[1]->getKeyVals }; },
+  reversion  => sub {
+    my ($whatsit, $kv, $body) = @_;
+    my $name      = ToString($kv->getValue('name'));
+    my $alignment = $whatsit->getProperty('alignment');
+##    (T_CS('\\' . $name), T_BEGIN, Revert($body), T_END); },
+##    (T_CS('\\' . $name), T_BEGIN, Revert($alignment), T_END); },
+    (T_CS('\\' . $name), T_BEGIN, $alignment->revert, T_END); },
+
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $kv = $whatsit->getArg(1);
+    if ($kv->getValue('datameaning') || $kv->getValue('delimitermeaning')) {
+      $whatsit->setProperties(
+        needXMDual => 1,
+        xmkey      => LaTeXML::Package::getXMArgID()); }
+    $whatsit->setProperties(alignment => LookupValue('Alignment'));
+    return; });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Cases: Generalized
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# keys are
+#  name  : the name of the command (for reversion)
+#  meaning: the (presumed) meaning of the construct
+#  style : \textstyle or \displaystyle
+#  conditionmode : mode of 2nd column, text or math
+#  left  : TeX code for left of cases
+#  right  : TeX code for right
+
+DefConstructorI('\lx@cases@condition', undef,
+  "<ltx:XMText>#body</ltx:XMText>",
+  alias => '', beforeDigest => sub { $_[0]->beginMode('text'); }, captureBody => 1);
+DefConstructorI('\lx@cases@end@condition', undef, "", alias => '',
+  beforeDigest => sub { $_[0]->endMode('text'); });
+
+DefPrimitive('\lx@gen@cases@bindings RequiredKeyVals:lx@GEN', sub {
+    my ($stomach, $kv) = @_;
+    $stomach->bgroup;
+    my $style = $kv->getValue('style') || T_CS('\textstyle');
+    $style = T_CS($style) unless ref $style;
+    my @mode = (ToString($kv->getValue('conditionmode')) eq 'text'
+      ? (T_MATH) : ());
+    my $condtext = ToString($kv->getValue('conditionmode')) eq 'text';
+    alignmentBindings(LaTeXML::Core::Alignment::Template->new(
+        columns => [
+          { before => Tokens($style), after => Tokens(T_CS('\hfil')) },
+          { before => Tokens($style,
+              ($condtext ? (T_CS('\lx@cases@condition')) : ())),
+            after => Tokens(T_CS('\lx@column@trimright'),
+              ($condtext ? (T_CS('\lx@cases@end@condition')) : ()),
+              T_CS('\hfil')) }]),
+      'math');
+    Let("\\\\",         '\@alignment@newline');
+    Let('\lx@intercol', '\lx@math@intercol');
+    DefMacro('\@row@before', '');    # Don't inherit counter stepping from containing environments
+    DefMacro('\@row@after',  '');
+});
+
+DefMacro('\lx@gen@plain@cases{}{}',
+  '\lx@gen@cases@bindings{#1}'
+    . '\lx@gen@plain@cases@{#1}{\@start@alignment#2\@finish@alignment}'
+    . '\lx@end@gen@cases');
+DefPrimitive('\lx@end@gen@cases', sub { $_[0]->egroup; });
+
+# The logical structure for cases extracts the columns of the alignment
+# to give alternating value,condition (an empty condition is replaced by "otherwise" !?!?!)
+DefConstructor('\lx@gen@plain@cases@ RequiredKeyVals:lx@GEN {}',
+  '<ltx:XMWrap>#left#2#right</ltx:XMWrap>',
+  properties     => sub { %{ $_[1]->getKeyVals }; },
+  afterConstruct => sub {
+    my ($document) = @_;
+    if (my $point = $document->getElement->lastChild) {
+      # Get the sequence of alternating (case, condition).
+      # Expecting ltx:XMArray/ltx:XMRow/ltx:XMCell [should have /ltx:XMArg, but could be empty!!!]
+      my @cells = $document->findnodes('ltx:XMArray/ltx:XMRow/ltx:XMCell', $point);
+      my @stuff = map { ($_->hasChildNodes ? createXMRefs($document, element_nodes($_))
+          : ['ltx:XMText', {}, 'otherwise']) } @cells;
+      $document->replaceTree(['ltx:XMDual', {},
+          ['ltx:XMApp', {}, ['ltx:XMTok', { meaning => 'cases' }], @stuff],
+          $point],
+        $point); } },
+  reversion => sub {
+    my ($whatsit, $kv, $body) = @_;
+    my $name = $kv->getValue('name');
+    (T_CS('\cases'), T_BEGIN, Revert($body), T_END); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Support for MathFork.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# [Note: this block of code seems like it belongs somewhere else]
+# A MathFork supports document-level alignment of math,
+# by collecting equations into an equationgroup. Each equation can contain
+# one or more MathFork structures which separate the semantically meaningful
+# equation (if possible) from the collection of rows and/or column fragments
+# for alignment. The goal is to be able to present the aligned structure
+# composed of various mathematical fragments in a grid, and yet still represent
+# the (presumably) meaningful complete formula.
+#
+# The structure looks like
+#    <MathFork>
+#        <Math><XMath>...</XMath></Math>
+#        <MathBranch>..</MathBranch>
+#    </MathFork>
+# The initial, "main", Math will contain a complete formula (hopefully).
+# The MathBranch will typically contain one or more <tr>, each of which
+# contains one or more <td>, each of which contains a <Math> representing
+# a cell of the aligned structure.
+
+#======================================================================
+# openMathFork($document,$equation) will add a MathFork structure
+# to the given $equation, and return ($mainfork, $branch)
+# where $mainfork is the initial <ltx:Math> and $branch is the <ltx:MathBranch>.
+# You'll probably want to be adding Stuff to one or both of $mainfork & $branch.
+# Most typically, you'll be finding math fragments that you've found in the
+# current content of $equation and adding them into both $mainfork & $branch
+# using addColumnToMathFork.
+sub openMathFork {
+  my ($document, $equation) = @_;
+  my $fork     = $document->openElementAt($equation, 'ltx:MathFork');
+  my $mainfork = $document->openElementAt($fork, 'ltx:Math', _box => MathWhatsit());    # Start EMPTY!
+  my $xmath    = $document->openElementAt($mainfork, 'ltx:XMath');
+  my $branch   = $document->openElementAt($fork,     'ltx:MathBranch');
+  return ($mainfork, $branch); }
+
+# Close the appropriate elements of an ltx:MathFork created with openMathFork.
+sub closeMathFork {
+  my ($document, $equation, $mainfork, $branch) = @_;
+  # Now, close them all.
+  $document->closeElementAt($branch);
+  $document->closeElementAt($document->getFirstChildElement($mainfork));
+  $document->closeElementAt($mainfork);
+  #  $document->closeElementAt($mainfork->parentNode); }
+  # More defensive? Sometimes we end up with a DocumentFragment as parent of $mainfork????!?!?!?!
+  my @mfs = $document->findnodes('ltx:MathFork', $equation);
+  $document->closeElementAt($mfs[-1]);
+  my $fork     = $branch->parentNode;
+  my @branches = $fork->childNodes;
+  if (scalar(@branches) == 1) {    # Whoops, came up empty!
+    $fork->unbindNode; }
+  return; }
+
+# Create an inline math Whatsit from a list of math Boxes, Lists or Whatsits.
+# Note that we unwrap @hidden@bgroup's (!) and normalize \displaystyle (!)
+# This is primarily useful for synthesizing the Box for a newly created ltx:Math
+# that is synthesized from other math content within a ltx:MathFork.
+sub MathWhatsit {
+  my (@items) = @_;
+  my $hbgd = LookupDefinition(T_CS('\@hidden@bgroup'));
+  @items = map { ((ref $_ eq 'LaTeXML::Core::Whatsit') && ($_->getDefinition eq $hbgd)
+      ? $_->getBody->unlist : ($_)) }
+    map { $_->unlist } grep { $_ } @items;
+  my $locator = undef;
+  foreach my $i (@items) {
+    last if $locator;
+    $locator = $i->getLocator; }
+  my @styles = grep { UnTeX($_) eq '\displaystyle' } @items;
+  if (@styles) {
+    @items = ($styles[0], grep { UnTeX($_) ne '\displaystyle' } @items); }
+  return LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')), [],
+    body    => List(@items, mode => 'math'),
+    trailer => T_CS('\@@ENDINLINEMATH'),
+    locator => $locator, isMath => 1); }
+
+#======================================================================
+# Add a new table column (ltx:td) into the ltx:MathBranch of a ltx:MathFork.
+# The insertion point will be at $inbranch, presumably an ltx:tr
+# [created in the ltx:MathBranch using: $document->openElementAt($branch,'ltx:tr'); ]
+# The content of $cell (an ltx:_Capture_) is typically a single ltx:Math.
+# (but occasionally mixed math & ltx:text; some cases may need more semantic analysis?)
+# The content of $cell will be MOVED into the new column (ltx:td), (w/ ID's intact)
+# and CLONED (w/modified ID's) onto the end of the first child of the main branch, $mainfork,
+# of the ltx:MathFork [A Math Whatsit is also synthesized for the main branch, for TeX, etc!).
+# Thus, the collection of rows/columns fragments represents  the alignment,
+# while the main branch synthesizes the (presumed) semantic whole.
+# The now-empty $cell is then removed from its parent & the document.
+sub addColumnToMathFork {
+  my ($document, $mainfork, $inbranch, $cell) = @_;
+  my $td = $document->openElementAt($inbranch, 'ltx:td');
+  if (my $align = $cell->getAttribute('align')) {
+    $document->setAttribute($td, align => $align); }
+  if (my $colspan = $cell->getAttribute('colspan')) {
+    $document->setAttribute($td, colspan => $colspan); }
+  # Remove the _Capture_ from the document; parts will get cloned &/or reinserted
+  $cell->unbindNode;
+  # Usually, we will have captured a single ltx:Math node, but occasionally text?
+  # But in perverse cases, might have NOTHING!
+  foreach my $node ($cell->childNodes) {
+    # Add a Clone of the cell's contents to the main branch (This will get modified id's)
+    local $LaTeXML::Core::Document::ID_SUFFIX = '.mf';
+    # Usually, an ltx:Math element will be the complete content of the _Capture_ (cell)
+    my $type = $document->getNodeQName($node);
+    my $box;
+    if ($type eq 'ltx:Math') {
+      if (my $xmath = $document->getFirstChildElement($node)) {
+        # But we CLONE the contents of it's ltx:XMath onto the end of
+        # the mainfork ltx:Math/ltx:XMath (under $mainfork), modifying id's along the way.
+        $document->appendClone($document->getFirstChildElement($mainfork),
+          $document->getChildElements($xmath));
+        # Add the boxes from this cell to the previously collected ones in the main branch.
+        $box = $document->getNodeBox($node)->getBody; } }
+    # The next two cases are unusual (slightly unexpected?),
+    # typically coming from abused eqnarrays?  May need more analysis preceding the MathFork'ing!
+    elsif (($type eq 'ltx:text') || ($type eq 'ltx:p')) {
+      next if $node->textContent eq '';
+      my $txt = $document->openElementAt($document->getFirstChildElement($mainfork), 'ltx:XMText');
+      $document->appendClone($txt, $node);
+      $document->closeElementAt($txt);
+      $box = $document->getNodeBox($node); }
+    elsif ($type eq '#PCDATA') {
+      my $string = $node->textContent;
+      #      next if $string eq '';
+      next if $string =~ /^\s*$/;
+      my $txt = $document->openElementAt($document->getFirstChildElement($mainfork), 'ltx:XMText');
+      $txt->appendText($string);
+      $document->closeElementAt($txt);
+      $box = Box($string); }
+    elsif ($type eq '#Comment') { }
+    else {
+      Warn('unexpected', $type, $cell,
+        "Don't know how to synthesize equation with $type in column"); }
+    # Add the boxes from this cell to the previously collected ones in the main branch.
+    if ($box) {
+      my $composed = MathWhatsit($document->getNodeBox($mainfork)->getBody, $box);
+      $document->setNodeBox($mainfork,             $composed);
+      $document->setNodeBox($mainfork->firstChild, $composed); }    # And also to the XMath element!
+        # Finally MOVE (really copy) the node from the _Capture_ ($cell) to the td (in the fork)
+        # this keeps the same IDs as original; (& appendTree may remove id's from $node!)
+    $document->unRecordNodeIDs($node);
+    $document->appendTree($td, $node); }
+  # We can now remove the _Capture_ (and anything still in it?)
+  #  $cell->unbindNode;
+  $document->closeElementAt($td);
+  return; }
+
+#======================================================================
+# Higher level support for equationgroups
+# equationgroups hold a collection of equations
+# each of which will likely have MathFork within that separates
+# the complete semantic expression from a collection of rows & column cells.
+# The latter are used to present an aligned set of equations;
+# the former hopefully will be useful for the math....?
+#
+# Typically, there will be some sort of alignment macros, using &
+# that will be set up to INITIALLY build an arrangement like:
+#  <equationgroup>
+#     <equation><_Capture>cellmath</_Capture>...</equation>
+# that is, an <equation> for each row.
+# Afterwards, we can analyze the cells and determine how the cells and/or rows
+# will be divided up into "real" equations, and insert some MathFork's to reflect.
+
+# For example, the <equationgroup> represents a whole eqnarray,
+# and (initially, at least) the rows are represented as <equation>'s.
+# Some analysis hopefully allows us to recognize
+
+# Given an ltx:equationgroup containing several ltx:equations (representing rows),
+# equationgroupJoinRows combines one or more of those rows into a
+# semantically meaningful equation and sets up the appropriate MathForks within.
+# This is typically useful for eqnarray, after you have analyzed
+# which subsequences of ltx:equations actually correspond to single semantic equations.
+sub equationgroupJoinRows {
+  my ($document, $equationgroup, @equations) = @_;
+  # Make a new equation, with a single MathFork container
+  my $equation = $document->openElementAt($equationgroup, 'ltx:equation');
+  $equationgroup->insertBefore($equation, $equations[0]);    # Move to correct position.
+                                                             # move labels, id, refnum to new equation
+  my ($labels, $id, $idctr, $idctrm, $tags);
+  foreach my $eq (@equations) {
+    if (my $l = $eq->getAttribute('labels')) {
+      $labels = ($labels ? "$labels $l" : $l); }
+    $id = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
+    $eq->removeAttribute('xml:id')    if $id;
+    $tags = $document->findnode('ltx:tags', $eq);
+    # Annoying bookkeeping (should be more built in?)
+    $idctr  = $eq->getAttribute('_ID_counter_')   if $eq->hasAttribute('_ID_counter_');
+    $idctrm = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
+  $document->unRecordID($id)                                      if $id;
+  $document->setAttribute($equation, labels => $labels)           if $labels;
+  $document->setAttribute($equation, 'xml:id' => $id)             if $id;
+  $document->setAttribute($equation, '_ID_counter_' => $idctr)    if $idctr;
+  $document->setAttribute($equation, '_ID_counter_m_' => $idctrm) if $idctrm;
+  $equation->appendChild($tags)                                   if $tags;
+
+  # Scan equations to see which ones likely are continuations of previous
+  my ($mainfork, $branch) = openMathFork($document, $equation);
+  foreach my $eq (@equations) {
+    # remove equation; parts will be added in by adding to mathfork (hopefully taking care of ids)
+    $eq->unbindNode;
+    my $tr    = $document->openElementAt($branch, 'ltx:tr');
+    my @cells = $document->findnodes('ltx:_Capture_', $eq);
+    $document->setAttribute($tr, class => 'ltx_eqn_lefteqn')
+      if ($cells[0]->getAttribute('class') || '') =~ /\blefteqn\b/;
+    foreach my $cell (@cells) {
+      addColumnToMathFork($document, $mainfork, $tr, $cell); }
+    $document->closeElementAt($tr); }
+  closeMathFork($document, $equation, $mainfork, $branch);
+  $document->closeElementAt($equation);
+  return; }
+
+# Given an equation generated in an equationgroup,
+# collect each $ncols columns into a MathFork structure,
+# with the formatted portion being the columns.
+# This is typically useful for AMS's align structures,
+# which contain several columns, each pair of which represent a semantic equation.
+sub equationgroupJoinCols {
+  my ($document, $ncols,    $equation) = @_;
+  my ($col,      $mainfork, $branch)   = (0, undef, undef);
+  foreach my $cell ($document->findnodes('ltx:_Capture_', $equation)) {
+    next unless $document->getNodeQName($cell) =~ /(.*?:)?_Capture_$/;
+    if (($col++ % $ncols) == 0) {    # Create new MathFork every $ncols cells.
+      closeMathFork($document, $equation, $mainfork, $branch) if $mainfork;
+      ($mainfork, $branch) = openMathFork($document, $equation); }
+    addColumnToMathFork($document, $mainfork, $branch, $cell); }
+  closeMathFork($document, $equation, $mainfork, $branch) if $mainfork;
+  return; }
+
+#**********************************************************************
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+

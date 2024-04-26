@@ -1979,7 +1979,7 @@ my %definition_name = (    # [CONSTANT]
   'ldf' => 'language definitions', 'def' => 'definitions', 'dfu' => 'definitions');
 
 my $findfile_options = {    # [CONSTANT]
-  type => 1, notex => 1, noltxml => 1, searchpaths_only => 1 };
+  type => 1, notex => 1, noltxml => 1, searchpaths_only => 1, installation_subdir => 1 };
 
 sub FindFile {
   my ($file, %options) = @_;
@@ -2033,7 +2033,8 @@ sub FindFile_aux {
 
   # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
   if (!$options{noltxml}
-    && ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package'))) {
+    && ($path = pathname_find("$file.ltxml", paths => $ltxml_paths,
+        installation_subdir => $options{installation_subdir} || 'Package'))) {
     return $path; }
   # Else if we're interpreting rawtex, and can find the file as is, take it.
   elsif (!$options{notex} && ($interpreting || $interpretable)
@@ -2457,7 +2458,7 @@ sub AddToMacro {
 my $inputdefinitions_options = {    # [CONSTANT]
   options   => 1, withoptions      => 1, handleoptions => 1,
   type      => 1, as_class         => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1,
-  at_letter => 1, searchpaths_only => 1, reloadable    => 1 };
+  at_letter => 1, searchpaths_only => 1, reloadable    => 1, installation_subdir => 1 };
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
 #   after=>code or tokens or string as $name.$type-h@@k macro. (executed after the package is loaded)
@@ -2494,7 +2495,9 @@ sub InputDefinitions {
         "Option clash for file $filename with options '$curroptions'",
         "previously loaded with '$prevoptions'") unless $curroptions eq $prevoptions; } }
   if (my $file = FindFile($filename, type => $options{type},
-      notex => $options{notex}, noltxml => $options{noltxml}, searchpaths_only => $options{searchpaths_only})) {
+      notex => $options{notex}, noltxml => $options{noltxml}, searchpaths_only => $options{searchpaths_only},
+      installation_subdir => $options{installation_subdir}
+  )) {
     my $pushpop = LookupDefinition(T_CS('\@pushfilename'))
       && LookupDefinition(T_CS('\@popfilename'));
     if ($options{handleoptions}) {
@@ -2638,7 +2641,8 @@ sub LoadClass {
 sub LoadPool {
   my ($pool) = @_;
   $pool = ToString($pool) if ref $pool;
-  if (my $success = InputDefinitions($pool, type => 'pool', notex => 1, noerror => 1)) {
+  if (my $success = InputDefinitions($pool, type => 'pool', notex => 1, noerror => 1,
+      installation_subdir => 'Engine')) {
     return $success; }
   else {
     Error('missing_file', "$pool.pool.ltxml", $STATE->getStomach->getGullet,

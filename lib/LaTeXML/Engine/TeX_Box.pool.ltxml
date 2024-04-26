@@ -1,0 +1,703 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX_Box                                                             | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#use Unicode::Normalize;
+#use LaTeXML::Util::Pathname;
+#use List::Util qw(min max);
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Box Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+# These define the handler for { } (or anything of catcode BEGIN, END)
+
+# These are actually TeX primitives, but we treat them as a Whatsit so they
+# remain in the constructed tree.
+#DefConstructor('{','#body', beforeDigest=>sub{$_[0]->bgroup;}, captureBody=>1);
+######DefPrimitive('{', sub {
+DefPrimitive(T_BEGIN, sub {
+    my ($stomach) = @_;
+    $stomach->bgroup;
+    my $open   = Box(undef, undef, undef, T_BEGIN, isEmpty => 1, alignmentSkippable => 1);
+    my $ismath = $STATE->lookupValue('IN_MATH');
+    my @body   = $stomach->digestNextBody();
+    List($open, @body, mode => ($ismath ? 'math' : 'text')); });
+
+#######DefPrimitive('}', sub {
+DefPrimitive(T_END, sub {
+    my $f = LookupValue('font');
+    $_[0]->egroup;
+    Box(undef, $f, undef, T_END, isEmpty => 1, alignmentSkippable => 1); });
+
+# These are for those screwy cases where you need to create a group like box,
+# more than just bgroup, egroup,
+# BUT you DON'T want extra {, } showing up in any untex-ing.
+DefConstructor('\@hidden@bgroup', '#body', beforeDigest => sub { $_[0]->bgroup; }, captureBody => 1,
+  reversion => sub { Revert($_[0]->getProperty('body')); });
+DefConstructor('\@hidden@egroup', '', afterDigest => sub { $_[0]->egroup; },
+  reversion => '');
+
+#======================================================================
+DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
+
+DefConstructor('\lx@framed[]{}',
+  "<ltx:text framed='#frame' _noautoclose='1'>#2</ltx:text>",
+  properties => { frame => sub { ToString($_[1] || 'rectangle'); } });
+DefConstructor('\lx@hflipped{}',
+  "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>");
+
+sub reportNoUnicode {
+  my ($cs) = @_;
+  $cs = ToString($cs);
+  if (!LookupMapping('missing_unicode' => $cs)) {
+    Warn('expected', 'unicode', $cs,
+      "There's no Unicode equivalent for the symbol '$cs'");
+    AssignMapping('missing_unicode' => $cs => 1); }
+  return; }
+# Slightly contrived so that this can be used within a DefMath
+# and still declare & get the semantic properties.
+DefPrimitive('\lx@math@nounicode DefToken', sub {
+    my ($stomach, $cs) = @_;
+    reportNoUnicode($cs);
+    Box(ToString($cs), undef, undef, $cs, class => 'ltx_nounicode'); });
+
+DefConstructor('\lx@text@nounicode DefToken',
+  "<ltx:text _no_autoclose='true' class='ltx_nounicode'>#1</ltx:text>",
+  afterDigest => sub {
+    reportNoUnicode(ToString($_[1]->getArg(0))); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Box creation commands
+# ----------------------------------------------------------------------
+# \hbox           c  constructs a box holding horizontal material.
+# \vbox           c  constructs a box holding vertical material.
+# \vtop           c  is an alternate way to construct a box holding vertical material.
+
+# \everyhbox      pt holds tokens inserted at the start of every hbox.
+# \everyvbox      pt holds tokens inserted at the start of every vbox.
+# ======================================================================
+
+sub revert_spec {
+  my ($whatsit, $keyword) = @_;
+  my $value = $whatsit->getProperty($keyword);
+  return ($value ? (Explode($keyword), Revert($value)) : ()); }
+
+DefParameterType('BoxSpecification', sub {
+    my ($gullet) = @_;
+    if (my $key = $gullet->readKeyword('to', 'spread')) {
+      my $keyvals = LaTeXML::Core::KeyVals->new(undef, undef, skipMissing => 1);
+      $keyvals->setValue($key, $gullet->readDimension);
+      $keyvals; } },
+  reversion => sub {
+    my ($spec) = @_;
+    if (my $to = $spec && $spec->getValue('to')) {
+      return Tokens(Tokenize('to'), Revert($to)); }
+    elsif (my $spread = $spec && $spec->getValue('spread')) {
+      return Tokens(Tokenize('spread'), Revert($spread)); }
+    else {
+      return; } },
+  optional => 1, undigested => 1);
+
+# Risky: I think this needs to be digested as a body to work like TeX (?)
+# but parameter think's it's just parsing from gullet...
+sub readBoxContents {
+  no warnings 'recursion';
+  my ($gullet, $everybox) = @_;
+  my $t;
+  while (($t = $gullet->readToken) && !$t->defined_as(T_BEGIN)) { }    # Skip till { or \bgroup
+      # Now, insert some extra tokens, if any, possibly from \afterassignment
+  if (my $token = LookupValue('BeforeNextBox')) {
+    AssignValue(BeforeNextBox => undef, 'global');
+    $gullet->unread($token); }
+  # AND, insert any extra tokens passed in, due to everyhbox or everyvbox
+  $gullet->unread($everybox->unlist) if $everybox;
+  my ($contents, @stuff) = $STATE->getStomach->invokeToken(T_BEGIN);
+  return $contents; }
+
+DefRegister('\everyhbox', Tokens());
+DefRegister('\everyvbox', Tokens());
+
+DefParameterType('HBoxContents', sub {
+    readBoxContents($_[0], LookupValue('\everyhbox')); },
+  undigested => 1);    # Cause it already is digested!
+DefParameterType('VBoxContents', sub {
+    readBoxContents($_[0], LookupValue('\everyvbox')); },
+  undigested => 1);    # Cause it already is digested!
+
+# This re-binds a number of important control sequences to their default text binding.
+# This is useful within common boxing or footnote macros that can appear within
+# alignments or special environments that have redefined many of these.
+# You'll typically want this within a group or bounded=>1.
+AssignValue(TEXT_MODE_BINDINGS  => []);
+AssignValue(HTEXT_MODE_BINDINGS => []);
+AssignValue(VTEXT_MODE_BINDINGS => []);
+PushValue(HTEXT_MODE_BINDINGS => [T_MATH, T_CS('\@dollar@in@textmode')]);
+PushValue(VTEXT_MODE_BINDINGS => [T_MATH, T_CS('\@dollar@in@normalmode')]);
+###PushValue(TEXT_MODE_BINDINGS => [T_CS('\centerline'), T_CS('\relax')]);
+
+sub reenterTextMode {
+  my ($verticalmode) = @_;
+  map { Let($$_[0], $$_[1]) }
+    @{ LookupValue(($verticalmode ? 'VTEXT_MODE_BINDINGS' : 'HTEXT_MODE_BINDINGS')) },
+    @{ LookupValue('TEXT_MODE_BINDINGS') };
+  return }
+
+# Similarly, for metadata appearing within peculiar environments, fonts, etc
+# You'll typically want this within a group or bounded=>1.
+sub neutralizeFont {
+  AssignValue(font     => LaTeXML::Common::Font->textDefault(), 'local');
+  AssignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'local');
+  return; }
+
+sub REF {
+  my ($thing, $key) = @_;
+  return $thing && $$thing{$key}; }
+
+sub inSVG {
+  my $document = $LaTeXML::DOCUMENT;
+  my $context  = $document->getElement;
+  return $context && $document->getNodeQName($context) =~ /^svg:/; }
+
+# Collapse redundant svg:g nodes that have only certain
+# non-cummulative attributes
+Tag('svg:g', afterClose => \&collapseSVGGroup);
+my %collapsible_group_attributes = map { ($_ => 1); }
+  qw(fill fill-rule fill-opacity
+  stroke stroke-width stroke-linecap stroke-linejoin stroke-miterlimit
+  stroke-dasharray stroke-dashoffset stroke-opacity
+  color);
+
+# Collapse/remove/unwrap unneeded svg:g's to reduce depth of tree
+sub collapseSVGGroup {
+  my ($document, $node) = @_;
+  my ($nempty, $nredundant, $nmerged, $npopped, $npushed) = (0, 0, 0, 0, 0);
+  # Record the attributes on $node, for later use.
+  my %nodeattr = ();
+  foreach my $attr ($node->attributes) {
+    my $key = $attr->getName;
+    $nodeattr{$key} = $attr->getValue if ($key !~ /^_/); }
+  return if defined $nodeattr{'clip-path'};    # Needs separate svg:g node (?)
+  my @children = element_nodes($node);
+  # Remove empty svg:g children
+  foreach my $c (@children) {
+    if (($document->getNodeQName($c) eq 'svg:g') && !scalar(element_nodes($c))) {
+      $nempty++;
+      $document->removeNode($c); } }
+  @children = element_nodes($node) if $nempty;
+  # Move ahead, all leading children whose svg:g attributes completely mask $node's attributes.
+  # Could do same moving trailing children to back
+  my $c;
+  while (scalar(@children) && ($document->getNodeQName($c = $children[0]) eq 'svg:g')) {
+    my $nmasked = 0;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key !~ /^_/) && $collapsible_group_attributes{$key} && defined $nodeattr{$key}) {
+        $nmasked++; } }
+    last unless $nmasked == scalar(keys %nodeattr);              # child completely masks attr of node
+    $node->parentNode->insertBefore(shift(@children), $node);    # move it outside!
+    $npopped++; }
+  # Same story for trailing children, but move behind
+  while (scalar(@children) && ($document->getNodeQName($c = $children[-1]) eq 'svg:g')) {
+    my $nmasked = 0;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key !~ /^_/) && $collapsible_group_attributes{$key} && defined $nodeattr{$key}) {
+        $nmasked++; } }
+    last unless $nmasked == scalar(keys %nodeattr);              # child completely masks attr of node
+    $node->parentNode->insertAfter(pop(@children), $node);
+    $npushed++; }
+  # Now remove any redundant svg:g's (same attributes & values) [some left after above]
+  foreach my $c (@children) {
+    if ($c && ($document->getNodeQName($c) eq 'svg:g')) {        # for every nested svg:g
+      my $issame = 1;
+      foreach my $attr ($c->attributes) {
+        my $key = $attr->getName;
+###        if (($key !~ /^_/) && ($attr->getValue ne ($nodeattr{$key} || ''))) {
+        if (($key !~ /^_/)
+          && (($attr->getValue ne ($nodeattr{$key} || '')) || ($key eq 'transform'))) {
+          $issame = 0; } }
+      if ($issame) {    # child is completely redundant.
+        $document->unwrapNodes($c);
+        $nredundant++; } } }
+  @children = element_nodes($node) if $nredundant;
+  # Could check if $node is empty now?
+  # Then if only one left, and it's attributes can be migrated to $node, unwrap it
+  if ((scalar(@children) == 1) && ($document->getNodeQName($c = $children[0]) eq 'svg:g')) {
+    my %av        = ();
+    my $mergeable = 1;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key =~ /^_/) || $collapsible_group_attributes{$key}) {
+        $av{$key} = $attr->getValue; }
+      elsif ($key eq 'transform') {
+        $av{$key} = ($nodeattr{$key} ? $nodeattr{$key} . ' ' : '') . $attr->getValue; }
+      else {
+        $mergeable = 0; } }
+    if ($mergeable) {
+      foreach my $key (sort keys %av) {
+        $nodeattr{$key} = $av{$key};
+        $node->setAttribute($key => $av{$key}); }
+      $nmerged++;
+      $document->unwrapNodes($c); } }
+  return; }
+
+DefConstructor('\hbox BoxSpecification HBoxContents', sub {
+    # "<ltx:text width='#width' _noautoclose='1'>#2</ltx:text>",
+    no warnings 'recursion';
+    my ($document, $spec, $contents, %props) = @_;
+    my $model   = $document->getModel;
+    my $context = $document->getElement;
+    my $current = $context;
+
+    # What is the CORRECT (& general) way to ask whether we're in "vertical mode"??
+    #  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
+    my $issvg  = $current && $document->getNodeQName($current) =~ /^svg:/;
+    my $vmode  = $current && $current->getAttribute('_vertical_mode_');
+    my $inline = $document->canContain($current, '#PCDATA');
+    my $newtag = ($issvg ? 'svg:g' : ($vmode ? ($inline ? 'ltx:inline-block' : 'ltx:p') : 'ltx:text'));
+    my $node   = $document->openElement($newtag, _noautoclose => 1, width => $props{width});
+    $document->absorb($contents);
+    if (!$issvg) {
+      while (!$document->getElement()->hasAttribute('_beginscope') && $document->maybeCloseElement('svg:g')) { }
+      $document->maybeCloseElement('svg:svg'); }
+    if ($issvg) {    # ODDLY, svg:g isnt necessarily balanced in tikz?
+      $document->maybeCloseElement('svg:g'); }
+    else {
+      $document->maybeCloseNode($node); }
+  },
+  mode  => 'text', bounded => 1,
+  sizer => '#2',
+  # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
+  # And also things like \centerline that will end up bumping up to block level!
+  beforeDigest => sub { reenterTextMode(); },
+
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $spec = $whatsit->getArg(1);
+    my $box  = $whatsit->getArg(2);
+    if (my $w = GetKeyVal($spec, 'to')) {
+      $whatsit->setWidth($w); }
+    elsif (my $s = GetKeyVal($spec, 'spread')) {
+      $whatsit->setWidth($box->getWidth->add($s)); }
+    $whatsit->setProperty(content_box => $box);
+    return; });
+
+# Cleanup foreignObjects: remove empty (or only <p/>); and determine size
+Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
+  afterClose => sub {
+    my ($document, $node, $whatsit) = @_;
+    ## NOTE: The revised schema now allows plain text within foreignObject; watch out for mixed
+    my @fo = $node->childNodes;    # What's in the foreignObject?
+    if (scalar(@fo) == 0) {        # Empty?
+      $document->removeNode($node);    #  just remove whole thing
+      return; }
+    elsif (!grep { $_->nodeType != XML_TEXT_NODE } @fo) {    # All text nodes?
+      $node = $document->renameNode($node, 'svg:text');
+      $node->setAttribute(transform => "matrix(1 0 0 -1 0 0)");
+      return; }
+    elsif ((scalar(@fo) == 1) && ($document->getNodeQName($fo[0]) eq 'ltx:p')) {    # Single <p/>?
+      my @p_c = element_nodes($fo[0]);
+      if (scalar(@p_c) == 0) {                                                      # or Empty <p/>?
+        $document->removeNode($node);
+        return; }
+      # Else, single ltx:picture or ltx:text ?
+      elsif (scalar(@p_c) == 1) {
+        my $tag = $document->getNodeQName($p_c[0]);
+        if (($tag eq 'ltx:picture') || ($tag eq 'ltx:text')) {
+          my @pic_c = element_nodes($p_c[0]);
+          # With single svg:svg ?
+          if ((scalar(@pic_c) == 1) && ($document->getNodeQName($pic_c[0]) eq 'svg:svg')) {
+            $document->replaceNode($node, element_nodes($pic_c[0]));
+            return; } } } }
+    # Otherwise, we've still got an svg:foreignObject;
+    # Make sure we get a size, in case autoOpen'd
+    if ($whatsit) {
+      my ($w, $h, $d) = $whatsit->getSize;
+      my $y  = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->pxValue;
+      my $ht = $h->add($d);
+      $node->setAttribute(width     => $w->pxValue)  unless $node->hasAttribute('width');
+      $node->setAttribute(height    => $ht->pxValue) unless $node->hasAttribute('height');
+      $node->setAttribute(transform => "matrix(1 0 0 -1 0 $y)");
+      $node->setAttribute(overflow  => 'visible'); } });
+
+# This attempts to be a generalize vbox construction;
+# The idea is to receeive block-like material, possibly wrapped in appropriate
+# container which gets attributes.
+# The contents are constructed in an ltx:_CaptureBlock_ element,
+# designed to accept all reasonable block material from several levels,
+# and then determine which container element is most apprpriate for both the conent & context
+# from block, logical-block or sectional-block, or the inline- variants.
+sub insertBlock {
+  my ($document, $contents, %blockattr) = @_;
+  my $model   = $document->getModel;
+  my $context = $document->getElement;    # Where we originally start inserting.
+  if (!$context) {
+    # edge case: if we start the doc with a block, the context is empty
+    $document->absorb($contents);
+    return; }
+  my $context_tag    = $document->getNodeQName($context);
+  my $is_svg         = ($context_tag =~ /^svg:/);              # svg is slightly tricky
+  my $ignorable_attr = $is_svg || !scalar(keys %blockattr);    # if we do not REQUIRE the attributes
+  if (($context_tag =~ /^ltx:XM/) && ($context_tag ne 'ltx:XMText')) {    # but math always needs this
+    $context     = $document->openElement('ltx:XMText');
+    $context_tag = $document->getNodeQName($context); }
+  my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
+  my $container = $document->openElement('ltx:_CaptureBlock_', '_vertical_mode_' => 1, %blockattr);
+  $document->absorb($contents);
+  my @nodes     = $container->childNodes;
+  my @node_tags = map { $document->getNodeQName($_); } @nodes;
+  my $nnodes    = scalar(@nodes);
+  $document->closeToNode($container, 1);
+  $document->closeNode($container);
+  $document->closeToNode($context, 1);
+  my $newcontainer;
+
+  if ($nnodes < 1) {    # Insertion came up empty?
+    $document->removeNode($container); }    # then remove the new block entirely
+  elsif ($ignorable_attr                    # No attributes, contents allowed in context?
+    && !grep { !$document->canContain($context, $_); } @node_tags) {
+    $document->unwrapNodes($container); }    # No container needed, at all.
+  elsif (($nnodes == 1)                      # Single node, allowed in context & accepts attributes
+    && $document->canContain($context, $nodes[0])
+    && ($ignorable_attr || !grep { !$document->canHaveAttribute($nodes[0], $_) } keys %blockattr)) {
+    map { $document->setAttribute($nodes[0], $_ => $blockattr{$_}) } keys %blockattr;
+    $document->unwrapNodes($container); }    # Add attributes and unwrap the single node
+  elsif (($nnodes == 1)    # Single node, but needs auto-wrapper which accepts attributes?
+    && ($newcontainer = $document->canContainSomehow($context, $nodes[0]))
+    && ($ignorable_attr || !grep { !$document->canHaveAttribute($newcontainer, $_) } keys %blockattr)) {
+    $document->renameNode($container, $newcontainer, 1); }    # rename the capture to that container
+  else {                                                      # Otherwise, rename the capture
+    if ($is_svg && grep { $_ =~ /^ltx:/; } @node_tags) {      # MAY need foreignObject wrapper
+      $context     = $document->wrapNodes('svg:foreignObject', $container);
+      $context_tag = $document->getNodeQName($context); }
+    my @candidates =
+      ($inline
+      ? (qw(ltx:inline-block ltx:inline-logical-block ltx:inline-sectional-block))
+      : (qw(ltx:block ltx:logical-block ltx:sectional-block ltx:figure)));
+    my @filtered_candidates = ();    # Filtered containers that can contain the content
+    foreach my $candidate (@candidates) {
+      push(@filtered_candidates, $candidate)
+        unless grep { !$document->canContainSomehow($candidate, $_); } @node_tags; }
+    my @allowed_candidates           # and are allowed in the context
+      = grep { ($document->canContain($context_tag, $_) ? $_ : ()); } @filtered_candidates;
+    if (my $tag = $allowed_candidates[0] || $filtered_candidates[0]) {
+      $document->renameNode($container, $tag, 1); }    # Rename the capture to the correct container
+    else {                                             # we didn't know what to do?
+      Warn('malformed', '_CaptureBlock_', $document, "Did not find a block-like candidate in $context_tag (with attributes (" . join(";", map { "$_=$blockattr{$_}" } keys %blockattr) . ')');
+      $document->renameNode($container, 'ltx:block', 1);
+    }
+  }
+  return @nodes; }
+
+DefConstructor('\vbox BoxSpecification VBoxContents', sub {
+    my ($document, $spec, $contents, %props) = @_;
+    my @block = insertBlock($document, $contents, vattach => 'bottom'); },
+  sizer       => '#2',
+  properties  => { layout => 'vertical', vattach => 'bottom' },
+  mode        => 'text',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $spec = $whatsit->getArg(1);
+    my $box  = $whatsit->getArg(2);
+    if (my $h = GetKeyVal($spec, 'to')) {
+      $whatsit->setHeight($h); }
+    elsif (my $s = GetKeyVal($spec, 'spread')) {
+      $whatsit->setHeight($box->getHeight->add($s)); }
+    $whatsit->setProperty(content_box => $box);
+    return; });
+
+DefConstructor('\vtop BoxSpecification VBoxContents', sub {
+    my ($document, $spec, $contents, %props) = @_;
+    insertBlock($document, $contents, vattach => 'top'); },
+  sizer       => '#2',
+  properties  => { layout => 'vertical', vattach => 'baseline' },
+  mode        => 'text',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $spec = $whatsit->getArg(1);
+    my $box  = $whatsit->getArg(2);
+    if (my $h = GetKeyVal($spec, 'to')) {
+      $whatsit->setHeight($h); }
+    elsif (my $s = GetKeyVal($spec, 'spread')) {
+      $whatsit->setHeight($box->getHeight->add($s)); }
+    $whatsit->setProperty(content_box => $box);
+    return; });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Commands to store and use boxes
+# ----------------------------------------------------------------------
+# \setbox         c  assigns an hbox, vbox, or vtop to a box register.
+# \dp             iq is the depth of a box.
+# \ht             iq is the height of a box.
+# \wd             iq is the width of a box.
+# \box            c  puts the box's contents in the current list and empties the box.
+# \copy           c  puts the box's contents in the current list but does not empty the box     .
+# \unhbox         c  puts unwrapped hbox contents in the current list and empties the box.
+# \unhcopy        c  puts unwrapped hbox contents in the current list but does not empty the box.
+# \unvbox         c  puts unwrapped vbox contents in the current list and empties the box.
+# \unvcopy        c  puts unwrapped vbox contents in the current list but does not empty the box.
+# \lastbox        c  is void or the last hbox or vbox on the current list.
+# ======================================================================
+
+DefPrimitive('\lastbox', sub {    # Hopefully, the correct box got seen!
+    return pop(@LaTeXML::LIST); });
+
+DefPrimitive('\setbox Number SkipSpaces SkipMatch:=', sub {
+    my ($stomach) = @_;
+    no warnings 'recursion';
+    my $box = 'box' . $_[1]->valueOf;
+    # If there is any afterAssignment tokens, move them over so BoxContents parameter will use them
+    if (my $token = LookupValue('afterAssignment')) {
+      AssignValue('afterAssignment' => undef, 'global');
+      AssignValue('BeforeNextBox'   => $token); }
+    # Save global flag, since we're digesting to get the box content, which resets the flag!
+    # Should afterDigest be responsible for resetting flags?
+    my $scope = $STATE->getPrefix('global') && 'global';
+    $STATE->clearPrefixes;    # before invoke, below; we've saved the only relevant one (global)
+    my ($stuff, @rest) = $stomach->invokeToken($stomach->getGullet->readXToken);
+    AssignValue('box' . $_[1]->valueOf => $stuff, $scope);
+    @rest; });
+
+# <box dimension> = \ht | \wd | \dp
+DefRegister('\ht Number', Dimension(0),
+  getter => sub {
+    my ($n) = @_;
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
+    return ($stuff ? $stuff->getHeight : Dimension(0)); },
+  setter => sub {
+    my ($value, $scope, $n) = @_;
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
+    $stuff->setHeight($value) if $stuff;
+    return; });
+DefRegister('\wd Number', Dimension(0),
+  getter => sub {
+    my ($n) = @_;
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
+    return ($stuff ? $stuff->getWidth : Dimension(0)); },
+  setter => sub {
+    my ($value, $scope, $n) = @_;
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
+    $stuff->setWidth($value) if $stuff;
+    return; });
+
+DefRegister('\dp Number', Dimension(0),
+  getter => sub {
+    my ($n) = @_;
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
+    return ($stuff ? $stuff->getDepth : Dimension(0)); },
+  setter => sub {
+    my ($value, $scope, $n) = @_;
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
+    $stuff->setDepth($value) if $stuff;
+    return; });
+
+sub adjustBoxColor {
+  my ($box) = @_;
+  my $font = LookupValue('font');
+  if (my $color = $font && $font->getColor) {
+    if (!Black->equals($color)) {
+      adjustBoxColor_rec($color, {}, $box); } }
+  return; }
+
+sub adjustBoxColor_rec {
+  no warnings 'recursion';
+  my ($color, $adjusted, @boxes) = @_;
+  foreach my $box (@boxes) {
+    next unless defined $box;
+    next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
+    $$adjusted{$box} = 1;
+    my $r = ref $box;
+    next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
+    # NASTY access to internal structure; but worth a whole API for this one hack???
+    if ($r eq 'LaTeXML::Core::Box') {
+      adjustBoxColor_internal($color, $box); }
+    elsif ($r eq 'LaTeXML::Core::List') {
+      adjustBoxColor_rec($color, $adjusted, $box->unlist); }
+    elsif ($r eq 'LaTeXML::Core::Whatsit') {
+      adjustBoxColor_internal($color, $box);
+      # now recurse on contained boxes (args AND properties!)
+      adjustBoxColor_rec($color, $adjusted, $box->getArgs);
+      adjustBoxColor_rec($color, $adjusted, values %{ $box->getPropertiesRef }); }
+    elsif ($r eq 'LaTeXML::Core::Alignment') {
+      foreach my $row (@{ $$box{rows} }) {
+        foreach my $col (@{ $$row{columns} }) {
+          adjustBoxColor_rec($color, $adjusted, $$col{boxes}->unlist) if $$col{boxes}; } } }
+  }
+  return; }
+
+sub adjustBoxColor_internal {
+  my ($color, $box) = @_;
+  if (my $font = $box->getFont) {
+    $box->setFont($font->merge(color => $color)); }
+  return; }
+
+DefPrimitive('\box Number', sub {
+    my $box   = 'box' . $_[1]->valueOf;
+    my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
+    AssignValue($box, undef);
+    ($stuff ? $stuff : List()); });
+
+DefPrimitive('\copy Number', sub {
+    my $box   = 'box' . $_[1]->valueOf;
+    my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
+    ($stuff ? $stuff : List()); });
+
+# \unhbox<8bit>, \unhcopy<8bit>
+DefPrimitive('\unhbox Number', sub {
+    my $box   = 'box' . $_[1]->valueOf;
+    my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
+    AssignValue($box, undef);
+    (defined $stuff ? $stuff->unlist : List()); });
+
+DefPrimitive('\unhcopy Number', sub {
+    my $box   = 'box' . $_[1]->valueOf;
+    my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
+    (defined $stuff ? $stuff->unlist : List()); });
+
+# \unvbox<8bit>, \unvcopy<8bit>
+DefPrimitive('\unvbox Number', sub {
+    my $box   = 'box' . $_[1]->valueOf;
+    my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
+    AssignValue($box, undef);
+    (defined $stuff ? $stuff->unlist : List()); });
+
+DefPrimitive('\unvcopy Number', sub {
+    my $box   = 'box' . $_[1]->valueOf;
+    my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
+    (defined $stuff ? $stuff->unlist : List()); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Various box related parameters
+# ----------------------------------------------------------------------
+# \prevdepth      iq is the depth of the last box added to the current vertical list.
+# \boxmaxdepth    pd is the maximum possible depth of a vertical box.
+# \badness        iq is 0-10,000 and represents the badness of the glue settings in the last constructed box.
+# \hbadness       pi is the badness above which bad hboxes are reported.
+# \vbadness       pi is the badness above which bad vboxes are reported.
+# \hfuzz          pd is the overrun allowed before overfull hboxes are reported.
+# \vfuzz          pd is the overrun allowed before overfull vboxes are reported.
+# \overfullrule   pd is the width of the rule appended to an overfull box.
+# ======================================================================
+
+DefRegister('\prevdepth'   => Dimension(0));
+DefRegister('\boxmaxdepth' => Dimension('16383.99999pt'));
+
+DefRegister('\hfuzz'        => Dimension('0.1pt'));
+DefRegister('\vfuzz'        => Dimension('0.1pt'));
+DefRegister('\overfullrule' => Dimension('5pt'));
+
+DefRegister('\badness'  => Number(0), readonly => 1);
+DefRegister('\hbadness' => Number(1000));
+DefRegister('\vbadness' => Number(1000));
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Rules and Leaders
+# ----------------------------------------------------------------------
+# \hrule          c  makes a rule box in vertical mode.
+# \vrule          c  makes a rule box in horizontal mode.
+# \cleaders       c  insert centered leaders.
+# \leaders        c  fill space using specified glue with a box or rule.
+# \xleaders       c  insert expanded leaders.
+# ======================================================================
+
+DefParameterType('RuleSpecification', sub {
+    my ($gullet) = @_;
+    my $keyvals = LaTeXML::Core::KeyVals->new(undef, undef, skipMissing => 1);
+    while (my $key = $gullet->readKeyword('width', 'height', 'depth')) {
+      $keyvals->setValue($key, $gullet->readDimension); }
+    $keyvals; },
+  optional => 1, undigested => 1);
+
+# \hrule, \vrule are awkward in trying to deal with 3 cases
+#  * as rules within an alignment/table
+#  * as separating lines within text
+#  * as graphical lines within svg
+# and each has different requirements for size
+DefConstructor('\vrule RuleSpecification',
+  "?#invisible()(?#isVerticalRule()"
+    . "(?&inSVG()(<svg:path d='M 0 0 L 0 #sheight'/>)"
+    . "(<ltx:rule height='#rheight' depth='#rdepth' width='#rwidth' color='#color'/>)))",
+  afterConstruct => sub {    # NOTE: Only For xy development!
+    Warn('unexpected', 'vrule', $_[0], "Encountered \\vrule in SVG") if inSVG(); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $dims   = $whatsit->getArg(1);
+    my $width  = GetKeyVal($dims, 'width');    # || Dimension('0.4pt');
+    my $height = GetKeyVal($dims, 'height');
+    my $depth  = GetKeyVal($dims, 'depth');
+    $whatsit->setProperties(
+      rwidth  => $width,  cwidth  => $width || Dimension('0.4pt'),
+      rheight => $height, cheight => ($height), sheight => ($height ? $height->pxValue : 0),
+      rdepth  => $depth,  cdepth  => ($depth || Dimension(0)));
+    my $w = ($width  ? $width->ptValue  : undef);
+    my $h = ($height ? $height->ptValue : undef);
+    my $d = ($depth  ? $depth->ptValue  : undef);
+    if (my $alignment = LookupValue('Alignment')) {
+      if (((!defined $h) && (!defined $w)) || ((defined $h) && ($h > 20))
+        || ((defined $h) && (defined $w) && ($h > 3 * $w))) {
+        $whatsit->setProperty(isVerticalRule => 1) } }    # Marked as rule within alignment
+    elsif ((defined $w) && ($w == 0)) {
+      $whatsit->setProperty(invisible => 1); }
+    if (my $color = LookupValue('font')->getColor) {
+      if (!Black->equals($color)) {
+        $whatsit->setProperty(color => $color); } }
+    return; });
+
+DefConstructor('\hrule RuleSpecification',
+  "?#isHorizontalRule()"
+    . "(?&inSVG()(<svg:path d='M 0 0 L #swidth 0'/>)"
+    . "(<ltx:rule height='#rheight' depth='#rdepth' width='#rwidth' color='#color'/>))",
+  afterConstruct => sub {    # NOTE: Only For xy development!
+    Warn('unexpected', 'hrule', $_[0], "Encountered \\hrule in SVG") if inSVG(); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $dims   = $whatsit->getArg(1);
+    my $width  = GetKeyVal($dims, 'width');
+    my $height = GetKeyVal($dims, 'height');
+    my $depth  = GetKeyVal($dims, 'depth');
+    $whatsit->setProperties(
+      rwidth  => $width  || '100%', cwidth  => $width, swidth => ($width ? $width->pxValue : 0),
+      rheight => $height || '1px',  cheight => ($height || Dimension('0.4pt')),
+      rdepth  => $depth, cdepth => ($depth || Dimension(0)));
+    my $w = ($width  ? $width->ptValue  : undef);
+    my $h = ($height ? $height->ptValue : undef);
+    my $d = ($depth  ? $depth->ptValue  : undef);
+    if (my $alignment = LookupValue('Alignment')) {
+      # What is the intended logic here?
+      if (((!defined $h) && (!defined $w)) || ((defined $w) && ($w > 20))
+        || ((defined $h) && (defined $w) && ($w > 3 * $h))) {
+        $alignment->addLine('t');
+        $whatsit->setProperty(isHorizontalRule => 1) } }    # Marked as rule within alignment
+    if (my $color = LookupValue('font')->getColor) {
+      if (!Black->equals($color)) {
+        $whatsit->setProperty(color => $color); } }
+    return; });
+
+# ======================================================================
+# Various leaders, ignored for now...
+DefPrimitiveI('\leaders',  undef, undef);
+DefPrimitiveI('\cleaders', undef, undef);
+DefPrimitiveI('\xleaders', undef, undef);
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+

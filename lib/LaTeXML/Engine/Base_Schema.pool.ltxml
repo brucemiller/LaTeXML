@@ -1,0 +1,110 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | Base_Schema                                                         | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# NOTE that these define the namespaces we'll (probably) use
+# along with the prefixes to be used in "code"
+# The generated XML will use the prefixes defined by RegisterDocumentNamespace(...) (if ever)
+# or those prefixes defined by the Schema (typically RelaxNGSchema(..)
+RegisterNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
+RegisterNamespace(svg   => "http://www.w3.org/2000/svg");
+RegisterNamespace(xlink => "http://www.w3.org/1999/xlink");    # Needed for SVG
+# Not directly used, but let's stake out the ground
+RegisterNamespace(m     => "http://www.w3.org/1998/Math/MathML");
+RegisterNamespace(xhtml => "http://www.w3.org/1999/xhtml");
+# Namespace for arbitrary data attributes (mapped to data-xxx in html5)
+RegisterNamespace(data => "http://dlmf.nist.gov/LaTeXML/data");
+
+# This is used for plain TeX, but needs to be undone for LaTeX (or...)!
+RelaxNGSchema("LaTeXML");
+Tag('ltx:section', autoClose => 1);
+Tag('ltx:document', autoClose => 1, autoOpen => 1);
+Tag('ltx:document', afterOpen => sub {
+    my ($document, $root) = @_;
+    if (my $font = $document->getNodeFont($root)) {
+      if (my $bg = $font->getBackground) {
+        if ($bg ne 'white') {
+          $document->setAttribute($root, backgroundcolor => $bg); } } } });
+#======================================================================
+
+DefMacroI("\\\@empty", undef, Tokens());
+
+#======================================================================
+# Core ID functionality.
+#======================================================================
+# DOCUMENTID is the ID of the document
+# AND prefixes IDs on all other elements.
+if (my $docid = LookupValue('DOCUMENTID')) {
+  # Wrap in T_OTHER so funny chars don't screw up (no space!)
+  DefMacroI('\thedocument@ID', undef, T_OTHER($docid)); }
+else {
+  Let('\thedocument@ID', '\@empty'); }
+NewCounter('@XMARG', 'document', idprefix => 'XM');
+
+#======================================================================
+
+Tag('ltx:document', afterOpen => \&ProcessPendingResources);
+RequireResource('LaTeXML.css');
+#======================================================================
+# The default "initial context" for XML+RDFa specifies some default
+# terms and prefixes, but no default vocabulary.
+# Ought to have a default for @vocab, but settable?
+# can we detect use of simple "term"s in attributes so we know whether we need @vocab?
+# Ought to have a default set of prefixes from RDFa Core,
+# but allow prefixes to be added.
+# Probably ought to scan rdf attributes for all uses of prefixes,
+# and include them in @prefix
+# The following prefixes are listed in http://www.w3.org/2011/rdfa-context/rdfa-1.1
+{
+  my %rdf_prefixes = (
+    "cc"      => "http://creativecommons.org/ns#",
+    "ctag"    => "http://commontag.org/ns#",
+    "dc"      => "http://purl.org/dc/terms/",
+    "dcterms" => "http://purl.org/dc/terms/",
+    "ical"    => "http://www.w3.org/2002/12/cal/icaltzd#",
+    "foaf"    => "http://xmlns.com/foaf/0.1/",
+    "gr"      => "http://purl.org/goodrelations/v1#",
+    "grddl"   => "http://www.w3.org/2003/g/data-view#",
+    "ma"      => "http://www.w3.org/ns/ma-ont#",
+    "og"      => "http://ogp.me/ns#",
+    "owl"     => "http://www.w3.org/2002/07/owl#",
+    "rdf"     => "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfa"    => "http://www.w3.org/ns/rdfa#",
+    "rdfs"    => "http://www.w3.org/2000/01/rdf-schema#",
+    "rev"     => "http://purl.org/stuff/rev#",
+    "rif"     => "http://www.w3.org/2007/rif#",
+    "rr"      => "http://www.w3.org/ns/r2rml#",
+    "schema"  => "http://schema.org/",
+    "sioc"    => "http://rdfs.org/sioc/ns#",
+    "skos"    => "http://www.w3.org/2004/02/skos/core#",
+    "skosxl"  => "http://www.w3.org/2008/05/skos-xl#",
+    "v"       => "http://rdf.data-vocabulary.org/#",
+    "vcard"   => "http://www.w3.org/2006/vcard/ns#",
+    "void"    => "http://rdfs.org/ns/void#",
+    "xhv"     => "http://www.w3.org/1999/xhtml/vocab#",
+    "xml"     => "http://www.w3.org/XML/1998/namespace",
+    "xsd"     => "http://www.w3.org/2001/XMLSchema#",
+    "wdr"     => "http://www.w3.org/2007/05/powder#",
+    "wdrs"    => "http://www.w3.org/2007/05/powder-s#",
+  );
+
+  foreach my $p (keys %rdf_prefixes) {
+    AssignMapping('RDFa_prefixes', $p => $rdf_prefixes{$p}); }
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

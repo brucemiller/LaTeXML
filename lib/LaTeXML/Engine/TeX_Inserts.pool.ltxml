@@ -1,0 +1,60 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX_Inserts                                                         | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Inserts Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Inserting material
+#----------------------------------------------------------------------
+# \insert           c  places material into an insertions class.
+# \insert<8bit><filler>{<vertical mode material>}
+DefPrimitive('\insert Number', undef);    # Just let the insertion get processed(?)
+
+#======================================================================
+# Splitting a box
+#----------------------------------------------------------------------
+# \vsplit c removes a specified amount of material from a box register .
+# \splitbotmark c is the mark text of the last mark in the most recent \vsplit operation .
+# \splitfirstmark c is the mark text of the first mark in the most recent \vsplit operation .
+
+DefPrimitive('\vsplit Number Match:to Dimension', sub {
+    # analog to \box for now.
+    my $box   = 'box' . $_[1]->valueOf;
+    my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
+    ($stuff ? $stuff : List()); });
+
+DefMacroI('\splitfirstmark', undef, Tokens());
+DefMacroI('\splitbotmark',   undef, Tokens());
+
+#======================================================================
+# Insertion parameters
+#----------------------------------------------------------------------
+# \insertpenalties  iq is a quantity used by TeX in two different ways.
+# \splitmaxdepth    pd is the maximum depth of boxes created by \vsplit.
+# \splittopskip     pg is special glue placed inside the box created by \vsplit.
+# \holdinginserts   pi is positive if insertions should remain dormant when \output is called.
+
+DefRegister('\insertpenalties' => Number(0));
+DefRegister('\splitmaxdepth'   => Dimension('16383.99999pt'));
+DefRegister('\splittopskip'    => Glue('10pt'));
+DefRegister('\holdinginserts'  => Number(0));
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

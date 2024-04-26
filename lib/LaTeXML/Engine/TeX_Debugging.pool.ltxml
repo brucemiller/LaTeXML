@@ -1,0 +1,231 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | TeX_Debugging                                                       | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Debugging Family of primitive control sequences
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DefConstructor('\lx@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
+
+#======================================================================
+# running modes
+#----------------------------------------------------------------------
+# \batchmode        c  acts like pressing Q in response to an error.
+# \errorstopmode    c  switches to normal interaction for processing errors.
+# \nonstopmode      c  acts like pressing R in response to an error.
+# \scrollmode       c  acts like pressing S in response to an error.
+# \pausing          pi if positive, the program halts after every line is read from the input file and waits for a response from the user.
+
+# These are no-ops; Basically, LaTeXML runs in scrollmode
+DefPrimitiveI('\errorstopmode', undef, undef);
+DefPrimitiveI('\scrollmode',    undef, undef);
+DefPrimitiveI('\nonstopmode',   undef, undef);
+DefPrimitiveI('\batchmode',     undef, undef);
+DefRegister('\pausing' => Number(0));
+
+#======================================================================
+# Messages
+#----------------------------------------------------------------------
+# \message          c  writes an expanded token list on the terminal and to the log file.
+# \errmessage       c  displays text on the terminal and interrupts the program.
+# \errhelp          pt is text displayed on the terminal if h is pressed after an \errmessage     .
+# \errorcontextlines pi is the number of lines to display on the terminal at an error.
+
+# Converts $tokens to a string in the fashion of \message and others:
+# doubles #, converts to string; optionally adds spaces after control sequences
+# in the spirit of the B Book, "show_token_list" routine, in 292.
+# [This could be a $tokens->unpackParameters, but for the curious space treatment]
+sub writableTokens {
+  my ($tokens) = @_;
+  my @tokens = $tokens->unlist;
+  @tokens = map {
+    my $cc = $$_[1];
+    if    ($cc == CC_CS)    { ($_, T_SPACE); }
+    elsif ($cc == CC_SPACE) { (T_SPACE); }
+    elsif ($cc == CC_PARAM) { ($_, $_); }
+    elsif ($cc == CC_ARG)   { (T_PARAM, T_OTHER($$_[0])); }
+    else                  { $_; }
+  } @tokens;
+  return UnTeX(Tokens(@tokens), 1); }
+
+DefPrimitive('\message{}', sub {
+    my ($stomach, $stuff) = @_;
+    NoteLog(writableTokens(Expand($stuff)));
+    return; });
+
+DefRegister('\errhelp' => Tokens());
+DefPrimitive('\errmessage{}', sub {
+    my ($stomach, $stuff) = @_;
+    Note(ToString(Expand($stuff)) . ": " . ToString(Expand(Tokens(T_CS('\the'), T_CS('\errhelp')))));
+    return; });
+
+DefRegister('\errorcontextlines' => Number(5));
+
+#======================================================================
+# meaning
+#----------------------------------------------------------------------
+# \meaning          c  adds characters describing a token to the output stream.
+
+our @CATCODE_MEANING = (
+  "the escape character",      "begin-group character",
+  "end-group character",       "math shift character",
+  "alignment tab character",   "end-of-line character",
+  "macro parameter character", "superscript character",
+  "subscript character",       "ignored character",
+  "blank space",               "the letter",
+  "the character",             "active character",
+  "comment character",         "invalid character",
+  undef,                       "latexml marker character",
+  "macro parameter character");
+
+# Not sure about this yet...
+# NOTE: Lots of back-and-forth mangle with definition vs cs; don't do that!
+DefMacro('\meaning Token', sub {
+    my ($gullet, $tok) = @_;
+    my $meaning = 'undefined';
+    if (my $definition = ($tok->defined_as(T_ALIGN) ? $tok : LookupMeaning($tok))) {
+      my $type = ref $definition;
+      $type =~ s/^LaTeXML:://;
+      # Pre-step: We can't extract the bodies of definitions which are defined via Perl subroutines.
+      # So do the next best thing -- represent them as their tokens.
+      if ($type =~ /(primitive|conditional|constructor)$/i) {
+        $definition = $definition->getCSorAlias;
+        $type       = ref $definition;
+        $type =~ s/^LaTeXML:://;
+        if (my $fontinfo = LookupValue('fontinfo_' . ToString($definition))) {
+          $meaning = 'select font ' . ($$fontinfo{fontname} || 'fontname');
+          $meaning .= ' at ' . $$fontinfo{at} if $$fontinfo{at};
+          $type = 'font'; } }
+      # The actual tests start here
+      if ($type =~ /token$/i) {
+        my $cc         = $definition->getCatcode;
+        my $char       = $definition->toString;
+        my $meaning_cc = $CATCODE_MEANING[$cc] || '';
+        $meaning_cc .= ' ' if $meaning_cc;    # append space separator if defined
+        $meaning = $meaning_cc . $char; }
+      elsif ($type =~ /register$/i) {
+        $meaning = $definition->getAddress; }
+      elsif ($type =~ /expandable$/i) {
+# short-circuit some troublesome discrepancies with TeX, which end up macros on LaTeXML's end, but \meaning expects as primitives in the CTAN ecosystem.
+        my $cs = ToString($definition->getCSorAlias);
+        # These exceptions could be extended further, as we add more .sty/.cls support
+        return Explode($cs) if $cs =~ /^\\(?:(?:un)?expanded|detokenize)$/;
+        my $expansion  = $definition->getExpansion;
+        my $ltxps      = $definition->getParameters;
+        my $arg_index  = 0;
+        my @spec_parts = ();
+        my @params     = $ltxps ? $ltxps->getParameters : ();
+        my $p_trailer  = '';
+
+        for my $param (@params) {
+          my $p_spec = $$param{spec};
+          if ($p_spec eq 'RequireBrace') {
+            # tex's \meaning prints out the required braces for "\def\a#{}" variants
+            $p_trailer = '{';
+            $p_spec    = '{'; }
+          elsif ($p_spec eq 'UntilBrace') {    # should only ever be used in the last argument?
+            $p_trailer = '{';
+            $p_spec    = "#" . (++$arg_index) . '{'; }
+          elsif ($p_spec =~ s/^Match://) { }          # just match, don't increment arg index
+          elsif ($p_spec =~ s/^\w?Until(\w*)://) {    # implied argument at this slot
+            $p_spec = "#" . (++$arg_index) . $p_spec; }
+          else {                                      # regular parameter, increment
+            next if $$param{novalue}; # skip the latexml-only requirement params, but only here, since Match also have "novalue" set.
+            $p_spec = "#" . (++$arg_index); }
+          push @spec_parts, $p_spec; }
+        my $spec = join("", @spec_parts);
+        $spec =~ s/\{\}//g;
+        $spec =~ s/Token//g;
+        my $prefixes = join('',
+          ($definition->isProtected ? '\protected' : ()),
+          ($definition->isLong      ? '\long'      : ()),
+          ($definition->isOuter     ? '\outer'     : ()),
+        );
+        my $expansion_str = '';
+        if (ref $expansion eq 'LaTeXML::Core::Tokens') {
+          $expansion_str = writableTokens($expansion); }
+        else {
+          $expansion_str = ToString($expansion); }
+        $meaning = ($prefixes ? $prefixes . ' ' : '') .
+          "macro:$spec->$expansion_str$p_trailer"; }
+      elsif ($type =~ /chardef$/i) {    # from \chardef or \mathchardef
+        my $prefix = ($$definition{mathglyph} ? '\mathchar' : '\char');
+        $meaning = $prefix . '"' . $definition->valueOf->valueOf; } }
+    # One catch: make sure all \s in the meaning string are normalized to a simple space ' '
+    $meaning =~ s/\s/ /g;
+    return Explode($meaning); });
+
+#======================================================================
+# Showing internal things
+#----------------------------------------------------------------------
+
+# \show             c  writes a token's definition on the terminal and to the log file.
+# \showbox          c  writes the contents of a box to the log file.
+# \showlists        c  writes information about current lists to the log file.
+# \showthe          c  writes a value on the terminal and to the log file and interrupts the program.
+# \showboxbreadth   pi is the maximum number of items per level written by \showbox and \showlists.
+# \showboxdepth     pi is the maximum level written by \showbox and \showlists.
+
+# Debugging aids; Ignored!
+DefPrimitive('\show Token', sub {
+    my $stuff = Invocation(T_CS('\meaning'), $_[1]);
+    Note("> " . ($_[1][1] == CC_CS ? ToString($_[1]) . '=' : '') . writableTokens(Expand($stuff)));
+    Note($_[0]->getLocator->toString());
+    return; });
+DefPrimitive('\showbox Number', sub {
+    my $n     = $_[1]->valueOf;
+    my $stuff = LookupValue('box' . $n);
+    Debug("Box $n = " . ToString($stuff));
+    undef; });
+DefPrimitive('\showlists',     undef);
+DefPrimitive('\showthe Token', undef);
+
+DefRegister('\showboxbreadth' => Number(5));
+DefRegister('\showboxdepth'   => Number(3));
+
+#======================================================================
+# Tracing
+#----------------------------------------------------------------------
+# \tracingcommands  pi if positive, writes commands to the log file.
+# \tracinglostchars pi if positive, writes characters not in the current font to the log file     .
+# \tracingmacros    pi    if positive, writes to the log file when expanding macros and arguments .
+# \tracingonline    pi    if positive, writes diagnostic output to the terminal as well as to the log file.
+# \tracingoutput    pi    if positive, writes contents of shipped out boxes to the log file.
+# \tracingpages     pi    if positive, writes the page-cost calculations to the log file.
+# \tracingparagraphs pi   if positive, writes a summary of the line-breaking calculations to the  log     file.
+# \tracingrestores  pi    if positive, writes save-stack details to the log file.
+# \tracingstats     pi    if positive, writes memory usage statistics to the log file.
+
+DefRegister('\tracingmacros', Number(0),
+  getter => sub { Number((LookupValue('TRACING') || 0) & TRACE_MACROS); },
+  setter => sub { my $p = (LookupValue('TRACING') || 0);
+    AssignValue(TRACING => ($_[0]->valueOf ? $p | TRACE_MACROS : $p & ~TRACE_MACROS)); });
+DefRegister('\tracingcommands', Number(0),
+  getter => sub { Number((LookupValue('TRACING') || 0) & TRACE_COMMANDS); },
+  setter => sub { my $p = (LookupValue('TRACING') || 0);
+    AssignValue(TRACING => ($_[0]->valueOf ? $p | TRACE_COMMANDS : $p & ~TRACE_COMMANDS)); });
+
+DefRegister('\tracingonline'     => Number(0));
+DefRegister('\tracingstats'      => Number(0));
+DefRegister('\tracingparagraphs' => Number(0));
+DefRegister('\tracingpages'      => Number(0));
+DefRegister('\tracingoutput'     => Number(0));
+DefRegister('\tracinglostchars'  => Number(1));
+DefRegister('\tracingrestores'   => Number(0));
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

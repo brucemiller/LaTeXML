@@ -213,7 +213,7 @@ INVOKE:
 
 sub makeMisdefinedError {
   my (@objects) = @_;
-  return LaTeXML::Core::Whatsit->new($STATE->lookupDefinition(T_CS('\@ERROR')),
+  return LaTeXML::Core::Whatsit->new($STATE->lookupDefinition(T_CS('\lx@ERROR')),
     ['misdefined', join('', map { ToString($_); } @objects)],
     font => $STATE->lookupValue('font'),
   ); }
