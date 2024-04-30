@@ -33,11 +33,121 @@ DefMacro('\lx@DEPRECATE{}{}', \&Deprecate);
 DefMacro('\@ERROR',
   '\lx@DEPRECATE{\@ERROR}{\lx@ERROR}\lx@ERROR');
 
+DefMacro('\@@eqno',
+  '\lx@DEPRECATE{\@@eqno}{\lx@eqno}\lx@eqno');
+
+DefMacro('\LTX@nonumber',
+  '\lx@DEPRECATE{\LTX@nonumber}{\lx@equation@nonumber}\lx@equation@nonumber');
+
 DefMacro('\normal@par',
   '\lx@DEPRECATE{\normnal@par}{\lx@normal@par}\lx@normal@par');
 DefMacro('\inner@par',
   '\lx@DEPRECATE{\inner@par}{\lx@normal@par}\lx@normal@par');    # Obsolete, but in case still used...
 
+DefMacro('\hidden@bgroup',
+  '\lx@DEPRECATE{\hidden@bgroup}{\lx@hidden@bgroup}\lx@hidden@bgroup');
+DefMacro('\hidden@egroup',
+  '\lx@DEPRECATE{\hidden@egroup}{\lx@hidden@egroup}\lx@hidden@egroup');
+DefMacro('\right@hidden@egroup',
+  '\lx@DEPRECATE{\right@hidden@egroup}{\lx@hidden@egroup@right}\lx@hidden@egroup@right');
+
+DefMacro('\hidden@align',
+  '\lx@DEPRECATE{\hidden@align}{\lx@hidden@align}\lx@hidden@align');
+DefMacro('\hidden@noalign',
+  '\lx@DEPRECATE{\hidden@noalign}{\lx@hidden@noalign}\lx@hidden@noalign');
+DefMacro('\hidden@cr',
+  '\lx@DEPRECATE{\hidden@cr}{\lx@hidden@cr}\lx@hidden@cr');
+DefMacro('\hidden@crc',
+  '\lx@DEPRECATE{\hidden@crcr}{\lx@hidden@crcr}\lx@hidden@crcr');
+
+DefMacro('\@start@alignment',
+  '\lx@DEPRECATE{\@start@alignment}{\lx@start@alignment}\lx@start@alignment');
+DefMacro('\@finish@alignment',
+  '\lx@DEPRECATE{\@finish@alignment}{\lx@finish@alignment}\lx@finish@alignment');
+DefMacro('\@close@alignment',
+  '\lx@DEPRECATE{\@close@alignment}{\lx@close@alignment}\lx@close@alignment');
+DefMacro('\if@in@alignment',
+  '\lx@DEPRECATE{\if@in@alignment}{\if@in@lx@alignment}\if@in@lx@alignment ');
+
+DefMacro('\@alignment@hline',
+  '\lx@DEPRECATE{\@alignment@hline}{\lx@alignment@hline}\lx@alignment@hline');
+DefMacro('\@alignment@newline',
+  '\lx@DEPRECATE{\@alignment@newline}{\lx@alignment@newline}\lx@alignment@newline');
+DefMacro('\@alignment@newline@noskip',
+'\lx@DEPRECATE{\@alignment@newline@noskip}{\lx@alignment@newline@noskip}\lx@alignment@newline@noskip');
+DefMacro('\@alignment@newline@marker',
+'\lx@DEPRECATE{\@alignment@newline@marker}{\lx@alignment@newline@marker}\lx@alignment@newline@marker');
+DefMacro('\@alignment@newline@markertall',
+'\lx@DEPRECATE{\@alignment@newline@markertall}{\lx@alignment@newline@markertall}\lx@alignment@newline@markertall');
+DefMacro('\@alignment@column',
+  '\lx@DEPRECATE{\@alignment@column}{\lx@alignment@column}\lx@alignment@column');
+DefMacro('\@alignment@ncolumns',
+  '\lx@DEPRECATE{\@alignment@ncolumns}{\lx@alignment@ncolumns}\lx@alignment@ncolumns');
+DefMacro('\@alignment@bindings',
+  '\lx@DEPRECATE{\@alignment@bindings}{\lx@alignment@bindings}\lx@alignment@bindings');
+
+DefMacro('\@row@before',
+  '\lx@DEPRECATE{\@row@before}{\lx@alignment@row@before}\lx@alignment@row@before');
+DefMacro('\@row@after',
+  '\lx@DEPRECATE{\@row@after}{\lx@alignment@row@after}\lx@alignment@row@after');
+DefMacro('\@column@before',
+  '\lx@DEPRECATE{\@column@before}{\lx@alignment@column@before}\lx@alignment@column@before');
+DefMacro('\@column@after',
+  '\lx@DEPRECATE{\@column@after}{\lx@alignment@column@after}\lx@alignment@column@after');
+
+DefMacro('\@tabular@begin@heading',
+  '\lx@DEPRECATE{\@tabular@begin@heading}{\lx@alignment@begin@heading}\lx@alignment@begin@heading');
+DefMacro('\@tabular@end@heading',
+  '\lx@DEPRECATE{\@tabular@end@heading}{\lx@alignment@end@heading}\lx@alignment@end@heading');
+
+DefMacro('\@multicolumn',
+  '\lx@DEPRECATE{\@multicolumn}{\lx@alignment@multicolumn}\lx@alignment@multicolumn');
+
+DefMacro('\@dollar@in@normalmode',
+  '\lx@DEPRECATE{\@dollar@in@normalmode}{\lx@dollar@in@normalmode}\lx@dollar@in@normalmode');
+DefMacro('\@dollar@in@mathmode',
+  '\lx@DEPRECATE{\@dollar@in@mathmode}{\lx@dollar@in@mathmode}\lx@dollar@in@mathmode');
+DefMacro('\@dollar@in@textmode',
+  '\lx@DEPRECATE{\@dollar@in@textmode}{\lx@dollar@in@textmode}\lx@dollar@in@tecxtmode');
+
+DefMacro('\math@underline',
+  '\lx@DEPRECATE{\math@underline}{\lx@math@underline}\lx@math@underline');
+DefMacro('\text@underline',
+  '\lx@DEPRECATE{\text@underline}{\lx@text@underline}\lx@text@underline');
+DefMacro('\math@overleftarrow',
+  '\lx@DEPRECATE{\math@overleftarrow}{\lx@math@overleftarrow}\lx@math@overleftarrow');
+DefMacro('\math@overrightarrow',
+  '\lx@DEPRECATE{\math@overrightarrow}{\lx@math@overrightarrow}\lx@math@overrightarrow');
+
+DefMacro('\@@BEGININLINEMATH',
+  '\lx@DEPRECATE{\@@BEGININLINEMATH}{\lx@begin@inline@math}\lx@begin@inlineh@math');
+DefMacro('\@@ENDINLINEMATH',
+  '\lx@DEPRECATE{\@@ENDINLINEMATH}{\lx@end@inline@math}\lx@end@inline@math');
+DefMacro('\@@BEGINDISPLAYMATH',
+  '\lx@DEPRECATE{\@@BEGINDISPLAYMATH}{\lx@begin@display@math}\lx@begin@display@math');
+DefMacro('\@@ENDDISPLAYMATH',
+  '\lx@DEPRECATE{\@@ENDDISPLAYMATH}{\lx@end@display@math}\lx@end@display@math');
+
+DefMacro('\@@BEGININLINETEXT',
+  '\lx@DEPRECATE{\@@BEGININLINETEXT}{\lx@begin@inmath@text}\lx@begin@inmath@text');
+DefMacro('\@@ENDINLINETEXT',
+  '\lx@DEPRECATE{\@@ENDINLINETEXT}{\lx@end@inmath@text}\lx@end@inmath@text');
+
+DefMacro('\@@FLOATINGSUBSCRIPT',
+  '\lx@DEPRECATE{\@@FLOATINGSUBSCRIPT}{\lx@floating@subscript}\lx@floating@subscript');
+DefMacro('\@@FLOATINGSUPERSCRIPT',
+  '\lx@DEPRECATE{\@@FLOATINGSUPERSCRIPT}{\lx@floating@superscript}\lx@floating@superscript');
+DefMacro('\@@POSTSUBSCRIPT',
+  '\lx@DEPRECATE{\@@POSTSUBSCRIPT}{\lx@post@subscript}\lx@post@subscript');
+DefMacro('\@@POSTSUPERSCRIPT',
+  '\lx@DEPRECATE{\@@POSTSUPERSCRIPT}{\lx@post@superscript}\lx@post@superscript');
+
+DefMacro('\@ASSERT@MEANING',
+  '\lx@DEPRECATE{\@ASSERT@MEANING}{\lx@assert@meaning}\lx@assert@meaning');
+
+#======================================================================
+# Older deprecations
+# (but there was no warning mechanism then)
 #----------------------------------------------------------------------
 # This group should be renamed to \lx@somethings and deprecated
 # NOTE: work through this systematically!

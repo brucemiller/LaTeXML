@@ -21,8 +21,8 @@ use LaTeXML::Common::XML;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Core::Alignment::Template;
 use List::Util qw(max sum);
-use base qw(LaTeXML::Core::Whatsit);
-use base qw(Exporter);
+use base       qw(LaTeXML::Core::Whatsit);
+use base       qw(Exporter);
 our @EXPORT = (qw(
     &ReadAlignmentTemplate &MatrixTemplate));
 
@@ -36,7 +36,7 @@ our @EXPORT = (qw(
 #
 # An Alignment object is a sort of fake Whatsit;
 # It takes some magic to sneak it into the Digestion stream
-# (see TeX.pool \@start@alignment), but it needs to be created
+# (see TeX.pool \lx@begin@alignment), but it needs to be created
 # BEFORE the contents of the alignment are digested,
 # since we stuff a lot of information into it
 # (row, column boxes, borders, spacing, etc...)
@@ -196,7 +196,7 @@ sub getColumnBefore {
   my ($self) = @_;
   my $column;
   if (($column = $self->currentColumn) && !$$column{omitted}) {
-    return Tokens(T_CS('\@column@before'), @{ $$column{before} }); }
+    return Tokens(T_CS('\lx@alignment@column@before'), @{ $$column{before} }); }
   else {
     return Tokens(); } }
 
@@ -204,7 +204,7 @@ sub getColumnAfter {
   my ($self) = @_;
   my $column;
   if (($column = $self->currentColumn) && !$$column{omitted}) {
-    return Tokens(@{ $$column{after} }, T_CS('\@column@after')); }
+    return Tokens(@{ $$column{after} }, T_CS('\lx@alignment@column@after')); }
   else {
     return Tokens(); } }
 
@@ -219,7 +219,7 @@ sub startRow {
   if ($pseudorow) {
     $self->currentRow->{pseudorow} = 1; }
   else {
-    push(@LaTeXML::LIST, $stomach->digest(T_CS('\@row@before'))); }
+    push(@LaTeXML::LIST, $stomach->digest(T_CS('\lx@alignment@row@before'))); }
   $$self{in_row} = 1;
   $STATE->assignValue(alignmentStartColumn => 0);    # ???
   return; }
@@ -229,7 +229,7 @@ sub endRow {
   return unless $$self{in_row};
   $self->endColumn() if $$self{in_column};
   $STATE->getStomach->egroup;                        # Grouping around ROW!
-                                                     #  Digest(T_CS('\@row@after'));
+                                                     #  Digest(T_CS('\lx@alignment@row@after'));
   $$self{in_row} = undef;
   return; }
 

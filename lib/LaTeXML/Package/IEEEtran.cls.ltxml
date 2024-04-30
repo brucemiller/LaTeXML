@@ -317,13 +317,13 @@ DefMacro('\IEEEeqnarraybox',
     . '\else\def\@tempa{\let\endIEEEeqnarraybox\endIEEEeqnarrayboxt\IEEEeqnarrayboxt}\fi'
     . '\@tempa');
 DefMacro('\IEEEeqnarrayboxm OptionalMatch:* {}',
-  '\@array@bindings{#2}\@@IEEE@array{#2}\@start@alignment');
+  '\@array@bindings{#2}\@@IEEE@array{#2}\lx@begin@alignment');
 DefMacroI('\endIEEEeqnarrayboxm', undef,
-  '\@finish@alignment\@end@array');
+  '\lx@end@alignment\@end@array');
 DefMacro('\IEEEeqnarrayboxt OptionalMatch:* {}',
-  '\@@BEGININLINEMATH\@array@bindings{#2}\@@IEEE@array{#2}\@start@alignment');
+  '\lx@begin@inline@math\@array@bindings{#2}\@@IEEE@array{#2}\lx@begin@alignment');
 DefMacroI('\endIEEEeqnarrayboxt', undef,
-  '\@finish@alignment\@end@array\@@ENDINLINEMATH');
+  '\lx@end@alignment\@end@array\\lx@end@inline@math');
 
 DefConstructor('\@@IEEE@array[] Undigested DigestedBody',
   '#3',

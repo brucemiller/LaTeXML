@@ -40,20 +40,19 @@ Tag('ltx:document', afterOpen => sub {
         if ($bg ne 'white') {
           $document->setAttribute($root, backgroundcolor => $bg); } } } });
 #======================================================================
-
-DefMacroI("\\\@empty", undef, Tokens());
-
-#======================================================================
 # Core ID functionality.
 #======================================================================
+
+DefMacroI('\lx@empty', undef, Tokens());
+
 # DOCUMENTID is the ID of the document
 # AND prefixes IDs on all other elements.
 if (my $docid = LookupValue('DOCUMENTID')) {
   # Wrap in T_OTHER so funny chars don't screw up (no space!)
   DefMacroI('\thedocument@ID', undef, T_OTHER($docid)); }
 else {
-  Let('\thedocument@ID', '\@empty'); }
-NewCounter('@XMARG', 'document', idprefix => 'XM');
+  Let('\thedocument@ID', '\lx@empty'); }
+NewCounter('@lx@xmarg', 'document', idprefix => 'XM');
 
 #======================================================================
 

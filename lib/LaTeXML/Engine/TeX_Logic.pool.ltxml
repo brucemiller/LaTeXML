@@ -45,7 +45,7 @@ DefParameterType('ExpandedIfToken', sub {
     if (!$token) {
       Error('expected', 'ExpandedIfToken', $gullet,
         "conditional expected a token argument, readXToken came back empty. Falling back to \\\@empty");
-      $token = T_CS('\@empty'); }
+      $token = T_CS('\lx@empty'); }
     return $token; });
 
 DefConditional('\if ExpandedIfToken ExpandedIfToken', sub { $_[1]->getCharcode == $_[2]->getCharcode; });

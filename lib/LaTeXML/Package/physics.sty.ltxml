@@ -232,7 +232,7 @@ DefConstructor('\lx@physics@mathbfit{}', '#1', bounded => 1, requireMath => 1,
 DefMacro('\vectorbold OptionalMatch:* {}',
   '\lx@wrap[role=ID]{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}');
 DefMacro('\vectorarrow OptionalMatch:* {}',
-  '\lx@wrap[role=ID]{\math@overrightarrow{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}}');
+  '\lx@wrap[role=ID]{\lx@math@overrightarrow{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}}');
 DefMacro('\vectorunit OptionalMatch:* {}',
   '\lx@wrap[role=ID]{\hat{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}}');
 Let('\vb', '\vectorbold');
@@ -608,7 +608,7 @@ DefMacro('\xmatrix OptionalMatch:* {}{}{}', sub {
         push(@tokens, ($j > 0 ? T_ALIGN : ()),
           $item,
           ($star
-            ? Invocation(T_CS('\@@POSTSUBSCRIPT'),
+            ? Invocation(T_CS('\lx@post@subscript'),
               ($n == 1 ? T_OTHER($j + 1)
                 : ($m == 1 ? T_OTHER($i + 1)
                   : Tokens(T_OTHER($i + 1), T_CS('\lx@InvisibleComma'), T_OTHER($j + 1)))))    # one based

@@ -24,7 +24,7 @@ use LaTeXML::Package;
 #----------------------------------------------------------------------
 # This is where ALL alignments start & finish
 # This creates the object representing the entire alignment!
-DefConstructor('\@start@alignment',
+DefConstructor('\lx@begin@alignment',
   "#alignment",
   reversion => sub { Revert($_[0]->getProperty('alignment')); },
   sizer     => '#alignment',
@@ -40,9 +40,9 @@ DefConstructor('\@start@alignment',
     return; });
 
 # Seems odd to need both end markers here...
-DefMacroI('\@finish@alignment', undef,
-  '\hidden@crcr\@close@alignment');
-DefPrimitive('\@close@alignment', sub { });
+DefMacroI('\lx@end@alignment', undef,
+  '\lx@hidden@crcr\lx@close@alignment');
+DefPrimitive('\lx@close@alignment', sub { });
 
 # & gives an error except within the right context
 # (which should redefine it!)
@@ -53,6 +53,7 @@ Tag('ltx:td', afterClose => \&trimNodeWhitespace);
 #----------------------------------------------------------------------
 # Primitive column types;
 # This is really LaTeX, but the mechanisms are used behind-the-scenes here, too.
+# Presumably is save to include, even at pure TeX/plain level processing.
 DefColumnType('|', sub {
     $LaTeXML::BUILD_TEMPLATE->addBetweenColumn(T_CS('\vrule'), T_CS('\relax')); return; });
 DefColumnType('l', sub {
@@ -96,9 +97,9 @@ DefConstructorI('\cr',   undef, "\n");
 DefConstructorI('\crcr', undef, "\n");
 # These are useful for reversion of higher-level macros that use alignment
 # internally, but don't use explicit &,\cr in the user markup
-DefConstructorI('\hidden@cr',    undef, "\n", alias => '');
-DefConstructorI('\hidden@crcr',  undef, "\n", alias => '');
-DefConstructorI('\hidden@align', undef, "",   alias => '');
+DefConstructorI('\lx@hidden@cr',    undef, "\n", alias => '');
+DefConstructorI('\lx@hidden@crcr',  undef, "\n", alias => '');
+DefConstructorI('\lx@hidden@align', undef, "",   alias => '');
 
 DefRegister('\everycr' => Tokens());
 DefRegister('\tabskip' => Glue(0));
@@ -144,8 +145,8 @@ DefPrimitiveI('\span', undef, sub {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Now, for \halign itself
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# See \@@LTX@noalign for some \noalign cases
-# See \@multicolumn for cases of \span,\omit
+# See \lxX@noalign for some \noalign cases
+# See \lx@alignment@multicolumn for cases of \span,\omit
 # See alignmentBindings for default bindings
 # But also see others for different handling of (eg) open@row, etc.
 # Probably we have to handle these cases by more generic default code
@@ -258,13 +259,13 @@ sub alignmentBindings {
     properties     => {%properties});
   AssignValue(Alignment => $alignment);
   Debug("Halign $alignment: New " . $template->show) if $LaTeXML::DEBUG{halign};
-  Let(T_MATH, ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
+  Let(T_MATH, ($ismath ? '\lx@dollar@in@mathmode' : '\lx@dollar@in@textmode'));
   return; }
 
-DefMacroI('\@row@before',    undef, undef);
-DefMacroI('\@row@after',     undef, undef);
-DefMacroI('\@column@before', undef, undef);
-DefMacroI('\@column@after',  undef, undef);
+DefMacroI('\lx@alignment@row@before',    undef, undef);
+DefMacroI('\lx@alignment@row@after',     undef, undef);
+DefMacroI('\lx@alignment@column@before', undef, undef);
+DefMacroI('\lx@alignment@column@after',  undef, undef);
 
 sub pRevert {
   my ($arg) = @_;
@@ -276,7 +277,7 @@ sub cRevert {
   local $LaTeXML::DUAL_BRANCH = 'content';
   return Revert($arg); }
 
-use constant T_close_alignment => T_CS('\@close@alignment');
+use constant T_close_alignment => T_CS('\lx@close@alignment');
 
 sub digestAlignmentBody {
   my ($stomach, $whatsit) = @_;
@@ -342,10 +343,10 @@ sub digestAlignmentBody {
   return; }
 
 use constant T_crcr           => T_CS('\crcr');
-use constant T_hidden_crcr    => T_CS('\hidden@crcr');
+use constant T_hidden_crcr    => T_CS('\lx@hidden@crcr');
 use constant T_omit           => T_CS('\omit');
 use constant T_noalign        => T_CS('\noalign');
-use constant T_hidden_noalign => T_CS('\hidden@noalign');
+use constant T_hidden_noalign => T_CS('\lx@hidden@noalign');
 
 # Read & digest an alignment column's data,
 # accommodating the current template and any special cs's
@@ -544,7 +545,7 @@ DefMacro('\valign', '');
 #########
 # Support for \\[dim] .... TO BE WORKED OUT!
 # NOTE that this does NOT skip spaces before * or []!!!!!
-#  As if: \@alignment@newline OptionalMatch:* [Dimension]
+#  As if: \lx@alignment@newline OptionalMatch:* [Dimension]
 # Read arguments for \\, namely * and/or [Dimension]
 # BUT optionally do it while skipping spaces (latex style) or not (ams style)
 sub readNewlineArgs {
@@ -575,40 +576,38 @@ sub readNewlineArgs {
 # But we're not there (yet)
 
 # This is the internal macro for \\[dim] used by LaTeX for various arrays, tabular, etc
-DefMacroI('\@alignment@newline', undef, sub {
+DefMacroI('\lx@alignment@newline', undef, sub {
     my ($gullet) = @_;
     my ($star, $optional) = readNewlineArgs($gullet, 1);
-    return (T_CS('\hidden@cr'), T_BEGIN,
+    return (T_CS('\lx@hidden@cr'), T_BEGIN,
       ($optional
-        ? (T_CS('\@alignment@newline@markertall'), T_BEGIN, $optional, T_END)
-        : T_CS('\@alignment@newline@marker')),
+        ? (T_CS('\lx@alignment@newline@markertall'), T_BEGIN, $optional, T_END)
+        : T_CS('\lx@alignment@newline@marker')),
       T_END); });
 # However, the above will skip spaces --AND a newline! -- looking for [],
 # which is kinda weird in math, since there may be a reasonable math [ in the 1st column!
 # AMS kindly avoids that, by using a special version of \\
-DefMacroI('\@alignment@newline@noskip', undef, sub {
+DefMacroI('\lx@alignment@newline@noskip', undef, sub {
     my ($gullet) = @_;
     my ($star, $optional) = readNewlineArgs($gullet);
-    return (T_CS('\hidden@cr'), T_BEGIN,
+    return (T_CS('\lx@hidden@cr'), T_BEGIN,
       ($optional
-        ? (T_CS('\@alignment@newline@markertall'), T_BEGIN, $optional, T_END)
-        : T_CS('\@alignment@newline@marker')),
+        ? (T_CS('\lx@alignment@newline@markertall'), T_BEGIN, $optional, T_END)
+        : T_CS('\lx@alignment@newline@marker')),
       T_END); });
 
 # These are the markers that produce \\ in the reversion,
 # and (eventually will) add vertical space to the row!
-DefConstructor('\@alignment@newline@marker', '',
+DefConstructor('\lx@alignment@newline@marker', '',
   reversion => Tokens(T_CS("\\\\"), T_CR));
 # AND add the spacing to the alignment!!!
-DefConstructor('\@alignment@newline@markertall {Dimension}', '',
+DefConstructor('\lx@alignment@newline@markertall {Dimension}', '',
   afterDigest => sub {
     if (my $alignment = LookupValue('Alignment')) {
       $alignment->currentRow->{padding} = $_[1]->getArg(1); }
     return; },
   reversion => sub {
     Tokens(T_CS("\\\\"), T_OTHER('['), Revert($_[1]), T_OTHER(']'), T_CR); });
-
-DefMacroI('\tabularnewline', undef, '\cr');    # ???
 
 # \lx@intercol is our replacement for LaTeX's \@acol which places intercolumn space in tabular
 # (but NOT used by TeX's \halign!)
@@ -638,7 +637,7 @@ DefConstructor('\lx@math@intercol', "",    # mspace ???
 
 # Like \noalign, takes an arg; handled within alignment processing.
 # But doesn't create a pseudo-row (??? Or does it?; is it still needed?)
-DefConstructor('\hidden@noalign{}', '#1',
+DefConstructor('\lx@hidden@noalign{}', '#1',
   reversion  => '',
   properties => sub {
     # Sometimes, we're smuggling stuff that needs to be carried into the XML.
@@ -654,88 +653,29 @@ DefConstructorI('\@@alignment@hline', undef, '',
   properties => { isHorizontalRule => 1 },
   sizer      => 0, alias => '\hline');
 
-DefMacroI('\@tabular@begin@heading', undef, sub {
+DefMacroI('\lx@alignment@begin@heading', undef, sub {
     my $alignment = LookupValue('Alignment');
     $$alignment{in_tabular_head} = 1;
     return; });
-DefMacroI('\@tabular@end@heading', undef, sub {
+DefMacroI('\lx@alignment@end@heading', undef, sub {
     my $alignment = LookupValue('Alignment');
     $$alignment{in_tabular_head} = 0;
     return; });
 
 #======================================================================
-# Math mode in alignment
-# Special forms for $ appearing within alignments.
-# Note that $ within a math alignment (eg array environment),
-# switches to text mode! There's no $$ for display math.
-
-# This is the "normal" case: $ appearing with an alignment that is in text mode.
-# It's just like regular $, except it doesn't look for $$ (no display math).
-DefPrimitiveI('\@dollar@in@textmode', undef, sub {
-    no warnings 'recursion';
-    $_[0]->invokeToken(T_CS((LookupValue('IN_MATH') ? '\@@ENDINLINEMATH' : '\@@BEGININLINEMATH'))); });
-
-# This one is for $ appearing within an alignment that's already math.
-# This should switch to text mode (because it's balancing the hidden $
-# wrapping each alignment cell!!!!!!)
-# However, it should be like a normal $ if it's inside something like \mbox
-# that itself makes a text box!!!!!!
-# Thus, we need to know at what boxing level we started the last math or text.
-# This is all complicated by the need to know _how_ we got into or out of math mode!
-# Gawd, this is awful!
-# NOTE: Probably the most "Right" thing to do would be to process
-# alignments in text mode only (like TeX), sneaking $'s in where needed,
-# but then afterwards, morph them into math arrays?
-# This would be complicated by the need to hide these $ from untex.
-DefPrimitiveI('\@dollar@in@mathmode', undef, sub {
-    my ($stomach) = @_;
-    my $level = $stomach->getBoxingLevel;
-    if ((LookupValue('MATH_ALIGN_$_BEGUN') || 0) == $level) { # If we're begun making _something_ with $.
-      my @l = ();
-      if (LookupValue('IN_MATH')) {                           # But we're somehow in math?
-        @l = $stomach->invokeToken(T_CS('\@@ENDINLINEMATH')); }
-      else {
-        @l = $stomach->invokeToken(T_CS('\@@ENDINLINETEXT')); }
-      AssignValue('MATH_ALIGN_$_BEGUN' => 0);                 # Reset this AFTER finishing the something
-      @l; }
-    else {
-      AssignValue('MATH_ALIGN_$_BEGUN' => $level + 1);        # Note that we've begun something
-      if (LookupValue('IN_MATH')) {                           # If we're "still" in math
-        $stomach->invokeToken(T_CS('\@@BEGININLINETEXT')); }
-      else {
-        $stomach->invokeToken(T_CS('\@@BEGININLINEMATH')); } } });
-
-DefConstructorI('\@@BEGININLINETEXT', undef,
-  "<ltx:XMText>"
-    . "#body"
-    . "</ltx:XMText>",
-  alias => T_MATH, beforeDigest => sub { $_[0]->beginMode('text'); }, captureBody => 1);
-DefConstructorI('\@@ENDINLINETEXT', undef, "", alias => T_MATH,
-  beforeDigest => sub { $_[0]->endMode('text'); });
-
-DefPrimitiveI('\@LTX@nonumber', undef, sub { AssignValue(EQUATIONROW_NUMBER => 0, 'global'); });
-
-DefMacroI('\hidewidth', undef, Tokens());
-
-#======================================================================
 # Multicolumn support
-DefMacro('\multispan{Number}', sub {
-    my ($gullet, $span) = @_;
-    $span = $span->valueOf;
-    (T_CS('\omit'), map { (T_CS('\span'), T_CS('\omit')) } 1 .. $span - 1); });
-
-DefRegisterI('\@alignment@ncolumns', undef, Dimension(0),
+DefRegisterI('\lx@alignment@ncolumns', undef, Dimension(0),
   getter => sub {
     if (my $alignment = LookupValue('Alignment')) {
       Number(scalar($alignment->getTemplate->columns)); }
     else { Number(0); } });
-DefRegisterI('\@alignment@column', undef, Dimension(0),
+DefRegisterI('\lx@alignment@column', undef, Dimension(0),
   getter => sub {
     if (my $alignment = LookupValue('Alignment')) {
       Number($alignment->currentColumnNumber); }
     else { Number(0); } });
 
-DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
+DefMacro('\lx@alignment@multicolumn {Number}  AlignmentTemplate {}', sub {
     my ($gullet, $span, $template, $tokens) = @_;
     my $column = $template->column(1);
     $span = $span->valueOf;
@@ -746,9 +686,9 @@ DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
       $tokens->unlist,
       ($column ? afterCellUnlist($$column{after}) : ())); });
 
-DefConditionalI('\if@in@alignment', undef, sub { LookupValue('Alignment'); });
+DefConditionalI('\if@in@lx@alignment', undef, sub { LookupValue('Alignment'); });
 
-DefPrimitive('\@alignment@bindings AlignmentTemplate []', sub {
+DefPrimitive('\lx@alignment@bindings AlignmentTemplate []', sub {
     my ($stomach, $template, $mode) = @_;
     alignmentBindings($template, $mode); });
 

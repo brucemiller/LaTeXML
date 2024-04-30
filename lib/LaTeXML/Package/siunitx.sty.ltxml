@@ -752,9 +752,9 @@ sub six_wrap {
   my $color = six_get('color');
   return Tokens(
     ($color ? (T_BEGIN, T_CS('\color'), T_BEGIN, $color, T_END) : ()),
-    T_CS('\@@BEGININLINEMATH'),
+    T_CS('\lx@begin@inline@math'),
     (grep { $_; } @stuff),
-    T_CS('\@@ENDINLINEMATH'),
+    T_CS('\\lx@end@inline@math'),
     ($color ? (T_END) : ())); }
 
 # \num[options]{number}

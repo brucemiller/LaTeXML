@@ -40,8 +40,8 @@ DefMacro('\csname enddeluxetable*\endcsname', '\spew@tblnotes\end{table}');
 DefMacro('\set@deluxetable@template AlignmentTemplate', sub {
     AssignValue('@deluxetable@template', $_[1]); });
 
-DefMacro('\startdata', '\bgroup\@deluxetable@bindings\@@deluxetabular\@start@alignment\hline\hline\@deluxetable@header');
-DefMacro('\enddata', '\\\\\hline\@finish@alignment\@end@deluxetabular\egroup');
+DefMacro('\startdata', '\bgroup\@deluxetable@bindings\@@deluxetabular\lx@begin@alignment\hline\hline\@deluxetable@header');
+DefMacro('\enddata', '\\\\\hline\lx@end@alignment\@end@deluxetabular\egroup');
 
 DefPrimitive('\@deluxetable@bindings', sub {
     tabularBindings(LookupValue('@deluxetable@template')); });
@@ -77,7 +77,7 @@ DefMacro('\tablecolumns{Number}', '');                       # Ignorable ???
 Let('\tablecaption', '\caption');
 
 DefMacro('\tablehead{}',
-  '\def\@deluxetable@header{\@tabular@begin@heading#1\\\\\hline\@tabular@end@heading}');
+  '\def\@deluxetable@header{\lx@alignment@begin@heading#1\\\\\hline\lx@alignment@end@heading}');
 DefMacro('\colhead{}',    '\multicolumn{1}{c}{#1}');
 DefMacro('\twocolhead{}', '\multicolumn{2}{c}{\hss #1 \hss}');
 DefMacro('\nocolhead{}',  '\multicolumn{1}{h}{#1}');
@@ -94,8 +94,8 @@ DefMacro('\tablebreak',    '\\\\[0pt]');                     # Obsolete form
 DefMacro('\tablebreak', '');    # Ignorable; we're not splitting tables.
 DefMacro('\nodata',     '');    # Ignorable
 
-DefMacro('\cutinhead{}', '\hline\multicolumn{\@alignment@ncolumns}{c}{#1}\\\\\hline');
-DefMacro('\sidehead{}',  '\hline\multicolumn{\@alignment@ncolumns}{l}{#1}\\\\\hline');
+DefMacro('\cutinhead{}', '\hline\multicolumn{\lx@alignment@ncolumns}{c}{#1}\\\\\hline');
+DefMacro('\sidehead{}',  '\hline\multicolumn{\lx@alignment@ncolumns}{l}{#1}\\\\\hline');
 
 DefMacro('\tableline', '\hline');
 

@@ -140,8 +140,8 @@ if (!($LaTeXML::DEBUG{compiled} || $LaTeXML::DEBUG{compiling})) {
     \gdef\@currnamestack{#4}');
 }
 DefMacroI(T_CS('\@currnamestack'), undef, Tokens());
-Let('\@currname', '\@empty');
-Let('\@currext',  '\@empty');
+Let('\@currname', '\lx@empty');
+Let('\@currext',  '\lx@empty');
 
 #======================================================================
 # After all other rewrites have acted, a little cleanup

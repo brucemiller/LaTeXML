@@ -290,14 +290,14 @@ DefEnvironment('{lxFooter}', sub { },
 
 # To mark the table head/foot (table column headers)
 # Put this before first table heading row
-DefMacroI('\lxBeginTableHead', undef, '\@tabular@begin@heading');
+DefMacroI('\lxBeginTableHead', undef, '\lx@alignment@begin@heading');
 # put this after the \\ ending the table heading.
-DefMacroI('\lxEndTableHead', undef, '\@tabular@end@heading');
+DefMacroI('\lxEndTableHead', undef, '\lx@alignment@end@heading');
 
 # Ditto for table foot (last rows in table)
-DefMacroI('\lxBeginTableFoot', undef, '\@tabular@begin@heading');
+DefMacroI('\lxBeginTableFoot', undef, '\lx@alignment@begin@heading');
 # put this after the \\ ending the table heading.
-DefMacroI('\lxEndTableFoot', undef, '\@tabular@end@heading');
+DefMacroI('\lxEndTableFoot', undef, '\lx@alignment@end@heading');
 
 # To mark an individual cell as a column header
 DefMacroI('\lxTableColumnHead', undef, sub {

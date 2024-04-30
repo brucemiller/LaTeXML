@@ -112,9 +112,7 @@ DefPrimitiveI('\/', undef, sub {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Font encoding and FontMaps
 
-DefMacro('\fontencoding{}', '\@@@fontencoding{#1}');
-
-DefPrimitive('\@@@fontencoding{}', sub {
+DefPrimitive('\lx@fontencoding{}', sub {
     my ($stomach, $encoding) = @_;
     $encoding = ToString(Expand($encoding));
     if (LoadFontMap($encoding)) {
@@ -122,9 +120,6 @@ DefPrimitive('\@@@fontencoding{}', sub {
     else {
       MergeFont(encoding => 'OT1'); }    # Default to OT1 encoding if no map found
     return; });
-
-DefMacroI('\f@encoding',  undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
-DefMacroI('\cf@encoding', undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
 
 # Used for SemiVerbatim text
 DeclareFontMap('ASCII',

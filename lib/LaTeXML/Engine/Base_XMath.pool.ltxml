@@ -31,7 +31,8 @@ use LaTeXML::Package;
 #
 # The following constructor (see how it's used in DefMath), adds meaning attributes
 # whereever it seems sensible on the presentation branch, after it has been generated.
-DefConstructor('\@ASSERT@MEANING{}{}', '#2',
+# This appears to be obsolete/no-longer-used, but keep for future reference.
+DefConstructor('\lx@assert@meaning{}{}', '#2',
   reversion      => '#2',
   afterConstruct => sub {
     my ($document, $whatsit) = @_;
@@ -577,18 +578,18 @@ DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
           : (repeated => [{@colspec}]))),
       'math',
       (keys %attributes ? (attributes => {%attributes}) : ()));    # });
-    Let("\\\\",         '\@alignment@newline');
-    Let('\lx@intercol', '\lx@math@intercol');
-    Let('\@row@before', '\@empty');    # Disable special row treatment (eg. numbering) unless requested
-    Let('\@row@after',  '\@empty');
+    Let("\\\\",                     '\lx@alignment@newline');
+    Let('\lx@intercol',             '\lx@math@intercol');
+    Let('\lx@alignment@row@before', '\lx@empty'); # Disable special row treatment (eg. numbering) unless requested
+    Let('\lx@alignment@row@after',  '\lx@empty');
 });
 
 DefPrimitive('\lx@end@gen@matrix', sub { $_[0]->egroup; });
 
 DefMacro('\lx@gen@plain@matrix{}{}',
   '\lx@gen@matrix@bindings{#1}'
-    . '\lx@gen@plain@matrix@{#1}{\@start@alignment#2\@finish@alignment}'
-    #    . '\lx@gen@plain@matrix@{#1}{\@start@alignment#2\cr\@finish@alignment}'
+    . '\lx@gen@plain@matrix@{#1}{\lx@begin@alignment#2\lx@end@alignment}'
+    #    . '\lx@gen@plain@matrix@{#1}{\lx@begin@alignment#2\cr\lx@end@alignment}'
     . '\lx@end@gen@matrix');
 
 # The delimiters on a matrix are presumably just for notation or readability (not an operator);
@@ -659,15 +660,15 @@ DefPrimitive('\lx@gen@cases@bindings RequiredKeyVals:lx@GEN', sub {
               ($condtext ? (T_CS('\lx@cases@end@condition')) : ()),
               T_CS('\hfil')) }]),
       'math');
-    Let("\\\\",         '\@alignment@newline');
+    Let("\\\\",         '\lx@alignment@newline');
     Let('\lx@intercol', '\lx@math@intercol');
-    DefMacro('\@row@before', '');    # Don't inherit counter stepping from containing environments
-    DefMacro('\@row@after',  '');
+    DefMacro('\lx@alignment@row@before', ''); # Don't inherit counter stepping from containing environments
+    DefMacro('\lx@alignment@row@after',  '');
 });
 
 DefMacro('\lx@gen@plain@cases{}{}',
   '\lx@gen@cases@bindings{#1}'
-    . '\lx@gen@plain@cases@{#1}{\@start@alignment#2\@finish@alignment}'
+    . '\lx@gen@plain@cases@{#1}{\lx@begin@alignment#2\lx@end@alignment}'
     . '\lx@end@gen@cases');
 DefPrimitive('\lx@end@gen@cases', sub { $_[0]->egroup; });
 
@@ -754,7 +755,7 @@ sub closeMathFork {
 # that is synthesized from other math content within a ltx:MathFork.
 sub MathWhatsit {
   my (@items) = @_;
-  my $hbgd = LookupDefinition(T_CS('\@hidden@bgroup'));
+  my $hbgd = LookupDefinition(T_CS('\lx@hidden@bgroup'));
   @items = map { ((ref $_ eq 'LaTeXML::Core::Whatsit') && ($_->getDefinition eq $hbgd)
       ? $_->getBody->unlist : ($_)) }
     map { $_->unlist } grep { $_ } @items;
@@ -765,9 +766,9 @@ sub MathWhatsit {
   my @styles = grep { UnTeX($_) eq '\displaystyle' } @items;
   if (@styles) {
     @items = ($styles[0], grep { UnTeX($_) ne '\displaystyle' } @items); }
-  return LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')), [],
+  return LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\lx@begin@inline@math')), [],
     body    => List(@items, mode => 'math'),
-    trailer => T_CS('\@@ENDINLINEMATH'),
+    trailer => T_CS('\\lx@end@inline@math'),
     locator => $locator, isMath => 1); }
 
 #======================================================================

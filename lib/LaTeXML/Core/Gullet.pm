@@ -225,14 +225,14 @@ sub handleTemplate {
   local $LaTeXML::CURRENT_TOKEN = $token;
   my $post = $alignment->getColumnAfter;
   $LaTeXML::ALIGN_STATE = 1000000;
-  ### NOTE: Truly fishy smuggling w/ \hidden@cr
+  ### NOTE: Truly fishy smuggling w/ \lx@hidden@cr
   my $arg;
-  if (($type eq 'cr') && $hidden) {    # \hidden@cr gets an argument as payload!!!!!
+  if (($type eq 'cr') && $hidden) {    # \lx@hidden@cr gets an argument as payload!!!!!
     $arg = readArg($self); }
   Debug("Halign $alignment: column after " . ToString($post)) if $LaTeXML::DEBUG{halign};
   if ((($type eq 'cr') || ($type eq 'crcr'))
     && $$alignment{in_row} && !$alignment->currentRow->{pseudorow}) {
-    unshift(@{ $$self{pushback} }, T_CS('\@row@after')); }
+    unshift(@{ $$self{pushback} }, T_CS('\lx@alignment@row@after')); }
   if ($arg) {
     unshift(@{ $$self{pushback} }, T_BEGIN, $arg->unlist, T_END); }
   unshift(@{ $$self{pushback} }, $token);
@@ -241,12 +241,12 @@ sub handleTemplate {
 
 # If it is a column ending token, Returns the token, a keyword and whether it is "hidden"
 our @column_ends = (    # besides T_ALIGN
-  [T_CS('\cr'),           'cr',     0],
-  [T_CS('\crcr'),         'crcr',   0],
-  [T_CS('\hidden@cr'),    'cr',     1],
-  [T_CS('\hidden@crcr'),  'crcr',   1],
-  [T_CS('\hidden@align'), 'insert', 1],
-  [T_CS('\span'),         'span',   0]);
+  [T_CS('\cr'),              'cr',     0],
+  [T_CS('\crcr'),            'crcr',   0],
+  [T_CS('\lx@hidden@cr'),    'cr',     1],
+  [T_CS('\lx@hidden@crcr'),  'crcr',   1],
+  [T_CS('\lx@hidden@align'), 'insert', 1],
+  [T_CS('\span'),            'span',   0]);
 
 sub isColumnEnd {
   my ($self, $token) = @_;

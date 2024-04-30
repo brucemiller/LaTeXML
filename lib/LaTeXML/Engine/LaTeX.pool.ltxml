@@ -33,6 +33,9 @@ LOAD_LATEX();
 # Apparently LaTeX does NOT define \magnification,
 # and babel uses that to determine whether we're runing LaTeX!!!
 Let('\magnification', '\@undefined');
+Let('\@empty',        '\lx@empty');
+Let('\@ifundefined',  '\lx@ifundefined');
+
 #**********************************************************************
 # Basic \documentclass & \documentstyle
 
@@ -735,11 +738,11 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
     my %props = RefStepID($type);
     if ($type eq 'appendix') {
       $props{backmatterelement} = LookupMapping('BACKMATTER_ELEMENT', 'ltx:' . $type); }
-    $props{title} = Digest(T_CS('\@hidden@bgroup'),
-      Invocation(T_CS('\lx@format@title@font@@'), $type), $title, T_CS('\@hidden@egroup'));
+    $props{title} = Digest(T_CS('\lx@hidden@bgroup'),
+      Invocation(T_CS('\lx@format@title@font@@'), $type), $title, T_CS('\lx@hidden@egroup'));
     $props{toctitle} = $toctitle
-      && Digest(T_CS('\@hidden@bgroup'), Invocation(T_CS('\lx@format@toctitle@font@@'), $type),
-      $toctitle, T_CS('\@hidden@egroup'));
+      && Digest(T_CS('\lx@hidden@bgroup'), Invocation(T_CS('\lx@format@toctitle@font@@'), $type),
+      $toctitle, T_CS('\lx@hidden@egroup'));
     return %props; });
 
 #======================================================================
@@ -1980,12 +1983,12 @@ DefMacroI('\verb', undef, sub {
     my $body  = $gullet->readUntil($delim);
     EndSemiverbatim();
     Tokens(
-      T_CS('\@hidden@bgroup'),
+      T_CS('\lx@hidden@bgroup'),
       ($starred ? T_CS('\lx@use@visiblespace') : ()),
       Invocation(T_CS('\@internal@verb'),
         ($starred ? T_OTHER('*') : Tokens()),
         Tokens($init), $body),
-      T_CS('\@hidden@egroup'))->unlist; });
+      T_CS('\lx@hidden@egroup'))->unlist; });
 
 DefPrimitive('\lx@use@visiblespace', sub {
     my ($stomach, $star) = @_;
@@ -2028,7 +2031,7 @@ DefMacroI('\@eqnnum', undef, '(\theequation)', locked => 1);
 DefMacro('\fnum@equation', '\@eqnnum');
 
 # Redefined from TeX.pool, since with LaTeX we presumably have a more complete numbering system
-DefConstructorI('\@@BEGINDISPLAYMATH', undef,
+DefConstructorI('\lx@begin@display@math', undef,
   "<ltx:equation xml:id='#id'>"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>"
@@ -2099,8 +2102,8 @@ sub beforeEquation {
         ($numbered ? RefStepCounter($ctr) : RefStepID($ctr)) }, 'global'); }
   else {
     AssignValue(EQUATIONROW_TAGS => {}, 'global'); }
-  Let('\@@ENDDISPLAYMATH',   '\lx@eDM@in@equation');
-  Let('\@@BEGINDISPLAYMATH', '\lx@bDM@in@equation');
+  Let('\lx@end@display@math',   '\lx@eDM@in@equation');
+  Let('\lx@begin@display@math', '\lx@bDM@in@equation');
   return; }
 
 # Note peculiar usages of \[,\],$$ WITHIN displayed math, like {equation}.
@@ -2110,19 +2113,20 @@ sub beforeEquation {
 # sort of text insertion (eg \footnote)!
 # So, we've got to dance around with redefinitions!!
 # SIDE NOTE: \[,\] are really just $$ w/ appropriate error checking!
-Let('\lx@saved@BEGINDISPLAYMATH', '\@@BEGINDISPLAYMATH');
-Let('\lx@saved@ENDDISPLAYMATH',   '\@@ENDDISPLAYMATH');
+Let('\lx@saved@begin@display@math', '\lx@begin@display@math');
+Let('\lx@saved@end@display@math',   '\lx@end@display@math');
 
-DefMacro('\lx@bDM@in@equation', '\lx@saved@BEGINDISPLAYMATH\let\@@ENDDISPLAYMATH\lx@saved@ENDDISPLAYMATH');
+DefMacro('\lx@bDM@in@equation',
+  '\lx@saved@begin@display@math\let\lx@end@display@math\lx@saved@end@display@math');
 DefMacro('\lx@eDM@in@equation',
   '\lx@retract@eqnno\lx@begin@fake@intertext'
-    . '\let\lx@saved@BEGINDISPLAYMATH\@@BEGINDISPLAYMATH\let\lx@saved@bdm\['
-    . '\let\@@BEGINDISPLAYMATH\lx@end@fake@intertext'
+    . '\let\lx@saved@begin@display@math\lx@begin@display@math\let\lx@saved@bdm\['
+    . '\let\lx@begin@display@math\lx@end@fake@intertext'
     . '\let\[\lx@end@fake@intertext');
 
 DefMacro('\lx@begin@fake@intertext', '\end{equation}');
 DefMacro('\lx@end@fake@intertext',
-  '\let\@@BEGINDISPLAYMATH\lx@saved@BEGINDISPLAYMATH\let\[\lx@saved@bdm' .
+  '\let\lx@begin@display@math\lx@saved@begin@display@math\let\[\lx@saved@bdm' .
     '\begin{equation}');
 DefPrimitive('\lx@retract@eqnno', sub { retractEquation(); });
 
@@ -2150,7 +2154,6 @@ DefPrimitiveI('\lx@equation@nonumber', undef, sub {
       else {
         retractEquation(); } }
     return; });
-Let('\@LTX@nonumber', '\lx@equation@nonumber');
 
 # Set this equation's number explicitly (eg ams's \tag)
 DefMacroI('\lx@equation@settag', undef, '\lx@equation@retract\lx@equation@settag@');
@@ -2229,10 +2232,10 @@ DefEnvironment('{equation*}',
     afterEquation($_[1]); },
   locked => 1);
 
-DefMacro('\[', '\@@BEGINDISPLAYMATH');
-DefMacro('\]', '\@@ENDDISPLAYMATH');
-DefMacro('\(', '\@@BEGININLINEMATH');
-DefMacro('\)', '\@@ENDINLINEMATH');
+DefMacro('\[', '\lx@begin@display@math');
+DefMacro('\]', '\lx@end@display@math');
+DefMacro('\(', '\lx@begin@inline@math');
+DefMacro('\)', '\\lx@end@inline@math');
 
 # Keep from expanding too early, if in alignments, or such.
 DefMacroI('\ensuremath', undef,
@@ -2355,8 +2358,8 @@ DefConditionalI('\if@in@firstcolumn', undef, sub {
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
-'\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
-    . '\else\rlap{\@@BEGININLINEMATH\displaystyle #1\@@ENDINLINEMATH}\fi');
+'\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\lx@begin@inline@math \displaystyle #1\\lx@end@inline@math\mbox{}}'
+    . '\else\rlap{\lx@begin@inline@math\displaystyle #1\\lx@end@inline@math}\fi');
 # \intertext (in amsmath)
 
 Let('\displ@y', '\displaystyle');    # good enough?
@@ -2366,18 +2369,18 @@ DefMacro('\@lign', '');              # good enough?
 DefMacroI('\eqnarray', undef,
   '\@eqnarray@bindings\@@eqnarray'
     . '\@equationgroup@numbering{numbered=1,preset=1,deferretract=1,grouped=1,aligned=1}'
-    . '\@start@alignment',
+    . '\lx@begin@alignment',
   locked => 1);
 DefMacroI('\endeqnarray', undef,
-  '\cr\@finish@alignment\end@eqnarray',
+  '\cr\lx@end@alignment\end@eqnarray',
   locked => 1);
 DefMacro('\csname eqnarray*\endcsname',
   '\@eqnarray@bindings\@@eqnarray'
     . '\@equationgroup@numbering{numbered=1,preset=1,retract=1,grouped=1,aligned=1}'
-    . '\@start@alignment',
+    . '\lx@begin@alignment',
   locked => 1);
 DefMacro('\csname endeqnarray*\endcsname',
-  '\@finish@alignment\end@eqnarray',
+  '\lx@end@alignment\end@eqnarray',
   locked => 1);
 
 DefPrimitive('\@eqnarray@bindings', sub {
@@ -2385,8 +2388,8 @@ DefPrimitive('\@eqnarray@bindings', sub {
 
 DefPrimitiveI('\eqnarray@row@before@', undef, sub { beforeEquation(); });
 DefPrimitiveI('\eqnarray@row@after@',  undef, sub { afterEquation(); });
-DefMacroI('\eqnarray@row@before', undef, '\hidden@noalign{\eqnarray@row@before@}');
-DefMacroI('\eqnarray@row@after',  undef, '\hidden@noalign{\eqnarray@row@after@}');
+DefMacroI('\eqnarray@row@before', undef, '\lx@hidden@noalign{\eqnarray@row@before@}');
+DefMacroI('\eqnarray@row@after',  undef, '\lx@hidden@noalign{\eqnarray@row@after@}');
 
 sub eqnarrayBindings {
   my $col1 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
@@ -2420,17 +2423,17 @@ sub eqnarrayBindings {
       closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
       properties  => { preserve_structure => 1, attributes => {%attributes} }));
 
-  Let("\\\\",                    '\@alignment@newline');
-  Let('\lx@intercol',            '\lx@math@intercol');
-  Let('\@row@before',            '\eqnarray@row@before');
-  Let('\@row@after',             '\eqnarray@row@after');
-  Let('\lx@eqnarray@save@label', '\label');
-  Let('\label',                  '\lx@eqnarray@label');
+  Let("\\\\",                     '\lx@alignment@newline');
+  Let('\lx@intercol',             '\lx@math@intercol');
+  Let('\lx@alignment@row@before', '\eqnarray@row@before');
+  Let('\lx@alignment@row@after',  '\eqnarray@row@after');
+  Let('\lx@eqnarray@save@label',  '\label');
+  Let('\label',                   '\lx@eqnarray@label');
   return; }
 
-# A \label preceding \lefteqn throws of the implied \omit,e tc; so wrap in \hidden@align
+# A \label preceding \lefteqn throws of the implied \omit,e tc; so wrap in \lx@hidden@align
 DefMacro('\lx@eqnarray@label Semiverbatim',
-  '\hidden@noalign{\lx@eqnarray@save@label{#1}}');
+  '\lx@hidden@noalign{\lx@eqnarray@save@label{#1}}');
 
 DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
   '#1',
@@ -2785,6 +2788,10 @@ DefPrimitive('\DeclareTextAccentDefault{}{}',
 # TODO: Need to convert these DefPrimitive's into DefConstroctors
 # that add a preable PI!!!!!!!!!
 
+DefMacro('\fontencoding{}', '\lx@fontencoding{#1}');
+DefMacroI('\f@encoding',  undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
+DefMacroI('\cf@encoding', undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
+
 DefPrimitive('\DeclareTextComposite{}{}{}{}',
   sub { ignoredDefinition('DeclareTextComposite', $_[1]); });
 DefPrimitive('\DeclareTextCompositeCommand{}{}{}{}',
@@ -2877,6 +2884,7 @@ DefPrimitive('\DeclareFontEncoding{}{}{}', sub {
     }
     return;
 });
+
 DefMacroI('\LastDeclaredEncoding', undef, '');
 DefPrimitive('\DeclareFontSubstitution{}{}{}{}', undef);
 DefPrimitive('\DeclareFontEncodingDefaults{}{}', undef);
@@ -3685,9 +3693,9 @@ DefRegister('\marginparpush', Dimension(0));
 DefRegister('\tabbingsep' => Dimension(0));
 
 DefMacroI('\tabbing', undef,
-  '\par\@tabbing@bindings\@@tabbing\@start@alignment');
+  '\par\@tabbing@bindings\@@tabbing\lx@begin@alignment');
 DefMacroI('\endtabbing', undef,
-  '\@finish@alignment\@end@tabbing\par');
+  '\lx@end@alignment\@end@tabbing\par');
 DefPrimitiveI('\@end@tabbing', undef, sub { $_[0]->egroup; });
 DefConstructor('\@@tabbing SkipSpaces DigestedBody',
   '#1',
@@ -3794,7 +3802,7 @@ DefRegister('\lx@arstrut',           Dimension('0pt'));
 DefRegister('\lx@default@tabcolsep', Dimension('6pt'));
 DefRegister('\tabcolsep',            Dimension('6pt'));
 DefMacroI('\arraystretch', undef, "1");
-Let('\@tabularcr', '\@alignment@newline');
+Let('\@tabularcr', '\lx@alignment@newline');
 AssignValue(GUESS_TABULAR_HEADERS => 1)    # Defaults to yes
   unless defined LookupValue('GUESS_TABULAR_HEADERS');
 
@@ -3819,11 +3827,13 @@ sub tabularBindings {
   # NOTE: Fit this back in!!!!!!!
   # # Do like AddToMacro, but NOT global!
   foreach my $name ('@row@before', '@row@after', '@column@before', '@column@after') {
-    my $cs = '\\' . $name;
+    my $cs = '\\lx@alignment' . $name;
     DefMacroI($cs, undef,
       Tokens(LookupDefinition(T_CS($cs))->getExpansion->unlist,
         T_CS('\@tabular' . $name))); }
   return; }
+
+Let('\tabularnewline', '\relax');
 
 # Keyvals are for attributes for the alignment.
 # Typical keys are width, vattach,...
@@ -3844,12 +3854,12 @@ DefMacroI('\@tabular@column@before', undef, '');
 DefMacroI('\@tabular@column@after',  undef, '');
 
 # The Core alignment support is in LaTeXML::Core::Alignment and in TeX.ltxml
-##DefMacro('\tabular[]{}', '\@tabular@bindings{#2}\@@tabular[#1]{#2}\@start@alignment');
+##DefMacro('\tabular[]{}', '\@tabular@bindings{#2}\@@tabular[#1]{#2}\lx@begin@alignment');
 DefMacro('\tabular[]{}',
-  '\@tabular@bindings{#2}[vattach=#1]\@@tabular[#1]{#2}\@start@alignment\@tabular@before',
+  '\@tabular@bindings{#2}[vattach=#1]\@@tabular[#1]{#2}\lx@begin@alignment\@tabular@before',
   locked => 1);
 DefMacroI('\endtabular', undef,
-  '\@tabular@after\@finish@alignment\@end@tabular',
+  '\@tabular@after\lx@end@alignment\@end@tabular',
   locked => 1);
 DefPrimitiveI('\@end@tabular', undef, sub { $_[0]->egroup; });
 #DefMacroI('\@end@tabular', undef, undef);
@@ -3871,17 +3881,17 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
   mode   => 'text');
 
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
-###  '\@tabular@bindings{#3}\@@tabular@{#1}[#2]{#3}\@start@alignment');
-  '\@tabular@bindings{#3}[width=#1,vattach=#2]\@@tabular@{#1}[#2]{#3}\@start@alignment');
+###  '\@tabular@bindings{#3}\@@tabular@{#1}[#2]{#3}\lx@begin@alignment');
+  '\@tabular@bindings{#3}[width=#1,vattach=#2]\@@tabular@{#1}[#2]{#3}\lx@begin@alignment');
 DefMacro('\csname endtabular*\endcsname',
-  '\@finish@alignment\@end@tabular@');
+  '\lx@end@alignment\@end@tabular@');
 DefConstructor('\@@tabular@{Dimension}[] Undigested DigestedBody',
   '#4',
   beforeDigest => sub { $_[0]->bgroup; },
   reversion    => '\begin{tabular*}{#1}[#2]{#3}#4\end{tabular*}',
   mode         => 'text');
 DefPrimitive('\@end@tabular@', sub { $_[0]->egroup; });
-Let('\multicolumn', '\@multicolumn');
+Let('\multicolumn', '\lx@alignment@multicolumn');
 
 # A weird bit that sometimes gets invoked by Cargo Cult programmers...
 # to \noalign in the defn of \hline! Bizarre! (see latex.ltx)
@@ -3912,9 +3922,6 @@ DefRegister('\arraycolsep',            Dimension('5pt'));
 DefRegister('\arrayrulewidth',         Dimension('0.4pt'));
 DefRegister('\doublerulesep',          Dimension('2pt'));
 DefMacro('\extracolsep{}', Tokens());
-#DefMacroI('\tabularnewline', undef, Tokens());
-#Let('\tabularnewline', '\cr');
-#DefMacroI('\tabularnewline', undef, '\cr'); # ???
 #======================================================================
 # Array and similar environments
 
@@ -3933,14 +3940,14 @@ DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
     if (my $font = LookupValue('font')) {
       if (($font->getMathstyle || 'text') eq 'display') {
         MergeFont(mathstyle => 'text'); } }
-    Let("\\\\",         '\@alignment@newline');
+    Let("\\\\",         '\lx@alignment@newline');
     Let('\lx@intercol', '\lx@math@intercol');
     return; });
 
 DefMacro('\array[]{}',
-  '\@array@bindings[#1]{#2}\@@array[#1]{#2}\@start@alignment');
+  '\@array@bindings[#1]{#2}\@@array[#1]{#2}\lx@begin@alignment');
 DefMacroI('\endarray', undef,
-  '\@finish@alignment\@end@array');
+  '\lx@end@alignment\@end@array');
 DefPrimitiveI('\@end@array', undef, sub { $_[0]->egroup; });
 DefConstructor('\@@array[] Undigested DigestedBody',
   '#3',

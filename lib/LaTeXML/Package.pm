@@ -662,7 +662,7 @@ sub NewCounter {
   if (defined $prefix) {
     if (my $idwithin = $options{idwithin} || $within) {
       DefMacroI(T_CS("\\the$ctr\@ID"), undef,
-        "\\expandafter\\ifx\\csname the$idwithin\@ID\\endcsname\\\@empty"
+        "\\expandafter\\ifx\\csname the$idwithin\@ID\\endcsname\\lx\@empty"
           . "\\else\\csname the$idwithin\@ID\\endcsname.\\fi"
           . " $prefix\\csname \@$ctr\@ID\\endcsname",
         scope => 'global'); }
@@ -1418,10 +1418,10 @@ sub DefConstructorI {
 # Perhaps it would be better to use a label(-like) indirection here,
 # so all ID's can stay in the desired format?
 sub getXMArgID {
-  StepCounter('@XMARG');
-  DefMacroI(T_CS('\@@XMARG@ID'), undef, Tokens(Explode(LookupRegister('\c@@XMARG')->valueOf)),
+  StepCounter('@lx@xmarg');
+  DefMacroI(T_CS('\@@lx@xmarg@ID'), undef, Tokens(Explode(LookupRegister('\c@@lx@xmarg')->valueOf)),
     scope => 'global');
-  return Expand(T_CS('\the@XMARG@ID')); }
+  return Expand(T_CS('\the@lx@xmarg@ID')); }
 
 # Given a list of Tokens (to be expanded into mathematical objects)
 # return two lists:
