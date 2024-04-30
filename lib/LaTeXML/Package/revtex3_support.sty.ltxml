@@ -46,8 +46,8 @@ DefMacro('\endmathletters', '\lx@equationgroup@subnumbering@end');
 #======================================================================
 # Apparently, you can use single $ within equations to switch back to text
 
-DefMacro('\@dollar@in@oldrevtex', '\bgroup\hbox\bgroup\let$\@eegroup');
-DefMacro('\@eegroup',             '\egroup\egroup');
+DefMacro('\lx@dollar@in@oldrevtex', '\bgroup\hbox\bgroup\let$\@eegroup');
+DefMacro('\@eegroup',               '\egroup\egroup');
 DefEnvironment('{equation}',
   "<ltx:equation xml:id='#id'>"
     . "#tags"
@@ -58,7 +58,7 @@ DefEnvironment('{equation}',
     . "</ltx:Math>"
     . "</ltx:equation>",
   mode         => 'display_math',
-  beforeDigest => sub { Let(T_MATH, '\@dollar@in@oldrevtex'); },
+  beforeDigest => sub { Let(T_MATH, '\lx@dollar@in@oldrevtex'); },
   properties   => sub { RefStepCounter('equation'); },
   locked       => 1);
 DefEnvironment('{equation*}',
@@ -70,7 +70,7 @@ DefEnvironment('{equation*}',
     . "</ltx:Math>"
     . "</ltx:equation>",
   mode         => 'display_math',
-  beforeDigest => sub { Let(T_MATH, '\@dollar@in@oldrevtex'); },
+  beforeDigest => sub { Let(T_MATH, '\lx@dollar@in@oldrevtex'); },
   properties   => sub { RefStepID('equation') },
   locked       => 1);
 DefConstructorI('\[', undef,
@@ -82,9 +82,9 @@ DefConstructorI('\[', undef,
     . "</ltx:Math>"
     . "</ltx:equation>",
   beforeDigest => sub { $_[0]->beginMode('display_math');
-    Let(T_MATH, '\@dollar@in@oldrevtex'); },
+    Let(T_MATH, '\lx@dollar@in@oldrevtex'); },
   captureBody => 1,
-  properties => sub { RefStepID('equation') });
+  properties  => sub { RefStepID('equation') });
 
 #**********************************************************************
 

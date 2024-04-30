@@ -170,15 +170,15 @@ Let('\pmit', '\mathnormal');
 DefMacro('\eqnalign{}',
   '\@eqnarray@bindings\@@eqnarray'
     . '\@equationgroup@numbering{numbered=1,stepped=post,grouped=1,aligned=1}'
-    . '\@start@alignment'
+    . '\lx@begin@alignment'
     . '#1'
-    . '\@finish@alignment\end@eqnarray');
+    . '\lx@end@alignment\end@eqnarray');
 DefMacro('\eqnalignno{}',
   '\@eqnarray@bindings\@@eqnarray'
     . '\@equationgroup@numbering{numbered=1,stepped=post,grouped=1,aligned=1}'
-    . '\@start@alignment'
+    . '\lx@begin@alignment'
     . '#1'
-    . '\@finish@alignment\end@eqnarray');
+    . '\lx@end@alignment\end@eqnarray');
 
 #======================================================================
 

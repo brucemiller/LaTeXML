@@ -305,8 +305,8 @@ our $PGFMathFunctions;
 # NOTE: need to handle \ifpgfmathunitsdeclared
 # Version issue?
 RawTeX(<<'EoTeX');
-\@ifundefined{pgfmathunitsdeclaredtrue}{\newif\ifpgfmathunitsdeclared}{}
-\@ifundefined{pgfmathmathunitsdeclaredtrue}{\newif\ifpgfmathmathunitsdeclared}{}
+\lx@ifundefined{pgfmathunitsdeclaredtrue}{\newif\ifpgfmathunitsdeclared}{}
+\lx@ifundefined{pgfmathmathunitsdeclaredtrue}{\newif\ifpgfmathmathunitsdeclared}{}
 EoTeX
 
 our $PGMATH_UNITS_REGEXP = undef;

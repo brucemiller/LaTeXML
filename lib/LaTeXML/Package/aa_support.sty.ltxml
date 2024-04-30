@@ -77,13 +77,13 @@ DefMacro('\abstract@old{}',
 
 # Apparently args #2--#4 are required non-empty.
 DefMacro('\abstract@new{}{}{}{}{}',
-         '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{'
-         .'\ifx.#1.\else\textit{Context. }#1\par\fi'
-         .'\textit{Aims. }#2\par'
-         .'\textit{Methods. }#3\par'
-         .'\textit{Results. }#4\par'
-         .'\ifx.#5.\else\textit{Conclusions. }#5\fi'
-         .'}');
+  '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{'
+    . '\ifx.#1.\else\textit{Context. }#1\par\fi'
+    . '\textit{Aims. }#2\par'
+    . '\textit{Methods. }#3\par'
+    . '\textit{Results. }#4\par'
+    . '\ifx.#5.\else\textit{Conclusions. }#5\fi'
+    . '}');
 
 DefMacro('\abstract{}', sub {
     my ($gullet, $arg1) = @_;
@@ -175,7 +175,7 @@ DefEnvironment('{equation}',
   beforeDigest => sub {
     prepareEquationCounter(numbered => 1, preset => 1);
     beforeEquation();
-    Let(T_MATH, T_CS('\@dollar@in@mathmode')); },
+    Let(T_MATH, T_CS('\lx@dollar@in@mathmode')); },
   afterDigestBody => sub {
     afterEquation($_[1]); },
   locked => 1);
@@ -194,7 +194,7 @@ DefEnvironment('{equation*}',
   beforeDigest => sub {
     prepareEquationCounter(numbered => undef, preset => 1);
     beforeEquation();
-    Let(T_MATH, T_CS('\@dollar@in@mathmode')); },
+    Let(T_MATH, T_CS('\lx@dollar@in@mathmode')); },
   afterDigestBody => sub {
     afterEquation($_[1]); },
   locked => 1);

@@ -19,9 +19,9 @@ RequirePackage('array');
 
 # \tabularx{Dimension}[]{}
 DefMacro('\tabularx{}[]{}',
-  '\@tabular@bindings{#3}[vattach=#2,width=#1]\@@tabularx{#1}[#2]{#3}\@start@alignment');
+  '\@tabular@bindings{#3}[vattach=#2,width=#1]\@@tabularx{#1}[#2]{#3}\lx@begin@alignment');
 DefMacro('\endtabularx',
-  '\@finish@alignment\@end@tabularx');
+  '\lx@end@alignment\@end@tabularx');
 DefPrimitive('\@end@tabularx', sub { $_[0]->egroup; });
 DefConstructor('\@@tabularx{Dimension}[] Undigested DigestedBody',
   '#4',

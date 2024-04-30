@@ -170,7 +170,7 @@ DefPrimitive('\bibentry@create Semiverbatim', sub {
 # Processing Entries
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Math ID's within the bibliography.
-DefMacro('\the@XMARG@ID', '\the@lx@bibliography@ID.XM\arabic{@XMARG}');
+DefMacro('\the@lx@xmarg@ID', '\the@lx@bibliography@ID.XM\arabic{@lx@xmarg}');
 
 DefEnvironment('{bibtex@bibliography}',
   "<ltx:bibliography xml:id='#id' "

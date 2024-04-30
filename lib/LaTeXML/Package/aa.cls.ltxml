@@ -49,10 +49,10 @@ RequirePackage('aa_support');
 # see arXiv:astro-ph/0002145 for an example.
 # just use the one from TeX.pool, copied here:
 DefMacro('\pmatrix{}',
-  '\lx@gen@plain@matrix{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right)}{#1}');
+  '\lx@gen@plain@matrix{name=pmatrix,datameaning=matrix,left=\lx@left(,right=\lx@right)}{#1}');
 # also don't use the amsmath cases
 DefMacro('\cases{}',
-  '\lx@gen@plain@cases{meaning=cases,left=\@left\{,conditionmode=text,style=\textstyle}{#1}');
+  '\lx@gen@plain@cases{meaning=cases,left=\lx@left\{,conditionmode=text,style=\textstyle}{#1}');
 # but allow reloading amsmath.sty if {cases} was really needed (arXiv:astro-ph/0203101)
 AssignValue('amsmath.sty.ltxml_loaded', undef, 'global');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -44,11 +44,11 @@ DefMacroI('\hideoutput',  undef, Tokens());
 # \choose & friends, also need VERY special argument handling
 
 DefMacro('\choose',
-  '\lx@generalized@over{\choose}{meaning=binomial,thickness=0pt,left=\@left(,right=\@right)}');
+  '\lx@generalized@over{\choose}{meaning=binomial,thickness=0pt,left=\lx@left(,right=\lx@right)}');
 DefMacro('\brace',
-  '\lx@generalized@over{\brace}{thickness=0pt,left=\@left\{,right=\@right\}}');
+  '\lx@generalized@over{\brace}{thickness=0pt,left=\lx@left\{,right=\lx@right\}}');
 DefMacro('\brack',
-  '\lx@generalized@over{\brack}{thickness=0pt,left=\@left[,right=\@right]}');
+  '\lx@generalized@over{\brack}{thickness=0pt,left=\lx@left[,right=\lx@right]}');
 
 #======================================================================
 # Special Characters.
@@ -156,7 +156,7 @@ Let('\ialign', '\halign');
 
 # Overlapping alignments ???
 DefMacro('\oalign{}',
-  '\@@oalign{\@start@alignment#1\@finish@alignment}');
+  '\@@oalign{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@oalign{}',
   '#1',
   reversion    => '\oalign{#1}', bounded => 1, mode => 'text',
@@ -165,7 +165,7 @@ DefConstructor('\@@oalign{}',
 # This is actually different; the lines should lie ontop of each other.
 # How should this be represented?
 DefMacro('\ooalign{}',
-  '\@@ooalign{\@start@alignment#1\@finish@alignment}');
+  '\@@ooalign{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@ooalign{}',
   '#1',
   reversion    => '\ooalign{#1}', bounded => 1, mode => 'text',
@@ -178,6 +178,13 @@ DefConstructor('\buildrel Until:\over {}',
     . "<ltx:XMArg>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } });
+
+DefMacroI('\hidewidth', undef, Tokens());
+
+DefMacro('\multispan{Number}', sub {
+    my ($gullet, $span) = @_;
+    $span = $span->valueOf;
+    (T_CS('\omit'), map { (T_CS('\span'), T_CS('\omit')) } 1 .. $span - 1); });
 
 #======================================================================
 # TeX Book, Appendix B, p. 344
@@ -420,7 +427,7 @@ DefMacroI('\normalbaselines', undef,
 DefMacroI('\space', undef, Tokens(T_SPACE));
 DefMacroI('\lq',    undef, "`");
 DefMacroI('\rq',    undef, "'");
-Let('\empty', '\@empty');
+Let('\empty', '\lx@empty');
 DefMacroI('\null', undef, '\hbox{}');
 Let('\bgroup',  T_BEGIN);
 Let('\egroup',  T_END);
@@ -834,6 +841,24 @@ DefMathI('\clubsuit',    undef, "\x{2663}");
 DefMathI('\diamondsuit', undef, "\x{2662}");
 DefMathI('\heartsuit',   undef, "\x{2661}");
 DefMathI('\spadesuit',   undef, "\x{2660}");
+
+DefMacroI('\active@math@prime', undef, sub {
+    my ($gullet) = @_;
+    my @sup = (T_CS('\prime'));
+    # Collect up all ', convering to \prime
+    while ($gullet->ifNext(T_OTHER('\''))) {
+      $gullet->readToken;
+      push(@sup, T_CS('\prime')); }
+    # Combine with any following superscript!
+    # However, this is semantically screwed up!
+    # We really need to set up separate superscripts, but at same level!
+    if ($gullet->ifNext(T_SUPER)) {
+      $gullet->readToken;
+      push(@sup, $gullet->readArg->unlist); }
+    (T_SUPER, T_BEGIN, @sup, T_END); },
+  locked => 1);    # Only in math!
+AssignMathcode("'" => 0x8000);
+Let("'", '\active@math@prime');
 
 #----------------------------------------------------------------------
 DefMath('\smallint', "\x{222B}", meaning => 'integral', role => 'INTOP',
@@ -1253,8 +1278,8 @@ DefMath('\underbrace {}', "\x{23DF}", operator_role => 'UNDERACCENT',     # BOTT
 
 Let('\underbar', '\underline');    # Will anyone notice?
 
-DefMacro('\overrightarrow{}', '\protect\ifmmode\math@overrightarrow{#1}\else$\math@overrightarrow{#1}$\fi');
-DefMacro('\overleftarrow{}', '\protect\ifmmode\math@overleftarrow{#1}\else$\math@overleftarrow{#1}$\fi');
+DefMacro('\overrightarrow{}', '\protect\ifmmode\lx@math@overrightarrow{#1}\else$\lx@math@overrightarrow{#1}$\fi');
+DefMacro('\overleftarrow{}', '\protect\ifmmode\lx@math@overleftarrow{#1}\else$\lx@math@overleftarrow{#1}$\fi');
 
 DefMacro('\skew{}{}{}', '{#2{#3\mkern#1mu}\mkern-#1mu}{}');    # ignore the subtle spacing for now?
 #----------------------------------------------------------------------
@@ -1531,11 +1556,11 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
   reversion => '#1');
 
 DefMacro('\pmatrix{}',
-  '\lx@gen@plain@matrix{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right)}{#1}');
+  '\lx@gen@plain@matrix{name=pmatrix,datameaning=matrix,left=\lx@left(,right=\lx@right)}{#1}');
 
 # Note that 2nd column in \cases is in text mode!
 DefMacro('\cases{}',
-  '\lx@gen@plain@cases{meaning=cases,left=\@left\{,conditionmode=text,style=\textstyle}{#1}');
+  '\lx@gen@plain@cases{meaning=cases,left=\lx@left\{,conditionmode=text,style=\textstyle}{#1}');
 
 DefPrimitive('\openup Dimension', undef);
 
@@ -1545,7 +1570,7 @@ DefPrimitive('\openup Dimension', undef);
 DefMacro('\displaylines{}', '\halign{\hbox to\displaywidth{$\hfil\displaystyle##\hfil$}\crcr#1\crcr}');
 
 DefMacro('\eqalign{}',
-  '\@@eqalign{\@start@alignment#1\@finish@alignment}');
+  '\@@eqalign{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@eqalign{}',
   '#1',
   reversion    => '\eqalign{#1}', bounded => 1,
@@ -1553,7 +1578,7 @@ DefConstructor('\@@eqalign{}',
       attributes => { vattach => 'baseline' }); });
 
 DefMacro('\eqalignno{}',
-  '\@@eqalignno{\@start@alignment#1\@finish@alignment}');
+  '\@@eqalignno{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@eqalignno{}',
   '#1',
   reversion    => '\eqalignno{#1}', bounded => 1,
@@ -1561,7 +1586,7 @@ DefConstructor('\@@eqalignno{}',
       attributes => { vattach => 'baseline' }); });
 
 DefMacro('\leqalignno{}',
-  '\@@leqalignno{\@start@alignment#1\@finish@alignment}');
+  '\@@leqalignno{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@leqalignno{}',
   '#1',
   reversion    => '\leqalignno{#1}', bounded => 1,

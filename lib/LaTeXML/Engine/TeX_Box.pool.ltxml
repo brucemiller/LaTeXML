@@ -45,10 +45,12 @@ DefPrimitive(T_END, sub {
 # These are for those screwy cases where you need to create a group like box,
 # more than just bgroup, egroup,
 # BUT you DON'T want extra {, } showing up in any untex-ing.
-DefConstructor('\@hidden@bgroup', '#body', beforeDigest => sub { $_[0]->bgroup; }, captureBody => 1,
-  reversion => sub { Revert($_[0]->getProperty('body')); });
-DefConstructor('\@hidden@egroup', '', afterDigest => sub { $_[0]->egroup; },
-  reversion => '');
+DefConstructor('\lx@hidden@bgroup', '#body',
+  beforeDigest => sub { $_[0]->bgroup; }, captureBody => 1,
+  reversion    => sub { Revert($_[0]->getProperty('body')); });
+DefConstructor('\lx@hidden@egroup', '',
+  afterDigest => sub { $_[0]->egroup; },
+  reversion   => '');
 
 #======================================================================
 DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
@@ -144,8 +146,8 @@ DefParameterType('VBoxContents', sub {
 AssignValue(TEXT_MODE_BINDINGS  => []);
 AssignValue(HTEXT_MODE_BINDINGS => []);
 AssignValue(VTEXT_MODE_BINDINGS => []);
-PushValue(HTEXT_MODE_BINDINGS => [T_MATH, T_CS('\@dollar@in@textmode')]);
-PushValue(VTEXT_MODE_BINDINGS => [T_MATH, T_CS('\@dollar@in@normalmode')]);
+PushValue(HTEXT_MODE_BINDINGS => [T_MATH, T_CS('\lx@dollar@in@textmode')]);
+PushValue(VTEXT_MODE_BINDINGS => [T_MATH, T_CS('\lx@dollar@in@normalmode')]);
 ###PushValue(TEXT_MODE_BINDINGS => [T_CS('\centerline'), T_CS('\relax')]);
 
 sub reenterTextMode {

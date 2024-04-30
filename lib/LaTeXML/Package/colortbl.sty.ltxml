@@ -35,7 +35,7 @@ DefConditional('\if@@rowcolored', sub { LookupValue('tabular_row_color'); });
 DefPrimitive('\@clearrowcolor', sub {
     MergeFont(background => undef);
     AssignValue(tabular_row_color => undef, 'global'); });
-AddToMacro('\@tabular@row@after', '\hidden@noalign{\@clearrowcolor}');
+AddToMacro('\@tabular@row@after', '\lx@hidden@noalign{\@clearrowcolor}');
 
 AddToMacro('\@tabular@column@before', '\@userowcolor');
 
@@ -53,7 +53,7 @@ DefMacro('\columncolor[]{}[][]',
 # \rowcolor[<model>]{<color>}
 # Set the background color, and arrange for it to attach to the ltx:td
 DefMacro('\rowcolor[]{}',
-  '\hidden@noalign{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi\@setrowcolor}');
+  '\lx@hidden@noalign{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi\@setrowcolor}');
 
 # \cellcolor[<model>]{<color>}
 # Set the background color (we should already be in a cell),

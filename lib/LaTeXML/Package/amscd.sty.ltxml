@@ -32,10 +32,10 @@ RequirePackage('amsgen');
 
 DefMacro('\CD', '\lx@ams@CD{name=CD,datameaning=commutative-diagram}');
 DefMacro('\lx@ams@CD RequiredKeyVals:lx@GEN',
-  '\lx@gen@matrix@bindings{#1}\lx@ams@CD@bindings\lx@ams@matrix@{#1}\@start@alignment');
-DefMacro('\endCD', '\@finish@alignment\lx@end@gen@matrix');
+  '\lx@gen@matrix@bindings{#1}\lx@ams@CD@bindings\lx@ams@matrix@{#1}\lx@begin@alignment');
+DefMacro('\endCD', '\lx@end@alignment\lx@end@gen@matrix');
 DefPrimitive('\lx@ams@CD@bindings', sub {
-    Let("\\\\", '\@alignment@newline@noskip');
+    Let("\\\\", '\lx@alignment@newline@noskip');
     $STATE->assignMathcode('@' => 0x8000);
     Let('@', '\cd@'); });
 
@@ -44,27 +44,27 @@ DefMacro('\cd@ Token', sub {
     (T_CS('@' . ToString($token))); });
 
 DefMacroI(T_CS('@>'), 'Until:> Until:>',
-  '\hidden@align\cd@stack{>}{\rightarrowfill@}{#1}{#2}\hidden@align');
+  '\lx@hidden@align\cd@stack{>}{\rightarrowfill@}{#1}{#2}\lx@hidden@align');
 DefMacroI(T_CS('@)'), 'Until:) Until:)',
-  '\hidden@align\cd@stack{)}{\rightarrowfill@}{#1}{#2}\hidden@align');
+  '\lx@hidden@align\cd@stack{)}{\rightarrowfill@}{#1}{#2}\lx@hidden@align');
 DefMacroI(T_CS('@<'), 'Until:< Until:<',
-  '\hidden@align\cd@stack{<}{\leftarrowfill@}{#1}{#2}\hidden@align');
+  '\lx@hidden@align\cd@stack{<}{\leftarrowfill@}{#1}{#2}\lx@hidden@align');
 DefMacroI(T_CS('@('), 'Until:( Until:(',
-  '\hidden@align\cd@stack{(}{\leftarrowfill@}{#1}{#2}\hidden@align');
+  '\lx@hidden@align\cd@stack{(}{\leftarrowfill@}{#1}{#2}\lx@hidden@align');
 
 DefMacroI(T_CS('@A'), 'Until:A Until:A',
-  '\cd@adjacent{A}{\Big\uparrow}{#1}{#2}\hidden@align\hidden@align');
+  '\cd@adjacent{A}{\Big\uparrow}{#1}{#2}\lx@hidden@align\lx@hidden@align');
 DefMacroI(T_CS('@V'), 'Until:V Until:V',
-  '\cd@adjacent{V}{\Big\downarrow}{#1}{#2}\hidden@align\hidden@align');
+  '\cd@adjacent{V}{\Big\downarrow}{#1}{#2}\lx@hidden@align\lx@hidden@align');
 
 DefMacroI(T_CS('@='), undef,
-  '\hidden@align\@cd@equals@\hidden@align');
+  '\lx@hidden@align\@cd@equals@\lx@hidden@align');
 DefMacroI(T_CS('@|'), undef,
-  '\Big\Vert\hidden@align\hidden@align');
+  '\Big\Vert\lx@hidden@align\lx@hidden@align');
 DefMacroI(T_CS('@\vert'), undef,
-  '\Big\Vert\hidden@align\hidden@align');
+  '\Big\Vert\lx@hidden@align\lx@hidden@align');
 DefMacroI(T_CS('@.'), undef,
-  '\hidden@align\hidden@align');
+  '\lx@hidden@align\lx@hidden@align');
 
 # Horizontal
 DefMath('\@cd@equals@', "=", role => 'ARROW', stretchy => 'true', reversion => '@=');

@@ -16,11 +16,11 @@ use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#**********************************************************************
-# LaTeX has a very particular notion of "Undefined",
+#======================================================================
+# LaTeX has a very particular, but useful, notion of "Undefined",
 # so let's get that squared away at the outset; it's useful for TeX, too!
 # Naturally, it uses \csname to check, which ends up DEFINING the possibly undefined macro as \relax
-DefMacro('\@ifundefined{}{}{}', sub {
+DefMacro('\lx@ifundefined{}{}{}', sub {
     my ($gullet, $name, $if, $else) = @_;
     my $cs = T_CS('\\' . ToString(Expand($name)));
     if (IsDefined($cs)) {

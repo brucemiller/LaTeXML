@@ -39,16 +39,16 @@ use LaTeXML::Package;
 Tag('ltx:XMText', autoOpen => 1, autoClose => 1);
 # This really should be T_MATH
 # and it should (or not) check for a second $ only if not in restricted horizontal mode!
-# (and then all the \@dollar@in@(text|math|normal)mode defns would not be needed.
-DefPrimitiveI('\@dollar@in@normalmode', undef, sub {
+# (and then all the \lx@dollar@in@(text|math|normal)mode defns would not be needed.
+DefPrimitiveI('\lx@dollar@in@normalmode', undef, sub {
     my ($stomach) = @_;
     my $gullet    = $stomach->getGullet;
     my $mode      = LookupValue('MODE');
-    my $op        = '\@@BEGININLINEMATH';
+    my $op        = '\lx@begin@inline@math';
     if ($mode eq 'display_math') {
       if ($gullet->ifNext(T_MATH)) {
         $gullet->readToken;
-        $op = '\@@ENDDISPLAYMATH'; }
+        $op = '\lx@end@display@math'; }
       else {
         # Avoid a Fatal, but we're likely in trouble.
         # Should we switch to text mode? (LaTeX normally wouldn't)
@@ -59,17 +59,70 @@ DefPrimitiveI('\@dollar@in@normalmode', undef, sub {
           "Ignoring; expect to be in wrong math/text mode.");
         $op = undef; } }
     elsif ($mode eq 'inline_math') {
-      $op = '\@@ENDINLINEMATH'; }
+      $op = '\\lx@end@inline@math'; }
     #  elsif(!LookupValue('Alignment') && $gullet->ifNext(T_MATH)){
     elsif ($gullet->ifNext(T_MATH)) {
       $gullet->readToken;
-      $op = '\@@BEGINDISPLAYMATH'; }
+      $op = '\lx@begin@display@math'; }
     $stomach->invokeToken(T_CS($op)) if $op; });
 # Let this be the default, conventional $
-Let(T_MATH, T_CS('\@dollar@in@normalmode'));
+Let(T_MATH, T_CS('\lx@dollar@in@normalmode'));
 
+#======================================================================
+# Math mode in alignment
+# Special forms for $ appearing within alignments.
+# Note that $ within a math alignment (eg array environment),
+# switches to text mode! There's no $$ for display math.
+
+# This is the "normal" case: $ appearing with an alignment that is in text mode.
+# It's just like regular $, except it doesn't look for $$ (no display math).
+DefPrimitiveI('\lx@dollar@in@textmode', undef, sub {
+    no warnings 'recursion';
+    $_[0]->invokeToken(T_CS((LookupValue('IN_MATH') ? '\\lx@end@inline@math' : '\lx@begin@inline@math'))); });
+
+# This one is for $ appearing within an alignment that's already math.
+# This should switch to text mode (because it's balancing the hidden $
+# wrapping each alignment cell!!!!!!)
+# However, it should be like a normal $ if it's inside something like \mbox
+# that itself makes a text box!!!!!!
+# Thus, we need to know at what boxing level we started the last math or text.
+# This is all complicated by the need to know _how_ we got into or out of math mode!
+# Gawd, this is awful!
+# NOTE: Probably the most "Right" thing to do would be to process
+# alignments in text mode only (like TeX), sneaking $'s in where needed,
+# but then afterwards, morph them into math arrays?
+# This would be complicated by the need to hide these $ from untex.
+DefPrimitiveI('\lx@dollar@in@mathmode', undef, sub {
+    my ($stomach) = @_;
+    my $level = $stomach->getBoxingLevel;
+    if ((LookupValue('MATH_ALIGN_$_BEGUN') || 0) == $level) { # If we're begun making _something_ with $.
+      my @l = ();
+      if (LookupValue('IN_MATH')) {                           # But we're somehow in math?
+        @l = $stomach->invokeToken(T_CS('\\lx@end@inline@math')); }
+      else {
+        @l = $stomach->invokeToken(T_CS('\lx@end@inmath@text')); }
+      AssignValue('MATH_ALIGN_$_BEGUN' => 0);                 # Reset this AFTER finishing the something
+      @l; }
+    else {
+      AssignValue('MATH_ALIGN_$_BEGUN' => $level + 1);        # Note that we've begun something
+      if (LookupValue('IN_MATH')) {                           # If we're "still" in math
+        $stomach->invokeToken(T_CS('\lx@begin@inmath@text')); }
+      else {
+        $stomach->invokeToken(T_CS('\lx@begin@inline@math')); } } });
+
+#======================================================================
+# For inserting (non-trivial?) text while in math mode
+DefConstructorI('\lx@begin@inmath@text', undef,
+  "<ltx:XMText>"
+    . "#body"
+    . "</ltx:XMText>",
+  alias => T_MATH, beforeDigest => sub { $_[0]->beginMode('text'); }, captureBody => 1);
+DefConstructorI('\lx@end@inmath@text', undef, "", alias => T_MATH,
+  beforeDigest => sub { $_[0]->endMode('text'); });
+
+#======================================================================
 # Effectively these are the math hooks, redefine these to do what you want with math?
-DefConstructorI('\@@BEGINDISPLAYMATH', undef,
+DefConstructorI('\lx@begin@display@math', undef,
   "<ltx:equation>"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>"
@@ -85,11 +138,11 @@ DefConstructorI('\@@BEGINDISPLAYMATH', undef,
     if (my @everydisplay_toks = $STATE->lookupDefinition(T_CS('\everydisplay'))->valueOf->unlist()) {
       $_[0]->getGullet->unread(@everydisplay_toks); }
     return; }, captureBody => 1);
-DefConstructorI('\@@ENDDISPLAYMATH', undef, "",
+DefConstructorI('\lx@end@display@math', undef, "",
   reversion    => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->endMode('display_math'); });
 
-DefConstructorI('\@@BEGININLINEMATH', undef,
+DefConstructorI('\lx@begin@inline@math', undef,
   "<ltx:Math mode='inline'>"
     . "<ltx:XMath>"
     . "#body"
@@ -101,10 +154,11 @@ DefConstructorI('\@@BEGININLINEMATH', undef,
     if (my @everymath_toks = $STATE->lookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
       $_[0]->getGullet->unread(@everymath_toks); }
     return; }, captureBody => 1);
-DefConstructorI('\@@ENDINLINEMATH', undef, "",
+DefConstructorI('\\lx@end@inline@math', undef, "",
   reversion    => Tokens(T_MATH),
   beforeDigest => sub { $_[0]->endMode('inline_math'); });
 
+#======================================================================
 # Add the TeX code from the object that created this node,
 # unless it has already been recorded on another node.
 sub add_TeX {
@@ -289,8 +343,8 @@ sub IsScript {
   if (ref $object eq 'LaTeXML::Core::List') {
     $object = [$object->unlist]->[-1]; }
   if ((ref $object eq 'LaTeXML::Core::Whatsit')    # careful w/alias in getCSName!
-    && ($object->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)) {
-    return [$1, $2]; }
+    && ($object->getDefinition->getCS->getCSName =~ /^\\lx@(floating|post)@(subscript|superscript)$/)) {
+    return [uc($1), uc($2)]; }
   return; }
 
 sub scriptHandler {
@@ -304,7 +358,7 @@ sub scriptHandler {
   my $nscripts = 0;
 
   if (defined $style) {
-    my $cs = '\@@FLOATING' . $op;
+    my $cs = '\lx@floating@' . lc($op);
     my ($prevscript, $prevspace, $base);
     # Check preceding boxes to determine possible attachment (floating vs post),
     # Note that this analysis has to be done now (or sometime like it) before grouping lists go away;
@@ -327,8 +381,8 @@ sub scriptHandler {
           $cs = '\@@FLOATING' . $op;
           last; }
         else {                       # Else, is OK (so far) assume POST (it will stack previous script)
-          $prevscript = $prev;               # we'll overlap the width of the previous.
-          $cs         = '\@@POST' . $op; }
+          $prevscript = $prev;                     # we'll overlap the width of the previous.
+          $cs         = '\lx@post@' . lc($op); }
         # if we hit a FLOATING script, terminate, as the floating empty group avoids double scripts
         last if ($$prevop[0] eq 'FLOATING');
         last if ++$nscripts > 1; }
@@ -336,7 +390,7 @@ sub scriptHandler {
         # We found something "normal", so assume we'll attach to it, and we're done.
         $base = $prev;
         unshift(@putback, $prev);
-        $cs = '\@@POST' . $op;
+        $cs = '\lx@post@' . lc($op);
         last; } }
     push(@LaTeXML::LIST, @putback);
 
@@ -374,7 +428,7 @@ DefPrimitiveI(T_SUB,   undef, sub { scriptHandler($_[0], 'SUBSCRIPT'); });
 # and either has braces, or is something that results in a single box.
 # When we revert these, we DON'T want to wrap extra braces around, because they'll accumulate;
 # at the least they're ugly; in some applications they affect "round trip" processing.
-# OTOH, direct use of \@@POSTSUPERSCRIPT, etal, MAY need to have extra braces around them.
+# OTOH, direct use of \lx@post@superscript, etal, MAY need to have extra braces around them.
 # So, when reverting, we're going to a bit of extra trouble to make sure we have ONE set
 # of braces, but no extras!!
 sub revertScript {
@@ -427,14 +481,14 @@ sub scriptSizer {
   return ($w, $h, $d); }
 
 # NOTE: The When reverting these, the
-DefConstructor('\@@POSTSUPERSCRIPT InScriptStyle',
+DefConstructor('\lx@post@superscript InScriptStyle',
   "<ltx:XMApp role='POSTSUPERSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_SUPER, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
       $_[0]->getProperty('prevscript'), 'SUPERSCRIPT', 'post'); });
-DefConstructor('\@@POSTSUBSCRIPT InScriptStyle',
+DefConstructor('\lx@post@subscript InScriptStyle',
   "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
@@ -442,36 +496,18 @@ DefConstructor('\@@POSTSUBSCRIPT InScriptStyle',
   sizer     => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
       $_[0]->getProperty('prevscript'),
       'SUBSCRIPT', 'post'); });
-DefConstructor('\@@FLOATINGSUPERSCRIPT InScriptStyle',
+DefConstructor('\lx@floating@superscript InScriptStyle',
   "<ltx:XMApp role='FLOATSUPERSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_BEGIN, T_END, T_SUPER, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUPERSCRIPT', 'post'); });
-DefConstructor('\@@FLOATINGSUBSCRIPT InScriptStyle',
+DefConstructor('\lx@floating@subscript InScriptStyle',
   "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUBSCRIPT', 'post'); });
-
-DefMacroI('\active@math@prime', undef, sub {
-    my ($gullet) = @_;
-    my @sup = (T_CS('\prime'));
-    # Collect up all ', convering to \prime
-    while ($gullet->ifNext(T_OTHER('\''))) {
-      $gullet->readToken;
-      push(@sup, T_CS('\prime')); }
-    # Combine with any following superscript!
-    # However, this is semantically screwed up!
-    # We really need to set up separate superscripts, but at same level!
-    if ($gullet->ifNext(T_SUPER)) {
-      $gullet->readToken;
-      push(@sup, $gullet->readArg->unlist); }
-    (T_SUPER, T_BEGIN, @sup, T_END); },
-  locked => 1);    # Only in math!
-AssignMathcode("'" => 0x8000);
-Let("'", '\active@math@prime');
 
 # Experiment: When we detect a math element containing solely a floating superscript in the
 #             *Frontmatter* of a document, assume it is a note mark, and normalize it down to
@@ -676,12 +712,12 @@ sub lookup_delimiter {
 # And this also gives us a single list of things to parse separately.
 # Since \left,\right are TeX, primitives and must be paired up,
 # we use a bit of macro trickery to simulate.
-# [The \@hidden@bgroup/egroup keep from putting a {} into the UnTeX]
+# [The \lx@hidden@bgroup/egroup keep from putting a {} into the UnTeX]
 # HOWEVER, an additional complication is that it is a common mistake to omit the balancing \right!
 # Using an \egroup (or hidden) makes it hard to recover, so use a special egroup
-DefMacro('\left XToken', '\@left #1\@hidden@bgroup');
-# Like \@hidden@egroup, but softer about missing \left
-DefConstructor('\right@hidden@egroup', '',
+DefMacro('\left XToken', '\lx@left #1\lx@hidden@bgroup');
+# Like \lx@hidden@egroup, but softer about missing \left
+DefConstructor('\lx@hidden@egroup@right', '',
   afterDigest => sub {
     my ($stomach) = @_;
     if ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
@@ -691,9 +727,9 @@ DefConstructor('\right@hidden@egroup', '',
       $stomach->egroup; } },
   reversion => '');
 
-DefMacro('\right XToken', '\right@hidden@egroup\@right #1');
+DefMacro('\right XToken', '\lx@hidden@egroup@right\lx@right #1');
 
-DefConstructor('\@left Token',
+DefConstructor('\lx@left Token',
   "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
     . "(?#hint(<ltx:XMHint/>)(#1))",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
@@ -714,7 +750,7 @@ DefConstructor('\@left Token',
         "Missing delimiter; '.' inserted"); }
     return; },
   alias => '\left');
-DefConstructor('\@right Token',
+DefConstructor('\lx@right Token',
   "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
     . "(?#hint(<ltx:XMHint/>)(#1))",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
@@ -848,17 +884,18 @@ Let('\vcenter', '\vbox');
 # \underline              c  puts a line under the following character or subformula.
 
 DefMath('\overline Digested', UTF(0xAF), operator_role => 'OVERACCENT');    # MACRON
-DefMath('\math@underline{}', UTF(0xAF), operator_role => 'UNDERACCENT',
+DefMath('\lx@math@underline{}', UTF(0xAF), operator_role => 'UNDERACCENT',
   name => 'underline', alias => '\underline');
-DefConstructor('\text@underline{}', "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>");
-DefMath('\math@overrightarrow{}', "\x{2192}", operator_role => 'OVERACCENT',
+DefConstructor('\lx@text@underline{}',
+  "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>");
+DefMath('\lx@math@overrightarrow{}', "\x{2192}", operator_role => 'OVERACCENT',
   name => 'overrightarrow', alias => '\overrightarrow');
-DefMath('\math@overleftarrow{}', "\x{2190}", operator_role => 'OVERACCENT',
+DefMath('\lx@math@overleftarrow{}', "\x{2190}", operator_role => 'OVERACCENT',
   name => 'overleftarrow', alias => '\overleftarrow');
 
 # Careful: Use \protect so that it doesn't expand too early in alignments, etc.
 # [Really shouldn't use \protect, since this is a TeX primitive and \protect is LaTeX]
-DefMacro('\underline{}', '\protect\ifmmode\math@underline{#1}\else\text@underline{#1}\fi');
+DefMacro('\underline{}', '\protect\ifmmode\lx@math@underline{#1}\else\lx@text@underline{#1}\fi');
 
 #======================================================================
 # fraction-like things
@@ -1002,15 +1039,15 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
 DefMacro('\above Dimension',
   '\lx@generalized@over{\above #1}{meaning=divide,thickness=#1}');
 DefMacro('\abovewithdelims Token Token Dimension',
-'\lx@generalized@over{\abovewithdelims #1 #2 #3}{left={\@left#1},right={\@right#2},meaning=divide,thickness=#3}');
+'\lx@generalized@over{\abovewithdelims #1 #2 #3}{left={\lx@left#1},right={\lx@right#2},meaning=divide,thickness=#3}');
 DefMacro('\atop',
   '\lx@generalized@over{\atop}{thickness=0pt}');
 DefMacro('\atopwithdelims Token Token',
-  '\lx@generalized@over{\atopwithdelims #1 #2}{thickness=0pt,left={\@left#1},right={\@right#2}}');
+  '\lx@generalized@over{\atopwithdelims #1 #2}{thickness=0pt,left={\lx@left#1},right={\lx@right#2}}');
 DefMacro('\over',
   '\lx@generalized@over{\over}{meaning=divide}');
 DefMacro('\overwithdelims Token Token',
-  '\lx@generalized@over{\overwithdelims #1 #2}{left={\@left#1},right={\@right#2},meaning=divide}');
+'\lx@generalized@over{\overwithdelims #1 #2}{left={\lx@left#1},right={\lx@right#2},meaning=divide}');
 # My thinking was that this is a "fraction" providing the dimension is > 0!
 
 #======================================================================
@@ -1122,13 +1159,13 @@ DefMacroI('\eqno', undef, sub {
         # UGH from 2022: also don't jump over rows
         || $t->defined_as(T_CS('\cr'))
         # see arXiv:math/0001062, for one example
-        || $t->defined_as(T_CS('\hidden@cr'))
-        || $t->defined_as(T_CS('\@@ENDDISPLAYMATH'))
+        || $t->defined_as(T_CS('\lx@hidden@cr'))
+        || $t->defined_as(T_CS('\lx@end@display@math'))
         || $t->defined_as(T_CS('\begingroup'))       # Totally wrong, but to catch expanded environments
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
       ) {
-        return (Invocation(T_CS('\@@eqno'), Tokens(@stuff)), $t); }
+        return (Invocation(T_CS('\lx@eqno'), Tokens(@stuff)), $t); }
       else {
         push(@stuff, $t); } }
     Error('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!",
@@ -1137,7 +1174,7 @@ DefMacroI('\eqno', undef, sub {
 
 Let('\leqno', '\eqno');
 # Revert to nothing, since it really doesn't belong in the TeX string(?)
-DefConstructor('\@@eqno{}',
+DefConstructor('\lx@eqno{}',
   "^ <ltx:tags><ltx:tag><ltx:Math><ltx:XMath>#1</ltx:XMath></ltx:Math></ltx:tag></ltx:tags>",
   reversion => '');
 

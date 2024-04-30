@@ -23,11 +23,11 @@ DefPrimitive('\@supertabular@bindings [Dimension] AlignmentTemplate', sub {
 # Environment \begin{supertabular}{pattern} ... \end{supertabular}
 DefMacro('\supertabular{}',
   '\@supertabular@start'
-    . '\@supertabular@bindings{#1}\@@supertabular{#1}\@start@alignment'
+    . '\@supertabular@bindings{#1}\@@supertabular{#1}\lx@begin@alignment'
     . '\@supertabular@head');
 DefMacro('\endsupertabular',
   '\@supertabular@tail'
-    . '\@finish@alignment\@end@tabular'
+    . '\lx@end@alignment\@end@tabular'
     . '\@supertabular@finish');
 
 DefConstructor('\@@supertabular Undigested DigestedBody',
@@ -39,11 +39,11 @@ DefConstructor('\@@supertabular Undigested DigestedBody',
 # Environment \begin{supertabular*}{width}{pattern} ... \end{supertabular*}
 DefMacro('\csname supertabular*\endcsname{Dimension}{}',
   '\@supertabular@start'
-    . '\@supertabular@bindings[#1]{#2}\@@supertabular@{#1}{#2}\@start@alignment'
+    . '\@supertabular@bindings[#1]{#2}\@@supertabular@{#1}{#2}\lx@begin@alignment'
     . '\@supertabular@head');
 DefMacro('\csname endsupertabular*\endcsname',
   '\@supertabular@tail'
-    . '\@finish@alignment\@end@tabular'
+    . '\lx@end@alignment\@end@tabular'
     . '\@supertabular@finish');
 
 DefConstructor('\@@supertabular@ {Dimension} Undigested DigestedBody',
@@ -59,21 +59,21 @@ DefConstructor('\@@supertabular@ {Dimension} Undigested DigestedBody',
 # Environment \begin{mpsupertabular}{pattern} ... \end{mpsupertabular}
 DefMacro('\mpsupertabular{}',
   '\@supertabular@start'
-    . '\@supertabular@bindings{#1}\@@supertabular{#1}\@start@alignment'
+    . '\@supertabular@bindings{#1}\@@supertabular{#1}\lx@begin@alignment'
     . '\@supertabular@head');
 DefMacro('\endmpsupertabular',
   '\@supertabular@tail'
-    . '\@finish@alignment\@end@tabular'
+    . '\lx@end@alignment\@end@tabular'
     . '\@supertabular@finish');
 
 # Environment \begin{mpsupertabular*}{width}{pattern} ... \end{mpsupertabular*}
 DefMacro('\csname mpsupertabular*\endcsname{Dimension}{}',
   '\@supertabular@start'
-    . '\@supertabular@bindings[#1]{#2}\@@supertabular@{#1}{#2}\@start@alignment'
+    . '\@supertabular@bindings[#1]{#2}\@@supertabular@{#1}{#2}\lx@begin@alignment'
     . '\@supertabular@head');
 DefMacro('\csname endmpsupertabular*\endcsname',
   '\@supertabular@tail'
-    . '\@finish@alignment\@end@tabular'
+    . '\lx@end@alignment\@end@tabular'
     . '\@supertabular@finish');
 
 #======================================================================
@@ -90,11 +90,11 @@ DefPrimitive('\tablelasttail{}',  sub { AssignValue(SUPERTABULAR_LASTTAIL  => $_
 # instead of head, if it was given.  Analogously for tail
 DefMacro('\@supertabular@head', sub {
     my $head = LookupValue('SUPERTABULAR_FIRSTHEAD') || LookupValue('SUPERTABULAR_HEAD');
-    ($head ? (T_CS('\@tabular@begin@heading'), $head->unlist, T_CS('\@tabular@end@heading')) : ()); });
+    ($head ? (T_CS('\lx@alignment@begin@heading'), $head->unlist, T_CS('\lx@alignment@end@heading')) : ()); });
 
 DefMacro('\@supertabular@tail', sub {
     my $tail = LookupValue('SUPERTABULAR_LASTTAIL') || LookupValue('SUPERTABULAR_TAIL');
-    ($tail ? (T_CS('\@tabular@begin@heading'), $tail->unlist, T_CS('\@tabular@end@heading')) : ()); });
+    ($tail ? (T_CS('\lx@alignment@begin@heading'), $tail->unlist, T_CS('\lx@alignment@end@heading')) : ()); });
 
 #======================================================================
 # Captions

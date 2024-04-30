@@ -223,7 +223,7 @@ DefEnvironment('{equation}',
   beforeDigest => sub {
     prepareEquationCounter(numbered => 1, preset => 1);
     beforeEquation();
-    Let(T_MATH, T_CS('\@dollar@in@mathmode')); },
+    Let(T_MATH, T_CS('\lx@dollar@in@mathmode')); },
   afterDigestBody => sub {
     afterEquation($_[1]); },
   locked => 1);
@@ -242,7 +242,7 @@ DefEnvironment('{equation*}',
   beforeDigest => sub {
     prepareEquationCounter(numbered => undef, preset => 1);
     beforeEquation();
-    Let(T_MATH, T_CS('\@dollar@in@mathmode')); },
+    Let(T_MATH, T_CS('\lx@dollar@in@mathmode')); },
   afterDigestBody => sub {
     afterEquation($_[1]); },
   locked => 1);

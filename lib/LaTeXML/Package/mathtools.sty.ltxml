@@ -482,19 +482,19 @@ Let('\LaTeXoverbrace',  '\overbrace');
 DefMacro('\csname matrix*\endcsname []', '\lx@ams@matrix{name=matrix,datameaning=matrix,alignment=#1}');
 DefMacro('\csname endmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname pmatrix*\endcsname []', '\lx@ams@matrix{name=pmatrix,datameaning=matrix,alignment=#1,left=\@left(,right=\@right)}');
+DefMacro('\csname pmatrix*\endcsname []', '\lx@ams@matrix{name=pmatrix,datameaning=matrix,alignment=#1,left=\lx@left(,right=\lx@right)}');
 DefMacro('\csname endpmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname bmatrix*\endcsname []', '\lx@ams@matrix{name=bmatrix,datameaning=matrix,alignment=#1,left=\@left[,right=\@right]}');
+DefMacro('\csname bmatrix*\endcsname []', '\lx@ams@matrix{name=bmatrix,datameaning=matrix,alignment=#1,left=\lx@left[,right=\lx@right]}');
 DefMacro('\csname endbmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname Bmatrix*\endcsname []', '\lx@ams@matrix{name=Bmatrix,datameaning=matrix,alignment=#1,left=\@left\{,right=\@right\}}');
+DefMacro('\csname Bmatrix*\endcsname []', '\lx@ams@matrix{name=Bmatrix,datameaning=matrix,alignment=#1,left=\lx@left\{,right=\lx@right\}}');
 DefMacro('\csname endBmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname vmatrix*\endcsname []', '\lx@ams@matrix{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,alignment=#1,left=\@left|,right=\@right|}');
+DefMacro('\csname vmatrix*\endcsname []', '\lx@ams@matrix{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,alignment=#1,left=\lx@left|,right=\lx@right|}');
 DefMacro('\csname endvmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname Vmatrix*\endcsname []', '\lx@ams@matrix{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,alignment=#1,left=\@left\|,right=\@right\|}');
+DefMacro('\csname Vmatrix*\endcsname []', '\lx@ams@matrix{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,alignment=#1,left=\lx@left\|,right=\lx@right\|}');
 DefMacro('\csname endVmatrix*\endcsname', '\lx@end@ams@matrix');
 
 # starred small matrices
@@ -521,35 +521,35 @@ DefMacroI('\@smallmatrix@star@tmp', 'RequiredKeyVals', sub {
 DefMacro('\csname smallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=matrix,datameaning=matrix,style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
 DefMacro('\csname endsmallmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname psmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right),style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname psmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=pmatrix,datameaning=matrix,left=\lx@left(,right=\lx@right),style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
 DefMacro('\csname endpsmallmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname bsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=bmatrix,datameaning=matrix,left=\@left[,right=\@right],style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname bsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=bmatrix,datameaning=matrix,left=\lx@left[,right=\lx@right],style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
 DefMacro('\csname endbsmallmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname Bsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=Bmatrix,datameaning=matrix,left=\@left\{,right=\@right\},style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname Bsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=Bmatrix,datameaning=matrix,left=\lx@left\{,right=\lx@right\},style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
 DefMacro('\csname endBsmallmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname vsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,left=\@left|,right=\@right|,style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname vsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,left=\lx@left|,right=\lx@right|,style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
 DefMacro('\csname endvsmallmatrix*\endcsname', '\lx@end@ams@matrix');
 
-DefMacro('\csname Vsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,left=\@left\|,right=\@right\|,style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname Vsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,left=\lx@left\|,right=\lx@right\|,style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
 DefMacro('\csname endVsmallmatrix*\endcsname', '\lx@end@ams@matrix');
 
 # non-starred small matrices
-DefMacro('\psmallmatrix', '\lx@ams@matrix{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right),style=\scriptsize}');
+DefMacro('\psmallmatrix', '\lx@ams@matrix{name=pmatrix,datameaning=matrix,left=\lx@left(,right=\lx@right),style=\scriptsize}');
 DefMacro('\endpsmallmatrix', '\lx@end@ams@matrix');
 
-DefMacro('\bsmallmatrix', '\lx@ams@matrix{name=bmatrix,datameaning=matrix,left=\@left[,right=\@right],style=\scriptsize}');
+DefMacro('\bsmallmatrix', '\lx@ams@matrix{name=bmatrix,datameaning=matrix,left=\lx@left[,right=\lx@right],style=\scriptsize}');
 DefMacro('\endbsmallmatrix', '\lx@end@ams@matrix');
 
-DefMacro('\Bsmallmatrix', '\lx@ams@matrix{name=Bmatrix,datameaning=matrix,left=\@left\{,right=\@right\},style=\scriptsize}');
+DefMacro('\Bsmallmatrix', '\lx@ams@matrix{name=Bmatrix,datameaning=matrix,left=\lx@left\{,right=\lx@right\},style=\scriptsize}');
 DefMacro('\endBsmallmatrix', '\lx@end@ams@matrix');
 
-DefMacro('\vsmallmatrix', '\lx@ams@matrix{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,left=\@left|,right=\@right|,style=\scriptsize}');
+DefMacro('\vsmallmatrix', '\lx@ams@matrix{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,left=\lx@left|,right=\lx@right|,style=\scriptsize}');
 DefMacro('\endvsmallmatrix', '\lx@end@ams@matrix');
 
-DefMacro('\Vsmallmatrix', '\lx@ams@matrix{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,left=\@left\|,right=\@right\|,style=\scriptsize}');
+DefMacro('\Vsmallmatrix', '\lx@ams@matrix{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,left=\lx@left\|,right=\lx@right\|,style=\scriptsize}');
 DefMacro('\endVsmallmatrix', '\lx@end@ams@matrix');
 
 # {multlined}
@@ -581,8 +581,8 @@ DefMacroI('\multlined', '[][]', '\@multlined@tmp{'
     . 'name=multlined,'
     . '\ifx/#1/\else vattach=#1,\fi'
     . '\ifx/#2/\else width=#2,\fi'
-    . '}\@@multlined\@start@alignment');
-DefMacroI('\endmultlined', undef, '\@finish@alignment\@end@multlined');
+    . '}\@@multlined\lx@begin@alignment');
+DefMacroI('\endmultlined', undef, '\lx@end@alignment\@end@multlined');
 DefPrimitiveI('\@end@multlined', undef, sub { $_[0]->egroup; });
 
 # Is currently ignore the shoving dimension
@@ -599,37 +599,37 @@ DefMacro('\shoveleft[]{}',  '\@MT@shove{left}#2');
 
 # cases
 DefMacro('\dcases',
-  '\lx@ams@cases{name=dcases,meaning=cases,left=\@left\{,style=\displaystyle,conditionmode=math}');
+  '\lx@ams@cases{name=dcases,meaning=cases,left=\lx@left\{,style=\displaystyle,conditionmode=math}');
 DefMacro('\enddcases',
   '\lx@end@ams@cases');
 
 DefMacro('\csname dcases*\endcsname',
-  '\lx@ams@cases{name=dcases*,meaning=cases,left=\@left\{,style=\displaystyle,conditionmode=text}');
+  '\lx@ams@cases{name=dcases*,meaning=cases,left=\lx@left\{,style=\displaystyle,conditionmode=text}');
 DefMacro('\csname enddcases*\endcsname',
   '\lx@end@ams@cases');
 
 DefMacro('\csname rcases\endcsname',
-  '\lx@ams@cases{name=rcases,meaning=cases,right=\@right\},style=\textstyle,conditionmode=math}');
+  '\lx@ams@cases{name=rcases,meaning=cases,right=\lx@right\},style=\textstyle,conditionmode=math}');
 DefMacro('\csname endrcases\endcsname',
   '\lx@end@ams@cases');
 
 DefMacro('\csname rcases*\endcsname',
-  '\lx@ams@cases{name=rcases*,meaning=cases,right=\@right\},style=\textstyle,conditionmode=text}');
+  '\lx@ams@cases{name=rcases*,meaning=cases,right=\lx@right\},style=\textstyle,conditionmode=text}');
 DefMacro('\csname endrcases*\endcsname',
   '\lx@end@ams@cases');
 
 DefMacro('\csname drcases\endcsname',
-  '\lx@ams@cases{name=drcases,meaning=cases,right=\@right\},style=\displaystyle,conditionmode=math}');
+'\lx@ams@cases{name=drcases,meaning=cases,right=\lx@right\},style=\displaystyle,conditionmode=math}');
 DefMacro('\csname enddrcases\endcsname',
   '\lx@end@ams@cases');
 
 DefMacro('\csname drcases*\endcsname',
-'\lx@ams@cases{name=drcases*,meaning=cases,right=\@right\},style=\displaystyle,conditionmode=text}');
+'\lx@ams@cases{name=drcases*,meaning=cases,right=\lx@right\},style=\displaystyle,conditionmode=text}');
 DefMacro('\csname enddrcases*\endcsname',
   '\lx@end@ams@cases');
 
 DefMacro('\csname cases*\endcsname',
-  '\lx@ams@cases{name=cases*,meaning=cases,left=\@left\{,style=\textstyle,conditionmode=text}');
+  '\lx@ams@cases{name=cases*,meaning=cases,left=\lx@left\{,style=\textstyle,conditionmode=text}');
 DefMacro('\csname endcases*\endcsname',
   '\lx@end@ams@cases');
 
@@ -773,8 +773,8 @@ DefConstructor('\@@lgathered DigestedBody',
     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); },
   reversion => '\begin{lgathered}#1\end{lgathered}');
 
-DefMacroI('\lgathered', '[]', '\@ams@multirow@bindings{name=lgathered,vattach=#1}\@@lgathered\@start@alignment');
-DefMacroI('\endlgathered', undef, '\@finish@alignment\@end@gathered');
+DefMacroI('\lgathered', '[]', '\@ams@multirow@bindings{name=lgathered,vattach=#1}\@@lgathered\lx@begin@alignment');
+DefMacroI('\endlgathered', undef, '\lx@end@alignment\@end@gathered');
 
 DefConstructor('\@@rgathered DigestedBody',
   "#1",
@@ -786,8 +786,8 @@ DefConstructor('\@@rgathered DigestedBody',
     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); },
   reversion => '\begin{rgathered}#1\end{rgathered}');
 
-DefMacroI('\rgathered', '[]', '\@ams@multirow@bindings{name=rgathered,vattach=#1}\@@rgathered\@start@alignment');
-DefMacroI('\endrgathered', undef, '\@finish@alignment\@end@gathered');
+DefMacroI('\rgathered', '[]', '\@ams@multirow@bindings{name=rgathered,vattach=#1}\@@rgathered\lx@begin@alignment');
+DefMacroI('\endrgathered', undef, '\lx@end@alignment\@end@gathered');
 
 DefConstructor('\@@newgathered@dummy DigestedBody',
   '#1',
@@ -811,19 +811,19 @@ DefMacro('\newgathered{}{}{}{}', sub {
     # Really should be making the pre/post_line into separate columns!!!
     DefMacroI('\\' . $name, undef,
       '\@ams@multirow@bindings{name=' . $name . '}['
-        . 'before_row=\hidden@noalign{' . UnTeX($pre_line) . '},'
-        . 'after_row=\hidden@noalign{' . UnTeX($post_line) . '}'
-        . ']\@@newgathered@dummy\@start@alignment');
+        . 'before_row=\lx@hidden@noalign{' . UnTeX($pre_line) . '},'
+        . 'after_row=\lx@hidden@noalign{' . UnTeX($post_line) . '}'
+        . ']\@@newgathered@dummy\lx@begin@alignment');
     DefMacroI('\end' . $name, undef,
-      Tokens(T_CS('\@finish@alignment'), T_CS('\@end@gathered'), $after)); });
+      Tokens(T_CS('\lx@end@alignment'), T_CS('\@end@gathered'), $after)); });
 Let('\renewgathered', '\newgathered');
 
 ## 4.6
 
 DefMacro('\splitfrac{}{}',
-'\@ams@multirow@bindings{name=splitfrac}\@@multlined\@start@alignment #1 \\\\ #2 \@finish@alignment\@end@multline');
+'\@ams@multirow@bindings{name=splitfrac}\@@multlined\lx@begin@alignment #1 \\\\ #2 \lx@end@alignment\@end@multline');
 DefMacro('\splitdfrac{}{}',
-'\displaystyle\@ams@multirow@bindings{name=splitdfrac}\@@multlined\@start@alignment #1 \\\\ #2 \@finish@alignment\@end@multline');
+'\displaystyle\@ams@multirow@bindings{name=splitdfrac}\@@multlined\lx@begin@alignment #1 \\\\ #2 \lx@end@alignment\@end@multline');
 
 ######################################################
 

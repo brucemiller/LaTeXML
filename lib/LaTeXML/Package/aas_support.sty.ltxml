@@ -354,12 +354,12 @@ DefMacro('\aas@start@D@column XUntil:\aas@end@D@column', sub {
     my ($m,      $f) = SplitTokens($n, T_OTHER('.'));
     return ($f ? (@$m,
         T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_norightpad'), T_END,
-        T_CS('\@alignment@align'),
+        T_CS('\lx@alignment@align'),
         T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_noleftpad'), T_END,
         T_OTHER('.'),       @$f)
       : ($n,
         T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_norightpad'), T_END,
-        T_CS('\@alignment@align')));
+        T_CS('\lx@alignment@align')));
 });
 DefPrimitive('\aas@end@D@column', '');
 

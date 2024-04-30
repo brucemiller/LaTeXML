@@ -21,14 +21,14 @@ use LaTeXML::Package;
 #======================================================================
 # Environment \begin{longtable}[align]{pattern} ... \end{longtable}
 DefMacro('\longtable[]{}',
-  '\lx@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
+  '\lx@longtable@bindings{#2}\@@longtable[#1]{#2}\lx@begin@alignment');
 DefMacro('\endlongtable',
-  '\@finish@alignment\@end@tabular');
+  '\lx@end@alignment\@end@tabular');
 # {longtable*} is defined in revtex4-1 to be able to span a two column document
 DefMacro('\csname longtable*\endcsname []{}',
-  '\lx@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
+  '\lx@longtable@bindings{#2}\@@longtable[#1]{#2}\lx@begin@alignment');
 DefMacro('\csname endlongtable*\endcsname',
-  '\@finish@alignment\@end@tabular');
+  '\lx@end@alignment\@end@tabular');
 
 DefMacro('\@gobble@optional[]', Tokens());
 
