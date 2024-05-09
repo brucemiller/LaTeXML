@@ -378,7 +378,7 @@ sub scriptHandler {
         if ($$prevop[1] eq $op) {    # Whoops, duplicated; better use FLOATING
           Error('unexpected', "double-" . lc($$prevop[1]), $stomach, "Double " . lc($$prevop[1]))
             unless $prevspace;
-          $cs = '\@@FLOATING' . $op;
+          $cs = '\lx@floating@' . lc($op);
           last; }
         else {                       # Else, is OK (so far) assume POST (it will stack previous script)
           $prevscript = $prev;                     # we'll overlap the width of the previous.
