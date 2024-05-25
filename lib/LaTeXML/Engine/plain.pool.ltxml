@@ -20,13 +20,6 @@ use LaTeXML::Package;
 # Plain;  Extracted from Appendix B.
 #**********************************************************************
 
-# Remember, we're assigning a NUMBER (codepoint) to a CHARACTER!
-foreach my $letter (ord('A') .. ord('Z')) {
-  $STATE->assignLCcode(chr($letter), $letter + 0x20, 'global');
-  $STATE->assignUCcode(chr($letter), $letter, 'global');
-  $STATE->assignLCcode(chr($letter + 0x20), $letter + 0x20, 'global');
-  $STATE->assignUCcode(chr($letter + 0x20), $letter, 'global'); }
-
 DefRegister('\magnification' => Number(1000));
 
 Let('\bye', '\end');
