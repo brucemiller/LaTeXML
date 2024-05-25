@@ -68,8 +68,12 @@ DefParameterType('Optional', sub {
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
-
     return $gullet->readBalanced(0, 0, 1); });
+
+DefParameterType('XGeneralText', sub {
+    my ($gullet) = @_;
+    $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
+    return $gullet->readBalanced(1, 0, 1); });
 
 DefParameterType('Until', sub {
     my ($gullet, $until) = @_;
