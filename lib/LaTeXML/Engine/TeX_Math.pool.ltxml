@@ -347,6 +347,12 @@ sub IsScript {
     return [uc($1), uc($2)]; }
   return; }
 
+sub doScriptpos {
+  return (LookupValue('font')->getMathstyle eq 'display' ? 'mid' : 'post'); }
+
+sub doVariablesizeOp {
+  return (LookupValue('font')->getMathstyle eq 'display' ? 'display' : 'text'); }
+
 sub scriptHandler {
   no warnings 'recursion';
   my ($stomach, $op) = @_;
