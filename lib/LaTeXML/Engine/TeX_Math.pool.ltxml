@@ -30,6 +30,9 @@ use LaTeXML::Package;
 # \muskip                 iq assigns <muglue> to a \muskip register.
 # \nonscript              c  ignores immediately following glue or kern in script and scriptscript styles.
 
+# This should discard following skip/glue;
+# Should this digest whatever is following tountil non-glue/kern????
+DefPrimitive('\nonscript', undef);
 #======================================================================
 # The next two sections are the basic LaTeXML Infrastructure for math.
 # There are several internal control sequences which need to be renamed!
@@ -633,12 +636,23 @@ DefRegister('\mathcode Number', Number(0),
     Number(defined $code ? $code : $ch); },    # defaults to the char's code itself(?)
   setter => sub { $STATE->assignMathcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 # Not used anywhere (yet)
-DefRegister('\delcode Number', Number(0),
+DefRegister('\delcode Number', Number(-1),
   getter => sub { my $code = $STATE->lookupDelcode(chr($_[0]->valueOf));
-    Number(defined $code ? $code : 0); },
+    Number(defined $code ? $code : -1); },
   setter => sub { $STATE->assignDelcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 
-DefRegister('\fam' => Number(-1));
+# This probably needs work;
+# Assigning should choose the font specified by \textfont,\scriptfont...
+# but it should be initialized to -1 at beginning of every math!
+DefRegister('\fam' => Number(-1),
+  getter => sub {
+    $STATE->lookupValue('fontfamily'); },
+  setter => sub {
+    my ($fam, $scope) = @_;
+    $STATE->assignValue('fontfamily' => $fam->valueOf, $scope);
+    if (my $font = $STATE->lookupValue('textfont_' . $fam->valueOf)) {
+      Digest($font);    # Digest, since this is a font COMMAND (\font)!!!!!
+} });
 
 #======================================================================
 # TeX-level grammatical roles
@@ -667,6 +681,16 @@ DefConstructor('\mathopen{}',  "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()"
 DefConstructor('\mathclose{}', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
 DefConstructor('\mathpunct{}', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
 DefConstructor('\mathinner{}', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()",  bounded => 1);
+
+DefConstructor('\mathbin Digested', "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathrel Digested', "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathopen Digested', "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathclose Digested', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathpunct Digested', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathinner Digested', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()", bounded => 1);
+
+DefConstructor('\mathopen Digested', "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathclose Digested', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
 
 #======================================================================
 # Delimiters
@@ -1171,7 +1195,7 @@ DefMacroI('\eqno', undef, sub {
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
       ) {
-        return (Invocation(T_CS('\lx@eqno'), Tokens(@stuff)), $t); }
+        return (Invocation(T_CS('\lx@eqno'), Tokens(@stuff, T_CS('\relax'))), $t); }
       else {
         push(@stuff, $t); } }
     Error('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!",
