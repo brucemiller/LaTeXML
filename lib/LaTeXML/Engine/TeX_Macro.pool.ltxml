@@ -194,26 +194,6 @@ DefPrimitive('\futurelet Token Token Token', sub {
 # \expandafter      c  `<token1><token2>' is equivalent to `<token1> expansion of <token2>'.
 # \noexpand         c  prevents the expansion of the following token.
 
-DefMacro('\expandafter Token Token', sub {
-    no warnings 'recursion';
-    my ($gullet, $tok, $xtok) = @_;
-    my $defn;
-    if (defined($defn = $STATE->lookupExpandable($xtok))) {
-      my @x = ();
-      {
-        local $LaTeXML::CURRENT_TOKEN = $xtok;
-        @x = $defn->invoke($gullet, 1);    # Expand $xtok ONCE ONLY!
-      }
-      ($tok, @x); }
-    elsif (!$STATE->lookupMeaning($xtok)) {
-      # Undefined token is an error, as expansion is expected.
-      # BUT The unknown token is NOT consumed, (see TeX B book, item 367)
-      # since probably in a real TeX run it would have been defined.
-      $STATE->generateErrorStub($gullet, $xtok);
-      ($tok, $xtok); }
-    else {
-      ($tok, $xtok); } });
-
 use constant T_expandafter => T_CS('\expandafter');
 DefMacro('\expandafter Token Token', sub {
     no warnings 'recursion';
