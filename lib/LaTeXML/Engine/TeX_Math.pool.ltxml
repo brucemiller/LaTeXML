@@ -577,14 +577,14 @@ sub decodeMathChar {
   my $font  = LookupValue('textfont_' . $fam)
     || LookupValue('scriptfont_' . $fam)
     || LookupValue('scriptscriptfont_' . $fam);
-  my $char = chr($n);
-  # If no specific class, Lookup properties from a DefMath?
-  my $charinfo = LookupValue('math_token_attributes_' . $char);
-  my $fontinfo = lookupFontinfo($font);
+  my $char     = chr($n);
+  my $fontinfo = lookupFontinfo($font);    # Map char(code) to Unicode, via font
+  my $glyph    = ($fontinfo && $$fontinfo{encoding} && FontDecode($n, $$fontinfo{encoding}) // $char);
+  # If no specific class, Lookup properties from a DefMath? [Or better yet, Unicode data?]
+  my $charinfo = LookupValue('math_token_attributes_' . $glyph);
   my $role     = $mathclassrole[$class];
   $role = $$charinfo{role} if (!defined $role) && $charinfo;
-  return ($role,
-    ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : $char)); }
+  return ($role, $glyph); }
 
 DefPrimitive('\mathchar Number', sub {
     my ($stomach, $code)  = @_;
