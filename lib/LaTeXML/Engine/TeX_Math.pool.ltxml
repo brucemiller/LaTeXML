@@ -672,15 +672,10 @@ DefRegister('\fam' => Number(-1),
 # We need a finer granularity than TeX does: an ORD could be several things,
 # a BIN could be a MULOP or ADDOP.
 # AND, rarely, they're empty.... Is it wrong to drop them?
-DefConstructor('\mathord{}', "?#1(<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathop{}', "?#1(<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>)()",
+DefConstructor('\mathord Digested', "?#1(<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>)()", bounded => 1);
+# Parameter Should be Digested, but that throws off doScriptPos's position depth !?!?!
+DefConstructor('\mathop {}', "?#1(<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>)()",
   bounded => 1, properties => { scriptpos => \&doScriptpos });
-DefConstructor('\mathbin{}',   "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathrel{}',   "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathopen{}',  "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathclose{}', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathpunct{}', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathinner{}', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()",  bounded => 1);
 
 DefConstructor('\mathbin Digested', "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
 DefConstructor('\mathrel Digested', "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
@@ -688,9 +683,6 @@ DefConstructor('\mathopen Digested', "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWra
 DefConstructor('\mathclose Digested', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
 DefConstructor('\mathpunct Digested', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
 DefConstructor('\mathinner Digested', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()", bounded => 1);
-
-DefConstructor('\mathopen Digested', "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathclose Digested', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
 
 #======================================================================
 # Delimiters
