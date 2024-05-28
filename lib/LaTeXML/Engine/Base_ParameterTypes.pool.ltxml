@@ -375,25 +375,37 @@ DefParameterType('BalancedParen', sub {
 # It is useful when the content would usually need to have been \protect'd
 # in order to correctly deal with catcodes.
 # BEWARE: This is NOT a shorthand for a simple digested {}!
-DefParameterType('Digested', sub {
-    no warnings 'recursion';
-    my ($gullet) = @_;
-    $gullet->skipSpaces;
-    my $ismath = $STATE->lookupValue('IN_MATH');
-    my @list   = ();
-    my $token;
-    do { $token = $gullet->readXToken(0);
-    } while (defined $token && (($token->getCatcode == CC_SPACE) || $token->equals(T_CS('\relax'))));
-    if    (!defined $token) { }
-    elsif ($token->getCatcode == CC_BEGIN) {
-      Digest($token);
-      push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }    # content w/o the braces
-    else {
-      push(@list, $STATE->getStomach->invokeToken($token)); }
-    @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
-    List(@list, mode => ($ismath ? 'math' : 'text')); },
+sub readDigested {
+  no warnings 'recursion';
+  my ($gullet) = @_;
+  $gullet->skipSpaces;
+  my $ismath = $STATE->lookupValue('IN_MATH');
+  my @list   = ();
+  my $token;
+  do { $token = $gullet->readXToken(0);
+  } while (defined $token && (($token->getCatcode == CC_SPACE) || $token->equals(T_CS('\relax'))));
+  if    (!defined $token) { }
+  elsif ($token->getCatcode == CC_BEGIN) {
+    Digest($token);
+    push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }    # content w/o the braces
+  else {
+    push(@list, $STATE->getStomach->invokeToken($token)); }
+  @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
+  return List(@list, mode => ($ismath ? 'math' : 'text')); }
+
+DefParameterType('Digested', \&readDigested,
   undigested => 1,                                           # since _already_ digested.
   reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+# Read a Delimiter;
+# Formally a delimiter is either a token, or \delimiter<number> or maybe \radical<number>,
+# but we don't actually restrict to those.
+# Here, we just read a single Digested thing, but avoid reversion braces if possible.
+DefParameterType('TeXDelimiter', \&readDigested,
+  undigested => 1,      # since _already_ digested.
+  reversion  => sub {
+    my @arg = Revert($_[0]);
+    (scalar(@arg) == 1 ? $arg[0] : (T_BEGIN, @arg, T_END)); });
 
 # A variation: Digest until we encounter a given token!
 DefParameterType('DigestUntil', sub {
