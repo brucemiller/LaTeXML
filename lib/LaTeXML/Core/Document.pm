@@ -21,7 +21,7 @@ use LaTeXML::Common::XML;
 use LaTeXML::Util::Radix;
 use Unicode::Normalize;
 use Scalar::Util qw(blessed);
-use base qw(LaTeXML::Common::Object);
+use base         qw(LaTeXML::Common::Object);
 
 #**********************************************************************
 # These two element names are `leaks' of the document structure into
@@ -250,6 +250,7 @@ sub canAutoClose {
     || (($t == XML_ELEMENT_NODE)                              # otherwise must be element
     && !$node->getAttribute('_noautoclose')                   # without _noautoclose
     && ($node->getAttribute('_autoclose')                     # and either with _autoclose
+      || $node->getAttribute('_autoopened')                   # or was autoopened
                                                               # OR it has autoClose set on tag properties
       || (($props = $STATE->lookupMapping('TAG_PROPERTIES', getNodeQName($self, $node)))
         && $$props{autoClose})));
