@@ -587,13 +587,13 @@
                 <XMRef idref="S5.Ex23.m1.1"/>
               </XMApp>
               <XMWrap>
-                <XMTok role="OPEN" stretchy="true">‖</XMTok>
+                <XMTok name="||" role="OPEN" stretchy="true">‖</XMTok>
                 <XMApp xml:id="S5.Ex23.m1.1">
                   <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
                   <XMTok font="italic" role="ID">a</XMTok>
                   <XMTok font="italic" role="ID">b</XMTok>
                 </XMApp>
-                <XMTok role="CLOSE" stretchy="true">‖</XMTok>
+                <XMTok name="||" role="CLOSE" stretchy="true">‖</XMTok>
               </XMWrap>
             </XMDual>
           </XMath>
@@ -608,13 +608,13 @@
                 <XMRef idref="S5.Ex24.m1.1"/>
               </XMApp>
               <XMWrap>
-                <XMTok role="OPEN" stretchy="true">‖</XMTok>
+                <XMTok name="||" role="OPEN" stretchy="true">‖</XMTok>
                 <XMApp xml:id="S5.Ex24.m1.1">
                   <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
                   <XMTok font="italic" role="ID">a</XMTok>
                   <XMTok font="italic" role="ID">b</XMTok>
                 </XMApp>
-                <XMTok role="CLOSE" stretchy="true">‖</XMTok>
+                <XMTok name="||" role="CLOSE" stretchy="true">‖</XMTok>
               </XMWrap>
             </XMDual>
           </XMath>
@@ -714,10 +714,10 @@
     </para>
     <para xml:id="S5.p3">
       <equation xml:id="S5.Ex29">
-        <Math mode="display" tex="{a\over b}\left/{c\over d}\right." text="(a / b) / (c / d)" xml:id="S5.Ex29.m1">
+        <Math mode="display" tex="{a\over b}\left/{c\over d}\right." text="a / b / c / d" xml:id="S5.Ex29.m1">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP" stretchy="true">/</XMTok>
+              <XMTok meaning="divide" role="MULOP" stretchy="true">/</XMTok>
               <XMApp>
                 <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
                 <XMTok font="italic" role="ID">a</XMTok>
