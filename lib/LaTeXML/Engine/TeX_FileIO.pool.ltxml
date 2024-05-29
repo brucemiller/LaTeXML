@@ -106,18 +106,23 @@ DefPrimitive('\openout Number SkipSpaces SkipMatch:= SkipSpaces TeXFileName', su
 DefPrimitive('\closeout Number', sub {
     my ($stomach, $port) = @_;
     $port = ToString($port);
+    if ($LaTeXML::DEBUG{write}) {
+      if (my $filename = LookupValue('output_file:' . $port)) {
+        my $handle   = $filename . '_contents';
+        my $contents = LookupValue($handle);
+        Debug("CLOSING $filename with content:\n$contents\n============================="); } }
     AssignValue('output_file:' . $port => undef, 'global');
     return; });
 
-DefPrimitive('\write Number {}', sub {
+DefPrimitive('\write Number XGeneralText', sub {
     my ($stomach, $port, $tokens) = @_;
     $port = ToString($port);
     if (my $filename = LookupValue('output_file:' . $port)) {
       my $handle   = $filename . '_contents';
       my $contents = LookupValue($handle);
-      AssignValue($handle => $contents . UnTeX(Expand($tokens), 1) . "\n", 'global'); }
+      AssignValue($handle => $contents . UnTeX($tokens, 1) . "\n", 'global'); }
     else {
-      Note(UnTeX(Expand($tokens))); }
+      Note(UnTeX($tokens)); }
     return; });
 
 # Since we don't paginate, we're effectively always "shipping out",
@@ -145,7 +150,7 @@ DefMacro('\input TeXFileName', sub {
 #----------------------------------------------------------------------
 # \special          c  sends material to the dvi file for special processing.
 
-DefPrimitive('\special {}', sub {
+DefPrimitive('\special XGeneralText', sub {
     my ($stomach, $arg) = @_;
     my $special_str = ToString($arg);
     # recognize one special graphics inclusion case
@@ -161,7 +166,7 @@ DefPrimitive('\special {}', sub {
       $stomach->getGullet->unread(
         T_CS('\ltx@special@graphics'), @kv, T_BEGIN, T_OTHER($graphic), T_END); }
     else {
-      Info('ignored', 'special', $stomach, 'Unrecognized TeX Special', $arg); }
+      Info('ignored', 'special', $stomach, 'Unrecognized TeX Special' . ToString($arg)); }
     return; });
 
 # adapted from graphicx.sty.ltxml

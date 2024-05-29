@@ -94,7 +94,8 @@ Writing file generated.data
 \immediate\openout\file = generated.data
 \immediate\write\file {First line}
 \immediate\write\file {Second line}
-\immediate\write\file {Timing \timing.}
+\immediate\write\file {Timing before: \timing.}
+\immediate\write\file {Timing after: \noexpand\timing.}
 \immediate\write\file {Last line}
 \immediate\closeout\file
 \def\timing{After}

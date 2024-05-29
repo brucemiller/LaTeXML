@@ -22,7 +22,7 @@ use LaTeXML::Common::Font::Metric;
 use LaTeXML::Common::Font::StandardMetrics;
 use LaTeXML::Common::Color;
 use List::Util qw(min max sum);
-use base qw(LaTeXML::Common::Object);
+use base       qw(LaTeXML::Common::Object);
 
 # Note that this has evolved way beynond just "font",
 # but covers text properties (or even display properties) in general
@@ -62,7 +62,7 @@ my $FLAG_EMPH         = 0x10;
 my %font_family = (
   cmr   => { family => 'serif' },      cmss  => { family => 'sansserif' },
   cmtt  => { family => 'typewriter' }, cmvtt => { family => 'typewriter' },
-  cmti  => { family => 'typewriter', shape => 'italic' },
+  cmt   => { family => 'serif' },    # for cmti "text italic"
   cmfib => { family => 'serif' },      cmfr  => { family => 'serif' },
   cmdh  => { family => 'serif' },      cm    => { family => 'serif' },
   ptm   => { family => 'serif' },      ppl   => { family => 'serif' },

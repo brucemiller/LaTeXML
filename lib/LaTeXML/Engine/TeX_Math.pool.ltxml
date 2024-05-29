@@ -30,6 +30,9 @@ use LaTeXML::Package;
 # \muskip                 iq assigns <muglue> to a \muskip register.
 # \nonscript              c  ignores immediately following glue or kern in script and scriptscript styles.
 
+# This should discard following skip/glue;
+# Should this digest whatever is following tountil non-glue/kern????
+DefPrimitive('\nonscript', undef);
 #======================================================================
 # The next two sections are the basic LaTeXML Infrastructure for math.
 # There are several internal control sequences which need to be renamed!
@@ -347,6 +350,12 @@ sub IsScript {
     return [uc($1), uc($2)]; }
   return; }
 
+sub doScriptpos {
+  return (LookupValue('font')->getMathstyle eq 'display' ? 'mid' : 'post'); }
+
+sub doVariablesizeOp {
+  return (LookupValue('font')->getMathstyle eq 'display' ? 'display' : 'text'); }
+
 sub scriptHandler {
   no warnings 'recursion';
   my ($stomach, $op) = @_;
@@ -568,14 +577,14 @@ sub decodeMathChar {
   my $font  = LookupValue('textfont_' . $fam)
     || LookupValue('scriptfont_' . $fam)
     || LookupValue('scriptscriptfont_' . $fam);
-  my $char = chr($n);
-  # If no specific class, Lookup properties from a DefMath?
-  my $charinfo = LookupValue('math_token_attributes_' . $char);
-  my $fontinfo = lookupFontinfo($font);
+  my $char     = chr($n);
+  my $fontinfo = lookupFontinfo($font);    # Map char(code) to Unicode, via font
+  my $glyph    = ($fontinfo && $$fontinfo{encoding} && FontDecode($n, $$fontinfo{encoding}) // $char);
+  # If no specific class, Lookup properties from a DefMath? [Or better yet, Unicode data?]
+  my $charinfo = LookupValue('math_token_attributes_' . $glyph);
   my $role     = $mathclassrole[$class];
   $role = $$charinfo{role} if (!defined $role) && $charinfo;
-  return ($role,
-    ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : $char)); }
+  return ($role, $glyph); }
 
 DefPrimitive('\mathchar Number', sub {
     my ($stomach, $code)  = @_;
@@ -627,12 +636,23 @@ DefRegister('\mathcode Number', Number(0),
     Number(defined $code ? $code : $ch); },    # defaults to the char's code itself(?)
   setter => sub { $STATE->assignMathcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 # Not used anywhere (yet)
-DefRegister('\delcode Number', Number(0),
+DefRegister('\delcode Number', Number(-1),
   getter => sub { my $code = $STATE->lookupDelcode(chr($_[0]->valueOf));
-    Number(defined $code ? $code : 0); },
+    Number(defined $code ? $code : -1); },
   setter => sub { $STATE->assignDelcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 
-DefRegister('\fam' => Number(-1));
+# This probably needs work;
+# Assigning should choose the font specified by \textfont,\scriptfont...
+# but it should be initialized to -1 at beginning of every math!
+DefRegister('\fam' => Number(-1),
+  getter => sub {
+    $STATE->lookupValue('fontfamily'); },
+  setter => sub {
+    my ($fam, $scope) = @_;
+    $STATE->assignValue('fontfamily' => $fam->valueOf, $scope);
+    if (my $font = $STATE->lookupValue('textfont_' . $fam->valueOf)) {
+      Digest($font);    # Digest, since this is a font COMMAND (\font)!!!!!
+} });
 
 #======================================================================
 # TeX-level grammatical roles
@@ -652,15 +672,17 @@ DefRegister('\fam' => Number(-1));
 # We need a finer granularity than TeX does: an ORD could be several things,
 # a BIN could be a MULOP or ADDOP.
 # AND, rarely, they're empty.... Is it wrong to drop them?
-DefConstructor('\mathord{}', "?#1(<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathop{}', "?#1(<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>)()",
+DefConstructor('\mathord Digested', "?#1(<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>)()", bounded => 1);
+# Parameter Should be Digested, but that throws off doScriptPos's position depth !?!?!
+DefConstructor('\mathop {}', "?#1(<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>)()",
   bounded => 1, properties => { scriptpos => \&doScriptpos });
-DefConstructor('\mathbin{}',   "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathrel{}',   "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathopen{}',  "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathclose{}', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathpunct{}', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathinner{}', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()",  bounded => 1);
+
+DefConstructor('\mathbin Digested', "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathrel Digested', "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathopen Digested', "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathclose Digested', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathpunct Digested', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathinner Digested', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()", bounded => 1);
 
 #======================================================================
 # Delimiters
@@ -670,53 +692,67 @@ DefConstructor('\mathinner{}', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()",
 
 # This duplicates in slightly different way what DefMath has put together.
 # [duplication seems like a bad idea!]
+# This should ultimately be part of some set of Unicode tables.
 our %DELIMITER_MAP =
-  ('(' => { char => "(", lrole => 'OPEN', rrole => 'CLOSE' },
-  ')'          => { char => ")",        lrole => 'OPEN',    rrole => 'CLOSE' },
-  '['          => { char => "[",        lrole => 'OPEN',    rrole => 'CLOSE' },
-  ']'          => { char => "]",        lrole => 'OPEN',    rrole => 'CLOSE' },
-  '\{'         => { char => "{",        lrole => 'OPEN',    rrole => 'CLOSE' },
-  '\}'         => { char => "}",        lrole => 'OPEN',    rrole => 'CLOSE' },
-  '\lfloor'    => { char => "\x{230A}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'lfloor' },
-  '\rfloor'    => { char => "\x{230B}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rfloor' },
-  '\lceil'     => { char => "\x{2308}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'lceil' },
-  '\rceil'     => { char => "\x{2309}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rceil' },
-  '\langle'    => { char => "\x{27E8}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'langle' },
-  '\rangle'    => { char => "\x{27E9}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rangle' },
-  '<'          => { char => "\x{27E8}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'langle' },
-  '>'          => { char => "\x{27E9}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rangle' },
-  '/'          => { char => "/",        lrole => 'MULOP',   rrole => 'MULOP' },
-  '\backslash' => { char => UTF(0x5C),  lrole => 'MULOP',   rrole => 'MULOP', name => 'backslash' },
-  '|'          => { char => "|",        lrole => 'VERTBAR', rrole => 'VERTBAR' },
-  '\|'         => { char => "\x{2225}", lrole => 'VERTBAR', rrole => 'VERTBAR' },
-  '\uparrow'   => { char => "\x{2191}", lrole => 'OPEN', rrole => 'CLOSE', name => 'uparrow' },   # ??
-  '\Uparrow'   => { char => "\x{21D1}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Uparrow' },   # ??
-  '\downarrow' => { char => "\x{2193}", lrole => 'OPEN', rrole => 'CLOSE', name => 'downarrow' }, # ??
-  '\Downarrow' => { char => "\x{21D3}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Downarrow' }, # ??
-  '\updownarrow' => { char => "\x{2195}", lrole => 'OPEN', rrole => 'CLOSE', name => 'updownarrow' }, # ??
-  '\Updownarrow' => { char => "\x{21D5}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Updownarrow' }, # ??
+  ('(' => { lrole => 'OPEN', rrole => 'CLOSE' },
+  ')'        => { lrole => 'OPEN', rrole => 'CLOSE' },
+  '['        => { lrole => 'OPEN', rrole => 'CLOSE' },
+  ']'        => { lrole => 'OPEN', rrole => 'CLOSE' },
+  '{'        => { lrole => 'OPEN', rrole => 'CLOSE' },
+  '}'        => { lrole => 'OPEN', rrole => 'CLOSE' },
+  "\x{230A}" => { lrole => 'OPEN', rrole => 'CLOSE', name => 'lfloor' },
+  "\x{230B}" => { lrole => 'OPEN', rrole => 'CLOSE', name => 'rfloor' },
+  "\x{2308}" => { lrole => 'OPEN', rrole => 'CLOSE', name => 'lceil' },
+  "\x{2309}" => { lrole => 'OPEN', rrole => 'CLOSE', name => 'rceil' },
+  "\x{27E8}" => { lrole => 'OPEN', rrole => 'CLOSE', name => 'langle' },
+  "\x{27E9}" => { lrole => 'OPEN', rrole => 'CLOSE', name => 'rangle' },
+  '<'        => { lrole => 'OPEN', rrole => 'CLOSE', name => 'langle',
+    char => "\x{27E8}", meaning => undef },
+  '>' => { lrole => 'OPEN', rrole => 'CLOSE', name => 'rangle',
+    char => "\x{27E9}", meaning => undef },
+  '/'        => { lrole => 'MULOP',   rrole => 'MULOP' },
+  UTF(0x5C)  => { lrole => 'MULOP',   rrole => 'MULOP', name => 'backslash' },
+  '|'        => { lrole => 'VERTBAR', rrole => 'VERTBAR' },
+  "\x{2225}" => { lrole => 'VERTBAR', rrole => 'VERTBAR' },
+  "\x{2191}" => { lrole => 'OPEN',    rrole => 'CLOSE', name => 'uparrow' },        # ??
+  "\x{21D1}" => { lrole => 'OPEN',    rrole => 'CLOSE', name => 'Uparrow' },        # ??
+  "\x{2193}" => { lrole => 'OPEN',    rrole => 'CLOSE', name => 'downarrow' },      # ??
+  "\x{21D3}" => { lrole => 'OPEN',    rrole => 'CLOSE', name => 'Downarrow' },      # ??
+  "\x{2195}" => { lrole => 'OPEN',    rrole => 'CLOSE', name => 'updownarrow' },    # ??
+  "\x{21D5}" => { lrole => 'OPEN',    rrole => 'CLOSE', name => 'Updownarrow' },    # ??
   );
 
-# With new treatment of Simple Symbols as just Box's with assigned attributes,
-# we're not getting whatsits, and so we're not looking them up the same way!!!
-# TEMPORARILY (?) hack the Delimiter map
-foreach my $entry (values %DELIMITER_MAP) {
-  $DELIMITER_MAP{ $$entry{char} } = $entry; }
+# The \lx@left, \lx@right versions are like \left,\right but without any extra grouping
+DefConstructor('\lx@left TeXDelimiter',
+  "?#hint(<ltx:XMHint/>)(#1)",
+  afterDigest => sub { my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
+    return; },
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN'); },
+  alias          => '\left');
 
-sub lookup_delimiter {
-  my ($delim) = @_;
-  return $DELIMITER_MAP{$delim}; }
+DefConstructor('\lx@right TeXDelimiter',
+  "?#hint(<ltx:XMHint/>)(#1)",
+  afterDigest => sub { my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
+    return; },
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'CLOSE'); },
+  alias          => '\right');
 
 # This is a little messier than you'd think.
-# These effectively create a group between the \left,\right.
-# And this also gives us a single list of things to parse separately.
-# Since \left,\right are TeX, primitives and must be paired up,
-# we use a bit of macro trickery to simulate.
-# [The \lx@hidden@bgroup/egroup keep from putting a {} into the UnTeX]
-# HOWEVER, an additional complication is that it is a common mistake to omit the balancing \right!
-# Using an \egroup (or hidden) makes it hard to recover, so use a special egroup
-DefMacro('\left XToken', '\lx@left #1\lx@hidden@bgroup');
-# Like \lx@hidden@egroup, but softer about missing \left
+# These effectively create a (boxing) group BETWEEN the \left,\right. (but should be hidden)
+# But you have to digest \left's delimiter before you can start the {...} group!
+DefConstructor('\left TeXDelimiter',
+  "?#hint(<ltx:XMHint/>)(#1)",
+  afterDigest => sub { my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
+    $stomach->getGullet->unread(T_CS('\lx@hidden@bgroup'));
+    return; },
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN'); });
+
+DefMacro('\right', '\lx@hidden@egroup@right\lx@right');
+
+# \lx@hidden@egroup@right tries to manage unbalanced {} errors, if an \left was forgotten.
 DefConstructor('\lx@hidden@egroup@right', '',
   afterDigest => sub {
     my ($stomach) = @_;
@@ -727,50 +763,30 @@ DefConstructor('\lx@hidden@egroup@right', '',
       $stomach->egroup; } },
   reversion => '');
 
-DefMacro('\right XToken', '\lx@hidden@egroup@right\lx@right #1');
-
-DefConstructor('\lx@left Token',
-  "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
-    . "(?#hint(<ltx:XMHint/>)(#1))",
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    my $arg   = $whatsit->getArg(1);
-    my $delim = ToString($arg);
-    if ($delim eq '.') {
-      $whatsit->setProperty(hint => 1); }
-    elsif (my $entry = $DELIMITER_MAP{$delim}) {
-      $whatsit->setProperties(role => $$entry{lrole},
-        char     => $$entry{char},
-        name     => $$entry{name},
-        stretchy => 'true');
-      $whatsit->setFont($arg->getFont()); }
-    elsif (($arg->getProperty('role') || '') eq 'OPEN') {
-      $arg->setProperty(stretchy => 'true'); }
-    else {
-      Warn('unexpected', $delim, $stomach,
-        "Missing delimiter; '.' inserted"); }
-    return; },
-  alias => '\left');
-DefConstructor('\lx@right Token',
-  "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
-    . "(?#hint(<ltx:XMHint/>)(#1))",
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    my $arg   = $whatsit->getArg(1);
-    my $delim = ToString($arg);
-    if ($delim eq '.') {
-      $whatsit->setProperty(hint => 1); }
-    elsif (my $entry = $DELIMITER_MAP{$delim}) {
-      $whatsit->setProperties(role => $$entry{rrole},
-        char     => $$entry{char},
-        name     => $$entry{name},
-        stretchy => 'true');
-      $whatsit->setFont($arg->getFont()); }
-    elsif (($arg->getProperty('role') || '') eq 'CLOSE') {
-      $arg->setProperty(stretchy => 'true'); }
-    else {
-      Warn('unexpected', $delim, $stomach,
-        "Missing delimiter; '.' inserted)"); }
-    return; },
-  alias => '\right');
+# Add delimiter relevant attributes to the current token
+sub augmentDelimiterProperties {
+  my ($document, $whatsit, $pos) = @_;
+  my $current = $document->getNode;
+  my $delim   = $document->getLastChildElement($current) || $current;
+  my $char    = $delim && $delim->textContent;
+  $document->setNodeBox($delim, $whatsit);
+  if    ($whatsit->getProperty('hint')) { }
+  elsif (my $entry = $DELIMITER_MAP{$char}) {
+    $delim->setAttribute(role     => $$entry{ ($pos eq 'OPEN' ? 'lrole' : 'rrole') } || $pos);
+    $delim->setAttribute(name     => $$entry{name}) if $$entry{name};
+    $delim->setAttribute(stretchy => 'true');
+    if (exists $$entry{meaning}) {
+      if (my $meaning = $$entry{meaning}) {
+        $delim->setAttribute(meaning => $meaning); }
+      else {
+        $delim->removeAttribute('meaning'); } }    # RETRACT the assumed meaning on the delimiter
+    if (exists $$entry{char}) {
+      if (my $char = $$entry{char}) {
+        $delim->firstChild->setData($char); } }
+  }
+  elsif (($delim->getAttribute('role') || '') eq $pos) {
+    $delim->setAttribute(stretchy => 'true'); }
+  return; }
 
 #======================================================================
 # Limit placement
@@ -1165,7 +1181,7 @@ DefMacroI('\eqno', undef, sub {
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
       ) {
-        return (Invocation(T_CS('\lx@eqno'), Tokens(@stuff)), $t); }
+        return (Invocation(T_CS('\lx@eqno'), Tokens(@stuff, T_CS('\relax'))), $t); }
       else {
         push(@stuff, $t); } }
     Error('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!",

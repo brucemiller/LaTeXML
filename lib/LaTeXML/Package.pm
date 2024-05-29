@@ -1523,8 +1523,8 @@ my $math_options = {    # [CONSTANT]
   revert_as              => 1,
   hide_content_reversion => 1 };    # DEPRECATE!
 my $simpletoken_options = {         # [CONSTANT]
-  name      => 1, meaning   => 1, omcd => 1, role => 1, mathstyle => 1,
-  protected => 1, robust    => 1,
+  name      => 1, meaning   => 1, omcd  => 1, role => 1, mathstyle => 1, stretchy => 1,
+  protected => 1, robust    => 1, alias => 1,
   lpadding  => 1, rpadding  => 1,
   font      => 1, scriptpos => 1, scope => 1, locked => 1 };
 
@@ -1746,13 +1746,16 @@ sub defmath_prim {
         my %properties = %options;
         my $font       = LookupValue('font')->merge(%$reqfont)->specialize($string);
         my $mode       = (LookupValue('IN_MATH') ? 'math' : 'text');
+        my $alias      = (ref $options{alias}    ? $options{alias}
+          : (defined $options{alias} ? T_CS($options{alias}) : undef));
+        my $reversion =
+          ((!defined $options{reversion}) && (($options{revert_as} || '') eq 'presentation')
+          ? $presentation : $alias // $cs);
         foreach my $key (keys %properties) {
           my $value = $properties{$key};
           if (ref $value eq 'CODE') {
             $properties{$key} = &$value(); } }
-        LaTeXML::Core::Box->new($string, $font, $locator,
-          ((!defined $options{reversion}) && (($options{revert_as} || '') eq 'presentation')
-            ? $presentation : $cs),
+        LaTeXML::Core::Box->new($string, $font, $locator, $reversion,
           mode => $mode, %properties); }));
   return; }
 

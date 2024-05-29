@@ -21,7 +21,7 @@ use LaTeXML::Common::XML;
 use LaTeXML::Util::Radix;
 use Unicode::Normalize;
 use Scalar::Util qw(blessed);
-use base qw(LaTeXML::Common::Object);
+use base         qw(LaTeXML::Common::Object);
 
 #**********************************************************************
 # These two element names are `leaks' of the document structure into
@@ -771,7 +771,7 @@ sub openText {
       $n = $n->parentNode; }
     closeToNode($self, $closeto) if $closeto ne $node;    # Move to best starting point for this text.
     openElement($self, $elementname, font => $font,
-      _fontswitch => 1, _autoopened => 1)
+      _fontswitch => 1, _autoopened => 1, _autoclose => 1)
       if $bestdiff > 0;                                   # Open if needed.
   }
   # Finally, insert the darned text.

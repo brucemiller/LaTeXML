@@ -20,13 +20,6 @@ use LaTeXML::Package;
 # Plain;  Extracted from Appendix B.
 #**********************************************************************
 
-# Remember, we're assigning a NUMBER (codepoint) to a CHARACTER!
-foreach my $letter (ord('A') .. ord('Z')) {
-  $STATE->assignLCcode(chr($letter), $letter + 0x20, 'global');
-  $STATE->assignUCcode(chr($letter), $letter, 'global');
-  $STATE->assignLCcode(chr($letter + 0x20), $letter + 0x20, 'global');
-  $STATE->assignUCcode(chr($letter + 0x20), $letter, 'global'); }
-
 DefRegister('\magnification' => Number(1000));
 
 Let('\bye', '\end');
@@ -818,6 +811,7 @@ DefMathI('\surd',     undef, "\x{221A}", role => 'OPERATOR', meaning => 'square-
 DefMathI('\top',      undef, "\x{22A4}", role => 'ADDOP',    meaning => 'top');
 DefMathI('\bot',      undef, "\x{22A5}", role => 'ADDOP',    meaning => 'bottom');
 DefMathI('\|',        undef, "\x{2225}", role => 'VERTBAR',  name    => '||');
+
 # should get meaning => 'parallel-to' when used as infix, but NOT when for OPEN|CLOSE
 DefMathI('\angle', undef, "\x{2220}");
 
@@ -867,12 +861,6 @@ DefMath('\smallint', "\x{222B}", meaning => 'integral', role => 'INTOP',
 #----------------------------------------------------------------------
 # Actually LaTeX; Table 3.8. Variable-sized Symbols, p.44.
 #----------------------------------------------------------------------
-sub doScriptpos {
-  return (LookupValue('font')->getMathstyle eq 'display' ? 'mid' : 'post'); }
-
-sub doVariablesizeOp {
-  return (LookupValue('font')->getMathstyle eq 'display' ? 'display' : 'text'); }
-
 DefMathI('\sum', undef, "\x{2211}",
   role      => 'SUMOP',
   scriptpos => \&doScriptpos,
