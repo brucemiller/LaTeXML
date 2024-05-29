@@ -52,6 +52,10 @@
 /* experimental: flex model, to center short captions, justify long ones */
 .ltx_table,
 .ltx_figure { display:flex; flex-direction:column; align-items:center; }
+.ltx_table.ltx_align_floatright,
+.ltx_table.ltx_align_floatleft,
+.ltx_figure.ltx_align_floatright, 
+.ltx_figure.ltx_align_floatleft { width:min-content; }
 .ltx_table .ltx_caption,
 .ltx_figure .ltx_caption { text-align:justify; }
 
