@@ -250,7 +250,6 @@ sub canAutoClose {
     || (($t == XML_ELEMENT_NODE)                              # otherwise must be element
     && !$node->getAttribute('_noautoclose')                   # without _noautoclose
     && ($node->getAttribute('_autoclose')                     # and either with _autoclose
-      || $node->getAttribute('_autoopened')                   # or was autoopened
                                                               # OR it has autoClose set on tag properties
       || (($props = $STATE->lookupMapping('TAG_PROPERTIES', getNodeQName($self, $node)))
         && $$props{autoClose})));
@@ -772,7 +771,7 @@ sub openText {
       $n = $n->parentNode; }
     closeToNode($self, $closeto) if $closeto ne $node;    # Move to best starting point for this text.
     openElement($self, $elementname, font => $font,
-      _fontswitch => 1, _autoopened => 1)
+      _fontswitch => 1, _autoopened => 1, _autoclose => 1)
       if $bestdiff > 0;                                   # Open if needed.
   }
   # Finally, insert the darned text.
