@@ -504,9 +504,11 @@
           <xsl:text> </xsl:text>
           <xsl:value-of select="ltx:contact[@role='familyname']" />
         </h1>
-        <h3 class="author-title">
-          <xsl:apply-templates select="ltx:contact[@role='position']/ltx:inline-block" />
-        </h3>
+        <xsl:if test="ltx:contact[@role='position']">
+          <h3 class="author-title">
+            <xsl:apply-templates select="ltx:contact[@role='position']" />
+          </h3>
+        </xsl:if>
       </div>
       <div class="col-25">
       </div>
