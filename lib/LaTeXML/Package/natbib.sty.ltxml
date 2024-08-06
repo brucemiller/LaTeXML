@@ -528,7 +528,7 @@ DefPrimitiveI('\reset@natbib@cites', undef, sub {
 
 # Kinda rediculous simulating this here (we can almost pull it off in TeX)
 # but the TeX tends to be quite brittle in the wilds of arXiv, so...
-DefMacro('\lx@NAT@parselabel{}{}', sub {
+DefMacro('\lx@NAT@parselabel Semiverbatim {}', sub {
     my ($gullet, $label, $key) = @_;
     my ($number, $year, $authors, $fullauthors);
     my $bare   = 1;
