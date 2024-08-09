@@ -187,8 +187,8 @@ sub decodeFontname {
     if (my $fser = lookupFontSeries($ser)) { map { $props{$_} = $$fser{$_} } keys %$fser; }
     if (my $fsh  = lookupFontShape($shp))  { map { $props{$_} = $$fsh{$_} } keys %$fsh; }
     $size        = 1 unless $size;    # Yes, also if 0, "" (from regexp)
-    $size        = $at           if defined $at;
-    $size        = $at * $scaled if defined $scaled;
+    $size        = $at             if defined $at;
+    $size        = $size * $scaled if defined $scaled;
     $props{name} = $name;
     $props{size} = $size;
     # Experimental Hack !?!?!?
