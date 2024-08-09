@@ -101,7 +101,7 @@ sub read_tfm {
     my ($skip, $next, $op, $remainder);
     ($skip, $next) = unpack "CC", $lig_kern[0];
     if (($skip == 255) && (defined $$fontmap[$next])) {
-      $$self{boundary} = $$fontmap[$next]; }
+      $$self{boundary} = (ref $$fontmap[$next] ? $$fontmap[$next][0] : $$fontmap[$next]); }
     ($skip, $next, $op, $remainder) = unpack "CCCC", $lig_kern[-1];
     if ($skip == 255) {
       $self->process_lig_kern("boundary", \@lig_kern, 256 * $op + $remainder, $fontmap, \@kern); }
@@ -109,7 +109,8 @@ sub read_tfm {
   # Interpret char_info (for w,h,d,ital) and lig_kern program
   my $sizes = $$self{sizes};
   for (my $code = $bc ; $code <= $ec ; $code++) {
-    my $char = $$fontmap[$code];
+    my $mapentry = $$fontmap[$code];
+    my $char     = (ref $mapentry ? $$mapentry[0] : $mapentry);
     if (defined $char) {
       my ($wloc, $hdloc, $ixloc, $remainder) = unpack "C4", $char_info[$code];
       my ($hloc, $dloc, $iloc, $tag) = ($hdloc >> 4, $hdloc & 0x0F, $ixloc >> 2, $ixloc & 0x03);
@@ -152,12 +153,15 @@ sub process_lig_kern {
       $prognum = 256 * $op + $remainder; $firstinstr = 0;
       next; }
     $next = $$fontmap[$next];
+    $next = $$next[0] if ref $next;
     my $pair = $char . $next;
     if (($op >= 128) && !exists $$kerns{$pair}) {
       $$kerns{$pair} = $$kernref[256 * ($op - 128) + $remainder]; }
     if (($op < 128) && !exists $$ligs{$pair}) {
       my ($pass, $keepc, $keepn) = ($op >> 2, ($op >> 1) & 0x01, $op & 0x01);
-      my $lig = ($keepc ? $char : "") . $$fontmap[$remainder] . ($keepn ? $next : '');
+      my $rchar = $$fontmap[$remainder];
+      $rchar = $$rchar[0] if ref $rchar;
+      my $lig = ($keepc ? $char : "") . $rchar . ($keepn ? $next : '');
       $$ligs{$pair} = [$lig, $pass]; }    # ligature & number of chars to "passover" (always 0???)
     last if ($skip >= 128);
     $prognum += $skip + 1;
