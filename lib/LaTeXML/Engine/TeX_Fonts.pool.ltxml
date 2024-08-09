@@ -316,7 +316,7 @@ DefLigature(qr{!\x{2018}},        UTF(0xA1),  fontTest => \&nonTypewriterT1);   
 # DefLigature(qr{ffi},              "\x{FB03}", fontTest => \&nonTypewriterT1);
 # DefLigature(qr{ffl},              "\x{FB04}", fontTest => \&nonTypewriterT1);
 
-DefLigature(qr{\.\.\.}, "\x{2026}", fontTest => sub { $_[0]->getFamily ne 'typewriter'; });  # ldots
+DefLigature(qr{\.\.\.}, "\x{2026}", fontTest => \&nonTypewriter);    # ldots
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
