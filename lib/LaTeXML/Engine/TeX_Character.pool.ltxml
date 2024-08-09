@@ -185,7 +185,7 @@ DefRegister('\catcode Number', Number(0),
 # Not used anywhere (yet)
 DefRegister('\sfcode Number', Number(0),
   getter => sub { my $code = $STATE->lookupSFcode(chr($_[0]->valueOf));
-    Number(defined $code ? $code : 0); },
+    Number(defined $code ? $code : 1000); },
   setter => sub { $STATE->assignSFcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 DefRegister('\lccode Number', Number(0),
   getter => sub { my $code = $STATE->lookupLCcode(chr($_[0]->valueOf));
