@@ -1193,5 +1193,14 @@ DefConstructor('\lx@eqno{}',
   "^ <ltx:tags><ltx:tag><ltx:Math><ltx:XMath>#1</ltx:XMath></ltx:Math></ltx:tag></ltx:tags>",
   reversion => '');
 
+#======================================================================
+# Pretest for XMath to keep from interpreting math that the DOM may not allow!!
+##DefMathRewrite(xpath=>'descendant-or-self::ltx:XMath',match=>'\cdot\cdot\cdot',replace=>'\cdots');
+
+DefMathLigature("\x{22C5}\x{22C5}\x{22C5}" => "\x{22EF}", role => 'ID', name => 'cdots');
+
+#DefMathRewrite(xpath=>'descendant-or-self::ltx:XMath',match=>'...',replace=>'\ldots');
+DefMathLigature("..." => "\x{2026}", role => 'ID', name => 'ldots');
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
