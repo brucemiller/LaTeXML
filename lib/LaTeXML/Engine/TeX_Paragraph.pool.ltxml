@@ -68,6 +68,17 @@ DefConstructorI('\noindent', undef, sub {
     # Otherwise ignore.
     return; });
 
+sub alignLine {
+  my ($document, $line, $alignment) = @_;
+  if ($document->isOpenable('ltx:p')) {
+    $document->insertElement('ltx:p', $line, class => 'ltx_align_' . $alignment); }
+  elsif ($document->isOpenable('ltx:text')) {
+    $document->insertElement('ltx:text', $line, class => 'ltx_align_' . $alignment);
+    $document->insertElement('ltx:break'); }
+  else {
+    $document->absorb($line); }
+  return; }
+
 # <ltx:para> represents a Logical Paragraph, whereas <ltx:p> is a `physical paragraph'.
 # A para can contain both p and displayed equations and such.
 
