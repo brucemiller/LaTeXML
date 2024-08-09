@@ -187,6 +187,8 @@ sub decodeFontname {
     if (my $fser = lookupFontSeries($ser)) { map { $props{$_} = $$fser{$_} } keys %$fser; }
     if (my $fsh  = lookupFontShape($shp))  { map { $props{$_} = $$fsh{$_} } keys %$fsh; }
     $size        = 1 unless $size;    # Yes, also if 0, "" (from regexp)
+    $size        = $at           if defined $at;
+    $size        = $at * $scaled if defined $scaled;
     $props{name} = $name;
     $props{size} = $size;
     # Experimental Hack !?!?!?
@@ -249,7 +251,7 @@ sub textDefault {
 sub mathDefault {
   my ($self) = @_;
   return $self->new_internal('math', $DEFSERIES, 'italic', DEFSIZE(),
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, 'OT1', $DEFLANGUAGE, 'text', 0); }
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, $DEFLANGUAGE, 'text', 0); }
 
 # Accessors
 # Using an array here is getting ridiculous!
