@@ -590,8 +590,8 @@ DefPrimitive('\@ams@aligned@bindings', sub {
 DefParameterType('alignsafeOptional', sub {
     my ($gullet, $default, $inner) = @_;
     my ($tok, $value);
-    { local $LaTeXML::ALIGN_STATE = 1000000;
-      $tok = $gullet->readNonSpace; }
+    local $LaTeXML::ALIGN_STATE = 1000000;
+    $tok = $gullet->readNonSpace;
     if    (!defined $tok) { }
     elsif (($tok->equals(T_OTHER('[')))) {
       $value = $gullet->readUntil(T_OTHER(']')); }
