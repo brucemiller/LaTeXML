@@ -47,13 +47,17 @@ sub invoke {
   my $mathglyph = $$self{mathglyph};
   # A dilemma: If the \chardef were in a style file, you're prefer to revert to the $cs
   # but if defined in the document source, better to use \char ###\relax, so it still "works"
-  if (defined $mathglyph) {    # Must be a math char
+  my $src   = $$self{locator} && $$self{locator}->toString;
+  my $local = $src && $src !~ /\.(?:sty|ltxml|ltxmlc)/;    # Dumps currently have undefined src!
+  if (defined $mathglyph) {                                # Must be a math char
     return Box($mathglyph, undef, undef,
-      Tokens(T_CS('\mathchar'), $value->revert, T_CS('\relax')),
+      ($local ? Tokens(T_CS('\mathchar'), $value->revert, T_CS('\relax')) : $$self{cs}),
       role => $$self{role}); }
-  else {                       # else text; but note defered font/encoding till digestion!
-    return Box(LaTeXML::Package::FontDecode($value->valueOf), undef, undef,
-      Tokens(T_CS('\char'), $value->revert, T_CS('\relax'))); } }
+  else {    # else text; but note defered font/encoding till digestion!
+    my ($char, %props) = LaTeXML::Package::FontDecode($value->valueOf);
+    return Box($char, undef, undef,
+      ($local ? Tokens(T_CS('\char'), $value->revert, T_CS('\relax')) : $$self{cs}),
+      %props); } }
 
 sub equals {
   my ($self, $other) = @_;

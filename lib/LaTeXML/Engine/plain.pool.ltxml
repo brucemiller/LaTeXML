@@ -95,38 +95,8 @@ DefMathRewrite(xpath => 'descendant-or-self::ltx:XMWrap['
   });
 
 #======================================================================
-# TeX's ligatures handled by rewrite regexps.
-# Note: applied in reverse order of definition (latest defined applied first!)
-# Note also, these area only applied in text content, not in attributes!
 DefPrimitive('\@@endash', sub { Box("\x{2013}", undef, undef, T_CS('\@@endash')); });
 DefPrimitive('\@@emdash', sub { Box("\x{2014}", undef, undef, T_CS('\@@emdash')); });
-
-sub nonTypewriter {
-  my ($font) = @_;
-  return ($font->getFamily ne 'typewriter'); }
-
-sub nonTypewriterT1 {
-  my ($font) = @_;
-  return ($font->getFamily ne 'typewriter') && (($font->getEncoding || 'OT1') =~ /^(OT1|T1)$/); }
-
-# EN DASH (NOTE: With digits before & aft => \N{FIGURE DASH})
-DefLigature(qr{--},  "\x{2013}", fontTest => \&nonTypewriter);    # EN dash
-DefLigature(qr{---}, "\x{2014}", fontTest => \&nonTypewriter);    # EM dash
-
-# Ligatures for doubled single left & right quotes to convert to double quotes
-# [should ligatures be part of a font, in the first place? (it is in TeX!)
-DefLigature(qr{\x{2018}\x{2018}}, "\x{201C}", fontTest => \&nonTypewriterT1);   # double left quote
-DefLigature(qr{\x{2019}\x{2019}}, "\x{201D}", fontTest => \&nonTypewriterT1);   # double right quote
-DefLigature(qr{\?\x{2018}},       UTF(0xBF),  fontTest => \&nonTypewriterT1);   # ? backquote
-DefLigature(qr{!\x{2018}},        UTF(0xA1),  fontTest => \&nonTypewriterT1);   # ! backquote
-# These ligatures are also handled by TeX.
-# However, it appears that decent modern fonts in modern browsers handle these at that level.
-# So it's likely not worth doing it at the conversion level, possibly adversely affecting search.
-# DefLigature(qr{ff},               "\x{FB00}", fontTest => \&nonTypewriterT1);
-# DefLigature(qr{fi},               "\x{FB01}", fontTest => \&nonTypewriterT1);
-# DefLigature(qr{fl},               "\x{FB02}", fontTest => \&nonTypewriterT1);
-# DefLigature(qr{ffi},              "\x{FB03}", fontTest => \&nonTypewriterT1);
-# DefLigature(qr{ffl},              "\x{FB04}", fontTest => \&nonTypewriterT1);
 
 DefConstructor('\TeX',
   "<ltx:text class='ltx_TeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.2em'>"
@@ -237,36 +207,20 @@ DefPrimitive('\wlog{}', sub {
     return; },
   locked => 1);
 # From plain.tex
-DefPrimitive('\newcount  DefToken', sub {
-    DefRegisterI($_[1], undef, Number(0), allocate => '\count'); });
-DefPrimitive('\newdimen  DefToken', sub {
-    DefRegisterI($_[1], undef, Dimension(0), allocate => '\dimen'); });
-DefPrimitive('\newskip   DefToken', sub {
-    DefRegisterI($_[1], undef, Glue(0), allocate => '\skip'); });
-DefPrimitive('\newmuskip DefToken', sub {
-    DefRegisterI($_[1], undef, MuGlue(0), allocate => '\muskip'); });
-AssignValue(allocated_boxes => 0);
-DefPrimitive('\newbox DefToken', sub {
-    my $n = LookupValue('allocated_boxes');
-    AssignValue(allocated_boxes => $n + 1, 'global');
-    AssignValue("box$n", List());
-    DefRegisterI($_[1], undef, Number($n), readonly => 1); });
-DefPrimitive('\newhelp DefToken {}', sub { AssignValue(ToString($_[1]) => $_[2]); });
-DefPrimitive('\newtoks DefToken',    sub { DefRegisterI($_[1], undef, Tokens()); });
-# the next 4 actually work by doing a \chardef instead of \countdef, etc.
-# which means they actually work quite differently
-DefPrimitive('\alloc@@ {}', sub {
-    my ($stomach, $type) = @_;
-    my $c = 'allocation @' . ToString($type);
-    my $n = LookupValue($c) || '0';
-    $n = $n->valueOf if ref $n;
-    AssignValue($c => $n + 1, 'global');
-    AssignRegister('\allocationnumber' => Number($n), 'global'); });
-DefMacro('\newread DefToken',     '\alloc@@{read}\global\chardef#1=\allocationnumber');
-DefMacro('\newwrite DefToken',    '\alloc@@{write}\global\chardef#1=\allocationnumber');
-DefMacro('\newfam DefToken',      '\alloc@@{fam}\global\chardef#1=\allocationnumber');
-DefMacro('\newlanguage DefToken', '\alloc@@{language}\global\chardef#1=\allocationnumber');
-
+RawTeX(<<'EoTeX');
+\outer\def\newcount{\alloc@0\count\countdef\insc@unt}
+\outer\def\newdimen{\alloc@1\dimen\dimendef\insc@unt}
+\outer\def\newskip{\alloc@2\skip\skipdef\insc@unt}
+\outer\def\newmuskip{\alloc@3\muskip\muskipdef\@cclv}
+\outer\def\newbox{\alloc@4\box\chardef\insc@unt}
+%%\let\newtoks=\relax % we do this to allow plain.tex to be read in twice
+\outer\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
+\outer\def\newtoks{\alloc@5\toks\toksdef\@cclv}
+\outer\def\newread{\alloc@6\read\chardef\sixt@@n}
+\outer\def\newwrite{\alloc@7\write\chardef\sixt@@n}
+\outer\def\newfam{\alloc@8\fam\chardef\sixt@@n}
+\outer\def\newlanguage{\alloc@9\language\chardef\@cclvi}
+EoTeX
 DefMacro('\e@alloc{}{}{}{}{}{}',
   '\global\advance#3\@ne
 %  \e@ch@ck{#3}{#4}{#5}#1%
@@ -275,16 +229,6 @@ DefMacro('\e@alloc{}{}{}{}{}{}',
 %  \wlog{\string#6=\string#1\the\allocationnumber}
 ');
 DefMacro('\alloc@{}{}{}{}', '\e@alloc#2#3{\count1#1}#4\float@count');
-DefMacro('\newread',        '\e@alloc\read \chardef{\count16}\m@ne\sixt@@n');
-DefMacro('\newwrite', '\e@alloc\write
-                   {\ifnum\allocationnumber=18
-                     \advance\count17\@ne
-                     \allocationnumber\count17 %
-                    \fi
-                    \global\chardef}%
-                   {\count17}%
-                   \m@ne
-                   {128}');
 
 # This implementation is quite wrong
 DefPrimitive('\newinsert Token', sub { DefRegisterI($_[1], undef, Number(0)); });
@@ -366,6 +310,74 @@ RawTeX(<<'EoTeX');
 \textfont1=\teni\scriptfont1=\seveni\scriptscriptfont1=\fivei
 \textfont2=\tensy\scriptfont2=\sevensy\scriptscriptfont2=\fivesy
 \textfont3=\tenex
+\textfont\itfam=\tenit
+\textfont\slfam=\tensl
+\textfont\bffam=\tenbf
+\textfont\ttfam=\tentt
+%\textfont4=\tenit
+%\textfont5=\tensl
+%\textfont6=\tenbf
+%\textfont7=\tentt
+% More for latex?
+%%%\font\tensf=cmss10
+%%%\textfont8=\tensf
+\mathcode`\^^@="2201 % \cdot
+\mathcode`\^^A="3223 % \downarrow
+\mathcode`\^^B="010B % \alpha
+\mathcode`\^^C="010C % \beta
+\mathcode`\^^D="225E % \land
+\mathcode`\^^E="023A % \lnot
+\mathcode`\^^F="3232 % \in
+\mathcode`\^^G="0119 % \pi
+\mathcode`\^^H="0115 % \lambda
+\mathcode`\^^I="010D % \gamma
+\mathcode`\^^J="010E % \delta
+\mathcode`\^^K="3222 % \uparrow
+\mathcode`\^^L="2206 % \pm
+\mathcode`\^^M="2208 % \oplus
+\mathcode`\^^N="0231 % \infty
+\mathcode`\^^O="0140 % \partial
+\mathcode`\^^P="321A % \subset
+\mathcode`\^^Q="321B % \supset
+\mathcode`\^^R="225C % \cap
+\mathcode`\^^S="225B % \cup
+\mathcode`\^^T="0238 % \forall
+\mathcode`\^^U="0239 % \exists
+\mathcode`\^^V="220A % \otimes
+\mathcode`\^^W="3224 % \leftrightarrow
+\mathcode`\^^X="3220 % \leftarrow
+\mathcode`\^^Y="3221 % \rightarrow
+\mathcode`\^^Z="8000 % \ne
+\mathcode`\^^[="2205 % \diamond
+\mathcode`\^^\="3214 % \le
+\mathcode`\^^]="3215 % \ge
+\mathcode`\^^^="3211 % \equiv
+\mathcode`\^^_="225F % \lor
+\mathcode`\ ="8000 % \space
+\mathcode`\!="5021
+\mathcode`\'="8000 % ^\prime
+\mathcode`\(="4028
+\mathcode`\)="5029
+%%%%%\mathcode`\*="2203 % \ast
+\mathcode`\+="202B
+\mathcode`\,="613B
+\mathcode`\-="2200
+\mathcode`\.="013A
+\mathcode`\/="013D
+\mathcode`\:="303A
+\mathcode`\;="603B
+\mathcode`\<="313C
+\mathcode`\=="303D
+\mathcode`\>="313E
+%%%%\mathcode`\?="503F
+\mathcode`\[="405B
+\mathcode`\\="026E % \backslash
+\mathcode`\]="505D
+\mathcode`\_="8000 % \_
+\mathcode`\{="4266
+\mathcode`\|="026A
+\mathcode`\}="5267
+\mathcode`\^^?="1273 % \smallint
 EoTeX
 # Note: \newfam in math should be font switching(?)
 
@@ -545,17 +557,6 @@ DefConstructor('\ltx@centerline{}', sub {
     alignLine($_[0], $_[1], 'center'); },
   alias   => '\centerline',
   bounded => 1);
-
-sub alignLine {
-  my ($document, $line, $alignment) = @_;
-  if ($document->isOpenable('ltx:p')) {
-    $document->insertElement('ltx:p', $line, class => 'ltx_align_' . $alignment); }
-  elsif ($document->isOpenable('ltx:text')) {
-    $document->insertElement('ltx:text', $line, class => 'ltx_align_' . $alignment);
-    $document->insertElement('ltx:break'); }
-  else {
-    $document->absorb($line); }
-  return; }
 
 # These should be 0 width, but perhaps also shifted?
 DefMacro('\llap{}', '\hbox to 0pt{\hss#1}');
@@ -1221,16 +1222,6 @@ DefConstructorI('\dots', undef,
       : ()); });    # Since not DefMath!
 
 # And while we're at it...
-
-# Pretest for XMath to keep from interpreting math that the DOM may not allow!!
-##DefMathRewrite(xpath=>'descendant-or-self::ltx:XMath',match=>'\cdot\cdot\cdot',replace=>'\cdots');
-
-DefMathLigature("\x{22C5}\x{22C5}\x{22C5}" => "\x{22EF}", role => 'ID', name => 'cdots');
-
-DefLigature(qr{\.\.\.}, "\x{2026}", fontTest => sub { $_[0]->getFamily ne 'typewriter'; });  # ldots
-
-#DefMathRewrite(xpath=>'descendant-or-self::ltx:XMath',match=>'...',replace=>'\ldots');
-DefMathLigature("..." => "\x{2026}", role => 'ID', name => 'ldots');
 
 #----------------------------------------------------------------------
 # Math Accents.

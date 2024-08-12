@@ -4889,6 +4889,7 @@ DefConstructor('\@framebox[Dimension][]{}',
           $document->setAttribute($c[0], $k => $v); } } } }
 );
 
+AssignValue(allocated_boxes => 0, 'global');
 DefPrimitive('\newsavebox DefToken', sub {
     my $n = LookupValue('allocated_boxes') + 1;
     AssignValue(allocated_boxes => $n, 'global');

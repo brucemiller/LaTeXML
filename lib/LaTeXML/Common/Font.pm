@@ -60,44 +60,53 @@ my $FLAG_EMPH         = 0x10;
 # NOTE: This probably doesn't really belong in here...
 
 my %font_family = (
-  cmr   => { family => 'serif' },      cmss  => { family => 'sansserif' },
-  cmtt  => { family => 'typewriter' }, cmvtt => { family => 'typewriter' },
-  cmt   => { family => 'serif' },    # for cmti "text italic"
-  cmfib => { family => 'serif' },      cmfr  => { family => 'serif' },
-  cmdh  => { family => 'serif' },      cm    => { family => 'serif' },
-  ptm   => { family => 'serif' },      ppl   => { family => 'serif' },
-  pnc   => { family => 'serif' },      pbk   => { family => 'serif' },
-  phv   => { family => 'sansserif' },  pag   => { family => 'serif' },
-  pcr   => { family => 'typewriter' }, pzc   => { family => 'script' },
-  put   => { family => 'serif' },      bch   => { family => 'serif' },
-  psy   => { family => 'symbol' },     pzd   => { family => 'dingbats' },
-  ccr   => { family => 'serif' },      ccy   => { family => 'symbol' },
-  cmbr  => { family => 'sansserif' },  cmtl  => { family => 'typewriter' },
-  cmbrs => { family => 'symbol' },     ul9   => { family => 'typewriter' },
-  txr   => { family => 'serif' },      txss  => { family => 'sansserif' },
-  txtt  => { family => 'typewriter' }, txms  => { family => 'symbol' },
-  txsya => { family => 'symbol' },     txsyb => { family => 'symbol' },
-  pxr   => { family => 'serif' },      pxms  => { family => 'symbol' },
-  pxsya => { family => 'symbol' },     pxsyb => { family => 'symbol' },
-  futs  => { family => 'serif' },
-  uaq   => { family => 'serif' },   ugq  => { family => 'sansserif' },
-  eur   => { family => 'serif' },   eus  => { family => 'script' },
-  euf   => { family => 'fraktur' }, euex => { family => 'symbol' },
+  cmr    => { family => 'serif' },
+  cmss   => { family => 'sansserif' },
+  cmssq  => { family => 'sansserif' },                       # quote style?
+  cmssqi => { family => 'sansserif', shape => 'italic' },    # quote style?
+  cmtt   => { family => 'typewriter' }, cmvtt => { family => 'typewriter' },
+  cmt    => { family => 'serif' },                           # for cmti "text italic"
+  cmfib  => { family => 'serif' },
+  cmfr   => { family => 'serif' },
+  cm     => { family => 'serif' },
+  cmdh   => { family => 'serif' },
+  cmr    => { family => 'serif' },
+  cmdunh => { family => 'serif' },                           # like cmr10 but with tall body heights
+  cmu    => { family => 'serif' },                           # unslanted italic ??
+  ptm    => { family => 'serif' },      ppl   => { family => 'serif' },
+  pnc    => { family => 'serif' },      pbk   => { family => 'serif' },
+  phv    => { family => 'sansserif' },  pag   => { family => 'serif' },
+  pcr    => { family => 'typewriter' }, pzc   => { family => 'script' },
+  put    => { family => 'serif' },      bch   => { family => 'serif' },
+  psy    => { family => 'symbol' },     pzd   => { family => 'dingbats' },
+  ccr    => { family => 'serif' },      ccy   => { family => 'symbol' },
+  cmbr   => { family => 'sansserif' },  cmtl  => { family => 'typewriter' },
+  cmbrs  => { family => 'symbol' },     ul9   => { family => 'typewriter' },
+  txr    => { family => 'serif' },      txss  => { family => 'sansserif' },
+  txtt   => { family => 'typewriter' }, txms  => { family => 'symbol' },
+  txsya  => { family => 'symbol' },     txsyb => { family => 'symbol' },
+  pxr    => { family => 'serif' },      pxms  => { family => 'symbol' },
+  pxsya  => { family => 'symbol' },     pxsyb => { family => 'symbol' },
+  futs   => { family => 'serif' },
+  uaq    => { family => 'serif' },   ugq  => { family => 'sansserif' },
+  eur    => { family => 'serif' },   eus  => { family => 'script' },
+  euf    => { family => 'fraktur' }, euex => { family => 'symbol' },
   # The following are actually math fonts.
-  ms    => { family => 'symbol' },
-  ccm   => { family => 'serif',      shape    => 'italic' },
-  cmm   => { family => 'italic',     encoding => 'OML' },
-  cmex  => { family => 'symbol',     encoding => 'OMX' },      # Not really symbol, but...
-  cmsy  => { family => 'symbol',     encoding => 'OMS' },
-  ccitt => { family => 'typewriter', shape    => 'italic' },
-  cmbrm => { family => 'sansserif',  shape    => 'italic' },
-  futm  => { family => 'serif',      shape    => 'italic' },
-  futmi => { family => 'serif',      shape    => 'italic' },
-  txmi  => { family => 'serif',      shape    => 'italic' },
-  pxmi  => { family => 'serif',      shape    => 'italic' },
-  bbm   => { family => 'blackboard' },
-  bbold => { family => 'blackboard' },
-  bbmss => { family => 'blackboard' },
+  ms     => { family => 'symbol' },
+  ccm    => { family => 'serif',      shape    => 'italic' },
+  cmm    => { family => 'math',       shape    => 'italic', encoding => 'OML' },
+  cmex   => { family => 'symbol',     encoding => 'OMX' },       # Not really symbol, but...
+  cmsy   => { family => 'symbol',     encoding => 'OMS' },
+  ccitt  => { family => 'typewriter', shape    => 'italic' },
+  cmsltt => { family => 'typewriter', shape    => 'slanted' },
+  cmbrm  => { family => 'sansserif',  shape    => 'italic' },
+  futm   => { family => 'serif',      shape    => 'italic' },
+  futmi  => { family => 'serif',      shape    => 'italic' },
+  txmi   => { family => 'serif',      shape    => 'italic' },
+  pxmi   => { family => 'serif',      shape    => 'italic' },
+  bbm    => { family => 'blackboard' },
+  bbold  => { family => 'blackboard' },
+  bbmss  => { family => 'blackboard' },
   # some ams fonts
   cmmib => { family => 'italic', series   => 'bold' },
   cmbsy => { family => 'symbol', series   => 'bold' },
@@ -177,16 +186,17 @@ sub decodeFontname {
     if (my $ffam = lookupFontFamily($fam)) { map { $props{$_} = $$ffam{$_} } keys %$ffam; }
     if (my $fser = lookupFontSeries($ser)) { map { $props{$_} = $$fser{$_} } keys %$fser; }
     if (my $fsh  = lookupFontShape($shp))  { map { $props{$_} = $$fsh{$_} } keys %$fsh; }
-    $size = 1 unless $size;    # Yes, also if 0, "" (from regexp)
-    $size = $at if defined $at;
-    $size *= $scaled if defined $scaled;
+    $size        = 1 unless $size;    # Yes, also if 0, "" (from regexp)
+    $size        = $at             if defined $at;
+    $size        = $size * $scaled if defined $scaled;
+    $props{name} = $name;
     $props{size} = $size;
     # Experimental Hack !?!?!?
     $props{encoding} = 'OT1' unless defined $props{encoding};
-    $props{at}       = $at . "pt" if defined $at;
     return %props; }
   else {
-    return; } }
+    Info('unrecognized', 'font', undef, "Unrecognized fontname '$name'");
+    return (family => $name, size => DEFSIZE()); } }
 
 sub lookupTeXFont {
   my ($fontname, $seriescode, $shapecode) = @_;
@@ -266,6 +276,7 @@ sub stringify {
   no warnings 'recursion';
   my ($self) = @_;
   my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc, $lang, $mstyle, $flags) = @$self;
+  # !!!!!
   $fam = 'serif' if $fam && ($fam eq 'math');
   return 'Font[' . join(',', map { Stringify($_) } grep { $_ }
       (isDiff($fam, $DEFFAMILY)   ? ($fam)    : ()),
@@ -279,6 +290,16 @@ sub stringify {
     ($flags                       ? ($flags)  : ()),
     )
     . ']'; }
+
+# Return a Fontinfo-like hash
+# Eventually a more integrated representation of Fonts that accommodates
+# both low-level TeX-like commands, and higher-level CSS-like ones.
+sub asFontinfo {
+  my ($self) = @_;
+  my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc, $lang, $mstyle, $flags) = @$self;
+  return { family => $fam, series => $ser, shape => $shp, size => $siz,
+    color    => $col,          background => $bkg,  opacity   => $opa,
+    encoding => $enc || 'OT1', language   => $lang, mathstyle => $mstyle }; }
 
 sub equals {
   my ($self, $other) = @_;
@@ -328,6 +349,7 @@ sub relativeTo {
   my ($self, $other) = @_;
   my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc,  $lang,  $mstyle,  $flags)  = @$self;
   my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc, $olang, $omstyle, $oflags) = @$other;
+  # !!!!
   $fam  = 'serif' if $fam  && ($fam eq 'math');
   $ofam = 'serif' if $ofam && ($ofam eq 'math');
 ##  my $emph = 0;
@@ -357,6 +379,9 @@ sub relativeTo {
       : ()),
     (isDiff($opa, $oopa)
       ? (opacity => { value => $opa, properties => { opacity => $opa } })
+      : ()),
+    (isDiff($enc, $oenc)
+      ? (encoding => { value => $enc, properties => { encoding => $enc } })
       : ()),
     (isDiff($lang, $olang)
       ? ('xml:lang' => { value => $lang, properties => { language => $lang } })

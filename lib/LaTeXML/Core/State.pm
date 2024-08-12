@@ -124,13 +124,12 @@ sub new {
   $$self{delcode}             = {};
   $$self{tracing_definitions} = {};
   # Initializations that INITEX would have set.
-  $$self{mathcode}{'.'} = [0];
   for (my $c = ord('0') ; $c <= ord('9') ; $c++) {
-    $$self{mathcode}{ chr($c) } = [0x7000]; }
+    $$self{mathcode}{ chr($c) } = [0x7000 + $c]; }
   for (my $c = ord('a') ; $c <= ord('z') ; $c++) {
     my $C = $c + ord('A') - ord('a');
-    $$self{mathcode}{ chr($c) } = [0x7100];
-    $$self{mathcode}{ chr($C) } = [0x7100];
+    $$self{mathcode}{ chr($c) } = [0x7100 + $c];
+    $$self{mathcode}{ chr($C) } = [0x7100 + $C];
     $$self{uccode}{ chr($c) }   = [$C];
     $$self{lccode}{ chr($C) }   = [$c];
     $$self{sfcode}{ chr($C) }   = [999]; }
