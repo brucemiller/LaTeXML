@@ -1,0 +1,45 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  orcidlink                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+InputDefinitions('orcidlink', type => 'sty', noltxml => 1);
+
+# add ltx_orcidlogo class to adjust logo height in CSS
+RequireResource('ltx-orcidlink.css');
+DefConstructor('\lx@orcidlink@addclass{}', '#1', afterConstruct => sub {
+    my ($document, $whatsit) = @_;
+    my $context = $document->getElement;
+    if (my $pic = $document->findnode('.//ltx:picture', $context)) {
+      $document->addClass($pic, 'ltx_orcidlogo'); } });
+
+# intercept core macro (\orcidlogo in newer versions)
+my $orcidmacro = LookupDefinition(T_CS('\orcidlogo')) ? '\orcidlogo' : '\orcidlink';
+Let('\lx@orcidmacro', $orcidmacro);
+
+# if \fontcharht is still not implemented, fall back to hardcoded value
+# ignore \scalerel, used in the TL2021 version, as scaling will be done in CSS
+if (LookupDefinition(T_CS('\fontcharht'))) {
+  DefMacro("$orcidmacro\{}", '\let\lx@scalerel@orig\scalerel\def\scalerel*##1##2{##1}' .
+      '\lx@orcidlink@addclass{\lx@orcidmacro{#1}}' .
+      '\let\scalerel\lx@scalerel@orig'); }
+else {
+  DefMacro("$orcidmacro\{}", '\let\lx@fontcharht@orig\fontcharht\def\fontcharht##1##2{12pt}' .
+      '\let\lx@scalerel@orig\scalerel\def\scalerel*##1##2{##1}' .
+      '\lx@orcidlink@addclass{\lx@orcidmacro{#1}}' .
+      '\let\scalerel\lx@scalerel@orig' .
+      '\let\fontcharht\lx@fontcharht@orig'); }
+
+1;
