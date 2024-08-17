@@ -672,5 +672,16 @@ RawTeX(<<'EoTeX');
 % For now...
 \HyLang@english
 EoTeX
+
+RawTeX(<<'EOTeX');
+\newcommand*{\XeTeXLinkBox}[1]{%
+    \begingroup
+      \leavevmode
+      \sbox\z@{#1}%
+      \copy\z@
+    \endgroup
+  }%
+EOTeX
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
