@@ -439,9 +439,6 @@ DefConstructor('\lxSVG@eorulefalse',     '', alias => '\pgfsys@eorulefalse',   s
 
 DefMacro('\lxSVG@setcolor{}{}', '\ifpgfpicture\lxSVG@begingroup{#1={#2}}\fi');
 
-# Need to defer until after color/xcolor are loaded!
-AtBeginDocument('\def\XC@mcolor{\pgfsetcolor{.}}');
-
 #=====================================================================
 # Implementation
 
