@@ -88,7 +88,7 @@ foreach my $entry (@accent_data) {
 # Lookup accent data keyed by either combiner or standalone unicode.
 sub unicode_accent {
   my ($char) = @_;
-  return $char && $accent_data{$char}; }
+  return (defined $char) && $accent_data{$char}; }
 
 #======================================================================
 # Unicode Math Codepoints
