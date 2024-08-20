@@ -25,7 +25,7 @@ DefAccent('\capitalacute',        "\x{0301}", UTF(0xB4));                # \'
 DefAccent('\capitalbreve',        "\x{0306}", "\x{02D8}");               # \u
 DefAccent('\capitalcaron',        "\x{030C}", "\x{02C7}");               # \v
 DefAccent('\capitalcedilla',      "\x{0327}", UTF(0xB8), below => 1);    # \c
-DefAccent('\capitalcircumflex',   "\x{0302}", UTF(0x5E));                # \^
+DefAccent('\capitalcircumflex',   "\x{0302}", "\x{02C6}");               # \^
 DefAccent('\capitaldieresis',     "\x{0308}", UTF(0xA8));                # \"
 DefAccent('\capitaldotaccent',    "\x{0307}", "\x{02D9}");               # \.
 DefAccent('\capitalgrave',        "\x{0300}", UTF(0x60));                # \`
@@ -33,9 +33,9 @@ DefAccent('\capitalhungarumlaut', "\x{030B}", "\x{02DD}");               # \H
 DefAccent('\capitalmacron',       "\x{0304}", UTF(0xAF));                # \=
 DefAccent('\capitalnewtie',       "\x{0361}", "-");                      # \t
 DefAccent('\capitalogonek',       "\x{0328}", "\x{02DB}");               #
-DefAccent('\capitalring',         "\x{030A}", "o");                      # \r
+DefAccent('\capitalring',         "\x{030A}", "\x{02DA}");               # \r
 DefAccent('\capitaltie',          "\x{0361}", "-");                      # \t
-DefAccent('\capitaltilde',        "\x{0303}", "~");                      # \~
+DefAccent('\capitaltilde',        "\x{0303}", "\x{02DC}");               # \~
 DefAccent('\newtie',              "\x{0361}", "-");                      # \t
 
 #======================================================================

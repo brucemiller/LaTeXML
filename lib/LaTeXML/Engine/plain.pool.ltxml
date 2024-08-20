@@ -696,21 +696,21 @@ DefPrimitiveI('\pounds',    undef, UTF(0xA3));                          # POUND 
 
 DefAccent('\`',           "\x{0300}", UTF(0x60));  # COMBINING GRAVE ACCENT & GRAVE ACCENT
 DefAccent("\\'",          "\x{0301}", UTF(0xB4));  # COMBINING ACUTE ACCENT & ACUTE ACCENT
-DefAccent('\^',           "\x{0302}", UTF(0x5E));  # COMBINING CIRCUMFLEX ACCENT & CIRCUMFLEX ACCENT
+DefAccent('\^',           "\x{0302}", "\x{02C6}"); # COMBINING CIRCUMFLEX ACCENT & CIRCUMFLEX ACCENT
 DefAccent('\"',           "\x{0308}", UTF(0xA8));  # COMBINING DIAERESIS & DIAERESIS
-DefAccent('\~',           "\x{0303}", "~");        # COMBINING TILDE
+DefAccent('\~',           "\x{0303}", "\x{02DC}"); # COMBINING TILDE
 DefAccent('\=',           "\x{0304}", UTF(0xAF));  # COMBINING MACRON & MACRON
 DefAccent('\.',           "\x{0307}", "\x{02D9}"); # COMBINING DOT ABOVE & DOT ABOVE
 DefAccent('\u',           "\x{0306}", "\x{02D8}"); # COMBINING BREVE & BREVE
 DefAccent('\v',           "\x{030C}", "\x{02C7}"); # COMBINING CARON & CARON
-DefAccent('\@ringaccent', "\x{030A}", "o");        # COMBINING RING ABOVE & non-combining
-DefAccent('\r',           "\x{030A}", "o");        # COMBINING RING ABOVE & non-combining
+DefAccent('\@ringaccent', "\x{030A}", "\x{02DA}"); # COMBINING RING ABOVE & non-combining
+DefAccent('\r',           "\x{030A}", "\x{02DA}"); # COMBINING RING ABOVE & non-combining
 DefAccent('\H',           "\x{030B}", "\x{02DD}"); # COMBINING DOUBLE ACUTE ACCENT & non-combining
 DefAccent('\c',           "\x{0327}", UTF(0xB8), below => 1);    # COMBINING CEDILLA & CEDILLA
     # NOTE: The next two get define for math, as well; See below
-DefAccent('\@text@daccent', "\x{0323}", '.',       below => 1);   # COMBINING DOT BELOW & DOT (?)
-DefAccent('\@text@baccent', "\x{0331}", UTF(0xAF), below => 1);   # COMBINING MACRON BELOW  & MACRON
-DefAccent('\t',             "\x{0361}", "-");    # COMBINING DOUBLE INVERTED BREVE & ???? What????
+DefAccent('\@text@daccent', "\x{0323}", '.', below => 1);    # COMBINING DOT BELOW & DOT (?)
+DefAccent('\@text@baccent', "\x{0331}", '_', below => 1);    # COMBINING MACRON BELOW  & MACRON
+DefAccent('\t', "\x{0361}", NBSP() . "\x{0361}");  # COMBINING DOUBLE INVERTED BREVE & ???? What????
     # this one's actually defined in mathscinet.sty, but just stick it here!
 DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
                                                      # I doubt that latter covers multiple chars...?
