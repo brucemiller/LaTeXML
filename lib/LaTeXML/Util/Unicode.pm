@@ -13,8 +13,7 @@ package LaTeXML::Util::Unicode;
 use strict;
 use warnings;
 use base qw(Exporter);
-our @EXPORT = qw( &UTF &unicode_mathvariant &unicode_convert);
-
+our @EXPORT = qw( &UTF &NBSP &unicode_accent &unicode_mathvariant &unicode_convert);
 #======================================================================
 # Unicode manipulation utilities useful for LaTeXML
 # Mostly, but not exclusively, about Mathematics
@@ -23,6 +22,73 @@ our @EXPORT = qw( &UTF &unicode_mathvariant &unicode_convert);
 sub UTF {
   my ($code) = @_;
   return pack('U', $code); }
+
+my $NBSP = UTF(0xA0);
+sub NBSP { return $NBSP; }
+
+#======================================================================
+# Accents
+# There are potentially several Unicode codepoints that characterize a given accent:
+#  combiner   : unicode combining character that effects the accent when following a base char.
+#       generally in Combining block
+#  standalone : form that shows accent w/o base, but small(ish) and already raised/lowered!
+#       sometimes called "isolated". Usually a "spacing" form, else NBSP followed by combiner.
+#  unwrapped  : form that shows the accent itself, typically larger and on baseline;
+#        Used in operand for eg. MathML mover/munder
+#  name       : arbitrary short descriptive, for good measure
+# The ideal glyphs for each of these don't necessarily exist in Unicode,
+# nor are the best choices always clear.
+# Ideally, we would cover ALL accents that might appear in TeX!
+our @accent_data = (
+  { name => 'grave', combiner => "\x{0300}", standalone => UTF(0x60),    # \'
+    unwrapped => "`", pos => 'OVERACCENT' },                             #  (OR \x{2035} or UTF(0x60) ?)
+  { name => 'acute', combiner => "\x{0301}", standalone => UTF(0xB4),    # \\'
+    unwrapped => UTF(0xB4), pos => 'OVERACCENT' },                       # (OR \x{2032} or UTF(0xB4)?)
+  { name => 'hat', combiner => "\x{0302}", standalone => "\x{02C6}",     # \^
+    unwrapped => UTF(0x5E), pos => 'OVERACCENT' },
+  { name => 'ddot', combiner => "\x{0308}", standalone => UTF(0xA8),     # \"
+    unwrapped => UTF(0xA8), pos => 'OVERACCENT' },                       # (or \x{22C5})
+  { name => 'tilde', combiner => "\x{0303}", standalone => "\x{02DC}",    # \~
+    unwrapped => UTF(0x7E), pos => 'OVERACCENT' },
+  { name => 'bar', combiner => "\x{0304}", standalone => UTF(0xAF),       # \=
+    unwrapped => UTF(0xAF), pos => 'OVERACCENT' },
+  { name => 'dot', combiner => "\x{0307}", standalone => "\x{02D9}",      # \.
+    unwrapped => "\x{02D9}", pos => 'OVERACCENT' },                       # (OR \x{22C5} or \x{0209} ?
+  { name => 'dtick', combiner => "\x{030B}", standalone => "\x{02DD}",    # \H
+    unwrapped => "\x{2032}\x{2032}", pos => 'OVERACCENT' },               # (Or UTF(0xA8) or " ?)
+  { name => 'breve', combiner => "\x{0306}", standalone => "\x{02D8}",    # \u
+    unwrapped => "\x{02D8}", pos => 'OVERACCENT' },
+  { name => 'check', combiner => "\x{030C}", standalone => "\x{02C7}",    # \v
+    unwrapped => "\x{02C7}", pos => 'OVERACCENT' },
+  { name => 'ring', combiner => "\x{030A}", standalone => "\x{02DA}",     # \r
+    unwrapped => "\x{02DA}", pos => 'OVERACCENT' },                       # (or \x{2218} ?)
+  { name => 'vec', combiner => "\x{20D7}", standalone => $NBSP . "\x{20D7}",    # \vec
+    unwrapped => "\x{2192}", pos => 'OVERACCENT' },
+  { name => 'tie', combiner => "\x{0361}", standalone => $NBSP . "\x{0361}",    # \t
+    unwrapped => "u", pos => 'OVERACCENT' },
+  ## UNDERACCENT accents
+  { name => 'cedilla', combiner => "\x{0327}", standalone => UTF(0xB8),         # \c
+    unwrapped => UTF(0xB8), pos => 'UNDERACCENT' },                             # not even math?
+  { name => 'underdot', combiner => "\x{0323}", standalone => '.',              #  \@text@daccent
+    unwrapped => "\x{22C5}", pos => 'UNDERACCENT' },                            # (Or \x{02D9} ?)
+  { name => 'underbar', combiner => "\x{0331}", standalone => '_',
+    unwrapped => UTF(0xAF), pos => 'UNDERACCENT' },
+  { name => 'lfhook', combiner => "\x{0326}", standalone => ",",                # '\lfhook'
+    unwrapped => ',', pos => 'UNDERACCENT' },
+  { name => 'ogonek', combiner => "\x{0328}", standalone => "\x{02DB}",
+    unwrapped => "\x{02DB}", pos => 'UNDERACCENT' },                            # not even math???
+);
+# Set up a hash keyed on both standalone & combiner chars
+our %accent_data = ();
+foreach my $entry (@accent_data) {
+  $accent_data{ $$entry{standalone} } = $entry;
+  $accent_data{ $$entry{combiner} }   = $entry;
+}
+
+# Lookup accent data keyed by either combiner or standalone unicode.
+sub unicode_accent {
+  my ($char) = @_;
+  return $char && $accent_data{$char}; }
 
 #======================================================================
 # Unicode Math Codepoints
