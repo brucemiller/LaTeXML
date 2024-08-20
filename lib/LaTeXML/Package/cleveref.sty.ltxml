@@ -77,7 +77,7 @@ sub crefMulti {
     return @tokens; } }
 # Since we're not grouping by type, we're ignoring \crefpairgroupconjunction, etc
 
-DefConstructor('\lx@cref OptionalMatch:* {} Semiverbatim',
+DefConstructor('\lx@cref OptionalMatch:* HyperVerbatim Semiverbatim',
   "<ltx:ref labelref='#label' show='#2' ?#1(class='ltx_nolink')() _force_font='true'/>",
   properties => sub { (label => CleanLabel($_[3])); });
 
