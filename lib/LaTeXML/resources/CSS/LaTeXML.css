@@ -507,3 +507,6 @@ cite                 { font-style: normal; }
 .ltx_minipage > .ltx_graphics {
   max-width:100%;
 }
+
+.ltx_overlay {position:relative; }
+.ltx_overlay > span:nth-child(2) {position:absolute; left:0; }
