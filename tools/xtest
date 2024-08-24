@@ -97,7 +97,7 @@ foreach my $set (@testsets) {
           "--dest=$dest",
           "--log=$logdir/$set-$test-$type.log",
           "--format=$type",
-          "--javascript=LaTeXML-maybeMathjax.js",
+          #          "--javascript=LaTeXML-maybeMathjax.js",
           (defined $timestamp ? ("--timestamp=$timestamp") : ()),
           ($verbosity > 0     ? map { "--verbose" } 1 .. $verbosity
             : ($verbosity < 0 ? map { "--quiet" } 1 .. -$verbosity
