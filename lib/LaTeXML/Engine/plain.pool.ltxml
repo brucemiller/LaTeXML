@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use charnames ':full';
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #**********************************************************************
@@ -710,7 +711,7 @@ DefAccent('\c',           "\x{0327}", UTF(0xB8), below => 1);    # COMBINING CED
     # NOTE: The next two get define for math, as well; See below
 DefAccent('\@text@daccent', "\x{0323}", '.', below => 1);    # COMBINING DOT BELOW & DOT (?)
 DefAccent('\@text@baccent', "\x{0331}", '_', below => 1);    # COMBINING MACRON BELOW  & MACRON
-DefAccent('\t', "\x{0361}", NBSP() . "\x{0361}");  # COMBINING DOUBLE INVERTED BREVE & ???? What????
+DefAccent('\t', "\x{0361}", "\N{NBSP}\x{0361}");   # COMBINING DOUBLE INVERTED BREVE & ???? What????
     # this one's actually defined in mathscinet.sty, but just stick it here!
 DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
                                                      # I doubt that latter covers multiple chars...?

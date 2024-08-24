@@ -627,7 +627,7 @@ DefConstructor('\mathaccent Number Digested',
     my $accrole = 'OVERACCENT';
     if (my $entry = unicode_accent($glyph)) {
       $glyph   = $$entry{unwrapped};
-      $accrole = $$entry{pos}; }
+      $accrole = $$entry{role}; }
     $whatsit->setProperty(glyph   => $glyph)                                  if $glyph;
     $whatsit->setProperty(font    => LookupValue('font')->specialize($glyph)) if $glyph;
     $whatsit->setProperty(accrole => $accrole)                                if $glyph;
