@@ -119,14 +119,33 @@ sub complement {
 # Mix $self*$fraction + $color*(1-$fraction)
 sub mix {
   my ($self, $color, $fraction) = @_;
-  $color = $color->convert($self->model) unless $self->model eq $color->model;
+  # mixing 'rgb|cmy' with 'gray' should yield 'rgb|cmy'.
+  my $base_model = $self->model;
+  my $mix_model  = $color->model;
+  if ($base_model ne $mix_model) {
+    # careful, if "grayscale" remains the base, an incoming color-rich model will
+    # have components discarded.
+    if ($base_model eq 'gray') {
+      my $enriched_base = $self->convert($mix_model);
+      return $enriched_base->mix($color, $fraction);
+    } else {
+      $color = $color->convert($base_model); } }
   my @a = $self->components;
   my @b = $color->components;
   return $self->new(map { $fraction * $a[$_] + (1 - $fraction) * $b[$_] } 0 .. $#a); }
 
 sub add {
   my ($self, $color) = @_;
-  $color = $color->convert($self->model) unless $self->model eq $color->model;
+  my $base_model = $self->model;
+  my $mix_model  = $color->model;
+  if ($base_model ne $mix_model) {
+    # careful, if "grayscale" remains the base, an incoming color-rich model will
+    # have components discarded.
+    if ($base_model eq 'gray') {
+      my $enriched_base = $self->convert($mix_model);
+      return $enriched_base->add($color);
+    } else {
+      $color = $color->convert($base_model); } }
   my @a = $self->components;
   my @b = $color->components;
   return $self->new(map { $a[$_] + $b[$_] } 0 .. $#a); }
