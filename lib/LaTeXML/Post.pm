@@ -266,6 +266,7 @@ use LaTeXML::Post;
 use LaTeXML::Common::Error;
 use base qw(LaTeXML::Post::Processor);
 use LaTeXML::Common::XML;
+use charnames ':full';
 
 # This is an abstract class; A complete MathProcessor will need to define:
 #    $self->convertNode($doc,$xmath)
@@ -451,7 +452,6 @@ sub combineParallel {
 # AND the nested math needs to be converted to ONLY the current target's markup
 # NOT parallel within each nested math, although it should still be cross-referencable to others!
 # moreover, the math will need the outerWrapper.
-my $NBSP = pack('U', 0xA0);    # CONSTANT
 
 sub convertXMTextContent {
   my ($self, $doc, $convertspaces, @nodes) = @_;
@@ -460,7 +460,7 @@ sub convertXMTextContent {
     if ($node->nodeType == XML_TEXT_NODE) {
       my $string = $node->textContent;
       if ($convertspaces) {
-        $string =~ s/^\s+/$NBSP/; $string =~ s/\s+$/$NBSP/; }
+        $string =~ s/^\s+/\N{NBSP}/; $string =~ s/\s+$/\N{NBSP}/; }
       push(@result, $string); }
     else {
       my $tag = $doc->getQName($node);

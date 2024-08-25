@@ -140,37 +140,28 @@ DeclareFontMap('ASCII',
     'p',   'q',   'r',   's',   't',   'u',   'v',   'w',
     'x',   'y',   'z',   "{",   "|",   "}",   "~",   undef]);
 
-# Note that several entries are used for accents, and in practice will actually
-# be used in something like an m:mover; thus they needn't (shouldn't?) be "small"
-# There are also some questions about which choices are best
-# grave & acute accents (entry 0x12 & 0x13) (often typed using 0x60 & 0x27)
-#   are probably best using U+60(grave accent) & U+B4(acute accent)
-#   but could be U+2035 (reversed prime) & U+2032 (prime).  (particularly for math?)
-#   [we do use these for \prime, however!]
-#   or U+02CB (modifier letter grave accent) & U+02CA (modifier letter acute accent)
-# Similarly, hat & tilde (entries 0x5E & 0x7E)
-#   typed using ^ 0x5E circumflex accent) & ~ 0x7E  tilde
-#   are probably best just sticking with U+5E & U+7E
-#   but could be U+02C6 (modifier letter circumflex accent) U+02DC (small tilde)
-# [Note that generally we're using codepoints characterized as "modifier letter"
-# only when no other spacing point is available.]
+# Note that several entries are used for accents.
+# TeX fonts typically contain a standalone version of an accent, ie smallish & raised.
+# We'll consult a table in LaTeXML::Util::Unicode to determine the equivalent combining character,
+# as well as an "unwrapped" one for use in Math tokens (eg. as an overaccent)
+# NOTE: 0x12--0x18, 0x5E-0x5F, 0x7D-0x7F are accents
 DeclareFontMap('OT1',
   ["\x{0393}", "\x{0394}", "\x{0398}", "\x{039B}", "\x{039E}", "\x{03A0}", "\x{03A3}", "\x{03A5}",
     "\x{03A6}", "\x{03A8}",      "\x{03A9}", "\x{FB00}", "\x{FB01}", "\x{FB02}", "\x{FB03}", "\x{FB04}",
     "\x{0131}", "\x{0237}",      UTF(0x60),  UTF(0xB4),  "\x{02C7}", "\x{02D8}", UTF(0xAF),  "\x{02DA}",
     UTF(0xB8),  UTF(0xDF),       UTF(0xE6),  "\x{0153}", UTF(0xF8),  UTF(0xC6),  "\x{152}",  UTF(0xD8),
-    UTF(0xA0) . "\x{0335}", '!', "\x{201D}", '#',        '$',        '%',        '&',       "\x{2019}",
-    '(',                    ')', '*',        '+',        ',',        '-',        '.',       '/',
-    '0',                    '1', '2',        '3',        '4',        '5',        '6',       '7',
-    '8',                    '9', ':',        ';',        UTF(0xA1),  '=',        UTF(0xBF), '?',
-    '@',                    'A', 'B',        'C',        'D',        'E',        'F',       'G',
-    'H',                    'I', 'J',        'K',        'L',        'M',        'N',       'O',
-    'P',                    'Q', 'R',        'S',        'T',        'U',        'V',       'W',
-    'X',                    'Y', 'Z',        '[',        "\x{201C}", ']',        "^",       "\x{02D9}",
-    "\x{2018}",             'a', 'b',        'c',        'd',        'e',        'f',       'g',
-    'h',                    'i', 'j',        'k',        'l',        'm',        'n',       'o',
-    'p',                    'q', 'r',        's',        't',        'u',        'v',       'w',
-    'x',                    'y', 'z',        "\x{2013}", "\x{2014}", "\x{02DD}", UTF(0x7E), UTF(0xA8)]);
+    UTF(0xA0) . "\x{0335}", '!', "\x{201D}", '#',        '$',        '%',        '&',        "\x{2019}",
+    '(',                    ')', '*',        '+',        ',',        '-',        '.',        '/',
+    '0',                    '1', '2',        '3',        '4',        '5',        '6',        '7',
+    '8',                    '9', ':',        ';',        UTF(0xA1),  '=',        UTF(0xBF),  '?',
+    '@',                    'A', 'B',        'C',        'D',        'E',        'F',        'G',
+    'H',                    'I', 'J',        'K',        'L',        'M',        'N',        'O',
+    'P',                    'Q', 'R',        'S',        'T',        'U',        'V',        'W',
+    'X',                    'Y', 'Z',        '[',        "\x{201C}", ']',        "\x{02C6}", "\x{02D9}",
+    "\x{2018}",             'a', 'b',        'c',        'd',        'e',        'f',        'g',
+    'h',                    'i', 'j',        'k',        'l',        'm',        'n',        'o',
+    'p',                    'q', 'r',        's',        't',        'u',        'v',        'w',
+    'x',                    'y', 'z', "\x{2013}", "\x{2014}", "\x{02DD}", "\x{02DC}", UTF(0xA8)]);
 
 DeclareFontMap('OT1',
   ["\x{0393}", "\x{0394}", "\x{0398}", "\x{039B}", "\x{039E}", "\x{03A0}", "\x{03A3}", "\x{03A5}",

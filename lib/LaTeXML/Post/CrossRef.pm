@@ -21,8 +21,6 @@ use charnames qw(:full);
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
 
-my $NBSP = pack('U', 0xA0);    # CONSTANT
-
 sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
@@ -635,7 +633,7 @@ sub make_bibcite {
       elsif ($show =~ s/^\{([^\}]*)\}//) {    # pass-thru literal, quoted with {}
         push(@stuff, $1) if $1; }
       elsif ($show =~ s/^~//) {               # Pass-thru spaces
-        push(@stuff, $NBSP) if @stuff; }
+        push(@stuff, "\N{NBSP}") if @stuff; }
       elsif ($show =~ s/^(\s+)//) {           # Pass-thru spaces
         push(@stuff, $1) if @stuff; }
       elsif ($show =~ s/^(\W+)//) {           # Pass-thru non show keywords
@@ -782,7 +780,7 @@ sub generateRef_aux {
     elsif ($show =~ s/^\{([^\}]*)\}//) {    # pass-thru literal, quoted with {}
       push(@stuff, $1) if $1; }
     elsif ($show =~ s/^~//) {               # Pass-thru spaces
-      push(@stuff, $NBSP) if @stuff; }
+      push(@stuff, "\N{NBSP}") if @stuff; }
     elsif ($show =~ s/^(\s+)//) {           # Pass-thru spaces
       push(@stuff, $1) if @stuff; }
     elsif ($show =~ s/^(\W+)//) {           # Pass-thru non show keywords

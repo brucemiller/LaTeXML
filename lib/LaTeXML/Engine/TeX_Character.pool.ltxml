@@ -14,7 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-use Unicode::Normalize;
+use LaTeXML::Util::Unicode;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Character Family of primitive control sequences
@@ -70,43 +70,31 @@ sub applyAccent {
 
 # Defines an accent command using a combining char that follows the
 # 1st char of the argument.  In cases where there is no argument, $standalonechar is used.
+# Ideally, the pair match up with an entry in Util::Unicode's accents
 sub DefAccent {
   my ($accent, $combiningchar, $standalonechar, %options) = @_;
-  $options{above} = 1 if !(defined $options{above}) && !$options{below};
-  # Used for converting a char used as an above-accent to a combining char (See \accent)
-  AssignMapping('accent_combiner_above', $standalonechar => $combiningchar) if $options{above};
-  AssignMapping('accent_combiner_below', $standalonechar => $combiningchar) unless $options{above};
-  DefMacroI($accent, "{}",
-    Tokens(T_CS('\lx@applyaccent'), T_OTHER($accent),
-      T_OTHER($combiningchar), T_OTHER($standalonechar),
-      T_BEGIN, T_ARG(1), T_END),
+  $accent = T_CS($accent) unless ref $accent;
+  DefPrimitiveI($accent, "{}", sub {
+      my ($stomach, $letter) = @_;
+      applyAccent($stomach, $letter, $combiningchar, $standalonechar,
+        Tokens($accent, T_BEGIN, $letter, T_END)); },
     protected => 1);
   return; }
 
-DefPrimitiveI('\lx@applyaccent', "DefToken Token Token {}", sub {
-    my ($stomach, $accent, $combiningchar, $standalonechar, $letter) = @_;
-    applyAccent($stomach, $letter, $combiningchar->getString, $standalonechar->getString,
-      Tokens(T_CS($accent->getString), T_BEGIN, $letter, T_END)); },
-  mode => 'text');
-
-# This will fail if there really are "assignments" after the number!
-# We're given a number pointing into the font, from which we can derive the standalone char.
-# From that, we want to figure out the combining character, but there could be one for
-# both the above & below cases!  We'll prefer the above case.
+# This will fail if there really are "assignments" after the number! (See TeX Book)
+# We're given a number pointing into the font; the FontMap presumably has the standalone char.
+# If there's no letter to be accented, just use the stanadalone.
+# Otherwise, use the Util::Unicode module to find the appropriate combining character
 DefPrimitive('\accent Number {}', sub {
     my ($stomach, $num, $letter) = @_;
     my $n        = $num->valueOf;
-    my $fontinfo = lookupFontinfo(LookupValue('textfont_0'));
-    my $acc      = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : chr($n));
-    my $reversion = Invocation(T_CS('\accent'), $num, $letter);
-    # NOTE: REVERSE LOOKUP in above accent list for the non-spacing accent char
-    # BUT, \accent always (?) makes an above type accent... doesn't it?
-    if (my $combiner = LookupMapping('accent_combiner_above', $acc)
-      || LookupMapping('accent_combiner_below', $acc)) {
-      applyAccent($stomach, $letter, $combiner, $acc, $reversion); }
-    else {
-      Warn('unexpected', "accent$n", $stomach, "Accent '$n' not recognized");
-      Box(ToString($letter), undef, undef, $reversion); } });
+    my $encoding = LookupValue('font')->getEncoding || 'OT1';
+    my $char     = ($encoding ? FontDecode($n, $encoding) : chr($n));
+    if (my $entry = unicode_accent($char)) {
+      applyAccent($stomach, $letter, $$entry{combiner}, $$entry{standalone},
+        Invocation(T_CS('\accent'), $num, $letter)); }
+    else {    # Unknown accent ?  Attempt to OVERLAY the accent on top of $letter
+      Digest(Tokens(T_CS('\lx@overlay'), T_BEGIN, $letter, T_END, T_BEGIN, T_OTHER($char), T_END)); } });
 
 #======================================================================
 # \chardef        iq provides an alternate way to define a control sequence that returns a character.

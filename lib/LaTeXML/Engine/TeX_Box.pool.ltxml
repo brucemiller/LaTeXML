@@ -53,13 +53,22 @@ DefConstructor('\lx@hidden@egroup', '',
   reversion   => '');
 
 #======================================================================
-DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
+# A few useful low-level boxing things
 
 DefConstructor('\lx@framed[]{}',
   "<ltx:text framed='#frame' _noautoclose='1'>#2</ltx:text>",
   properties => { frame => sub { ToString($_[1] || 'rectangle'); } });
+
 DefConstructor('\lx@hflipped{}',
   "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>");
+
+DefConstructor('\lx@overlay{}{}',
+  "<ltx:text class='ltx_overlay'>"
+    . "<ltx:text class='ltx_overlay_base' _noautoclose='1'>#1</ltx:text>"
+    . "<ltx:text class='ltx_overlay_over' _noautoclose='1'>#2</ltx:text></ltx:text>");
+
+#======================================================================
+DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
 
 sub reportNoUnicode {
   my ($cs) = @_;
@@ -77,7 +86,7 @@ DefPrimitive('\lx@math@nounicode DefToken', sub {
     Box(ToString($cs), undef, undef, $cs, class => 'ltx_nounicode'); });
 
 DefConstructor('\lx@text@nounicode DefToken',
-  "<ltx:text _no_autoclose='true' class='ltx_nounicode'>#1</ltx:text>",
+  "<ltx:text _noautoclose='true' class='ltx_nounicode'>#1</ltx:text>",
   afterDigest => sub {
     reportNoUnicode(ToString($_[1]->getArg(0))); });
 
