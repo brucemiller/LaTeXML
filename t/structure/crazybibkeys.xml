@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="natbib"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <bibliography xml:id="bib">
+    <title>References</title>
+    <biblist>
+      <bibitem key="_xyz_1899" xml:id="bib.bib1">
+        <tags>
+          <tag role="number">1</tag>
+          <tag role="year">1899</tag>
+          <tag role="authors">˙xy</tag>
+          <tag role="refnum">˙xy (1899)</tag>
+          <tag role="key">_xyz_1899</tag>
+        </tags>
+        <bibblock>
+A name of something. (accessed Nov 01, 1899).
+</bibblock>
+      </bibitem>
+      <bibitem key="mathy" xml:id="bib.bib2">
+        <tags>
+          <tag role="number">2</tag>
+          <tag role="year">1899</tag>
+          <tag role="authors">Ex<Math mode="inline" tex="\ddot{a}" text="ddot@(a)" xml:id="bib.bib2.m1">
+              <XMath>
+                <XMApp>
+                  <XMTok name="ddot" role="OVERACCENT">¨</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>mple</tag>
+          <tag role="refnum">Ex<Math mode="inline" tex="\ddot{a}" text="ddot@(a)" xml:id="bib.bib2.m2">
+              <XMath>
+                <XMApp>
+                  <XMTok name="ddot" role="OVERACCENT">¨</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>mple (1899)</tag>
+          <tag role="key">mathy</tag>
+        </tags>
+        <bibblock>
+Another name.
+</bibblock>
+      </bibitem>
+    </biblist>
+  </bibliography>
+</document>
