@@ -567,31 +567,11 @@ DefRegister('\everydisplay', Tokens());
 # \delcode                iq is -1 or the delimiter code for a character.
 # \mathcode               iq holds the math character (15-bit number) for each of the 256 characters with which TeX works.
 
-our @mathclassrole = (undef, 'BIGOP', 'BINOP', 'RELOP', 'OPEN', 'CLOSE', 'PUNCT', undef);
-# Is this "fontinfo" stuff sufficient to maintain a math font "family" ??
-# What we're really after is a connectio nto a font encoding mapping.
-sub decodeMathChar {
-  my ($n)   = @_;
-  my $class = int($n / (16 * 256)); $n = $n % (16 * 256);
-  my $fam   = int($n / 256);        $n = $n % 256;
-  my $font  = LookupValue('textfont_' . $fam)
-    || LookupValue('scriptfont_' . $fam)
-    || LookupValue('scriptscriptfont_' . $fam);
-  my $char     = chr($n);
-  my $fontinfo = lookupFontinfo($font);    # Map char(code) to Unicode, via font
-  my $glyph    = ($fontinfo && $$fontinfo{encoding} && FontDecode($n, $$fontinfo{encoding}) // $char);
-  # If no specific class, Lookup properties from a DefMath? [Or better yet, Unicode data?]
-  my $charinfo = LookupValue('math_token_attributes_' . $glyph);
-  my $role     = $mathclassrole[$class];
-  $role = $$charinfo{role} if (!defined $role) && $charinfo;
-  return ($role, $glyph); }
-
 DefPrimitive('\mathchar Number', sub {
-    my ($stomach, $code)  = @_;
-    my ($role,    $glyph) = decodeMathChar($code->valueOf);
-    Box($glyph, undef, undef,
-      Tokens(T_CS('\mathchar'), $_[1]->revert, T_CS('\relax')),
-      role => $role); });
+    my ($stomach, $code) = @_;
+    my ($role, $glyph, $font, $reversion) = decodeMathChar($code,
+      Tokens(T_CS('\mathchar'), $_[1]->revert, T_CS('\relax')));
+    return Box($glyph, $font, undef, $reversion, role => $role); });
 
 DefConstructor('\delimiter Number',
   "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
@@ -655,9 +635,7 @@ DefRegister('\fam' => Number(-1),
   setter => sub {
     my ($fam, $scope) = @_;
     $STATE->assignValue('fontfamily' => $fam->valueOf, $scope);
-    if (my $font = $STATE->lookupValue('textfont_' . $fam->valueOf)) {
-      Digest($font);    # Digest, since this is a font COMMAND (\font)!!!!!
-} });
+  });
 
 #======================================================================
 # TeX-level grammatical roles

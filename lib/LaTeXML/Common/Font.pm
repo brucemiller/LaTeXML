@@ -251,7 +251,7 @@ sub textDefault {
 sub mathDefault {
   my ($self) = @_;
   return $self->new_internal('math', $DEFSERIES, 'italic', DEFSIZE(),
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, $DEFLANGUAGE, 'text', 0); }
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, 'OT1', $DEFLANGUAGE, 'text', 0); }
 
 # Accessors
 # Using an array here is getting ridiculous!
