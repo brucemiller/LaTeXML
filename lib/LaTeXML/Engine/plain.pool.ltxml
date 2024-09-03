@@ -408,8 +408,10 @@ DefPrimitiveI('\sl', undef, undef,
 DefPrimitiveI('\sc', undef, undef,
   font => { shape => 'smallcaps', family => 'serif', series => 'medium' });
 
-DefPrimitiveI('\cal', undef, undef,
-  font => { family => 'caligraphic', series => 'medium', shape => 'upright' });
+DefPrimitiveI('\cal', undef, sub {
+    if (LookupValue('IN_MATH')) {
+      MergeFont(family => 'caligraphic', series => 'medium', shape => 'upright', encoding => 'OMS'); }
+    return; });
 
 # Ideally, we should set these sizes from class files
 AssignValue(NOMINAL_FONT_SIZE => 10);
