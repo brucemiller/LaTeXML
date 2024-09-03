@@ -1131,16 +1131,16 @@ DefRegister('\displaywidowpenalty' => Number(50));
 DefRegister('\predisplaypenalty'   => Number(10000));
 DefRegister('\postdisplaypenalty'  => Number(0));
 
-DefRegister('\skewchar FontToken' => Number(0),
+DefRegister('\skewchar FontDef' => Number(0),
   getter => sub {
-    my ($font) = @_;
-    my $info = lookupFontinfo($font);
-    return ($info && $$info{skewchar}) || Number(0); },
+    my ($fontinfo) = @_;
+    return ($fontinfo && $$fontinfo{skewchar}) || Number(0); },
   setter => sub {
-    my ($value, $scope, $font) = @_;
-    if (my $info = lookupFontinfo($font)) {
-      $$info{skewchar} = $value; } }
+    my ($value, $scope, $fontinfo) = @_;
+    if ($fontinfo) {
+      $$fontinfo{skewchar} = $value; } }
 );
+
 DefRegister('\defaultskewchar' => Number(-1));
 
 # Dimen registers; TeXBook p. 274

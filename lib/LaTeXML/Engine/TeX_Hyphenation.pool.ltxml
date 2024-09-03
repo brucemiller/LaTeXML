@@ -55,15 +55,14 @@ DefPrimitive('\setlanguage Number', undef);
 # \righthyphenmin   pi is the minimum number of characters that must appear after the last hyphen in an hyphenated word.
 # \uchyph           pi prevents hyphenation of uppercase words unless this is positive.
 
-DefRegister('\hyphenchar FontToken' => Number(ord('-')),
+DefRegister('\hyphenchar FontDef' => Number(ord('-')),
   getter => sub {
-    my ($font) = @_;
-    my $info = lookupFontinfo($font);
-    return ($info && $$info{hyphenchar}) || Number(ord('-')); },
+    my ($fontinfo) = @_;
+    return ($fontinfo && $$fontinfo{hyphenchar}) || Number(ord('-')); },
   setter => sub {
-    my ($value, $scope, $font) = @_;
-    if (my $info = lookupFontinfo($font)) {
-      $$info{hyphenchar} = $value; } }
+    my ($value, $scope, $fontinfo) = @_;
+    if ($fontinfo) {
+      $$fontinfo{hyphenchar} = $value; } }
 );
 
 DefRegister('\defaulthyphenchar' => Number(ord('-')));

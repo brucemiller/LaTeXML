@@ -27,22 +27,24 @@ use LaTeXML::Package;
 # \fontdimen        iq holds font parameters.
 # \nullfont         iq is a predefined font with no characters.
 
-sub lookupFontinfo {
-  my ($token) = @_;
-  my $defn = LookupDefinition($token);
-  #  return LookupValue(($defn ? ToString($defn) : ToString($token)) . '_fontinfo'); }
-  return LookupValue('fontinfo_' . ($defn ? $defn->getCSName : ToString($token))); }
-
-DefParameterType('FontToken', sub {
-    my ($gullet) = @_;
-    my $token = $gullet->readToken;
+# A Defined Font, or Font Identifier,
+# defined by \font, OR \textfont, \scriptfont,\scriptscriptfont, or even \font itself
+# Actually returns the fontinfo (hash) associated with the font.
+DefParameterType('FontDef', sub {
+    my ($gullet)  = @_;
+    my $readtoken = $gullet->readToken;
+    my $token     = $readtoken;
+    # Or use LookupRegister???
     if ($token->toString =~ /^\\(text|script|scriptscript)font$/) {
       my $type = $1;
       if (my $fam = $gullet->readNumber) {
         $token = LookupValue($type . 'font_' . $fam->valueOf); } }
-    elsif ($token->toString eq '\\font') {
-      $token = LookupValue('textfont_0'); }    # ??? I assume shuld get current font?
-    $token; });                                #?
+    # Need the cs that selected the current font! (which we don't have!)
+    if ($token->toString eq '\font') {    # Current font ??? Return last pure TeX font used (HACK)
+      $token = LookupValue('current_FontDef') || T_CS('\tenrm'); }
+    if (my $defn = $token && $STATE->lookupDefinition($token)) {
+      return $defn->isFontDef; }
+    return; });
 
 # This should eventually actually load the font metrics,
 # and tie-in to LaTeXML::Common::Font, as well as any FontMetrics data used by Font.
@@ -82,21 +84,22 @@ DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileNa
     $STATE->installDefinition(LaTeXML::Core::Definition::FontDef->new($cs, $key));
     return; });
 
-DefMacroI('\fontname', undef, sub { Explode("fontname not implemented"); });
+DefMacro('\fontname FontDef', sub {
+    my ($gullet, $fontinfo) = @_;
+    my $name = $fontinfo && $$fontinfo{name};
+    Explode($name || "fontname not available"); });
+
 # Access to the font parameters; Curiously, can be used as scratch arrays (eg LaTeX3)
-DefRegister('\fontdimen Number FontToken' => Dimension(0),
+DefRegister('\fontdimen Number FontDef' => Dimension(0),
   getter => sub {
-    my ($p, $font) = @_;
-    my $info = lookupFontinfo($font);
+    my ($p, $fontinfo) = @_;
     $p = ToString($p);
-    my $data = $info && $$info{data};
-####    return ($data && $$data[$p - 1]) || Dimension(0); },
+    my $data = $fontinfo && $$fontinfo{data};
     return Dimension(($data && $$data[$p - 1]) || 0); },
   setter => sub {
-    my ($value, $scope, $p, $font) = @_;
-    my $info = lookupFontinfo($font);
+    my ($value, $scope, $p, $fontinfo) = @_;
     $p = ToString($p);
-    if (my $data = $info && $$info{data}) {
+    if (my $data = $fontinfo && $$fontinfo{data}) {
       my $l = scalar(@$data);
       if ($l < $p) {
         for (my $i = $l ; $i < $p ; $i++) {
