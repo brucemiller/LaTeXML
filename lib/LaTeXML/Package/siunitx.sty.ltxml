@@ -494,9 +494,8 @@ sub six_format_simplenumber {
       ? six_groupdigits($fraction, -1)
       : $fraction);
     push(@tokens, $f); }
-##  return Tokens(@tokens, @trailer); }
   return I_dual({ revert_as => 'presentation' },
-    I_symbol({ role => 'NUMBER', meaning => T_OTHER(six_number_string($number)) }),
+    I_symbol({ role => 'NUMBER', meaning => six_number_string($number) }),
     I_wrap({}, Tokens(@tokens, @trailer))); }
 
 sub six_groupdigits {
@@ -607,7 +606,7 @@ sub six_format_scinumber {
   # If mantissa is simple number, use scientific notation for the meaning
   # (all the dual cruft above formats appropriately, but is wasted)
   if ($arg1 && !$$arg1{operator} && (ToString(six_get('exponent-base')) eq '10')) {
-    $result = I_wrap({ meaning => T_OTHER(six_number_string($number)) }, $result); }
+    $result = I_wrap({ meaning => six_number_string($number) }, $result); }
   return $result; }
 
 sub six_format_compoundnumber {
@@ -858,7 +857,7 @@ DefMacro('\ang OptionalKeyVals:SIX {}', sub {
       ($degrees ? six_number_string($degrees) . "\x{00B0}" : ''),
       ($minutes ? six_number_string($minutes) . "\x{2032}" : ''),
       ($seconds ? six_number_string($seconds) . "\x{2033}" : ''));
-    my $result = six_wrap(I_dual({}, I_symbol({ role => 'NUMBER', meaning => T_OTHER($string) }),
+    my $result = six_wrap(I_dual({}, I_symbol({ role => 'NUMBER', meaning => $string }),
         I_wrap({}, @punctuated)));
     six_end_processing();
     return $result; });
