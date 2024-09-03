@@ -45,34 +45,41 @@ DefParameterType('FontToken', sub {
     $token; });                                #?
 
 # This should eventually actually load the font metrics,
-# and tie-in to the FontMetrics data used by Font.
+# and tie-in to LaTeXML::Common::Font, as well as any FontMetrics data used by Font.
 DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileName', sub {
     my ($stomach, $cs, $name) = @_;
     my $gullet = $stomach->getGullet;
     $name = ToString($name);
-    my ($at, $scaled);
-    if ($gullet->readKeyword('at'))     { $at     = $gullet->readDimension; }
-    if ($gullet->readKeyword('scaled')) { $scaled = $gullet->readNumber; }
-    my %props = LaTeXML::Common::Font::decodeFontname($name,
-      $at && $at->ptValue, $scaled && $scaled->valueOf / 1000);
-    if (!keys %props) {    # Failed?
-      Info('unexpected', $name, $stomach, "Unrecognized font name '$name'",
-        "Font switch macro " . ToString($cs) . " will have no effect"); }
-    else {
-      $props{fontname} = $name; }
-    my $f = ($at ? $at->divide(Dimension('1em'))->valueOf
-      : ($scaled ? $scaled->valueOf / 1000
-        : 1));
-    my $fontinfo = \%props;
-#####    $$fontinfo{data} = [map { $_->multiply($f); }
-    $$fontinfo{data} = [map { $_->multiply($f)->valueOf; }
-        Dimension(0), Dimension('0.5em'), Dimension(0),
-      Dimension(0), Dimension('1ex'), Dimension('1em')];
+    my %props = LaTeXML::Common::Font::decodeFontname($name);
+    my $size  = Dimension($props{size} . 'pt');
+    my $key   = 'fontinfo_' . $name;    # Unique key associated with the font's file+size+...
+    my ($at, $scale) = (undef, 1);
+    if ($gullet->readKeyword('at')) {
+      $at    = $gullet->readDimension;
+      $scale = $at->divide($size)->valueOf; }
+    elsif ($gullet->readKeyword('scaled')) {
+      $scale = $gullet->readNumber->valueOf / 1000.0;
+      $at    = $size->multiply($scale); }
+    if ($at) {
+      $props{at}          = ToString($at);
+      $props{design_size} = $size;
+      $props{size}        = $at->ptValue;
+      $key .= " at " . ToString($at); }
     $gullet->skipSpaces;
-    # Store the font info & metrics
-    AssignValue('fontinfo_' . ToString($cs) => $fontinfo);
+    my $fontinfo = LookupValue($key);
+    if (!$fontinfo) {    # If we haven't already defined & stored this font
+      $props{key}        = $key;
+      $props{skewchar}   = LookupRegister('\defaultskewchar');
+      $props{hyphenchar} = LookupRegister('\defaulthyphenchar');
+      $fontinfo          = \%props;
+      # These really should be read from a tfm file!
+      $$fontinfo{data} = [map { $_->multiply($scale)->valueOf; }
+          Dimension(0), Dimension('0.5em'), Dimension(0),
+        Dimension(0), Dimension('1ex'), Dimension('1em')];
+      # Store the font info & metrics
+      AssignValue($key => $fontinfo); }
     # The font $cs should select the font
-    DefPrimitiveI($cs, undef, undef, font => $fontinfo);
+    $STATE->installDefinition(LaTeXML::Core::Definition::FontDef->new($cs, $key));
     return; });
 
 DefMacroI('\fontname', undef, sub { Explode("fontname not implemented"); });
