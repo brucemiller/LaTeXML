@@ -242,10 +242,10 @@ sub invokeToken_simple {
     return LaTeXML::Core::Comment->new($comment); }
   else {
     $STATE->clearPrefixes;                          # prefixes shouldn't apply here.
-    if ($STATE->lookupValue('IN_MATH')) {
-      if (my $mathcode = $STATE->lookupMathcode($meaning->toString)) {
-        my ($role, $glyph, $f, $reversion) = LaTeXML::Package::decodeMathChar($mathcode, $meaning);
-        return Box($glyph, $f, undef, $reversion, role => $role); } }
+    if (my $mathcode = $STATE->lookupValue('IN_MATH')
+      && $STATE->lookupMathcode($meaning->toString)) {
+      my ($role, $glyph, $f, $reversion) = LaTeXML::Package::decodeMathChar($mathcode, $meaning);
+      return Box($glyph, $f, undef, $reversion, role => $role); }
     else {
       return Box(LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1),
         undef, undef, $meaning); } } }
