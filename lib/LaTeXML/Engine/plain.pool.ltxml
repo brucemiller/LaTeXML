@@ -426,6 +426,11 @@ DefPrimitiveI('\Huge',         undef, undef, font => { size => 29.8 });
 
 DefPrimitiveI('\mit', undef, undef, requireMath => 1, font => { family => 'italic' });
 
+DefPrimitiveI('\mit', undef, sub {
+    if (LookupValue('IN_MATH')) {
+      MergeFont(family => 'math', shape => 'italic'); }
+    return; });
+
 DefPrimitiveI('\frenchspacing',    undef, undef);
 DefPrimitiveI('\nonfrenchspacing', undef, undef);
 DefMacroI('\normalbaselines', undef,
