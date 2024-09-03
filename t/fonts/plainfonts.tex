@@ -1,0 +1,67 @@
+
+Testing low-level \TeX\ font manipulations.
+
+\def\testfont#1{%
+  \par -- Font \string#1(\fontname#1; \meaning#1):{X{\the#1X}X}; hyphen=\the\hyphenchar#1.}
+
+Stock plain fonts:
+\testfont\font
+\testfont\fiverm
+\testfont\tenrm
+
+New 5pt fonts, new default {\tt hyphenchar=99}.
+{\bf All} shared; {\tt scaled} mapped to {\tt at}:
+\defaulthyphenchar=99
+\font\myrmfiveA=cmr10 at 5pt
+\font\myrmfiveB=cmr10 at 5pt
+\font\myrmfiveC=cmr10 scaled 500
+\testfont\myrmfiveA
+\testfont\myrmfiveB
+\testfont\myrmfiveC
+
+Bump {\tt hyphenchar=100} on myrmfiveA:
+\hyphenchar\myrmfiveA=100
+\testfont\myrmfiveA
+\testfont\myrmfiveB
+\testfont\myrmfiveC
+
+Bump {\tt hyphenchar=101} on myrmfiveA, {\it as if} grouped:
+{\hyphenchar\myrmfiveA=101}
+\testfont\myrmfiveA
+\testfont\myrmfiveB
+\testfont\myrmfiveC
+
+While stock fonts should be unchanged
+\testfont\fiverm
+\testfont\tenrm
+
+
+\string\font\ is weird;
+it snapshots of the current font;
+but compare meanings:
+{\fiverm\expandafter\let\expandafter\xxxrm\the\font \global\let\xxxrm\xxxrm}
+{\fiverm\testfont\font}
+\testfont\fiverm
+%{\expandafter\let\expandafter\xxxrm\the\font X\fiverm X \xxxrm X;
+
+%  But compare meanings: \meaning\font\ vs \meaning\xxxrm.
+%  }
+
+\testfont{\textfont2}
+
+Testing plain math fonts
+\def\sample{abc123}
+\def\tester#1{%
+  \par{\string#1: {#1 \sample} and ${#1 \sample}$}}
+
+\def\noop{}
+\tester\noop
+\tester\rm
+\tester\mit
+\tester\cal
+\tester\it
+\tester\sl
+\tester\bf
+\tester\tt
+
+\bye
