@@ -102,14 +102,15 @@ DefMacro('\meaning Token', sub {
       $type =~ s/^LaTeXML:://;
       # Pre-step: We can't extract the bodies of definitions which are defined via Perl subroutines.
       # So do the next best thing -- represent them as their tokens.
-      if ($type =~ /(primitive|conditional|constructor)$/i) {
-        $definition = $definition->getCSorAlias;
-        $type       = ref $definition;
-        $type =~ s/^LaTeXML:://;
-        if (my $fontinfo = LookupValue('fontinfo_' . ToString($definition))) {
-          $meaning = 'select font ' . ($$fontinfo{fontname} || 'fontname');
+      if ($type =~ /(fontdef)$/i) {
+        if (my $fontinfo = $definition->isFontDef) {
+          $meaning = 'select font ' . ($$fontinfo{name} || 'fontname');
           $meaning .= ' at ' . $$fontinfo{at} if $$fontinfo{at};
           $type = 'font'; } }
+      elsif ($type =~ /(primitive|conditional|constructor)$/i) {
+        $definition = $definition->getCSorAlias;
+        $type       = ref $definition;
+        $type =~ s/^LaTeXML:://; }
       # The actual tests start here
       if ($type =~ /token$/i) {
         my $cc         = $definition->getCatcode;
