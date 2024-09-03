@@ -283,34 +283,6 @@ DefParameterType('Variable', sub {
     my $params = $defn->getParameters;
     return Tokens($defn->getCS, ($params ? $params->revertArguments(@args) : ())); });
 
-# Same, but not necessarily writable
-DefParameterType('Register', sub {
-    my ($gullet) = @_;
-    my $token    = $gullet->readXToken;
-    my $defn     = $token && LookupDefinition($token);
-    if ((defined $defn) && $defn->isRegister) {
-      [$defn, ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ())]; }
-    else {
-      if ($token && ($token->getCatcode == CC_CS)) {
-        if ($token->getString eq '\font') {
-          # \font is a bit of a register-like exception
-          return [$defn]; }
-        Error('expected', '<register>', $gullet,
-          "A <register> was supposed to be here", "Got " . Stringify($token),
-          "Defining it now.");
-        DefRegisterI($token, undef, Dimension(0));    # Dimension, or what?
-        return [LookupDefinition($token)]; }
-      else {
-        Error('expected', '<register>', $gullet,
-          "A <register> was supposed to be here", "Got " . Stringify($token),
-          "But it is not even definable.");
-        return [LookupDefinition(T_CS('\lx@DUMMY@REGISTER'))]; } } },
-  reversion => sub {
-    my ($var) = @_;
-    my ($defn, @args) = @$var;
-    my $params = $defn->getParameters;
-    return Tokens($defn->getCS, ($params ? $params->revertArguments(@args) : ())); });
-
 DefParameterType('TeXFileName', sub {
     my ($gullet) = @_;
     my ($token, $cc, @tokens) = ();
