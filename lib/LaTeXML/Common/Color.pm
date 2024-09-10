@@ -118,37 +118,35 @@ sub complement {
 
 # Mix $self*$fraction + $color*(1-$fraction)
 sub mix {
-  my ($self, $color, $fraction) = @_;
-  # mixing 'rgb|cmy' with 'gray' should yield 'rgb|cmy'.
-  my $base_model = $self->model;
-  my $mix_model  = $color->model;
+  my ($self, $other, $fraction) = @_;
+  my $base       = $self;
+  my $base_model = $base->model;
+  my $mix_model  = $other->model;
   if ($base_model ne $mix_model) {
-    # careful, if "grayscale" remains the base, an incoming color-rich model will
-    # have components discarded.
+    # mixing 'rgb|cmy' with 'gray' should yield 'rgb|cmy'.
     if ($base_model eq 'gray') {
-      my $enriched_base = $self->convert($mix_model);
-      return $enriched_base->mix($color, $fraction);
+      $base = $base->convert($mix_model);
     } else {
-      $color = $color->convert($base_model); } }
-  my @a = $self->components;
-  my @b = $color->components;
-  return $self->new(map { $fraction * $a[$_] + (1 - $fraction) * $b[$_] } 0 .. $#a); }
+      $other = $other->convert($base_model);
+  } }
+  my @a = $base->components;
+  my @b = $other->components;
+  return $base->new(map { $fraction * $a[$_] + (1 - $fraction) * $b[$_] } 0 .. $#a); }
 
 sub add {
-  my ($self, $color) = @_;
-  my $base_model = $self->model;
-  my $mix_model  = $color->model;
+  my ($self, $other) = @_;
+  my $base       = $self;
+  my $base_model = $base->model;
+  my $mix_model  = $other->model;
   if ($base_model ne $mix_model) {
-    # careful, if "grayscale" remains the base, an incoming color-rich model will
-    # have components discarded.
+    # mixing 'rgb|cmy' with 'gray' should yield 'rgb|cmy'.
     if ($base_model eq 'gray') {
-      my $enriched_base = $self->convert($mix_model);
-      return $enriched_base->add($color);
+      $base = $base->convert($mix_model);
     } else {
-      $color = $color->convert($base_model); } }
-  my @a = $self->components;
-  my @b = $color->components;
-  return $self->new(map { $a[$_] + $b[$_] } 0 .. $#a); }
+      $other = $other->convert($base_model); } }
+  my @a = $base->components;
+  my @b = $other->components;
+  return $base->new(map { $a[$_] + $b[$_] } 0 .. $#a); }
 
 # The next 2 methods multiply the components of a color by some value(s)
 # This assumes that such a thing makes sense in the given model, for some purpose.
