@@ -20,12 +20,14 @@ use LaTeXML::Package;
 
 DefPrimitive('\Pisymbol{}{Number}', sub {
     my ($document, $pifont, $code) = @_;
-    return Box(FontDecode($code->valueOf, ToString($pifont)), undef, undef, Invocation(T_CS('\char'), $code)); });
+    my ($glyph, $font) = FontDecode($code->valueOf, ToString($pifont));
+    return Box($glyph, $font, undef, Invocation(T_CS('\char'), $code)); });
 
 DefPrimitive('\lx@Picountersymbol{}{}{Number}', sub {
     my ($document, $pifont, $counter, $codebase) = @_;
     my $code = $codebase->valueOf + LookupRegister('\c@' . ToString($counter))->valueOf - 1;
-    return Box(FontDecode($code, ToString($pifont))); });
+    my ($glyph, $font) = FontDecode($code, ToString($pifont));
+    return Box($glyph, $font); });
 
 DefMacro('\Pilist{}{}', '\list{\Pisymbol{#1}{#2}}{}');
 DefMacro('\endPilist',  '\endlist');

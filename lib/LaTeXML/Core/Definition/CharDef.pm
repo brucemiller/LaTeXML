@@ -54,10 +54,11 @@ sub invoke {
       ($local ? Tokens(T_CS('\mathchar'), $value->revert, T_CS('\relax')) : $$self{cs}),
       role => $$self{role}); }
   else {    # else text; but note defered font/encoding till digestion!
-    my ($char, %props) = LaTeXML::Package::FontDecode($value->valueOf);
-    return Box($char, undef, undef,
+            # Decode the codepoint using current font & encoding
+    my ($glyph, $adjfont) = LaTeXML::Package::FontDecode($value->valueOf);
+    return Box($glyph, $adjfont, undef,
       ($local ? Tokens(T_CS('\char'), $value->revert, T_CS('\relax')) : $$self{cs}),
-      %props); } }
+    ); } }
 
 sub equals {
   my ($self, $other) = @_;
