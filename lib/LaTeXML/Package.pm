@@ -2750,33 +2750,30 @@ sub DeclareFontMap {
 # Decode a codepoint using the fontmap for a given font and/or fontencoding.
 # If $encoding not provided, then lookup according to the current font's
 # encoding; the font family may also be used to choose the fontmap (think tt fonts!).
-# When $implicit is false, we are "explicitly" asking for a decoding, such as
-# with \char, \mathchar, \symbol, DeclareTextSymbol and such cases.
-# In such cases, only codepoints specifically within the map are covered; the rest are undef.
-# If $implicit is true, we'll decode token content that has made it to the stomach:
-# We're going to assume that SOME sort of handling of input encoding is taking place,
-# so that if anything above 128 comes in, it must already be Unicode!.
-# The lower half plane still needs to go through decoding, though, to deal
-# with TeX's rearrangement of ASCII...
 sub FontDecode {
-  my ($code, $encoding, $implicit) = @_;
+  my ($code, $encoding, $font) = @_;
   return if !defined $code || ($code < 0);
-  my ($map, $font);
+  my $map;
   if (!$encoding) {
-    $font     = LookupValue('font');
+    $font     = LookupValue('font') unless $font;
     $encoding = $font->getEncoding || 'OT1'; }
   if ($encoding && ($map = LoadFontMap($encoding))) {    # OK got some map.
     my ($family, $fmap);
     if ($font && ($family = $font->getFamily) && ($fmap = LookupValue($encoding . '_' . $family . '_fontmap'))) {
-      $map = $fmap; } }                                  # Use the family specific map, if any.
-  if ($implicit) {
-    if ($map && ($code < 128)) {
-      return $$map[$code]; }
-    else {
-      return pack('U', $code); } }
-  else {
-    return ($map ? $$map[$code] : undef); } }
+      $encoding = $encoding . '_' . $family;
+      $map      = $fmap; } }                             # Use the family specific map, if any.
+  my $glyph    = ($map                               ? $$map[$code] : undef);
+  my $category = ((0x30 <= $code) && ($code <= 0x39) ? 'digit'
+    : ((0x41 <= $code) && ($code <= 0x5A) ? 'uppercase'
+      : ((0x61 <= $code) && ($code <= 0x7A) ? 'lowercase' : undef)));
+  if (my $mathstyle = $category && $STATE->lookupValue('IN_MATH')
+    && $STATE->lookupValue($encoding . '_' . $category . '_mathstyle')) {
+    $glyph = chr($code);                              # Keep as ASCII
+    $font  = $font->merge(%$mathstyle) if $font; }    # but record the (semantic) font change
+  return ($glyph, $font); }
 
+# If $implicit is true, assume that codepoints missing from the effective FontMap
+# just decode to themselves (chr()).
 sub FontDecodeString {
   my ($string, $encoding, $implicit) = @_;
   return if !defined $string;
@@ -2819,36 +2816,35 @@ sub decodeMathChar {
   my $curfont  = $STATE->lookupValue('font');
   my $curfam   = $STATE->lookupValue('fontfamily') // -1;
   my $initfont = $STATE->lookupValue('initial_math_font') || $curfont;
-  my ($font, $fontinfo);
-  my ($oclass, $ofam) = ($class, $fam);
-  my $maybe_rev = ($curfam >= 0) && ($fam != 1);
+  my ($fontdef, $fontinfo);
+  my ($oclass,  $ofam) = ($class, $fam);
   # Special case: class 7 means use the \fam as the family code, if 0<=f<=15;
   if ($class == 7) {
     $fam = $curfam if (defined $curfam) && (0 <= $curfam) && ($curfam <= 15); }
-  # BUT if no raw/plain tex font selection ocurred, use the current font
+  # We MAY need to include the effective font change in the reversion!
+  my $maybe_rev = ($curfam >= 0) && ($fam != 1);
+  # BUT if no raw/plain tex font selection occurred, use the current font
   # [heuristic since raw TeX and abstract LaTeX(ML) font schemes aren't yet integrated]
   if (($class == 7) && ($curfam < 0) && ($curfont ne $initfont)) {
     $maybe_rev = 1;
-    $font      = T_CS('\font');    # Assume specified by \mathrm or something similar!
+    $fontdef   = T_CS('\font');    # Assume specified by \mathrm or something similar!
     $fontinfo  = $STATE->lookupValue('font')->asFontinfo; }
   else {
-    $font = LookupValue('textfont_' . $fam);
-    my $defn = $STATE->lookupDefinition($font);
+    $fontdef = LookupValue('textfont_' . $fam);
+    my $defn = $STATE->lookupDefinition($fontdef);
     $fontinfo = $defn && $defn->isFontDef; }
+  my $font     = $curfont->merge(%$fontinfo);
   my $encoding = $fontinfo && $$fontinfo{encoding} || '';
-  my $glyph    = ($encoding && FontDecode($n, $encoding) // $char);
-  # If no specific class, Lookup properties from a DefMath? [Or better yet, Unicode data?]
-  my $charinfo = LookupValue('math_token_attributes_' . $glyph);
-  # SHOULD get role from font encoding (fontmap)
-  my $role = ($charinfo && $$charinfo{role}) || $mathclassrole[$class];
-  if (defined $role) { }
-  my $current = LookupValue('font')->specialize($glyph);
-  my $size    = $current->getSize;
-  my $f       = $current->merge(%$fontinfo)->merge(size => $size)->specialize($glyph);
-  my %d       = $f->relativeTo($current);
+  my ($glyph, $f) = ($encoding ? FontDecode($n, $encoding, $font) : ($char, $font));
+  # If no specific class, Lookup properties from a DefMath? [Eventually: Unicode data!]
+  my $charinfo = (defined $glyph ? LookupValue('math_token_attributes_' . $glyph) : ());
+  my $role     = ($charinfo && $$charinfo{role}) || $mathclassrole[$class];
+  my $size     = $curfont->getSize;
+  $f = $f->merge(size => $size);
+  my %d = $f->relativeTo($curfont);
   if ($reversion) {
     %d = () if LookupValue('LaTeX.pool.ltxml_loaded');
-    my $rev = ($maybe_rev && %d ? Tokens(T_BEGIN, $font, $reversion, T_END) : $reversion);
+    my $rev = ($maybe_rev && %d ? Tokens(T_BEGIN, $fontdef, $reversion, T_END) : $reversion);
     return ($role, $glyph, $f, $rev); }
   else {
     return ($role, $glyph, $f); } }
