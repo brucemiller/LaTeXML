@@ -258,7 +258,8 @@ DeclareFontMap('OMS',
     # surd       amalg       nabla       int          sqcup      sqcap        sqsubseteq sqsupseteq
     "\x{221A}", "\x{2210}", "\x{2207}", "\x{222B}", "\x{2294}", "\x{2293}", "\x{2291}", "\x{2292}",
     # section    dagger      ddagger     para         clubsuit    diam.suit   heartsuit  spadesuit
-    UTF(0xA7), "\x{2020}", "\x{2021}", UTF(0xB6), "\x{2663}", "\x{2662}", "\x{2661}", "\x{2660}"]);
+    UTF(0xA7), "\x{2020}", "\x{2021}", UTF(0xB6), "\x{2663}", "\x{2662}", "\x{2661}", "\x{2660}"],
+  uppercase_mathstyle => { family => 'caligraphic' });
 
 DeclareFontMap('OMX',
   [    # (          )           [           ]             lfloor      rfloor      lceil        rceil

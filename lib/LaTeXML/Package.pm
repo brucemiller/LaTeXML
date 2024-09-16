@@ -140,6 +140,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   @LaTeXML::Core::Alignment::EXPORT,
   @LaTeXML::Common::XML::EXPORT,
   @LaTeXML::Util::Radix::EXPORT,
+  @LaTeXML::Util::Unicode::EXPORT,
 );
 
 #**********************************************************************
@@ -2726,15 +2727,24 @@ sub AtEndDocument {
 #======================================================================
 #
 my $fontmap_options = {    # [CONSTANT]
-  family => 1 };
+  family => 1, uppercase_mathstyle => 1, lowercase_mathstyle => 1, digit_mathstyle => 1 };
 
+# Define the font encoding which maps from input codepoints to actual Unicode glyphs.
+# Sometimes, codepoints normally within the alphanumeric portion map to
+# Exotically styled alphanumerics (eg. Caligraphic, Blackboard-bold).
+# Ironically, these are usually well handled in Math postprocessors (to generate Unicode),
+# but CSS generally doesn't have the fonts available for pure styling.
+# The counter-intuitive pragmatic used here is that in Math, these remain as
+# ASCII chars with (semantic) styling, while in text they get mapped to whatever unicode was given.
+# The options (uppercase|lowercase|digit)_mathstyle specify font to merge when converting
+# alphanumerics to math (see FontDecode, below)
 sub DeclareFontMap {
   my ($name, $map, %options) = @_;
   CheckOptions("DeclareFontMap", $fontmap_options, %options);
-  my $mapname = ToString($name)
-    . ($options{family} ? '_' . $options{family} : '')
-    . '_fontmap';
-  AssignValue($mapname => $map, 'global');
+  my $encname = ToString($name) . ($options{family} ? '_' . $options{family} : '');
+  AssignValue($encname . '_fontmap' => $map, 'global');
+  foreach my $style (qw(uppercase_mathstyle lowercase_mathstyle digit_mathstyle)) {
+    AssignValue($encname . '_' . $style => $options{$style}, 'global') if $options{$style}; }
   return; }
 
 # Decode a codepoint using the fontmap for a given font and/or fontencoding.
