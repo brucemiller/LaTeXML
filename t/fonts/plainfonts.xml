@@ -75,10 +75,10 @@ but compare meanings:</p>
     <p>– Font “fiverm(cmr5; select font cmr5):X<text fontsize="50%">X</text>X; hyphen=45.</p>
   </para>
   <para>
-    <p>– Font “textfont2(cmsy10; “textfont2):X<text font="symbol">𝒳</text>X; hyphen=45.</p>
+    <p>– Font “textfont2(cmsy10; “textfont2):X𝒳X; hyphen=45.</p>
   </para>
   <para>
-    <p>Testing plain math fonts</p>
+    <p>Testing plain math fonts:</p>
   </para>
   <para>
     <p>“noop:  abc123 and <Math mode="inline" tex="{abc123}" text="a * b * c * 123">
@@ -114,7 +114,7 @@ but compare meanings:</p>
       </Math></p>
   </para>
   <para>
-    <p>“cal:  abc123 and <Math mode="inline" tex="{abc123}" text="⊣ * ⌊ * ⌋ * ∞ * ∈ * ∋">
+    <p>“cal:  abc123 and <Math mode="inline" tex="{\cal abc123}" text="⊣ * ⌊ * ⌋ * ∞ * ∈ * ∋">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -155,5 +155,28 @@ but compare meanings:</p>
           <XMTok font="typewriter" role="UNKNOWN">abc123</XMTok>
         </XMath>
       </Math></p>
+  </para>
+  <para>
+    <p>Testing Text glyph lookup.</p>
+  </para>
+  <para>
+    <p>Normal:
+ı;A.
+<text font="italic">ζ</text>;<text font="italic">A</text>.
+<text font="bold">ı</text>;<text font="bold">A</text>.
+<text font="typewriter">ı</text>;<text font="typewriter">A</text>.
+<text font="slanted">ı</text>;<text font="slanted">A</text>.
+<text font="italic">ı</text>;<text font="italic">A</text>.</p>
+  </para>
+  <para>
+    <p>Symbol:
+≍;𝒜.
+<text font="bold">≍</text>;<text font="bold">𝒜</text>.
+(;⎠.</p>
+  </para>
+  <para>
+    <p>AMS:
+↠;⊐.
+⋨;𝔸.</p>
   </para>
 </document>

@@ -49,7 +49,7 @@ but compare meanings:
 
 \testfont{\textfont2}
 
-Testing plain math fonts
+Testing plain math fonts:
 \def\sample{abc123}
 \def\tester#1{%
   \par{\string#1: {#1 \sample} and ${#1 \sample}$}}
@@ -63,5 +63,27 @@ Testing plain math fonts
 \tester\sl
 \tester\bf
 \tester\tt
+
+Testing Text glyph lookup.
+\font\tenbsy=cmbsy10
+\font\tenmsa=msam10
+\font\tenmsb=msbm10
+
+Normal:
+{\tenrm\char"10};{\tenrm\char"41}.
+{\teni\char"10};{\teni\char"41}.
+{\tenbf\char"10};{\tenbf\char"41}.
+{\tentt\char"10};{\tentt\char"41}.
+{\tensl\char"10};{\tensl\char"41}.
+{\tenit\char"10};{\tenit\char"41}.
+
+Symbol:
+{\tensy\char"10};{\tensy\char"41}.
+{\tenbsy\char"10};{\tenbsy\char"41}.
+{\tenex\char"10};{\tenex\char"41}.
+
+AMS:
+{\tenmsa\char"10};{\tenmsa\char"41}.
+{\tenmsb\char"10};{\tenmsb\char"41}.
 
 \bye
