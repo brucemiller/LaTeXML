@@ -410,7 +410,9 @@ DefPrimitiveI('\sc', undef, undef,
 
 DefPrimitiveI('\cal', undef, sub {
     if (LookupValue('IN_MATH')) {
-      MergeFont(family => 'caligraphic', series => 'medium', shape => 'upright', encoding => 'OMS'); }
+      MergeFont(family => 'caligraphic', series => 'medium', shape => 'upright', encoding => 'OMS');
+      return Box(undef, undef, undef, T_CS('\cal'));
+    }
     return; });
 
 # Ideally, we should set these sizes from class files
