@@ -2763,7 +2763,7 @@ DefMacro('\ProvideTextCommandDefault DefToken', '\ProvideTextCommand{#1}{?}');
 #------------------------------------------------------------
 
 DefPrimitive('\DeclareTextSymbol DefToken {}{Number}', sub {
-    my ($gullet, $cs, $encoding, $code) = @_;
+    my ($stomach, $cs, $encoding, $code) = @_;
     $code = $code->valueOf;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
@@ -2772,11 +2772,16 @@ DefPrimitive('\DeclareTextSymbol DefToken {}{Number}', sub {
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
     my $ecs = T_CS('\\' . $encoding . $css);
-    DefPrimitiveI($ecs, undef, FontDecode($code, $encoding));
+    DefPrimitiveI($ecs, undef, sub {
+        my ($glyph, $adjfont) = FontDecode($code, $encoding);
+        Box($glyph, $adjfont, undef, $cs); });
     return; });
 
-# hmmm... what needs doing here; basically it means use this encoding as the default for the symbol
-DefMacro('\DeclareTextSymbolDefault DefToken {}', '');    # '\DeclareTextSymbol{#1}{?}');
+DefPrimitive('\DeclareTextSymbolDefault DefToken {}', sub {
+    my ($stomach, $cs, $encoding) = @_;
+    $encoding = ToString(Expand($encoding));
+    DefMacroI(T_CS('\\?' . ToString($cs)), undef, T_CS('\\' . $encoding . ToString($cs)));
+    return; });
 
 #------------------------------------------------------------
 DefPrimitive('\DeclareTextAccent DefToken {}{}', sub {
@@ -2804,8 +2809,9 @@ DefMacro('\UseTextAccent{}{}', '{\fontencoding{#1}#2{#3}}');
 DefPrimitive('\DeclareMathAccent DefToken {}{} {Number}', sub {
     my ($stomach, $cs, $kind, $class, $code) = @_;
     $class = ToString($class);
-    my $info  = LookupValue('fontdeclaration@' . $class);
-    my $glyph = FontDecode($code->valueOf, ($info ? $$info{encoding} : $class));
+    my $info = LookupValue('fontdeclaration@' . $class);
+    #    my $glyph = FontDecode($code->valueOf, ($info ? $$info{encoding} : $class));
+    my ($glyph) = FontDecode($code->valueOf, ($info ? $$info{encoding} : $class));
     DefMathI($cs, 'Digested', $glyph, operator_role => 'OVERACCENT');
     return AddToPreamble('\DeclareMathAccent', $cs, $kind, $class, $code); });
 
@@ -2853,12 +2859,12 @@ my $symboltype_roles = {
   '\mathord'  => 'ID',   '\mathop'    => 'BIGOP', '\mathbin'   => 'BINOP', '\mathrel' => 'RELOP',
   '\mathopen' => 'OPEN', '\mathclose' => 'CLOSE', '\mathpunct' => 'PUNCT' };
 DefPrimitive('\DeclareMathSymbol DefToken SkipSpaces DefToken {}{Number}', sub {
-    my ($stomach, $cs, $type, $font, $code) = @_;
-    my $encoding = ToString($font);    # Or maybe just a font name or class?
+    my ($stomach, $cs, $type, $fontkind, $code) = @_;
+    my $encoding = ToString($fontkind);    # Or maybe just a font name or class?
     if (my $decl = LookupValue('fontdeclaration@' . $encoding)) {
       $encoding = $$decl{encoding} if $$decl{encoding}; }
-    my $glyph = FontDecode($code->valueOf, $encoding);
-    my $role  = $$symboltype_roles{ ToString($type) };
+    my ($glyph) = FontDecode($code->valueOf, $encoding);
+    my $role = $$symboltype_roles{ ToString($type) };
     DefMathI($cs, undef, $glyph, role => $role);
     return; });
 

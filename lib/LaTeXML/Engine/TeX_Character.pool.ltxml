@@ -29,8 +29,8 @@ DefPrimitiveI('\ ', undef, sub {
       name => 'space', isSpace => 1, width => Dimension('0.5em')); });
 
 DefPrimitive('\char Number', sub {
-    Box(FontDecode($_[1]->valueOf), undef, undef,
-      Tokens(T_CS('\char'), $_[1]->revert, T_CS('\relax'))); });
+    my ($glyph, $adjfont) = FontDecode($_[1]->valueOf);
+    Box($glyph, $adjfont, undef, Tokens(T_CS('\char'), $_[1]->revert, T_CS('\relax'))); });
 
 #======================================================================
 # \accent         c  places an accent on a character.
@@ -87,14 +87,13 @@ sub DefAccent {
 # Otherwise, use the Util::Unicode module to find the appropriate combining character
 DefPrimitive('\accent Number {}', sub {
     my ($stomach, $num, $letter) = @_;
-    my $n        = $num->valueOf;
-    my $encoding = LookupValue('font')->getEncoding || 'OT1';
-    my $char     = ($encoding ? FontDecode($n, $encoding) : chr($n));
-    if (my $entry = unicode_accent($char)) {
+    my $n = $num->valueOf;
+    my ($glyph, $adjfont) = FontDecode($n);
+    if (my $entry = unicode_accent($glyph)) {
       applyAccent($stomach, $letter, $$entry{combiner}, $$entry{standalone},
         Invocation(T_CS('\accent'), $num, $letter)); }
     else {    # Unknown accent ?  Attempt to OVERLAY the accent on top of $letter
-      Digest(Tokens(T_CS('\lx@overlay'), T_BEGIN, $letter, T_END, T_BEGIN, T_OTHER($char), T_END)); } });
+      Digest(Tokens(T_CS('\lx@overlay'), T_BEGIN, $letter, T_END, T_BEGIN, T_OTHER($glyph), T_END)); } });
 
 #======================================================================
 # \chardef        iq provides an alternate way to define a control sequence that returns a character.

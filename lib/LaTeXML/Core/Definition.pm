@@ -23,6 +23,7 @@ use base qw(LaTeXML::Common::Object);
 require LaTeXML::Core::Definition::Expandable;
 require LaTeXML::Core::Definition::Conditional;
 require LaTeXML::Core::Definition::Primitive;
+require LaTeXML::Core::Definition::FontDef;
 require LaTeXML::Core::Definition::Register;
 require LaTeXML::Core::Definition::CharDef;
 require LaTeXML::Core::Definition::Constructor;
@@ -50,6 +51,9 @@ sub isExpandable {
   return 0; }
 
 sub isRegister {
+  return ''; }
+
+sub isFontDef {    # ONLY FontDef handles this!
   return ''; }
 
 sub isPrefix {

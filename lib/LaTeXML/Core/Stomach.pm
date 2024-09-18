@@ -242,8 +242,13 @@ sub invokeToken_simple {
     return LaTeXML::Core::Comment->new($comment); }
   else {
     $STATE->clearPrefixes;                          # prefixes shouldn't apply here.
-    return Box(LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1),
-      undef, undef, $meaning); } }
+    if (my $mathcode = $STATE->lookupValue('IN_MATH')
+      && $STATE->lookupMathcode($meaning->toString)) {
+      my ($role, $glyph, $f, $reversion) = LaTeXML::Package::decodeMathChar($mathcode, $meaning);
+      return Box($glyph, $f, undef, $reversion, role => $role); }
+    else {
+      return Box(LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1),
+        undef, undef, $meaning); } } }
 
 # Regurgitate: steal the previously digested boxes from the current level.
 sub regurgitate {
@@ -359,10 +364,13 @@ sub setMode {
     # and save the text font for any embedded text.
     $STATE->assignValue(savedfont         => $curfont, 'local');
     $STATE->assignValue(script_base_level => scalar(@{ $$self{boxing} }));    # See getScriptLevel
-    $STATE->assignValue(font => $STATE->lookupValue('mathfont')->merge(
-        color     => $curfont->getColor, background => $curfont->getBackground,
-        size      => $curfont->getSize,
-        mathstyle => ($mode =~ /^display/ ? 'display' : 'text')), 'local'); }
+    my $mathfont = $STATE->lookupValue('mathfont')->merge(
+      color     => $curfont->getColor, background => $curfont->getBackground,
+      size      => $curfont->getSize,
+      mathstyle => ($mode =~ /^display/ ? 'display' : 'text'));
+    $STATE->assignValue(font              => $mathfont, 'local');
+    $STATE->assignValue(initial_math_font => $mathfont, 'local');
+    $STATE->assignValue(fontfamily        => -1,        'local'); }
   else {
     # When entering text mode, we should set the font to the text font in use before the math
     # but inherit color and size

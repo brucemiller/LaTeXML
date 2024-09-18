@@ -48,6 +48,7 @@ use LaTeXML::Core::Rewrite;
 use LaTeXML::Util::Radix;
 use File::Which;
 use Unicode::Normalize;
+use LaTeXML::Util::Unicode;
 use Text::Balanced;
 use Text::Unidecode;
 use base qw(Exporter);
@@ -86,7 +87,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
 
   # Font encoding
   qw(&DeclareFontMap &FontDecode &FontDecodeString &LoadFontMap),
-
+  qw(&decodeMathChar),
   # Color
   qw(&DefColor &DefColorModel &LookupColor),
 
@@ -109,7 +110,6 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   # Random low-level token or string operations.
   qw(&CleanID &CleanLabel &CleanIndexKey  &CleanClassName &CleanBibKey &NormalizeBibKey &CleanURL
     &ComposeURL
-    &UTF
     &roman &Roman),
   # Math & font state.
   qw(&MergeFont),
@@ -140,6 +140,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   @LaTeXML::Core::Alignment::EXPORT,
   @LaTeXML::Common::XML::EXPORT,
   @LaTeXML::Util::Radix::EXPORT,
+  @LaTeXML::Util::Unicode::EXPORT,
 );
 
 #**********************************************************************
@@ -153,10 +154,6 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
 #    So, it got simpler!
 # Still, it would be nice if there were `compiled' forms of .ltxml files!
 #**********************************************************************
-
-sub UTF {
-  my ($code) = @_;
-  return pack('U', $code); }
 
 sub coerceCS {
   my ($cs) = @_;
@@ -2730,47 +2727,53 @@ sub AtEndDocument {
 #======================================================================
 #
 my $fontmap_options = {    # [CONSTANT]
-  family => 1 };
+  family => 1, uppercase_mathstyle => 1, lowercase_mathstyle => 1, digit_mathstyle => 1 };
 
+# Define the font encoding which maps from input codepoints to actual Unicode glyphs.
+# Sometimes, codepoints normally within the alphanumeric portion map to
+# Exotically styled alphanumerics (eg. Caligraphic, Blackboard-bold).
+# Ironically, these are usually well handled in Math postprocessors (to generate Unicode),
+# but CSS generally doesn't have the fonts available for pure styling.
+# The counter-intuitive pragmatic used here is that in Math, these remain as
+# ASCII chars with (semantic) styling, while in text they get mapped to whatever unicode was given.
+# The options (uppercase|lowercase|digit)_mathstyle specify font to merge when converting
+# alphanumerics to math (see FontDecode, below)
 sub DeclareFontMap {
   my ($name, $map, %options) = @_;
   CheckOptions("DeclareFontMap", $fontmap_options, %options);
-  my $mapname = ToString($name)
-    . ($options{family} ? '_' . $options{family} : '')
-    . '_fontmap';
-  AssignValue($mapname => $map, 'global');
+  my $encname = ToString($name) . ($options{family} ? '_' . $options{family} : '');
+  AssignValue($encname . '_fontmap' => $map, 'global');
+  foreach my $style (qw(uppercase_mathstyle lowercase_mathstyle digit_mathstyle)) {
+    AssignValue($encname . '_' . $style => $options{$style}, 'global') if $options{$style}; }
   return; }
 
 # Decode a codepoint using the fontmap for a given font and/or fontencoding.
 # If $encoding not provided, then lookup according to the current font's
 # encoding; the font family may also be used to choose the fontmap (think tt fonts!).
-# When $implicit is false, we are "explicitly" asking for a decoding, such as
-# with \char, \mathchar, \symbol, DeclareTextSymbol and such cases.
-# In such cases, only codepoints specifically within the map are covered; the rest are undef.
-# If $implicit is true, we'll decode token content that has made it to the stomach:
-# We're going to assume that SOME sort of handling of input encoding is taking place,
-# so that if anything above 128 comes in, it must already be Unicode!.
-# The lower half plane still needs to go through decoding, though, to deal
-# with TeX's rearrangement of ASCII...
 sub FontDecode {
-  my ($code, $encoding, $implicit) = @_;
+  my ($code, $encoding, $font) = @_;
   return if !defined $code || ($code < 0);
-  my ($map, $font);
+  my $map;
   if (!$encoding) {
-    $font     = LookupValue('font');
+    $font     = LookupValue('font') unless $font;
     $encoding = $font->getEncoding || 'OT1'; }
   if ($encoding && ($map = LoadFontMap($encoding))) {    # OK got some map.
     my ($family, $fmap);
     if ($font && ($family = $font->getFamily) && ($fmap = LookupValue($encoding . '_' . $family . '_fontmap'))) {
-      $map = $fmap; } }                                  # Use the family specific map, if any.
-  if ($implicit) {
-    if ($map && ($code < 128)) {
-      return $$map[$code]; }
-    else {
-      return pack('U', $code); } }
-  else {
-    return ($map ? $$map[$code] : undef); } }
+      $encoding = $encoding . '_' . $family;
+      $map      = $fmap; } }                             # Use the family specific map, if any.
+  my $glyph    = ($map                               ? $$map[$code] : undef);
+  my $category = ((0x30 <= $code) && ($code <= 0x39) ? 'digit'
+    : ((0x41 <= $code) && ($code <= 0x5A) ? 'uppercase'
+      : ((0x61 <= $code) && ($code <= 0x7A) ? 'lowercase' : undef)));
+  if (my $mathstyle = $category && $STATE->lookupValue('IN_MATH')
+    && $STATE->lookupValue($encoding . '_' . $category . '_mathstyle')) {
+    $glyph = chr($code);                              # Keep as ASCII
+    $font  = $font->merge(%$mathstyle) if $font; }    # but record the (semantic) font change
+  return ($glyph, $font); }
 
+# If $implicit is true, assume that codepoints missing from the effective FontMap
+# just decode to themselves (chr()).
 sub FontDecodeString {
   my ($string, $encoding, $implicit) = @_;
   return if !defined $string;
@@ -2800,6 +2803,51 @@ sub LoadFontMap {
       Info('fontmap', $encoding, undef, "Couldn't find fontmap for '$encoding'");
       AssignValue($encoding . '_fontmap_failed_to_load' => 1, 'global'); } }
   return $map; }
+
+our @mathclassrole = (undef, 'BIGOP', 'BINOP', 'RELOP', 'OPEN', 'CLOSE', 'PUNCT', undef);
+
+sub decodeMathChar {
+  my ($mathcode, $reversion) = @_;
+  $mathcode = $mathcode->valueOf if ref $mathcode;
+  my $n        = $mathcode;
+  my $class    = int($n / (16 * 256)); $n = $n % (16 * 256);
+  my $fam      = int($n / 256);        $n = $n % 256;
+  my $char     = chr($n);
+  my $curfont  = $STATE->lookupValue('font');
+  my $curfam   = $STATE->lookupValue('fontfamily') // -1;
+  my $initfont = $STATE->lookupValue('initial_math_font') || $curfont;
+  my ($fontdef, $fontinfo);
+  my ($oclass,  $ofam) = ($class, $fam);
+  # Special case: class 7 means use the \fam as the family code, if 0<=f<=15;
+  if ($class == 7) {
+    $fam = $curfam if (defined $curfam) && (0 <= $curfam) && ($curfam <= 15); }
+  # We MAY need to include the effective font change in the reversion!
+  my $maybe_rev = ($curfam >= 0) && ($fam != 1);
+  # BUT if no raw/plain tex font selection occurred, use the current font
+  # [heuristic since raw TeX and abstract LaTeX(ML) font schemes aren't yet integrated]
+  if (($class == 7) && ($curfam < 0) && ($curfont ne $initfont)) {
+    $maybe_rev = 1;
+    $fontdef   = T_CS('\font');    # Assume specified by \mathrm or something similar!
+    $fontinfo  = $STATE->lookupValue('font')->asFontinfo; }
+  else {
+    $fontdef = LookupValue('textfont_' . $fam);
+    my $defn = $STATE->lookupDefinition($fontdef);
+    $fontinfo = $defn && $defn->isFontDef; }
+  my $font     = $curfont->merge(%$fontinfo);
+  my $encoding = $fontinfo && $$fontinfo{encoding} || '';
+  my ($glyph, $f) = ($encoding ? FontDecode($n, $encoding, $font) : ($char, $font));
+  # If no specific class, Lookup properties from a DefMath? [Eventually: Unicode data!]
+  my $charinfo = (defined $glyph ? LookupValue('math_token_attributes_' . $glyph) : ());
+  my $role     = ($charinfo && $$charinfo{role}) || $mathclassrole[$class];
+  my $size     = $curfont->getSize;
+  $f = $f->merge(size => $size);
+  my %d = $f->relativeTo($curfont);
+  if ($reversion) {
+    %d = () if LookupValue('LaTeX.pool.ltxml_loaded');
+    my $rev = ($maybe_rev && %d ? Tokens(T_BEGIN, $fontdef, $reversion, T_END) : $reversion);
+    return ($role, $glyph, $f, $rev); }
+  else {
+    return ($role, $glyph, $f); } }
 
 #======================================================================
 # Color
