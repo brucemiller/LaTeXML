@@ -31,16 +31,15 @@ use LaTeXML::Package;
 # defined by \font, OR \textfont, \scriptfont,\scriptscriptfont, or even \font itself
 # Actually returns the fontinfo (hash) associated with the font.
 DefParameterType('FontDef', sub {
-    my ($gullet)  = @_;
-    my $readtoken = $gullet->readToken;
-    my $token     = $readtoken;
+    my ($gullet) = @_;
+    my $token = $gullet->readToken;
     # Or use LookupRegister???
-    if ($token->toString =~ /^\\(text|script|scriptscript)font$/) {
+    if ($token && ($token->toString =~ /^\\(text|script|scriptscript)font$/)) {
       my $type = $1;
       if (my $fam = $gullet->readNumber) {
         $token = LookupValue($type . 'font_' . $fam->valueOf); } }
     # Need the cs that selected the current font! (which we don't have!)
-    if ($token->toString eq '\font') {    # Current font ??? Return last pure TeX font used (HACK)
+    if ($token && ($token->toString eq '\font')) { # Current font ??? Return last pure TeX font used (HACK)
       $token = LookupValue('current_FontDef') || T_CS('\tenrm'); }
     if (my $defn = $token && $STATE->lookupDefinition($token)) {
       return $defn->isFontDef; }

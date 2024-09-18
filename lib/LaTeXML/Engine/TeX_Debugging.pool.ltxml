@@ -102,7 +102,7 @@ DefMacro('\meaning Token', sub {
       $type =~ s/^LaTeXML:://;
       # Pre-step: We can't extract the bodies of definitions which are defined via Perl subroutines.
       # So do the next best thing -- represent them as their tokens.
-      if ($type =~ /(fontdef)$/i) {
+      if ($type =~ /fontdef$/i) {
         if (my $fontinfo = $definition->isFontDef) {
           $meaning = 'select font ' . ($$fontinfo{name} || 'fontname');
           $meaning .= ' at ' . $$fontinfo{at} if $$fontinfo{at};

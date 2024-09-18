@@ -38,7 +38,6 @@ sub isFontDef {
 
 sub invoke {
   my ($self, $stomach) = @_;
-  my $current = $STATE->lookupValue('font');
   if (my $fontinfo = $STATE->lookupValue($$self{fontID})) {
     # Temporary hack for \the\font; remember the last font def executed
     $STATE->assignValue(current_FontDef => $$self{cs},                                     'local');
