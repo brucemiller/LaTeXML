@@ -1383,11 +1383,9 @@ sub applyAligningContext {
   if (my $container = LookupValue('ALIGNING_NODE')) {
     my ($node, $previous) = @$container;
     my @children = $node->childNodes;
-    while (@children) {
-      my $skip = $children[0];
-      last if !$previous;
-      shift(@children);
-      last if $previous->isSameNode($skip); }
+    if ($previous) {
+      while (my $skip = shift(@children)) {
+        last if $previous->isSameNode($skip); } }
     while (my $child = shift(@children)) {
       setAlignOrClass($document, $child, $align, $class) if $child->nodeType == XML_ELEMENT_NODE; } }
   return; }
