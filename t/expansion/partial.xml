@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <title>Partial vs. Full Expansion</title>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Test Filler</title>
+    <para xml:id="S1.p1">
+      <p>Uppercase:
+LETTERS,
+LETTERS,
+LETTERS,
+LETTERS,
+LETTERS.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>strcmp: 0,
+0,
+0.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>cmp to “foo(0=same)</title>
+    <para xml:id="S2.p1">
+      <p>w/M=Macro, I=Indirect, P=Protected, R=Robust, T=The, X=expandafter</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>M 0;
+I 0;
+P 1;
+R 1;
+T 1;
+XP 0;
+XR 1;
+XT 0.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Test “expanded redefinition timing</title>
+    <para xml:id="S3.p1">
+      <itemize xml:id="S3.I1">
+        <item xml:id="S3.I1.ix1">
+          <tags>
+            <tag>Normal:</tag>
+            <tag role="typerefnum">item Normal:</tag>
+          </tags>
+          <para xml:id="S3.I1.ix1.p1">
+            <p>M Foo; I Foo; P Foo; R Foo; T Foo.</p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.ix2">
+          <tags>
+            <tag>Expanded:</tag>
+            <tag role="typerefnum">item Expanded:</tag>
+          </tags>
+          <para xml:id="S3.I1.ix2.p1">
+            <p>M Foo; I Foo; P Foo; R Foo; T Foo.</p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.ix3">
+          <tags>
+            <tag>Edef:</tag>
+            <tag role="typerefnum">item Edef:</tag>
+          </tags>
+          <para xml:id="S3.I1.ix3.p1">
+            <p>M Foo; I Foo; P FOO; R Foo; T FOO.</p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.ix4">
+          <tags>
+            <tag>Tokens:</tag>
+            <tag role="typerefnum">item Tokens:</tag>
+          </tags>
+          <para xml:id="S3.I1.ix4.p1">
+            <p>M FOO; I FOO; P FOO; R FOO; T FOO.</p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.ix5">
+          <tags>
+            <tag>Expandafter Tokens:</tag>
+            <tag role="typerefnum">item Expandafter Tokens:</tag>
+          </tags>
+          <para xml:id="S3.I1.ix5.p1">
+            <p>M FOO; I FOO; P FOO; R FOO; T FOO.</p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.ix6">
+          <tags>
+            <tag>Tokens Expanded:</tag>
+            <tag role="typerefnum">item Tokens Expanded:</tag>
+          </tags>
+          <para xml:id="S3.I1.ix6.p1">
+            <p>M FOO; I FOO; P FOO; R FOO; T FOO.</p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.ix7">
+          <tags>
+            <tag>Expandafter Tokens Expanded:</tag>
+            <tag role="typerefnum">item Expandafter Tokens Expanded:</tag>
+          </tags>
+          <para xml:id="S3.I1.ix7.p1">
+            <p>M Foo; I Foo; P FOO; R Foo; T FOO.</p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.ix8">
+          <tags>
+            <tag>CSName:</tag>
+            <tag role="typerefnum">item CSName:</tag>
+          </tags>
+          <para xml:id="S3.I1.ix8.p1">
+            <p>“M Foo; I Foo; P Foo; T Foo.</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>Environments</title>
+    <para xml:id="S4.p1">
+      <p>Normal: [stuff]</p>
+    </para>
+    <para xml:id="S4.p2">
+      <p>Macro: [stuff]</p>
+    </para>
+    <para xml:id="S4.p3">
+      <p>Protected: [stuff]</p>
+    </para>
+    <para xml:id="S4.p4">
+      <p>Robust: Error!</p>
+    </para>
+    <para xml:id="S4.p5">
+      <p>The: [stuff]</p>
+    </para>
+  </section>
+</document>
