@@ -421,6 +421,7 @@ sub lookupExpandable {
   return unless $token;
   my $defn;
   my $entry;
+  $toplevel = 1 unless defined $toplevel;    # Default, for full expansion, same as readXToken!
   if ($CATCODE_ACTIVE_OR_CS[$$token[1]]
     && ($entry = $$self{meaning}{ $$token[0] })
     && ($defn  = $$entry[0])
