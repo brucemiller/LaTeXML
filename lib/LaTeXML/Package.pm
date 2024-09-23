@@ -80,7 +80,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefLigature &DefMathLigature),
 
   # Mid-level support for writing definitions.
-  qw(&Expand &Invocation &Digest &DigestText &DigestIf &DigestLiteral
+  qw(&Expand &ExpandPartially &Invocation &Digest &DigestText &DigestIf &DigestLiteral
     &RawTeX &Let &StartSemiverbatim &EndSemiverbatim
     &Tokenize &TokenizeInternal
     &IsEmpty),
@@ -899,17 +899,31 @@ sub generateID_nextid {
 #
 #======================================================================
 
-# Return $tokens with all tokens expanded
+# Return $tokens with all tokens fully expanded
+our $T_EXPAND_END_CHECK = T_OTHER('END EXPANSION');
+
 sub Expand {
   my (@tokens) = @_;
   return () unless @tokens;
-  return $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-      my ($gullet) = @_;
-      $gullet->unread(@tokens);
-      my @expanded = ();
-      while (defined(my $t = $gullet->readXToken(0))) {
-        push(@expanded, $t); }
-      return Tokens(@expanded); }); }
+  my $gullet = $STATE->getStomach->getGullet;
+  $gullet->unread(@tokens, T_END, $T_EXPAND_END_CHECK);
+  my $result  = $gullet->readBalanced(2, 0, 0);
+  my $endmark = $gullet->readToken;
+  if (!$endmark || !$endmark->equals($T_EXPAND_END_CHECK)) {
+    Error('unexpected', $endmark, $gullet, "Expansion didn't end with expected marker"); }
+  return $result; }
+
+# Return $tokens expanded, but deferring \protected, and \the only once.
+sub ExpandPartially {
+  my (@tokens) = @_;
+  return () unless @tokens;
+  my $gullet = $STATE->getStomach->getGullet;
+  $gullet->unread(@tokens, T_END, $T_EXPAND_END_CHECK);
+  my $result  = $gullet->readBalanced(1, 0, 0);
+  my $endmark = $gullet->readToken;
+  if (!$endmark || !$endmark->equals($T_EXPAND_END_CHECK)) {
+    Error('unexpected', $endmark, $gullet, "Expansion didn't end with expected marker"); }
+  return $result; }
 
 sub Invocation {
   my ($token, @args) = @_;
