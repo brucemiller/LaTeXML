@@ -1126,7 +1126,7 @@ sub six_parse_literalunits {
 
 sub six_process_units {
   my ($expr) = @_;
-  $expr = Expand($expr);
+  $expr = ExpandPartially($expr);    # Apparently only partially here
   if (my $defns = six_convertUnits($expr)) {
     return six_format_units(six_parse_units($defns)); }
   else {
@@ -1222,8 +1222,9 @@ DefMacro('\lx@six@unitobject@arg{}{}', sub {
 
 # Collapsing nested definitions: If the data of this unit are just more unit objects, return them,
 DefMacro('\lx@six@unitobject@collapsible{}{}', sub {
+    #DefMacro('\lx@six@unitobject@collapsible{} Expanded', sub {
     my ($gullet, $name, $data) = @_;
-    $data = Expand($data);
+    $data = ExpandPartially($data);    # Apparently only partially here
     my @tokens = $data->unlist;
     my @result = ();
     while (@tokens) {
