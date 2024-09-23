@@ -67,12 +67,12 @@ DefParameterType('Optional', sub {
 # which IS required in contrast to a general argument; ie a single token is not correct.
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
-    $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
+    $gullet->skipFiller;
     return $gullet->readBalanced(0, 0, 1); });
 
 DefParameterType('XGeneralText', sub {
     my ($gullet) = @_;
-    $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
+    $gullet->skipFiller;
     return $gullet->readBalanced(1, 0, 1); });
 
 DefParameterType('Until', sub {
@@ -148,11 +148,26 @@ DefParameterType('XUntil', sub {
         push(@tokens, $token); } }
     Tokens(@tokens); });
 
-# This reads a braced tokens list, expanding as it goes,
-# but expanding \the-like commands only once.
+# Simulate reading a plain argument, and then fully expanding it.
+# Similar to when \csname is used
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
-    $gullet->readBalanced(1, 0, 1); },
+    my $token = $gullet->readToken;
+    if (!$token->equals(T_BEGIN)) {    # if non-brace, wrap the token in {}, to isolate it
+      $gullet->unread($token, T_END); }
+    $gullet->readBalanced(2, 0, 0); },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+# Like Expanded, but defers \protected, and \the expanded only once.
+# Similar to when \edef is used.
+DefParameterType('ExpandedPartially', sub {
+    my ($gullet) = @_;
+    my $token = $gullet->readToken;
+    if (!$token->equals(T_BEGIN)) {    # if non-brace, wrap the token in {}, to isolate it
+      $gullet->unread($token, T_END); }
+    $gullet->readBalanced(1, 0, 0); },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
