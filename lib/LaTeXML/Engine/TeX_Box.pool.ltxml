@@ -368,7 +368,7 @@ sub insertBlock {
   my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
   my $container = $document->openElement('ltx:_CaptureBlock_', '_vertical_mode_' => 1, %blockattr);
   $document->absorb($contents);
-  my @nodes     = $container->childNodes;
+  my @nodes     = content_nodes($container);
   my @node_tags = map { $document->getNodeQName($_); } @nodes;
   my $nnodes    = scalar(@nodes);
   $document->closeToNode($container, 1);

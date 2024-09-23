@@ -75,7 +75,7 @@ our @EXPORT = (
     decodeFromUTF8  ),
   @XML::LibXML::EXPORT,
   # Possibly (later) export these utility functions
-  qw(&element_nodes &text_in_node &new_node &element_next &element_prev
+  qw(&element_nodes &content_nodes &text_in_node &new_node &element_next &element_prev
     &append_nodes &clear_node &maybe_clone
     &valid_attributes &copy_attributes &rename_attribute &remove_attr
     &get_attr &isTextNode &isElementNode &isChild &isDescendant &isDescendantOrSelf
@@ -89,9 +89,17 @@ our $XML_NS   = 'http://www.w3.org/XML/1998/namespace';    # [CONSTANT]
 
 #======================================================================
 # XML Utilities
+
+# Return all child elements of $node
 sub element_nodes {
   my ($node) = @_;
   return ($node ? grep { $_->nodeType == XML_ELEMENT_NODE } $node->childNodes : ()); }
+
+# return all content (element and text) nodes of $node
+sub content_nodes {
+  my ($node) = @_;
+  return ($node ? grep { my $t = $_->nodeType; $t == XML_ELEMENT_NODE || $t == XML_TEXT_NODE }
+      $node->childNodes : ()); }
 
 sub text_in_node {
   my ($node) = @_;
