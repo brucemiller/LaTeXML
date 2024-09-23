@@ -63,13 +63,13 @@ DefParameterType('Optional', sub {
 
 # This is a peculiar type of argument of the form
 #   <general text> = <filler>{<balanced text><right brace>
-# however, <filler> does get expanded while searching for the initial {
-# which IS required in contrast to a general argument; ie a single token is not correct.
+# [Note: <filler> expands, ignoring spaces and \relax, until opening {  ]
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     $gullet->skipFiller;
     return $gullet->readBalanced(0, 0, 1); });
 
+# This is like GeneralText, but it Partially expands the argument (not \protected, nor \the)
 DefParameterType('XGeneralText', sub {
     my ($gullet) = @_;
     $gullet->skipFiller;
