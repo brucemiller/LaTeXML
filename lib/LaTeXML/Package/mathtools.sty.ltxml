@@ -722,19 +722,27 @@ DefMathI('\vcentcolon',    undef, ':', role => 'RELOP');
 DefMathI('\ordinarycolon', undef, ':', role => 'RELOP');
 
 DefMath('\dblcolon', "::", role => 'RELOP');
-# taken from txfonts.sty.ltxml
+
 DefMath('\coloneqq',    "\x{2254}",   role => 'RELOP');
 DefMath('\Coloneqq',    "\x{2A74}",   role => 'RELOP');
-DefMath('\coloneq',     ":-",         role => 'RELOP');
-DefMath('\Coloneq',     "::-",        role => 'RELOP');
+DefMath('\coloneq',     "\x{2254}",   role => 'RELOP');
+DefMath('\Coloneq',     "\x{2A74}",   role => 'RELOP');
 DefMath('\eqqcolon',    "\x{2255}",   role => 'RELOP');
 DefMath('\Eqqcolon',    "=::",        role => 'RELOP');
-DefMath('\eqcolon',     "-:",         role => 'RELOP');
-DefMath('\Eqcolon',     "-::",        role => 'RELOP');
+DefMath('\eqcolon',     "\x{2255}",   role => 'RELOP');
+DefMath('\Eqcolon',     "=::",        role => 'RELOP');
 DefMath('\colonapprox', ":\x{2248}",  role => 'RELOP');
 DefMath('\Colonapprox', "::\x{2248}", role => 'RELOP');
+DefMath('\approxcolon', "\x{2248}:",  role => 'RELOP');
+DefMath('\Approxcolon', "\x{2248}::", role => 'RELOP');
 DefMath('\colonsim',    ":\x{223C}",  role => 'RELOP');
 DefMath('\Colonsim',    "::\x{223C}", role => 'RELOP');
+DefMath('\simcolon',    "\x{223C}:",  role => 'RELOP');
+DefMath('\Simcolon',    "\x{223C}::", role => 'RELOP');
+DefMath('\colondash',   ":-",         role => 'RELOP');
+DefMath('\Colondash',   "::-",        role => 'RELOP');
+DefMath('\dashcolon',   "-:",         role => 'RELOP');
+DefMath('\Dashcolon',   "-::",        role => 'RELOP');
 
 DefMathI('\nuparrow', undef, UTF(0x2909), role => 'ARROW'); # could not find arrow with vertical line
 DefMathI('\ndownarrow', undef, UTF(0x2908), role => 'ARROW');    # see above
