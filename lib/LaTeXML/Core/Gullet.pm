@@ -345,7 +345,6 @@ sub readXToken {
   my ($self, $toplevel, $for_conditional, $fully_expand) = @_;
   $toplevel = 1 unless defined $toplevel;
   my $autoclose = $toplevel;    # Potentially, these should have distinct controls?
-                                #  my $fully_expand = $toplevel;
   $fully_expand = $toplevel unless defined $fully_expand;
   my ($token, $cc, $defn, $atoken, $atype, $ahidden);
   while (1) {
@@ -699,14 +698,19 @@ sub readCSName {
 #  tokens, non-expandable tokens, args, Numbers, ...
 #**********************************************************************
 sub readArg {
-  my ($self) = @_;
+  my ($self, $expanded) = @_;
   my $token = readNonSpace($self);
   if (!defined $token) {
     return; }
   elsif ($$token[1] == CC_BEGIN) {    # Inline ->getCatcode!
-    return readBalanced($self, 0); }
+    return readBalanced($self, $expanded, 0, 0); }
   else {
-    return Tokens($token); } }
+    if ($expanded) {
+      return $self->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+          $self->unread(T_BEGIN, $token, T_END);
+          return $self->readBalanced($expanded, 0, 1); }); }
+    else {
+      return Tokens($token); } } }
 
 # Note that this returns an empty array if [] is present,
 # otherwise $default or undef.
@@ -1130,21 +1134,27 @@ Returns an object describing the current location in the input stream.
 
 =over 4
 
-=item C<< $tokens = $gullet->expandTokens($tokens); >>
-
-Return the L<LaTeXML::Core::Tokens> resulting from expanding all the tokens in C<$tokens>.
-This is actually only used in a few circumstances where the arguments to
-an expandable need explicit expansion; usually expansion happens at the right time.
-
 =item C<< $token = $gullet->readToken; >>
 
 Return the next token from the input source, or undef if there is no more input.
 
-=item C<< $token = $gullet->readXToken($toplevel,$commentsok); >>
+=item C<< $token = $gullet->readXToken($toplevel,$for_conditional, $fully_expand); >>
 
 Return the next unexpandable token from the input source, or undef if there is no more input.
-If the next token is expandable, it is expanded, and its expansion is reinserted into the input.
-If C<$commentsok>, a comment read or pending will be returned.
+If the next token is expandable, it is expanded, and its expansion is reinserted into the input,
+and reading continues.
+If C<$toplevel> is true, it will automatically close empty mouths as it reads, and will also fully expand macros (unless overridden by C<$fully_expand> being explicitly false). Full expansion expands protected macros as well as the results of L<\the> (and similar).
+If C<$for_conditional> is true, handle L<\noexpand> appropriately for the arguments to L<\if>.
+
+=item C<< $tokens = $gullet->readBalanced($expanded, $macrodef, $require_open); >>
+
+Read a sequence of tokens from the input until the balancing '}'.
+By default assumes the '{' has already been read.
+
+No expansion takes place if C<$expand> is 0 or undef; partial expansion (deferring protected and C<\the>) of C<$expand> is 1; full expansion if it is > 1.
+The C<$macrodef> flag affects whether # parameters are "packed" for macro bodies.
+If C<$require_open> is true, the opening C<T_BEGIN> has not yet been read, and is required.
+Returns a L<LaTeXML::Core::Tokens>.
 
 =item C<< $gullet->unread(@tokens); >>
 
@@ -1160,6 +1170,11 @@ Push the C<@tokens> back into the input stream to be re-read.
 
 Read and return the next non-space token from the input after discarding any spaces.
 
+=item C<< $token = $gullet->readXNonSpace; >>
+
+Read and return the next non-space token from the input after discarding any spaces,
+partially expanding as it goes.
+
 =item C<< $gullet->skipSpaces; >>
 
 Skip the next spaces from the input.
@@ -1168,16 +1183,6 @@ Skip the next spaces from the input.
 
 Skip the next token from the input if it is a space.
 If C($expanded> is true, expands ( like C< <one optional space> > ).
-
-=item C<< $tokens = $gullet->readBalanced($expanded, $macrodef, $require_open); >>
-
-Read a sequence of tokens from the input until the balancing '}'.
-By default assumes the '{' has already been read.
-
-It optionally (C<$expand>) expands while reading, but deferring \the and related.
-The C<$macrodef> flag affects whether # parameters are "packed" for macro bodies.
-If C<$require_open> is true, the opening C<T_BEGIN> has not yet been read, and is required.
-Returns a L<LaTeXML::Core::Tokens>.
 
 =item C<< $boole = $gullet->ifNext($token); >>
 
@@ -1207,9 +1212,12 @@ in C<@delims>.  In a list context, it also returns which of the delimiters ended
 
 =over 4
 
-=item C<< $tokens = $gullet->readArg; >>
+=item C<< $tokens = $gullet->readArg($expanded); >>
 
-Read and return a TeX argument; the next Token or Tokens (if surrounded by braces).
+Read and return a "normal" TeX argument; the next Token or Tokens (if surrounded by braces).
+C<$expanded> controls expansion as if the argument were read and then expanded in isolation:
+0,undef or missing gives no expansion; 1 gives partial expansion; > 1 gives full expansion.
+In the case of a single unbraced expandable token, it will I<not> read any macro arguments from the following input!
 
 =item C<< $tokens = $gullet->readOptional($default); >>
 
