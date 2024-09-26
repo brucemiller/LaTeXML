@@ -4270,11 +4270,22 @@ DefConstructor('\lx@bibitem[] Semiverbatim',
     . "#tags"
     . "<ltx:bibblock>",
   afterDigest => sub {
+    # check if the previous bibitem had an empty body,
+    # in which case prune it and reuse its ID and counters.
+    # this happens due to auto-open being a bit fragile (see issue #2403)
+    my $pruned_prev = 0;
+    if (my $prev_item = $LaTeXML::LIST[-1]) {
+      if (ref $prev_item eq 'LaTeXML::Core::Whatsit' and
+        $prev_item->getDefinition->getCS->getCSName eq '\lx@bibitem' and
+        not($prev_item->getArg(1)) and IsEmpty($prev_item->getArg(2))) {
+        $pruned_prev = 1;
+        Info('empty', 'bibitem', $_[0], "Encountered an empty \\bibitem, likely auto-opened without need. Pruning and reusing its id.");
+        pop(@LaTeXML::LIST); } }
     my $tag = $_[1]->getArg(1);
     my $key = CleanBibKey($_[1]->getArg(2));
     if ($tag) {
       $_[1]->setProperties(key => $key,
-        RefStepID('@bibitem'),
+        ($pruned_prev ? RefCurrentID('@bibitem') : RefStepID('@bibitem')),
         tags => Digest(T_BEGIN,
           T_CS('\def'), T_CS('\the@bibitem'), T_BEGIN, Revert($tag), T_END,
           Invocation(T_CS('\lx@make@tags'), T_OTHER('@bibitem')),

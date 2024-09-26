@@ -68,7 +68,8 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &AddToMacro &AtBeginDocument &AtEndDocument),
 
   # Counter support
-  qw(&NewCounter &CounterValue &SetCounter &AddToCounter &StepCounter &RefStepCounter &RefStepID &ResetCounter
+  qw(&NewCounter &CounterValue &SetCounter &AddToCounter &StepCounter &RefStepCounter
+    &RefStepID &ResetCounter &RefCurrentID
     &GenerateID &AfterAssignment
     &MaybePeekLabel &MaybeNoteLabel),
 
@@ -832,6 +833,15 @@ sub RefStepID {
   DefMacroI(T_CS('\@currentID'), undef, T_CS("\\the$ctr\@ID"));
   my $id = CleanID(ToString(DigestLiteral(T_CS("\\the$ctr\@ID"))));
   return (id => $id); }
+
+# For UN-numbered units, recycle the last ID without incrementing
+# (useful if the last ID-ed box got pruned)
+sub RefCurrentID {
+  my ($type) = @_;
+  my $ctr    = LookupMapping('counter_for_type', $type) || $type;
+  my $id     = CleanID(ToString(DigestLiteral(T_CS("\\the$ctr\@ID"))));
+  return (id => $id);
+}
 
 sub ResetCounter {
   my ($ctr) = @_;
@@ -1779,7 +1789,7 @@ sub defmath_cons {
         ? $cs : $presentation->unlist); }; }
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($defcs, $paramlist,
       ($nargs == 0
-          # If trivial presentation, allow it in Text
+        # If trivial presentation, allow it in Text
         ? ($presentation !~ /(?:\(|\)|\\)/
           ? "?#isMath(<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok)"
@@ -2456,7 +2466,7 @@ sub AddToMacro {
   else {
     local $LaTeXML::Core::State::UNLOCKED = 1;    # ALLOW redefinitions that only adding to the macro
     DefMacroI($cs, undef, Tokens(map { $_->unlist }
-          map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
+        map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
       nopackParameters => 1, scope => 'global', locked => $$defn{locked}); }
   return; }
 
