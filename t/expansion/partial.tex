@@ -1,0 +1,106 @@
+\documentclass{article}
+\title{Partial vs.~Full Expansion}
+\def\foo{Foo}
+\def\foofoo{\foo}
+\protected\def\pfoo{\foo}
+\DeclareRobustCommand\rfoo{\foo}
+
+\newtoks\tfoo
+\tfoo={\foo}
+
+\newtoks\mysave
+
+\let\notrelax\relax
+\def\junk{ \relax \notrelax }
+\def\junkjunk{  \junk \relax \junk }
+
+
+\begin{document}
+
+\section{Test Filler}
+Uppercase:
+\uppercase{letters},
+\uppercase \relax {letters},
+\uppercase \notrelax {letters},
+\uppercase \junk {letters},
+\uppercase \junkjunk {letters}.
+
+strcmp: \pdfstrcmp{\foo}{\foo},
+\pdfstrcmp \relax {\foo}{\foo},
+\pdfstrcmp \junk {\foo} \junkjunk {\foo}.
+
+\section{cmp to \string\foo (0=same)}
+w/M=Macro, I=Indirect, P=Protected, R=Robust, T=The, X=expandafter
+
+M \pdfstrcmp{\foo}{\foo};
+I \pdfstrcmp{\foofoo}{\foo};
+P \pdfstrcmp{\pfoo}{\foo};
+R \pdfstrcmp{\rfoo}{\foo};
+T \pdfstrcmp{\the\tfoo}{\foo};
+XP \expandafter\pdfstrcmp\expandafter{\pfoo}{\foo};
+XR \expandafter\pdfstrcmp\expandafter{\rfoo}{\foo};
+XT \expandafter\pdfstrcmp\expandafter{\the\tfoo}{\foo}.
+
+
+% Error: \expanded\foo
+%\foo \foofoo \pfoo  \rfoo \the\tfoo
+
+
+\section{Test \string\expanded\ redefinition timing}
+
+\begin{itemize}
+\item[Normal:] {M \foo; I \foofoo; P \pfoo; R \rfoo; T \the\tfoo.}
+
+\item[Expanded:] \expanded{M \foo; I \foofoo; P \pfoo; R \rfoo; T \the\tfoo.}
+
+{
+\edef\stuff{M \foo; I \foofoo; P \pfoo; R \rfoo; T \the\tfoo.}
+\def\foo{FOO}
+\item[Edef:] \stuff
+}
+
+{
+\mysave{M \foo; I \foofoo; P \pfoo; R \rfoo; T \the\tfoo.}
+\def\foo{FOO}
+\item[Tokens:] \the\mysave
+}
+
+{
+\expandafter\mysave\expandafter{M \foo; I \foofoo; P \pfoo; R \rfoo; T \the\tfoo.}
+\def\foo{FOO}
+\item[Expandafter Tokens:] \the\mysave
+}
+
+{
+\mysave={\expanded{M \foo; I \foofoo; P \pfoo; R \rfoo; T \the\tfoo.}}
+\def\foo{FOO}
+\item[Tokens Expanded:] \the\mysave
+}
+
+{
+\expandafter\mysave\expandafter{\expanded{M \foo; I \foofoo; P \pfoo; R \rfoo; T \the\tfoo.}}
+\def\foo{FOO}
+\item[Expandafter Tokens Expanded:] \the\mysave
+}
+
+
+{
+% OMIT Robust!!!
+\item[CSName:] \expandafter\string\csname M \foo; I \foofoo; P \pfoo; T \the\tfoo.\endcsname
+}
+\end{itemize}
+
+\section{Environments}
+\newenvironment{bracketed}{[}{]\par}
+\newtoks\mytestname
+\mytestname={bracketed}
+\def\testname{bracketed}
+\protected\def\ptestname{bracketed}
+\DeclareRobustCommand{\Ptestname}{bracketed}
+Normal: \begin{bracketed}stuff\end{bracketed}
+Macro: \begin{\testname}stuff\end{\testname}
+Protected: \begin{\ptestname}stuff\end{\ptestname}
+%Robust: \begin{\Ptestname}stuff\end{\Ptestname}
+Robust: Error!\par
+The: \begin{\the\mytestname}stuff\end{\the\mytestname}
+\end{document}

@@ -80,7 +80,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefLigature &DefMathLigature),
 
   # Mid-level support for writing definitions.
-  qw(&Expand &Invocation &Digest &DigestText &DigestIf &DigestLiteral
+  qw(&Expand &ExpandPartially &Invocation &Digest &DigestText &DigestIf &DigestLiteral
     &RawTeX &Let &StartSemiverbatim &EndSemiverbatim
     &Tokenize &TokenizeInternal
     &IsEmpty),
@@ -899,17 +899,23 @@ sub generateID_nextid {
 #
 #======================================================================
 
-# Return $tokens with all tokens expanded
+# Return $tokens with all tokens fully expanded
 sub Expand {
   my (@tokens) = @_;
   return () unless @tokens;
-  return $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-      my ($gullet) = @_;
-      $gullet->unread(@tokens);
-      my @expanded = ();
-      while (defined(my $t = $gullet->readXToken(0))) {
-        push(@expanded, $t); }
-      return Tokens(@expanded); }); }
+  my $gullet = $STATE->getStomach->getGullet;
+  return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+      $gullet->unread(T_BEGIN, @tokens, T_END);
+      return $gullet->readBalanced(2, 0, 1); }); }
+
+# Return $tokens, partially expanded (defer protected, and results of \the)
+sub ExpandPartially {
+  my (@tokens) = @_;
+  return () unless @tokens;
+  my $gullet = $STATE->getStomach->getGullet;
+  return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+      $gullet->unread(T_BEGIN, @tokens, T_END);
+      return $gullet->readBalanced(1, 0, 1); }); }
 
 sub Invocation {
   my ($token, @args) = @_;
@@ -4390,7 +4396,7 @@ is applied only when C<fontTest> returns true.
 Predefined Ligatures combine sequences of "." or single-quotes into appropriate
 Unicode characters.
 
-=item C<DefMathLigature(I<$string>C<=>>I<$replacment>,I<%options>);>
+=item C<DefMathLigature(I<$string>=>I<$replacment>,I<%options>);>
 
 X<DefMathLigature>
 A Math Ligature typically combines a sequence of math tokens (XMTok) into a single one.

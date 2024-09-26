@@ -63,16 +63,16 @@ DefParameterType('Optional', sub {
 
 # This is a peculiar type of argument of the form
 #   <general text> = <filler>{<balanced text><right brace>
-# however, <filler> does get expanded while searching for the initial {
-# which IS required in contrast to a general argument; ie a single token is not correct.
+# [Note: <filler> expands, ignoring spaces and \relax, until opening {  ]
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
-    $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
+    $gullet->skipFiller;
     return $gullet->readBalanced(0, 0, 1); });
 
+# This is like GeneralText, but it Partially expands the argument (not \protected, nor \the)
 DefParameterType('XGeneralText', sub {
     my ($gullet) = @_;
-    $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
+    $gullet->skipFiller;
     return $gullet->readBalanced(1, 0, 1); });
 
 DefParameterType('Until', sub {
@@ -148,11 +148,20 @@ DefParameterType('XUntil', sub {
         push(@tokens, $token); } }
     Tokens(@tokens); });
 
-# This reads a braced tokens list, expanding as it goes,
-# but expanding \the-like commands only once.
+# Simulate reading a plain argument, and then fully expanding it.
+# Similar to when \csname is used
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
-    $gullet->readBalanced(1, 0, 1); },
+    return $gullet->readArg(2); },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+# Like Expanded, but defers \protected, and \the expanded only once.
+# Similar to when \edef is used.
+DefParameterType('ExpandedPartially', sub {
+    my ($gullet) = @_;
+    return $gullet->readArg(1); },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
