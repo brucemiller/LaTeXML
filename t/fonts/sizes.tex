@@ -117,6 +117,27 @@
 %\testmath{\char 103}
 %\testmath{\mathchar 103}
 
+\section{Unskip}
+[]
+[\kern1em\relax]
+[\kern1em\relax\unkern]
+[\kern1em\relax\unskip]
+
+[]
+[\hskip1em\relax]
+[\hskip1em\relax\unkern]
+[\hskip1em\relax\unskip]
+
+[\kern3em\relax\kern2em\relax\kern1em\relax\the\lastkern]
+[\kern3em\relax\kern2em\relax\kern1em\relax\unkern\the\lastkern]
+[\kern3em\relax\kern2em\relax\kern1em\relax\unkern\unkern\the\lastkern]
+[\kern3em\relax\kern2em\relax\kern1em\relax\unkern\unkern\unkern\the\lastkern]
+
+[\hskip3em\relax\hskip2em\relax\hskip1em\relax\the\lastskip]
+[\hskip3em\relax\hskip2em\relax\hskip1em\relax\unskip\the\lastskip]
+[\hskip3em\relax\hskip2em\relax\hskip1em\relax\unskip\unskip\the\lastskip]
+[\hskip3em\relax\hskip2em\relax\hskip1em\relax\unskip\unskip\unskip\the\lastskip]
+
 \end{document}
 
 
