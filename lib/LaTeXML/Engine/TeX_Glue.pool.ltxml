@@ -26,19 +26,22 @@ use LaTeXML::Package;
 # \vskip            c  inserts vertical glue in a vertical list.
 # \unskip           c  removes a glue item from the current list.
 
-# a candidate for use by \hskip, \hspace, etc... ?
+our @spaces = (    # Spaces to fake spacing, with width in ems
+  [0.167, "\x{2006}"], [0.222, "\x{2005}"], [0.278, "\x{2004}"],
+  [0.333, UTF(0xA0)],  [0.5,   "\x{2002}"], [1.0,   "\x{2003}"]);
+
+# String of spacing chars with width roughly equivalent to $dimen
 sub DimensionToSpaces {
   my ($dimen) = @_;
   my $fs      = LookupValue('font')->getSize;    # 1 em
-  my $pt      = $dimen->ptValue;
-  my $ems     = $pt / $fs;
-  if    ($ems < 0.01) { return; }
-  elsif ($ems < 0.17) { return "\x{2006}"; }     # 6/em
-  elsif ($ems < 0.30) { return "\x{2005}"; }     # 4/em
-  elsif ($ems < 0.40) { return "\x{2004}"; }     # 3/em (same as nbsp?)
-  else {
-    my $n = int(($ems + 0.3) / 0.333);           # 10pts per space...?
-    return (UTF(0xA0) x $n); } }
+  my $ems     = $dimen->ptValue / $fs;
+  my $s       = '';
+  for (my $i = $#spaces ; ($i >= 0) && ($ems > 0) ; $i--) {
+    my $w = $spaces[$i][0];
+    if ($ems + 0.01 > $w) {
+      my $n = int(($ems + 0.01) / $w);
+      $ems -= $n * $w; $s .= $spaces[$i][1] x $n; } }
+  return $s; }
 
 # \hskip handled similarly to \kern
 # \hskip can be ignored in certain situations...
@@ -54,13 +57,14 @@ DefConstructor('\hskip Glue', sub {
     } }
     elsif (inSVG()) {
       Warn('unexpected', 'kern', $_[0], "Lost hskip in SVG " . ToString($length)); }
-
+    elsif ($props{isMath}) {
+      $document->insertElement('ltx:XMHint', undef, width => $length); }
     else {
       #      $document->openText(DimensionToSpaces($length), $props{font}); } },
       $document->absorb(DimensionToSpaces($length)); } },
   properties => sub {
     my ($stomach, $length) = @_;
-    (width => $length, isSpace => 1); });
+    (width => $length, isSpace => 1, isSkip => 1); });
 
 # If this is the right solution...
 # then we also should put the desired spacing on a style attribute?!?!?!
@@ -73,14 +77,19 @@ DefConstructor('\vskip Glue', sub {
       elsif ($document->isOpenable('ltx:break')) {
         $document->insertElement('ltx:break'); } }
     return; },
-  properties => sub { (height => $_[1], isSpace => 1, isVerticalSpace => 1, isBreak => 1); });
+  properties => sub { (height => $_[1], isSpace => 1,, isSkip => 1, isVerticalSpace => 1, isBreak => 1); });
 
-## Worrisome, but...
+# Remove skip, if last on LIST
 DefPrimitiveI('\unskip', undef, sub {
     my ($stomach) = @_;
+    my @c = ();
     my $box;
-    while (($box = $LaTeXML::LIST[-1]) && IsEmpty($box)) {
+    # Scan past any Comment boxes
+    while (($box = $LaTeXML::LIST[-1]) && (ref $box eq 'LaTeXML::Core::Comment')) {
+      push(@c, pop(@LaTeXML::LIST)); }
+    if ($box && $box->getProperty('isSkip')) {
       pop(@LaTeXML::LIST); }
+    push(@LaTeXML::LIST, @c);
     return; });
 
 #======================================================================
@@ -121,8 +130,13 @@ DefPrimitiveI('\vfilneg', undef, undef);
 # Lastskip
 #----------------------------------------------------------------------
 # \lastskip         iq is 0.0 pt or the last glue or muglue on the current list.
-
-DefRegister('\lastskip' => Glue(0), readonly => 1);
+DefRegister('\lastskip' => Dimension(0), readonly => 1, getter => sub {
+    my $box;
+    for (my $i = $#LaTeXML::LIST ; $i > 0 ; $i--) {
+      my $box = $LaTeXML::LIST[$i];
+      last if !$box || !$box->getProperty('isSkip');
+      return $box->getProperty('width'); }
+    return Dimension(0); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
