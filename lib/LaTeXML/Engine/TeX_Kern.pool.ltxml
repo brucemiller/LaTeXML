@@ -65,8 +65,13 @@ DefPrimitiveI('\unkern', undef, sub {
 
 # Get kern, if last on LIST
 DefRegister('\lastkern' => Dimension(0), readonly => 1, getter => sub {
-    my $box = $LaTeXML::LIST[-1];
-    return ($box && $box->getProperty('isKern') ? $box->getProperty('width') : Dimension(0)); });
+    for (my $i = $#LaTeXML::LIST ; $i > 0 ; $i--) {
+      my $box = $LaTeXML::LIST[$i];
+      last if !$box;
+      next if ref $box eq 'LaTeXML::Core::Comment';
+      last if !$box->getProperty('isKern');
+      return $box->getProperty('width'); }
+    return Dimension(0); });
 
 #======================================================================
 # Moving Vertically
