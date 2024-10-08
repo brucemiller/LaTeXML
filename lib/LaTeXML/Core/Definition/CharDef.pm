@@ -23,14 +23,14 @@ use base qw(LaTeXML::Core::Definition::Register);
 # A CharDef is a specialized register;
 # You can't assign it; when you invoke the control sequence, it returns
 # the result of evaluating the character (more like a regular primitive).
+# When $mode is 'math', interprets $value as a (3-part) mathcode, otherwise just index into current font.
 # When $mathglyph is provided, it is the unicode corresponding to the \mathchar of $value
 sub new {
-  my ($class, $cs, $value, $mathglyph, %traits) = @_;
+  my ($class, $cs, $mode, $value) = @_;
   return bless { cs => $cs, parameters => undef,
-    value        => $value,   mathglyph => $mathglyph,
-    registerType => 'Number', readonly  => 1,
-    locator      => $STATE->getStomach->getGullet->getMouth->getLocator,
-    %traits }, $class; }
+    mode         => $mode,    value    => $value,
+    registerType => 'Number', readonly => 1,
+    locator      => $STATE->getStomach->getGullet->getMouth->getLocator }, $class; }
 
 sub valueOf {
   my ($self) = @_;
@@ -43,22 +43,26 @@ sub setValue {
 
 sub invoke {
   my ($self, $stomach) = @_;
-  my $value     = $$self{value};
-  my $mathglyph = $$self{mathglyph};
+  my $value  = $$self{value};
+  my $nvalue = $value->valueOf;
   # A dilemma: If the \chardef were in a style file, you're prefer to revert to the $cs
   # but if defined in the document source, better to use \char ###\relax, so it still "works"
   my $src   = $$self{locator} && $$self{locator}->toString;
   my $local = $src && $src !~ /\.(?:sty|ltxml|ltxmlc)/;    # Dumps currently have undefined src!
-  if (defined $mathglyph) {                                # Must be a math char
-    return Box($mathglyph, undef, undef,
-      ($local ? Tokens(T_CS('\mathchar'), $value->revert, T_CS('\relax')) : $$self{cs}),
-      role => $$self{role}); }
-  else {    # else text; but note defered font/encoding till digestion!
-            # Decode the codepoint using current font & encoding
-    my ($glyph, $adjfont) = LaTeXML::Package::FontDecode($value->valueOf);
+  if ($$self{mode} eq 'text') {    # text; but note defered font/encoding till digestion!
+                                   # Decode the codepoint using current font & encoding
+    my ($glyph, $adjfont) = LaTeXML::Package::FontDecode($nvalue);
     return Box($glyph, $adjfont, undef,
-      ($local ? Tokens(T_CS('\char'), $value->revert, T_CS('\relax')) : $$self{cs}),
-    ); } }
+      ($local ? Tokens(T_CS('\char'), $value->revert, T_CS('\relax')) : $$self{cs})); }
+  else {                           # Else math mode, mathDecode!
+    my ($glyph, $f, $rev, %props) = LaTeXML::Package::decodeMathChar($nvalue);
+    if (!defined $props{name}) {    # TEMPORARY HACK ?????
+      my $n = $self->getCSName;
+      $n =~ s/^\\//;
+      $props{name} = $n if !$props{meaning} || ($n ne $props{meaning}); }
+    return Box($glyph, undef, undef,
+      ($local ? Tokens(T_CS('\mathchar'), $value->revert, T_CS('\relax')) : $$self{cs}),
+      %props); } }
 
 sub equals {
   my ($self, $other) = @_;
