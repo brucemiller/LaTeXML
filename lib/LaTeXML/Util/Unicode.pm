@@ -14,7 +14,7 @@ use strict;
 use warnings;
 use base qw(Exporter);
 use charnames ':full';
-our @EXPORT = qw( &UTF &unicode_accent &unicode_mathvariant &unicode_convert);
+our @EXPORT = qw( &UTF &unicode_accent &unicode_mathvariant &unicode_convert &unicode_math_properties);
 #======================================================================
 # Unicode manipulation utilities useful for LaTeXML
 # Mostly, but not exclusively, about Mathematics
@@ -156,7 +156,7 @@ my %unicode_map = (    # CONSTANT
     'h'        => "\x{02B0}",    # aspirated!?
     'j'        => "\x{02B2}",
     'r'        => "\x{02B3}",
-    'W'        => "\x{02B7}",
+    'w'        => "\x{02B7}",
     'y'        => "\x{02B8}",
     's'        => "\x{02E2}",
     'x'        => "\x{02E3}",
@@ -202,10 +202,8 @@ my %unicode_map = (    # CONSTANT
     "\x{03C6}" => "\x{1D60}",    # \varphi
     "\x{03D5}" => "\x{1D60}",    # \phi; close enough?
     "\x{03BE}" => "\x{1D61}",    # \xi
-    'H'        => "\x{1D78}",
     'c'        => "\x{1D9C}",
     'f'        => "\x{1DA0}",
-    'g'        => "\x{1DA2}",
     "\x{03A6}" => "\x{1DB2}",    # \Phi?
     "\x{03C5}" => "\x{1DB7}",    # \upsilon
     'z'        => "\x{1DBB}",
@@ -325,6 +323,239 @@ sub unicode_mathvariant {
   #  $font =~ s/\sbold//;          # try w/o bold ?
   #  return $variant if $variant = $mathvariants{$font};
   return 'normal'; }
+
+#======================================================================
+our %math_props = (
+  #======================================================================
+  "0" => { role => 'NUMBER', meaning => 0 },
+  "1" => { role => 'NUMBER', meaning => 1 },
+  "2" => { role => 'NUMBER', meaning => 2 },
+  "3" => { role => 'NUMBER', meaning => 3 },
+  "4" => { role => 'NUMBER', meaning => 4 },
+  "5" => { role => 'NUMBER', meaning => 5 },
+  "6" => { role => 'NUMBER', meaning => 6 },
+  "7" => { role => 'NUMBER', meaning => 7 },
+  "8" => { role => 'NUMBER', meaning => 8 },
+  "9" => { role => 'NUMBER', meaning => 9 },
+  #======================================================================
+  '=' => { role => 'RELOP',   meaning => 'equals' },
+  '+' => { role => 'ADDOP',   meaning => 'plus' },
+  '-' => { role => 'ADDOP',   meaning => 'minus' },
+  '*' => { role => 'MULOP',   meaning => 'times' },
+  '/' => { role => 'MULOP',   meaning => 'divide' },
+  '!' => { role => 'POSTFIX', meaning => 'factorial' },
+  ',' => { role => 'PUNCT' },
+  '.' => { role => 'PERIOD' },
+  ';' => { role => 'PUNCT' },
+  ':' => { role => 'METARELOP', name     => 'colon' },    # plausible default?
+  '|' => { role => 'VERTBAR',   stretchy => 'false' },
+  #  '|' => { role => 'VERTBAR',   stretchy => 'true' },
+  '<' => { role => 'RELOP', meaning  => 'less-than' },
+  '>' => { role => 'RELOP', meaning  => 'greater-than' },
+  '(' => { role => 'OPEN',  stretchy => 'false' },
+  ')' => { role => 'CLOSE', stretchy => 'false' },
+  '[' => { role => 'OPEN',  stretchy => 'false' },
+  ']' => { role => 'CLOSE', stretchy => 'false' },
+  '{' => { role => 'OPEN',  stretchy => 'false' },
+  '}' => { role => 'CLOSE', stretchy => 'false' },
+
+##  ':'        => { role => 'METARELOP' },    # \colon # Seems like good default role
+
+  #======================================================================
+  UTF(0x5C) => { role => 'ADDOP', meaning => 'set-minus' },        # \backslash
+  UTF(0xAC) => { role => 'BIGOP', meaning => 'not' },              # \lnot
+  UTF(0xAC) => { role => 'BIGOP', meaning => 'not' },              # \neg
+  UTF(0xB1) => { role => 'ADDOP', meaning => 'plus-or-minus' },    # \pm
+  UTF(0xD7) => { role => 'MULOP', meaning => 'times' },            # \times
+  UTF(0xF7) => { role => 'MULOP', meaning => 'divide' },           # \div
+
+  UTF(0xAC) => { role => 'BIGOP', meaning => 'not' },              # \neg,\lnot
+  UTF(0x5C) => { role => 'ADDOP', meaning => 'set-minus' },        # \backslash
+  UTF(0xB1) => { role => 'ADDOP', meaning => 'plus-or-minus' },    # \pm
+  UTF(0xD7) => { role => 'MULOP', meaning => 'times' },            # \times
+  UTF(0xF7) => { role => 'MULOP', meaning => 'divide' },           # \div
+      #======================================================================
+  "\x{2020}" => { role => 'MULOP' },     # \dagger
+  "\x{2021}" => { role => 'MULOP' },     # \ddagger
+  "\x{2032}" => { role => 'SUPOP', },    # \prime
+  "\x{2061}" => { role => 'APPLYOP',    name    => '',      reversion => '' },
+  "\x{2062}" => { role => 'MULOP',      meaning => 'times', name      => '', reversion => '' },
+  "\x{2063}" => { role => 'PUNCT',      name    => '',      reversion => '' },
+  "\x{2064}" => { role => 'ADDOP',      meaning => 'plus',  name      => '', reversion => '' },
+  "\x{210F}" => { role => 'ID',         meaning => 'Planck-constant-over-2-pi' },    # \hbar
+  "\x{2111}" => { role => 'OPFUNCTION', meaning => 'imaginary-part' },               # \Im
+  "\x{2118}" => { role => 'OPFUNCTION', meaning => 'Weierstrass-p' },                # \wp
+  "\x{211C}" => { role => 'OPFUNCTION', meaning => 'real-part' },                    # \Re
+  "\x{2190}" => { role => 'ARROW' },                           # \leftarrow # LEFTWARDS ARROW
+  "\x{2191}" => { role => 'ARROW', name => 'uparrow' },        # \uparrow # UPWARDS ARROW
+  "\x{2192}" => { role => 'ARROW' },                           # \to, \rightarrow # RIGHTWARDS ARROW
+  "\x{2193}" => { role => 'ARROW', name => 'downarrow' },      # \downarrow # DOWNWARDS ARROW
+  "\x{2194}" => { role => 'METARELOP' },                       # \leftrightarrow # LEFT RIGHT ARROW
+  "\x{2195}" => { role => 'ARROW', name => 'updownarrow' },    # \updownarrow # UP DOWN ARROW
+  "\x{2196}" => { role => 'ARROW' },                           # \nwarrow # NORTH WEST ARROW
+  "\x{2197}" => { role => 'ARROW' },                           # \nearrow # NORTH EAST ARROW
+  "\x{2198}" => { role => 'ARROW' },                           # \searrow # SOUTH EAST ARROW
+  "\x{2199}" => { role => 'ARROW' },                           # \swarrow # SOUTH WEST ARROW
+  "\x{219D}" => { role => 'ARROW', meaning => 'leads-to' },    # \leadsto #
+  "\x{21A6}" => { role => 'ARROW', meaning => 'maps-to' },     # \mapsto #
+  "\x{21A9}" => { role => 'ARROW' },    # \hookleftarrow # LEFTWARDS ARROW WITH HOOK
+  "\x{21AA}" => { role => 'ARROW' },    # \hookrightarrow # RIGHTWARDS ARROW WITH HO},
+  "\x{21BC}" => { role => 'ARROW' },    # \leftharpoonup # LEFTWARDS HARPOON WITH BARB UPWARDS
+  "\x{21BD}" => { role => 'ARROW' },    # \leftharpoondown # LEFTWARDS HARPOON WITH BARB DOWNWARDS,
+  "\x{21C0}" => { role => 'ARROW' },    # \rightharpoonup # RIGHTWARDS HARPOON WITH BARB UPWARDS
+  "\x{21C1}" => { role => 'ARROW' },    # \rightharpoondown # RIGHTWARDS HARPOON WITH BARB DOWNWARDS
+  "\x{21CC}" => { role => 'METARELOP' }, # \rightleftharpoons # RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON
+  "\x{21D0}" => { role => 'ARROW' },                       # \Leftarrow # LEFTWARDS DOUBLE ARROW
+  "\x{21D1}" => { role => 'ARROW', name => 'Uparrow' },    # \Uparrow # UPWARDS DOUBLE ARROW
+  "\x{21D2}" => { role => 'ARROW' },                       # \Rightarrow # RIGHTWARDS DOUBLE ARROW
+  "\x{21D3}" => { role => 'ARROW', name => 'Downarrow' },  # \Downarrow # DOWNWARDS DOUBLE ARROW
+  "\x{21D4}" => { role => 'METARELOP', meaning => 'iff' }, # ,\Leftrightarrow, \iff # LEFT RIGHT DOUBLE ARROW
+  "\x{21D5}" => { role => 'ARROW',  name    => 'Updownarror' },  # \Updownarrow # UP DOWN DOUBLE ARROW
+  "\x{2200}" => { role => 'BIGOP',  meaning => 'for-all' },      # \forall
+  "\x{2202}" => { role => 'DIFFOP', meaning => 'partial-differential' },    # \partial
+  "\x{2203}" => { role => 'BIGOP',  meaning => 'exists' },                  # \exists
+  "\x{2205}" => { role => 'ID',     meaning => 'empty-set' },               # \emptyset
+  "\x{2207}" => { role => 'OPERATOR' },                                     # \nabla
+  "\x{2208}" => { role => 'RELOP', meaning => 'element-of' },               # \in
+  "\x{2209}" => { role => 'RELOP', meaning => 'not-element-of' },           # \notin
+  "\x{220B}" => { role => 'RELOP', meaning => 'contains' },                 # \ni
+  "\x{220F}" => { role => 'SUMOP', meaning => 'product', need_scriptpos => 1, need_mathstyle => 1 }, # \prod
+"\x{2210}" => { role => 'SUMOP', meaning => 'coproduct', need_scriptpos => 1, need_mathstyle => 1 }, # \amalg, \coprod
+  "\x{2211}" => { role => 'SUMOP', meaning => 'sum', need_scriptpos => 1, need_mathstyle => 1 }, # \sum
+  "\x{2213}" => { role => 'ADDOP', meaning => 'minus-or-plus' },    # \mp
+  "\x{2216}" => { role => 'ADDOP', meaning => 'set-minus' },        # \setminus
+  "\x{2217}" => { role => 'MULOP', meaning => 'times' },            # \ast
+  "\x{2218}" => { role => 'MULOP', meaning => 'compose' },          # \circ
+  "\x{2219}" => { role => 'MULOP' },                                # \bullet
+  "\x{221A}" => { role => 'OPERATOR', meaning => 'square-root' },        # \surd
+  "\x{221D}" => { role => 'RELOP',    meaning => 'proportional-to' },    # \propto
+  "\x{221E}" => { role => 'ID',       meaning => 'infinity' },           # \infty
+  "\x{2223}" => { role => 'VERTBAR' },    # \midDIVIDES (RELOP?) ?? well, sometimes.},
+  "\x{2225}" => { role => 'VERTBAR', meaning => 'parallel-to', name => '||' },    # \parallel
+  "\x{2227}" => { role => 'ADDOP',   meaning => 'and' },                          # \land, \wedge
+  "\x{2228}" => { role => 'ADDOP',   meaning => 'or' },                           # \lor, \vee
+  "\x{2229}" => { role => 'ADDOP',   meaning => 'intersection' },                 # \cap
+  "\x{222A}" => { role => 'ADDOP',   meaning => 'union' },                        # \cup
+  "\x{222B}" => { role => 'INTOP', meaning => 'integral', need_mathstyle => 1 }, # \int, (\smallint ?)
+  "\x{222E}" => { role => 'INTOP', meaning => 'contour-integral', need_mathstyle => 1 },    # \oint
+  "\x{223C}" => { role => 'RELOP', meaning => 'similar-to' },                               # \sim
+  "\x{2240}" => { role => 'MULOP' },                                                        # \wr
+  "\x{2243}" => { role => 'RELOP', meaning => 'similar-to-or-equals' },      # \simeq
+  "\x{2245}" => { role => 'RELOP', meaning => 'approximately-equals' },      # \cong
+  "\x{2248}" => { role => 'RELOP', meaning => 'approximately-equals' },      # \approx
+  "\x{224D}" => { role => 'RELOP', meaning => 'asymptotically-equals' },     # \asymp
+  "\x{2250}" => { role => 'RELOP', meaning => 'approaches-limit' },          # \doteq
+  "\x{2260}" => { role => 'RELOP', meaning => 'not-equals' },                # \neq
+  "\x{2261}" => { role => 'RELOP', meaning => 'equivalent-to' },             # \equiv
+  "\x{2264}" => { role => 'RELOP', meaning => 'less-than-or-equals' },       # \leq
+  "\x{2265}" => { role => 'RELOP', meaning => 'greater-than-or-equals' },    # \geq
+  "\x{226A}" => { role => 'RELOP', meaning => 'much-less-than' },            # \ll
+  "\x{226B}" => { role => 'RELOP', meaning => 'much-greater-than' },         # \gg
+  "\x{227A}" => { role => 'RELOP', meaning => 'precedes' },                  # \prec
+  "\x{227B}" => { role => 'RELOP', meaning => 'succeeds' },                  # \succ
+  "\x{2282}" => { role => 'RELOP', meaning => 'subset-of' },                 # \subset
+  "\x{2283}" => { role => 'RELOP', meaning => 'superset-of' },               # \supset
+  "\x{2286}" => { role => 'RELOP', meaning => 'subset-of-or-equals' },       # \subseteq
+  "\x{2287}" => { role => 'RELOP', meaning => 'superset-of-or-equals' },     # \supseteq
+  "\x{228E}" => { role => 'ADDOP' },                                         # \uplus
+  "\x{228F}" => { role => 'RELOP', meaning => 'square-image-of' },                 # \sqsubset
+  "\x{2290}" => { role => 'RELOP', meaning => 'square-original-of' },              # \sqsupset
+  "\x{2291}" => { role => 'RELOP', meaning => 'square-image-of-or-equals' },       # \sqsubseteq
+  "\x{2292}" => { role => 'RELOP', meaning => 'square-original-of-or-equals' },    # \sqsupseteq
+  "\x{2293}" => { role => 'ADDOP', meaning => 'square-intersection' },             # \sqcap
+  "\x{2294}" => { role => 'ADDOP', meaning => 'square-union' },                    # \sqcup
+  "\x{2295}" => { role => 'ADDOP', meaning => 'direct-sum' },                      # \oplus
+  "\x{2296}" => { role => 'ADDOP', meaning => 'symmetric-difference' },            # \ominus
+  "\x{2297}" => { role => 'MULOP', meaning => 'tensor-product' },                  # \otimes
+  "\x{2298}" => { role => 'MULOP' },                                               # \oslash
+  "\x{2299}" => { role => 'MULOP',     meaning => 'direct-product' },                    # \odot
+  "\x{22A2}" => { role => 'METARELOP', meaning => 'proves' },                            # \vdash
+  "\x{22A3}" => { role => 'METARELOP', meaning => 'does-not-prove' },                    # \dashv
+  "\x{22A4}" => { role => 'ADDOP',     meaning => 'top' },                               # \top
+  "\x{22A5}" => { role => 'ADDOP',     meaning => 'bottom' },                            # \bot
+  "\x{22A7}" => { role => 'RELOP',     meaning => 'models' },                            # \models
+  "\x{22B2}" => { role => 'ADDOP',     meaning => 'subgroup-of' },                       # \lhd
+  "\x{22B3}" => { role => 'ADDOP',     meaning => 'contains-as-subgroup' },              # \rhd
+  "\x{22B4}" => { role => 'ADDOP',     meaning => 'subgroup-of-or-equals' },             # \unlhd
+  "\x{22B5}" => { role => 'ADDOP',     meaning => 'contains-as-subgroup-or-equals' },    # \unrhd
+  "\x{22C0}" => { role => 'SUMOP', meaning => 'and', need_scriptpos => 1, need_mathstyle => 1 }, # \bigwedge
+  "\x{22C1}" => { role => 'SUMOP', meaning => 'or', need_scriptpos => 1, need_mathstyle => 1 }, # \bigvee
+"\x{22C2}" => { role => 'SUMOP', meaning => 'intersection', need_scriptpos => 1, need_mathstyle => 1 }, # \bigcap
+  "\x{22C3}" => { role => 'SUMOP', meaning => 'union', need_scriptpos => 1, need_mathstyle => 1 }, # \bigcup
+  "\x{22C4}" => { role => 'ADDOP' },    # \diamond
+  "\x{22C5}" => { role => 'MULOP' },    # \cdot
+  "\x{22C6}" => { role => 'MULOP' },    # \star
+  "\x{22C8}" => { role => 'RELOP' },    # \bowtieBOWTIE
+  "\x{22EF}" => { role => 'ID' },       # \cdots # MIDLINE HORIZONTAL ELLIPSIS
+  "\x{22F1}" => { role => 'ID' },       # \ddots # DOWN RIGHT DIAGONAL ELLIPSIS
+  "\x{2308}" => { role => 'OPEN',  name => 'lceil',  stretchy => 'false' },   # \lceil # LEFT CEILING
+  "\x{2309}" => { role => 'CLOSE', name => 'rceil',  stretchy => 'false' },   # \rceil # RIGHT CEILING
+  "\x{230A}" => { role => 'OPEN',  name => 'lfloor', stretchy => 'false' },   # \lfloor # LEFT FLOOR
+  "\x{230B}" => { role => 'CLOSE', name => 'rfloor', stretchy => 'false' },   # \rfloor # RIGHT FLOOR
+  "\x{2322}" => { role => 'RELOP' },                                          # \frownFRO},
+  "\x{2323}" => { role => 'RELOP' },                                          # \smileSMI},
+  "\x{25B3}" => { role => 'ADDOP' },                                          # \bigtriangleup
+  "\x{25B7}" => { role => 'ADDOP' },                                          # \triangleright
+  "\x{25BD}" => { role => 'ADDOP' },                                          # \bigtriangledown
+  "\x{25C1}" => { role => 'ADDOP' },                                          # \triangleleft
+  "\x{25CB}" => { role => 'MULOP' },                                          # \bigcirc
+  "\x{27C2}" => { role => 'RELOP', meaning => 'perpendicular-to' },           # \perp
+  "\x{27E8}" => { role => 'OPEN', name => 'langle', stretchy => 'false' }, # \langle # LEFT-POINTING ANGLE BRACKET
+  "\x{27E9}" => { role => 'CLOSE', name => 'rangle', stretchy => 'false' }, # \rangle # RIGHT-POINTING ANGLE BRACKET
+  "\x{27F5}" => { role => 'ARROW' },        # \longleftarrow # LONG LEFTWARDS ARROW
+  "\x{27F6}" => { role => 'ARROW' },        # \longrightarrow # LONG RIGHTWARDS ARROW
+  "\x{27F7}" => { role => 'METARELOP' },    # \longleftrightarrow # LONG LEFT RIGHT ARROW
+  "\x{27F8}" => { role => 'ARROW' },        # \Longleftarrow # LONG LEFTWARDS DOUBLE ARROW
+  "\x{27F9}" => { role => 'ARROW' },        # \Longrightarrow # LONG RIGHTWARDS DOUBLE ARROW
+  "\x{27FA}" => { role => 'METARELOP' },    # \Longleftrightarrow # LONG LEFT RIGHT DOUBLE ARROW
+  "\x{27FC}" => { role => 'ARROW' },        # \longmapsto # LONG RIGHTWARDS ARROW FROM B},
+  "\x{2A00}" => { role => 'SUMOP', need_scriptpos => 1, need_mathstyle => 1 },   # \bigodotmeaning=> ?
+"\x{2A01}" => { role => 'SUMOP', meaning => 'direct-sum', need_scriptpos => 1, need_mathstyle => 1 }, # \bigoplus
+"\x{2A02}" => { role => 'SUMOP', meaning => 'tensor-product', need_scriptpos => 1, need_mathstyle => 1 }, # \bigotimes
+"\x{2A04}" => { role => 'SUMOP', meaning => 'symmetric-difference', need_scriptpos => 1, need_mathstyle => 1 }, # \biguplus
+"\x{2A06}" => { role => 'SUMOP', meaning => 'square-union', need_scriptpos => 1, need_mathstyle => 1 }, # \bigsqcup
+  "\x{2A1D}" => { role => 'RELOP',      meaning => 'join' },                  # \Join
+  "\x{2AAF}" => { role => 'RELOP',      meaning => 'precedes-or-equals' },    # \preceq
+  "\x{2AB0}" => { role => 'RELOP',      meaning => 'succeeds-or-equals' },    # \succeq
+  "\x{FF0F}" => { role => 'OPFUNCTION', meaning => 'not' },                   # \not
+      #======================================================================
+  "arccos"  => { role => 'OPFUNCTION',   meaning => 'inverse-cosine' },          # \arccos #
+  "arcsin"  => { role => 'OPFUNCTION',   meaning => 'inverse-sine' },            # \arcsin #
+  "arctan"  => { role => 'OPFUNCTION',   meaning => 'inverse-tangent' },         # \arctan #
+  "arg"     => { role => 'OPFUNCTION',   meaning => 'argument' },                # \arg #
+  "cos"     => { role => 'TRIGFUNCTION', meaning => 'cosine' },                  # \cos #
+  "cosh"    => { role => 'TRIGFUNCTION', meaning => 'hyperbolic-cosine' },       # \cosh #
+  "cot"     => { role => 'TRIGFUNCTION', meaning => 'cotangent' },               # \cot #
+  "coth"    => { role => 'TRIGFUNCTION', meaning => 'hyperbolic-cotangent' },    # \coth #
+  "csc"     => { role => 'TRIGFUNCTION', meaning => 'cosecant' },                # \csc #
+  "deg"     => { role => 'OPFUNCTION',   meaning => 'degree' },                  # \deg #
+  "det"     => { role => 'LIMITOP',      meaning => 'determinant', need_scriptpos => 1 },    # \det #
+  "dim"     => { role => 'LIMITOP',      meaning => 'dimension' },                           # \dim #
+  "exp"     => { role => 'OPFUNCTION',   meaning => 'exponential' },                         # \exp #
+  "gcd"     => { role => 'OPFUNCTION',   meaning => 'gcd', need_scriptpos => 1 },            # \gcd #
+  "hom"     => { role => 'OPFUNCTION',   need_scriptpos => 1 },                              # \hom #
+  "inf"     => { role => 'LIMITOP',      meaning        => 'infimum', need_scriptpos => 1 }, # \inf #
+  "ker"     => { role => 'OPFUNCTION',   meaning        => 'kernel' },                       # \ker #
+  "lg"      => { role => 'OPFUNCTION' },                                                     # \lg #
+  "lim"     => { role => 'LIMITOP',    meaning => 'limit',          need_scriptpos => 1 }, # \lim #
+  "lim inf" => { role => 'LIMITOP',    meaning => 'limit-infimum',  need_scriptpos => 1 }, # \liminf #
+  "lim sup" => { role => 'LIMITOP',    meaning => 'limit-supremum', need_scriptpos => 1 }, # \limsup #
+  "ln"      => { role => 'OPFUNCTION', meaning => 'natural-logarithm' },                   # \ln #
+  "log"     => { role => 'OPFUNCTION', meaning => 'logarithm' },                           # \log #
+  "max"     => { role => 'OPFUNCTION', meaning => 'maximum', need_scriptpos => 1 },        # \max #
+  "min"     => { role => 'OPFUNCTION', meaning => 'minimum', need_scriptpos => 1 },        # \min #
+  "Pr"      => { role => 'OPFUNCTION',   need_scriptpos => 1 },                            # \Pr #
+  "sec"     => { role => 'TRIGFUNCTION', meaning        => 'secant' },                     # \sec #
+  "sin"     => { role => 'TRIGFUNCTION', meaning        => 'sine' },                       # \sin #
+  "sinh"    => { role => 'TRIGFUNCTION', meaning        => 'hyperbolic-sine' },            # \sinh #
+  "sup"     => { role => 'LIMITOP',      meaning        => 'supremum', need_scriptpos => 1 }, # \sup #
+  "tan"     => { role => 'TRIGFUNCTION', meaning        => 'tangent' },               # \tan #
+  "tanh"    => { role => 'TRIGFUNCTION', meaning        => 'hyperbolic-tangent' },    # \tanh #
+);
+
+sub unicode_math_properties {
+  my ($char) = @_;
+  return (defined $char) && $math_props{$char}; }
 
 #======================================================================
 1;
