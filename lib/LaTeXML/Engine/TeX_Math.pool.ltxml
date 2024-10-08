@@ -650,23 +650,47 @@ DefRegister('\fam' => Number(-1),
 # \mathpunct              c  assigns class 6 (punctuation) to following character or subformula.
 # \mathrel                c  assigns class 3 (relation) to following character or subformula.
 
+# Add an XMWrap, adjusting the math role unless it's already a sub-class of the requested coarse TeX math classes
 # Is XMWrap the right thing to wrap with (instead of XMArg)?
-# We can't really assume that the stuff inside is sensible math.
-# NOTE that \mathord and \mathbin aren't really right here.
-# We need a finer granularity than TeX does: an ORD could be several things,
-# a BIN could be a MULOP or ADDOP.
-# AND, rarely, they're empty.... Is it wrong to drop them?
-DefConstructor('\mathord Digested', "?#1(<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>)()", bounded => 1);
-# Parameter Should be Digested, but that throws off doScriptPos's position depth !?!?!
-DefConstructor('\mathop {}', "?#1(<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>)()",
-  bounded => 1, properties => { scriptpos => \&doScriptpos });
+our %mathclass_subclass = (
+  BIGOP => { ARROW => 1 },
+  BINOP => { ADDOP => 1, MULOP => 1 },
+  RELOP => {},
+  OPEN  => {},
+  CLOSE => {},
+  PUNCT => {},
+  ATOM  => {},    # really any role
+);
 
-DefConstructor('\mathbin Digested', "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathrel Digested', "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathopen Digested', "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathclose Digested', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathpunct Digested', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathinner Digested', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()", bounded => 1);
+sub adjustMathRole {
+  my ($role, $document, $node, %props) = @_;
+  if (!$node) { }    # Nothing? do nothing!
+  else {
+    my $wrapper = $document->openElement('ltx:XMWrap');
+    $document->absorb($node);
+    $document->closeElement('ltx:XMWrap');
+    my @nodes = element_nodes($wrapper);
+    @nodes = grep { $document->getNodeQName($_) ne 'ltx:XMHint'; } @nodes;
+    my $applied = 0;
+    my $gotrole = '';
+    if ((scalar(@nodes) == 1)    # Got single node
+      && ($gotrole = $nodes[0]->getAttribute('role'))                        # with a role
+      && (($role eq 'ATOM') || $mathclass_subclass{$role}{$gotrole})) { }    # and acceptable? Do nothing
+    else {
+      $applied = 1;
+      $wrapper->setAttribute(role => $role); }    # Else, assign the requested role
+    $wrapper->setAttribute(scriptpos => $props{scriptpos}) if defined $props{scriptpos};
+    $wrapper->setAttribute(mathstyle => $props{mathstyle}) if defined $props{mathstyle}; }
+  return; }
+DefConstructor('\mathord Digested', sub { adjustMathRole('ID', @_); });
+DefConstructor('\mathop Digested', sub { adjustMathRole('BIGOP', @_); },
+  properties => { scriptpos => \&doScriptpos });
+DefConstructor('\mathbin Digested',   sub { adjustMathRole('BINOP', @_); });
+DefConstructor('\mathrel Digested',   sub { adjustMathRole('RELOP', @_); });
+DefConstructor('\mathopen Digested',  sub { adjustMathRole('OPEN',  @_); });
+DefConstructor('\mathclose Digested', sub { adjustMathRole('CLOSE', @_); });
+DefConstructor('\mathpunct Digested', sub { adjustMathRole('PUNCT', @_); });
+DefConstructor('\mathinner Digested', sub { adjustMathRole('ATOM',  @_); });
 
 #======================================================================
 # Delimiters
