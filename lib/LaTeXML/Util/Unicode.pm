@@ -347,17 +347,16 @@ our %math_props = (
   ',' => { role => 'PUNCT' },
   '.' => { role => 'PERIOD' },
   ';' => { role => 'PUNCT' },
-  ':' => { role => 'METARELOP', name     => 'colon' },    # plausible default?
+  ':' => { role => 'METARELOP', name     => 'colon' },          # plausible default?
   '|' => { role => 'VERTBAR',   stretchy => 'false' },
-  #  '|' => { role => 'VERTBAR',   stretchy => 'true' },
-  '<' => { role => 'RELOP', meaning  => 'less-than' },
-  '>' => { role => 'RELOP', meaning  => 'greater-than' },
-  '(' => { role => 'OPEN',  stretchy => 'false' },
-  ')' => { role => 'CLOSE', stretchy => 'false' },
-  '[' => { role => 'OPEN',  stretchy => 'false' },
-  ']' => { role => 'CLOSE', stretchy => 'false' },
-  '{' => { role => 'OPEN',  stretchy => 'false' },
-  '}' => { role => 'CLOSE', stretchy => 'false' },
+  '<' => { role => 'RELOP',     meaning  => 'less-than' },
+  '>' => { role => 'RELOP',     meaning  => 'greater-than' },
+  '(' => { role => 'OPEN',      stretchy => 'false' },
+  ')' => { role => 'CLOSE',     stretchy => 'false' },
+  '[' => { role => 'OPEN',      stretchy => 'false' },
+  ']' => { role => 'CLOSE',     stretchy => 'false' },
+  '{' => { role => 'OPEN',      stretchy => 'false' },
+  '}' => { role => 'CLOSE',     stretchy => 'false' },
 
 ##  ':'        => { role => 'METARELOP' },    # \colon # Seems like good default role
 
