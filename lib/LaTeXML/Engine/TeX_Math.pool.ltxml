@@ -569,21 +569,21 @@ DefRegister('\everydisplay', Tokens());
 
 DefPrimitive('\mathchar Number', sub {
     my ($stomach, $code) = @_;
-    my ($role, $glyph, $font, $reversion) = decodeMathChar($code,
+    my ($glyph, $font, $reversion, %props) = decodeMathChar($code,
       Tokens(T_CS('\mathchar'), $_[1]->revert, T_CS('\relax')));
-    return Box($glyph, $font, undef, $reversion, role => $role); });
+    return Box($glyph, $font, undef, $reversion, %props); });
 
 DefConstructor('\delimiter Number',
-  "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
+"?#glyph(?#isMath(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#glyph</ltx:XMTok>)(#glyph))",
   sizer       => '#glyph',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
     $n = $n >> 12;    # Ignore 3 rightmost digits and treat as \mathchar
-    my ($role, $glyph) = decodeMathChar($n);
-    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
-    $whatsit->setProperty(role  => $role)                                   if defined $role;
-    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
+    my ($glyph, $f, $rev, %props) = decodeMathChar($n);
+    $whatsit->setProperty(glyph => $glyph) if $glyph;
+    $whatsit->setProperties(%props);
+    $whatsit->setProperty(font => $f) if $glyph;
     return; });
 
 # Almost like a register, but different...
@@ -591,26 +591,27 @@ DefPrimitive('\mathchardef Token SkipSpaces SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
     $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
     my $value = $stomach->getGullet->readNumber();
-    my ($role, $glyph) = decodeMathChar($value->valueOf);
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value,
-        $glyph, role => $role));
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, 'math', $value));
     AfterAssignment();
     return; });
 
 DefConstructor('\mathaccent Number Digested',
-  "<ltx:XMApp><ltx:XMTok role='#accrole'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
+"<ltx:XMApp><ltx:XMTok role='#accrole' name='#name' stretchy='#stretchy'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
   sizer       => '#2',    # Close enough?
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
-    my ($role, $glyph) = decodeMathChar($n);
-    my $accrole = 'OVERACCENT';
-    if (my $entry = unicode_accent($glyph)) {
-      $glyph   = $$entry{unwrapped};
-      $accrole = $$entry{role}; }
-    $whatsit->setProperty(glyph   => $glyph)                                  if $glyph;
-    $whatsit->setProperty(font    => LookupValue('font')->specialize($glyph)) if $glyph;
-    $whatsit->setProperty(accrole => $accrole)                                if $glyph;
+    my ($glyph, $f, $rev, %props) = decodeMathChar($n);
+    my $name;
+    my $acc_props = unicode_accent($glyph) || {};
+    $glyph = $$acc_props{unwrapped} if $$acc_props{unwrapped};
+    my $accrole = $$acc_props{role} || 'OVERACCENT';
+    $name = $$acc_props{name};
+    $whatsit->setProperty(glyph    => $glyph)                                  if $glyph;
+    $whatsit->setProperty(font     => LookupValue('font')->specialize($glyph)) if $glyph;
+    $whatsit->setProperty(accrole  => $accrole)                                if $glyph;
+    $whatsit->setProperty(name     => $name)                                   if $name;
+    $whatsit->setProperty(stretchy => $$acc_props{stretchy} || 'false');    # stretchy ?
     return; });
 
 # # Only used for active math characters, so far
