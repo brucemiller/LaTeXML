@@ -137,10 +137,11 @@ DefPrimitiveI('\vfilneg', undef, undef);
 #----------------------------------------------------------------------
 # \lastskip         iq is 0.0 pt or the last glue or muglue on the current list.
 DefRegister('\lastskip' => Dimension(0), readonly => 1, getter => sub {
-    my $box;
     for (my $i = $#LaTeXML::LIST ; $i > 0 ; $i--) {
       my $box = $LaTeXML::LIST[$i];
-      last if !$box || !$box->getProperty('isSkip');
+      last if !$box;
+      next if ref $box eq 'LaTeXML::Core::Comment';
+      last if !$box->getProperty('isSkip');
       return $box->getProperty('width'); }
     return Dimension(0); });
 
