@@ -2863,7 +2863,7 @@ sub decodeMathChar {
       elsif ($fontdef = LookupValue('textfont_' . $fam))         { $downsize = 2; } }
     my $defn = $STATE->lookupDefinition($fontdef);
     $fontinfo = $defn && $defn->isFontDef;
-    if ($$basefontinfo{size} != $curfont->getSize) { # If we've gotten an explicit font SIZE change; Adjust!
+    if ($fontinfo && ($$basefontinfo{size} != $curfont->getSize)) { # If we've gotten an explicit font SIZE change; Adjust!
       $fontinfo = {%$fontinfo}; $$fontinfo{size} = $curfont->getSize; } }
   my $font = $curfont->merge(%$fontinfo);
   if ($downsize > 0) { $font = $curfont->merge(scripted => 1); }

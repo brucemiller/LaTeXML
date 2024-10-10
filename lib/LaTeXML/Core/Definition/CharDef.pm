@@ -56,7 +56,7 @@ sub invoke {
       ($local ? Tokens(T_CS('\char'), $value->revert, T_CS('\relax')) : $$self{cs})); }
   else {                           # Else math mode, mathDecode!
     my ($glyph, $f, $rev, %props) = LaTeXML::Package::decodeMathChar($nvalue);
-    if (!defined $props{name}) {    # TEMPORARY HACK ?????
+    if (!defined $props{name}) { # Synthesize name attribute from CS, if needed (Clarify purpose of name!)
       my $n = $self->getCSName;
       $n =~ s/^\\//;
       $props{name} = $n if !$props{meaning} || ($n ne $props{meaning}); }

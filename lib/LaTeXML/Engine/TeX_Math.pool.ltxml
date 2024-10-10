@@ -653,12 +653,13 @@ DefRegister('\fam' => Number(-1),
 # Add an XMWrap, adjusting the math role unless it's already a sub-class of the requested coarse TeX math classes
 # Is XMWrap the right thing to wrap with (instead of XMArg)?
 our %mathclass_subclass = (
-  BIGOP => { ARROW => 1 },
+  BIGOP => { ARROW => 1, SUMOP => 1, INTOP => 1, DIFFOP => 1 },
   BINOP => { ADDOP => 1, MULOP => 1 },
   RELOP => {},
   OPEN  => {},
   CLOSE => {},
-  PUNCT => {},
+  PUNCT => { PERIOD => 1 },
+  ID    => { NUMBER => 1 },
   ATOM  => {},    # really any role
 );
 

@@ -362,29 +362,24 @@ our %math_props = (
 
   #======================================================================
   UTF(0x5C) => { role => 'ADDOP', meaning => 'set-minus' },        # \backslash
-  UTF(0xAC) => { role => 'BIGOP', meaning => 'not' },              # \lnot
+  UTF(0xAC) => { role => 'BIGOP', meaning => 'not' },              # \neg, \lnot
   UTF(0xAC) => { role => 'BIGOP', meaning => 'not' },              # \neg
   UTF(0xB1) => { role => 'ADDOP', meaning => 'plus-or-minus' },    # \pm
   UTF(0xD7) => { role => 'MULOP', meaning => 'times' },            # \times
   UTF(0xF7) => { role => 'MULOP', meaning => 'divide' },           # \div
 
-  UTF(0xAC) => { role => 'BIGOP', meaning => 'not' },              # \neg,\lnot
-  UTF(0x5C) => { role => 'ADDOP', meaning => 'set-minus' },        # \backslash
-  UTF(0xB1) => { role => 'ADDOP', meaning => 'plus-or-minus' },    # \pm
-  UTF(0xD7) => { role => 'MULOP', meaning => 'times' },            # \times
-  UTF(0xF7) => { role => 'MULOP', meaning => 'divide' },           # \div
-      #======================================================================
-  "\x{2020}" => { role => 'MULOP' },     # \dagger
-  "\x{2021}" => { role => 'MULOP' },     # \ddagger
-  "\x{2032}" => { role => 'SUPOP', },    # \prime
+  #======================================================================
+  "\x{2020}" => { role => 'MULOP' },                                                     # \dagger
+  "\x{2021}" => { role => 'MULOP' },                                                     # \ddagger
+  "\x{2032}" => { role => 'SUPOP', },                                                    # \prime
   "\x{2061}" => { role => 'APPLYOP',    name    => '',      reversion => '' },
   "\x{2062}" => { role => 'MULOP',      meaning => 'times', name      => '', reversion => '' },
   "\x{2063}" => { role => 'PUNCT',      name    => '',      reversion => '' },
   "\x{2064}" => { role => 'ADDOP',      meaning => 'plus',  name      => '', reversion => '' },
-  "\x{210F}" => { role => 'ID',         meaning => 'Planck-constant-over-2-pi' },    # \hbar
-  "\x{2111}" => { role => 'OPFUNCTION', meaning => 'imaginary-part' },               # \Im
-  "\x{2118}" => { role => 'OPFUNCTION', meaning => 'Weierstrass-p' },                # \wp
-  "\x{211C}" => { role => 'OPFUNCTION', meaning => 'real-part' },                    # \Re
+  "\x{210F}" => { role => 'ID',         meaning => 'Planck-constant-over-2-pi' },        # \hbar
+  "\x{2111}" => { role => 'OPFUNCTION', meaning => 'imaginary-part' },                   # \Im
+  "\x{2118}" => { role => 'OPFUNCTION', meaning => 'Weierstrass-p' },                    # \wp
+  "\x{211C}" => { role => 'OPFUNCTION', meaning => 'real-part' },                        # \Re
   "\x{2190}" => { role => 'ARROW' },                           # \leftarrow # LEFTWARDS ARROW
   "\x{2191}" => { role => 'ARROW', name => 'uparrow' },        # \uparrow # UPWARDS ARROW
   "\x{2192}" => { role => 'ARROW' },                           # \to, \rightarrow # RIGHTWARDS ARROW
@@ -407,7 +402,7 @@ our %math_props = (
   "\x{21D0}" => { role => 'ARROW' },                       # \Leftarrow # LEFTWARDS DOUBLE ARROW
   "\x{21D1}" => { role => 'ARROW', name => 'Uparrow' },    # \Uparrow # UPWARDS DOUBLE ARROW
   "\x{21D2}" => { role => 'ARROW' },                       # \Rightarrow # RIGHTWARDS DOUBLE ARROW
-  "\x{21D3}" => { role => 'ARROW', name => 'Downarrow' },  # \Downarrow # DOWNWARDS DOUBLE ARROW
+  "\x{21D3}" => { role => 'ARROW', name => 'Downarrow' },    # \Downarrow # DOWNWARDS DOUBLE ARROW
   "\x{21D4}" => { role => 'METARELOP', meaning => 'iff' }, # ,\Leftrightarrow, \iff # LEFT RIGHT DOUBLE ARROW
   "\x{21D5}" => { role => 'ARROW',  name    => 'Updownarror' },  # \Updownarrow # UP DOWN DOUBLE ARROW
   "\x{2200}" => { role => 'BIGOP',  meaning => 'for-all' },      # \forall
@@ -533,9 +528,9 @@ our %math_props = (
   "exp"     => { role => 'OPFUNCTION',   meaning => 'exponential' },                         # \exp #
   "gcd"     => { role => 'OPFUNCTION',   meaning => 'gcd', need_scriptpos => 1 },            # \gcd #
   "hom"     => { role => 'OPFUNCTION',   need_scriptpos => 1 },                              # \hom #
-  "inf"     => { role => 'LIMITOP',      meaning        => 'infimum', need_scriptpos => 1 }, # \inf #
-  "ker"     => { role => 'OPFUNCTION',   meaning        => 'kernel' },                       # \ker #
-  "lg"      => { role => 'OPFUNCTION' },                                                     # \lg #
+  "inf"     => { role => 'LIMITOP',      meaning        => 'infimum', need_scriptpos => 1 },  # \inf #
+  "ker"     => { role => 'OPFUNCTION',   meaning        => 'kernel' },                        # \ker #
+  "lg"      => { role => 'OPFUNCTION' },                                                      # \lg #
   "lim"     => { role => 'LIMITOP',    meaning => 'limit',          need_scriptpos => 1 }, # \lim #
   "lim inf" => { role => 'LIMITOP',    meaning => 'limit-infimum',  need_scriptpos => 1 }, # \liminf #
   "lim sup" => { role => 'LIMITOP',    meaning => 'limit-supremum', need_scriptpos => 1 }, # \limsup #
