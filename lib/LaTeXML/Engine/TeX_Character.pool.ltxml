@@ -105,7 +105,7 @@ DefPrimitive('\chardef Token SkipSpaces SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
     $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
     my $value = $stomach->getGullet->readNumber();
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value));
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, 'text', $value));
     AfterAssignment();
     return; });
 

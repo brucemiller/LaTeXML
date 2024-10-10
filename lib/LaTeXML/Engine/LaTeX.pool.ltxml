@@ -6293,8 +6293,8 @@ Let('\mathalpha', '\relax');
 DefPrimitive('\mathhexbox {}{}{}', sub {
     my ($stomach, $a, $b, $c) = @_;
     my $n = ToString($a) * 256 + ToString($b) * 16 + ToString($c);
-    my ($role, $glyph) = decodeMathChar($n);
-    return Box($glyph, LookupValue('font')->specialize($glyph)); });
+    my ($glyph, $f, $rev, %props) = decodeMathChar($n);
+    return Box($glyph, $f, undef, undef, %props); });
 
 DefMacroI('\nocorrlist', undef, ',.');
 Let('\nocorr',    '\relax');

@@ -569,21 +569,21 @@ DefRegister('\everydisplay', Tokens());
 
 DefPrimitive('\mathchar Number', sub {
     my ($stomach, $code) = @_;
-    my ($role, $glyph, $font, $reversion) = decodeMathChar($code,
+    my ($glyph, $font, $reversion, %props) = decodeMathChar($code,
       Tokens(T_CS('\mathchar'), $_[1]->revert, T_CS('\relax')));
-    return Box($glyph, $font, undef, $reversion, role => $role); });
+    return Box($glyph, $font, undef, $reversion, %props); });
 
 DefConstructor('\delimiter Number',
-  "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
+"?#glyph(?#isMath(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#glyph</ltx:XMTok>)(#glyph))",
   sizer       => '#glyph',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
     $n = $n >> 12;    # Ignore 3 rightmost digits and treat as \mathchar
-    my ($role, $glyph) = decodeMathChar($n);
-    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
-    $whatsit->setProperty(role  => $role)                                   if defined $role;
-    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
+    my ($glyph, $f, $rev, %props) = decodeMathChar($n);
+    $whatsit->setProperty(glyph => $glyph) if $glyph;
+    $whatsit->setProperties(%props)        if %props;
+    $whatsit->setProperty(font => $f)      if $glyph;
     return; });
 
 # Almost like a register, but different...
@@ -591,26 +591,27 @@ DefPrimitive('\mathchardef Token SkipSpaces SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
     $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
     my $value = $stomach->getGullet->readNumber();
-    my ($role, $glyph) = decodeMathChar($value->valueOf);
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value,
-        $glyph, role => $role));
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, 'math', $value));
     AfterAssignment();
     return; });
 
 DefConstructor('\mathaccent Number Digested',
-  "<ltx:XMApp><ltx:XMTok role='#accrole'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
+"<ltx:XMApp><ltx:XMTok role='#accrole' name='#name' stretchy='#stretchy'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
   sizer       => '#2',    # Close enough?
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
-    my ($role, $glyph) = decodeMathChar($n);
-    my $accrole = 'OVERACCENT';
-    if (my $entry = unicode_accent($glyph)) {
-      $glyph   = $$entry{unwrapped};
-      $accrole = $$entry{role}; }
-    $whatsit->setProperty(glyph   => $glyph)                                  if $glyph;
-    $whatsit->setProperty(font    => LookupValue('font')->specialize($glyph)) if $glyph;
-    $whatsit->setProperty(accrole => $accrole)                                if $glyph;
+    my ($glyph, $f, $rev, %props) = decodeMathChar($n);
+    my $name;
+    my $acc_props = unicode_accent($glyph) || {};
+    $glyph = $$acc_props{unwrapped} if $$acc_props{unwrapped};
+    my $accrole = $$acc_props{role} || 'OVERACCENT';
+    $name = $$acc_props{name};
+    $whatsit->setProperty(glyph    => $glyph)                                  if $glyph;
+    $whatsit->setProperty(font     => LookupValue('font')->specialize($glyph)) if $glyph;
+    $whatsit->setProperty(accrole  => $accrole)                                if $glyph;
+    $whatsit->setProperty(name     => $name)                                   if $name;
+    $whatsit->setProperty(stretchy => $$acc_props{stretchy} || 'false');    # stretchy ?
     return; });
 
 # # Only used for active math characters, so far
@@ -649,23 +650,48 @@ DefRegister('\fam' => Number(-1),
 # \mathpunct              c  assigns class 6 (punctuation) to following character or subformula.
 # \mathrel                c  assigns class 3 (relation) to following character or subformula.
 
+# Add an XMWrap, adjusting the math role unless it's already a sub-class of the requested coarse TeX math classes
 # Is XMWrap the right thing to wrap with (instead of XMArg)?
-# We can't really assume that the stuff inside is sensible math.
-# NOTE that \mathord and \mathbin aren't really right here.
-# We need a finer granularity than TeX does: an ORD could be several things,
-# a BIN could be a MULOP or ADDOP.
-# AND, rarely, they're empty.... Is it wrong to drop them?
-DefConstructor('\mathord Digested', "?#1(<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>)()", bounded => 1);
-# Parameter Should be Digested, but that throws off doScriptPos's position depth !?!?!
-DefConstructor('\mathop {}', "?#1(<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>)()",
-  bounded => 1, properties => { scriptpos => \&doScriptpos });
+our %mathclass_subclass = (
+  BIGOP => { ARROW => 1, SUMOP => 1, INTOP => 1, DIFFOP => 1 },
+  BINOP => { ADDOP => 1, MULOP => 1 },
+  RELOP => {},
+  OPEN  => {},
+  CLOSE => {},
+  PUNCT => { PERIOD => 1 },
+  ID    => { NUMBER => 1 },
+  ATOM  => {},    # really any role
+);
 
-DefConstructor('\mathbin Digested', "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathrel Digested', "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathopen Digested', "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathclose Digested', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathpunct Digested', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
-DefConstructor('\mathinner Digested', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()", bounded => 1);
+sub adjustMathRole {
+  my ($role, $document, $node, %props) = @_;
+  if (!$node) { }    # Nothing? do nothing!
+  else {
+    my $wrapper = $document->openElement('ltx:XMWrap');
+    $document->absorb($node);
+    $document->closeElement('ltx:XMWrap');
+    my @nodes = element_nodes($wrapper);
+    @nodes = grep { $document->getNodeQName($_) ne 'ltx:XMHint'; } @nodes;
+    my $applied = 0;
+    my $gotrole = '';
+    if ((scalar(@nodes) == 1)    # Got single node
+      && ($gotrole = $nodes[0]->getAttribute('role'))                        # with a role
+      && (($role eq 'ATOM') || $mathclass_subclass{$role}{$gotrole})) { }    # and acceptable? Do nothing
+    else {
+      $applied = 1;
+      $wrapper->setAttribute(role => $role); }    # Else, assign the requested role
+    $wrapper->setAttribute(scriptpos => $props{scriptpos}) if defined $props{scriptpos};
+    $wrapper->setAttribute(mathstyle => $props{mathstyle}) if defined $props{mathstyle}; }
+  return; }
+DefConstructor('\mathord Digested', sub { adjustMathRole('ID', @_); });
+DefConstructor('\mathop Digested', sub { adjustMathRole('BIGOP', @_); },
+  properties => { scriptpos => \&doScriptpos });
+DefConstructor('\mathbin Digested',   sub { adjustMathRole('BINOP', @_); });
+DefConstructor('\mathrel Digested',   sub { adjustMathRole('RELOP', @_); });
+DefConstructor('\mathopen Digested',  sub { adjustMathRole('OPEN',  @_); });
+DefConstructor('\mathclose Digested', sub { adjustMathRole('CLOSE', @_); });
+DefConstructor('\mathpunct Digested', sub { adjustMathRole('PUNCT', @_); });
+DefConstructor('\mathinner Digested', sub { adjustMathRole('ATOM',  @_); });
 
 #======================================================================
 # Delimiters

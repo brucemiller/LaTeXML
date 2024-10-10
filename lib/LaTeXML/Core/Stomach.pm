@@ -244,8 +244,8 @@ sub invokeToken_simple {
     $STATE->clearPrefixes;                          # prefixes shouldn't apply here.
     if (my $mathcode = $STATE->lookupValue('IN_MATH')
       && $STATE->lookupMathcode($meaning->toString)) {
-      my ($role, $glyph, $f, $reversion) = LaTeXML::Package::decodeMathChar($mathcode, $meaning);
-      return Box($glyph, $f, undef, $reversion, role => $role); }
+      my ($glyph, $f, $reversion, %props) = LaTeXML::Package::decodeMathChar($mathcode, $meaning);
+      return Box($glyph, $f, undef, $reversion, %props); }
     else {
       return Box(LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1),
         undef, undef, $meaning); } } }

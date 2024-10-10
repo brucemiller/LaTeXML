@@ -1789,7 +1789,7 @@ sub defmath_cons {
         ? $cs : $presentation->unlist); }; }
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($defcs, $paramlist,
       ($nargs == 0
-        # If trivial presentation, allow it in Text
+          # If trivial presentation, allow it in Text
         ? ($presentation !~ /(?:\(|\)|\\)/
           ? "?#isMath(<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok)"
@@ -2466,7 +2466,7 @@ sub AddToMacro {
   else {
     local $LaTeXML::Core::State::UNLOCKED = 1;    # ALLOW redefinitions that only adding to the macro
     DefMacroI($cs, undef, Tokens(map { $_->unlist }
-        map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
+          map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
       nopackParameters => 1, scope => 'global', locked => $$defn{locked}); }
   return; }
 
@@ -2833,7 +2833,8 @@ sub decodeMathChar {
   my $curfam   = $STATE->lookupValue('fontfamily') // -1;
   my $initfont = $STATE->lookupValue('initial_math_font') || $curfont;
   my ($fontdef, $fontinfo);
-  my ($oclass,  $ofam) = ($class, $fam);
+  my ($oclass, $ofam) = ($class, $fam);
+  my $downsize = 0;
   # Special case: class 7 means use the \fam as the family code, if 0<=f<=15;
   if ($class == 7) {
     $fam = $curfam if (defined $curfam) && (0 <= $curfam) && ($curfam <= 15); }
@@ -2846,24 +2847,48 @@ sub decodeMathChar {
     $fontdef   = T_CS('\font');    # Assume specified by \mathrm or something similar!
     $fontinfo  = $STATE->lookupValue('font')->asFontinfo; }
   else {
-    $fontdef = LookupValue('textfont_' . $fam);
+    my $style = $curfont->getMathstyle;
+    $style = 'text' unless $style && ($style =~ /^(:?scriptscript|script|text)$/);
+    my $basefontdef  = LookupValue('textfont_0');
+    my $basefontdefn = $STATE->lookupDefinition($basefontdef);
+    my $basefontinfo = $basefontdefn && $basefontdefn->isFontDef;
+    if ($style eq 'text') { # Lookup the requested font according to script level, but with adjusted fallbacks
+      $fontdef = LookupValue('textfont_' . $fam); }
+    elsif ($style eq 'script') {
+      if ($fontdef = LookupValue('scriptfont_' . $fam)) { }
+      elsif ($fontdef = LookupValue('textfont_' . $fam)) { $downsize = 1; } }
+    elsif ($style eq 'scriptscript') {
+      if    ($fontdef = LookupValue('scriptscriptfont_' . $fam)) { }
+      elsif ($fontdef = LookupValue('scriptfont_' . $fam))       { $downsize = 1; }
+      elsif ($fontdef = LookupValue('textfont_' . $fam))         { $downsize = 2; } }
     my $defn = $STATE->lookupDefinition($fontdef);
-    $fontinfo = $defn && $defn->isFontDef; }
-  my $font     = $curfont->merge(%$fontinfo);
+    $fontinfo = $defn && $defn->isFontDef;
+    if ($fontinfo && ($$basefontinfo{size} != $curfont->getSize)) { # If we've gotten an explicit font SIZE change; Adjust!
+      $fontinfo = {%$fontinfo}; $$fontinfo{size} = $curfont->getSize; } }
+  my $font = $curfont->merge(%$fontinfo);
+  if ($downsize > 0) { $font = $curfont->merge(scripted => 1); }
+  if ($downsize > 1) { $font = $curfont->merge(scripted => 1); }
+
   my $encoding = $fontinfo && $$fontinfo{encoding} || '';
   my ($glyph, $f) = ($encoding ? FontDecode($n, $encoding, $font) : ($char, $font));
   # If no specific class, Lookup properties from a DefMath? [Eventually: Unicode data!]
-  my $charinfo = (defined $glyph ? LookupValue('math_token_attributes_' . $glyph) : ());
+  my $charinfo = unicode_math_properties($glyph);
   my $role     = ($charinfo && $$charinfo{role}) || $mathclassrole[$class];
-  my $size     = $curfont->getSize;
-  $f = $f->merge(size => $size);
+  my %props    = ();
+  %props       = %$charinfo if $charinfo;
+  $props{role} = $role      if $role && !$props{role};
+  my $in_display = $curfont->getMathstyle eq 'display';
+  if ($props{need_scriptpos}) {
+    $props{scriptpos} = ($in_display ? 'mid' : 'post'); }
+  if ($props{need_mathstyle}) {
+    $props{mathstyle} = ($in_display ? 'display' : 'text'); }
   my %d = $f->relativeTo($curfont);
   if ($reversion) {
     %d = () if LookupValue('LaTeX.pool.ltxml_loaded');
     my $rev = ($maybe_rev && %d ? Tokens(T_BEGIN, $fontdef, $reversion, T_END) : $reversion);
-    return ($role, $glyph, $f, $rev); }
+    return ($glyph, $f, $rev, %props); }
   else {
-    return ($role, $glyph, $f); } }
+    return ($glyph, $f, undef, %props); } }
 
 #======================================================================
 # Color

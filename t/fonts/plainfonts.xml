@@ -114,16 +114,28 @@ but compare meanings:</p>
       </Math></p>
   </para>
   <para>
-    <p>“cal:  abc123 and <Math mode="inline" tex="{\cal abc123}" text="⊣ * ⌊ * ⌋ * ∞ * ∈ * ∋">
+    <p>“cal:  abc123 and <Math mode="inline" tex="{\cal abc123}" text="absent does-not-prove list@() * infinity element-of contains">
         <XMath>
           <XMApp>
-            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMTok role="UNKNOWN">⊣</XMTok>
-            <XMTok role="UNKNOWN">⌊</XMTok>
-            <XMTok role="UNKNOWN">⌋</XMTok>
-            <XMTok role="UNKNOWN">∞</XMTok>
-            <XMTok role="UNKNOWN">∈</XMTok>
-            <XMTok role="UNKNOWN">∋</XMTok>
+            <XMTok meaning="does-not-prove" role="METARELOP">⊣</XMTok>
+            <XMTok meaning="absent"/>
+            <XMApp>
+              <XMTok meaning="element-of" role="RELOP">∈</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMDual>
+                  <XMApp>
+                    <XMTok meaning="list"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok name="lfloor" role="OPEN" stretchy="false">⌊</XMTok>
+                    <XMTok name="rfloor" role="CLOSE" stretchy="false">⌋</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok meaning="infinity" role="ID">∞</XMTok>
+              </XMApp>
+              <XMTok meaning="contains" role="RELOP">∋</XMTok>
+            </XMApp>
           </XMApp>
         </XMath>
       </Math></p>
