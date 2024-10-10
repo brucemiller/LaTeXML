@@ -582,8 +582,8 @@ DefConstructor('\delimiter Number',
     $n = $n >> 12;    # Ignore 3 rightmost digits and treat as \mathchar
     my ($glyph, $f, $rev, %props) = decodeMathChar($n);
     $whatsit->setProperty(glyph => $glyph) if $glyph;
-    $whatsit->setProperties(%props);
-    $whatsit->setProperty(font => $f) if $glyph;
+    $whatsit->setProperties(%props)        if %props;
+    $whatsit->setProperty(font => $f)      if $glyph;
     return; });
 
 # Almost like a register, but different...
