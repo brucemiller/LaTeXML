@@ -186,9 +186,8 @@ DefMacro('\url', '\begingroup\lx@hyper@url\url', locked => 1);
 DefConstructor('\lx@hyper@url@ Undigested {}{} Semiverbatim {}',
   "?#isMath(<ltx:XMWrap class='#class' href='#href'>#5</ltx:XMWrap>)"    # Allow this to work in Math!
     . " (<ltx:ref href='#href' class='#class'>#5</ltx:ref>)",
-  beforeDigest => \&LaTeXML::Core::Stomach::bgroup,
-  afterDigest  => \&LaTeXML::Core::Stomach::egroup,
-  properties   => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[4]),
+  bounded    => 1,
+  properties => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[4]),
       class => sub { my $c = ToString($_[1]); $c =~ s/^\\//; 'ltx_' . $c; }); },
   sizer     => '#5',
   reversion => '#1#2#4#3');
@@ -207,9 +206,8 @@ DefMacro('\hyperref', '\@ifnextchar[\hyperref@@ii\hyperref@@iv');
 # 2 argument form
 DefConstructor('\hyperref@@ii OptionalSemiverbatim {}',
   "<ltx:ref labelref='#label'>#2</ltx:ref>",
-  beforeDigest => \&LaTeXML::Core::Stomach::bgroup,
-  afterDigest  => \&LaTeXML::Core::Stomach::egroup,
-  properties   => sub { (label => CleanLabel($_[1])); });
+  bounded    => 1,
+  properties => sub { (label => CleanLabel($_[1])); });
 # 4 argument form
 DefConstructor('\hyperref@@iv Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#4</ltx:ref>",

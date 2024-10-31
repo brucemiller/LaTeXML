@@ -176,10 +176,7 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
     $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END));
     AssignValue(inPreamble => $inpreamble);
     return; },
-  beforeDigest => sub {
-    $_[0]->bgroup; },
-  afterDigest => sub {
-    $_[0]->egroup; });
+  bounded => 1);
 
 # Append a piece of data to an existing frontmatter item that is contained in <$tag>
 # If $label is given, look for an item which has label=>$label,
