@@ -23,7 +23,7 @@ use charnames ':full';
 
 DefRegister('\magnification' => Number(1000));
 
-Let('\bye', '\end');
+Let('\bye', '\lx@end@document');
 
 # Most of these are ignored, but...
 DefMacro('\tracingall',
@@ -764,8 +764,6 @@ DefMathI('\to', undef, "\x{2192}", role => 'ARROW'); # RIGHTWARDS ARROW??? a bit
 foreach my $op ('\hrulefill', '\dotfill', '\rightarrowfill', '\leftarrowfill',
   '\upbracefill', '\downbracefill') {
   DefPrimitiveI($op, undef, undef); }
-
-#Let('\bye', '\end');
 
 Let('\sp', T_SUPER);
 Let('\sb', T_SUB);
