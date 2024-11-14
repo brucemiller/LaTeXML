@@ -541,11 +541,9 @@ DefMacro("~", '\nobreakspace{}');
 DefMacroI('\slash', undef, '/');
 DefPrimitiveI('\filbreak', undef, undef);
 DefMacroI('\goodbreak', undef, '\par');
-DefMacroI('\eject',     undef, '\par\LTX@newpage');
+DefMacroI('\eject',     undef, '\par\lx@newpage');
 Let('\newpage', '\eject');
-DefConstructorI('\LTX@newpage', undef, "^<ltx:pagination role='newpage'/>");
-
-DefMacroI('\supereject', undef, '\par\LTX@newpage');
+DefMacroI('\supereject', undef, '\par\lx@newpage');
 DefPrimitiveI('\removelastskip', undef, undef);
 DefMacroI('\smallbreak', undef, '\par');
 DefMacroI('\medbreak',   undef, '\par');

@@ -4755,8 +4755,8 @@ DefPrimitive('\nopagebreak[]', undef);
 DefPrimitiveI('\columnbreak', undef, undef);    # latex? or multicol?
 DefPrimitive('\enlargethispage OptionalMatch:* {}', undef);
 
-DefMacroI('\clearpage',       undef, '\LTX@newpage');
-DefMacroI('\cleardoublepage', undef, '\LTX@newpage');
+DefMacroI('\clearpage',       undef, '\lx@newpage');
+DefMacroI('\cleardoublepage', undef, '\lx@newpage');
 DefPrimitiveI('\samepage', undef, undef);
 
 #**********************************************************************
