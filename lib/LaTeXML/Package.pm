@@ -2807,6 +2807,7 @@ sub FontDecodeString {
     my ($family, $fmap);
     if ($font && ($family = $font->getFamily) && ($fmap = LookupValue($encoding . '_' . $family . '_fontmap'))) {
       $map = $fmap; } }                                    # Use the family specific map, if any.
+  $map_max = 128 if $map && !defined($$map[128]);          # ALSO for short font maps
   return join('', grep { defined $_ }
       map { ($implicit ? (($map && ($_ < $map_max)) ? $$map[$_] : pack('U', $_))
         : ($map ? $$map[$_] : undef)) }
