@@ -60,8 +60,14 @@ sub applyAccent {
   my $locator = $box->getLocator;
   my $font    = $box->getFont;
   my $string  = $box->toString;
-  $string =~ tr/\x{0131}\x{0237}/ij/;
   $string =~ s/\s/ /g;
+  # In Unicode (but not always (La)TeX), overaccents generally mask the dots of i,j.
+  # So we replace dotless so NFC can normalize better.
+  if (my $entry = unicode_accent($standalonechar)) {
+    if (($$entry{role} || '') eq 'OVERACCENT') {
+      $string =~ tr/\x{0131}\x{0237}/ij/; } }    # Replace dotless i,j with dotted version
+  if (($string =~ /[ij]/) && ($combiningchar eq "\x{0307}")) {    # a dot on i,j Not needed
+    $combiningchar = undef; }
   my @letters = split(//, $string);
   return Box(($string =~ /^\s*$/
       ? $standalonechar
