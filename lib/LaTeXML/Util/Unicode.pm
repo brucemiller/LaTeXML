@@ -357,7 +357,7 @@ our %math_props = (
   ']' => { role => 'CLOSE',     stretchy => 'false' },
   '{' => { role => 'OPEN',      stretchy => 'false' },
   '}' => { role => 'CLOSE',     stretchy => 'false' },
-
+  '&' => { role => 'ADDOP',     meaning  => 'and' },
 ##  ':'        => { role => 'METARELOP' },    # \colon # Seems like good default role
 
   #======================================================================
@@ -490,8 +490,10 @@ our %math_props = (
   "\x{2323}" => { role => 'RELOP' },                                          # \smileSMI},
   "\x{25B3}" => { role => 'ADDOP' },                                          # \bigtriangleup
   "\x{25B7}" => { role => 'ADDOP' },                                          # \triangleright
+  "\x{25B9}" => { role => 'ADDOP' },                                          # \triangleright
   "\x{25BD}" => { role => 'ADDOP' },                                          # \bigtriangledown
   "\x{25C1}" => { role => 'ADDOP' },                                          # \triangleleft
+  "\x{25C3}" => { role => 'ADDOP' },                                          # \triangleleft
   "\x{25CB}" => { role => 'MULOP' },                                          # \bigcirc
   "\x{27C2}" => { role => 'RELOP', meaning => 'perpendicular-to' },           # \perp
   "\x{27E8}" => { role => 'OPEN', name => 'langle', stretchy => 'false' }, # \langle # LEFT-POINTING ANGLE BRACKET
