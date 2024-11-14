@@ -18,6 +18,7 @@ use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use LaTeXML::Core::Box;
+use LaTeXML::Util::Unicode;
 use base qw(LaTeXML::Core::Definition::Register);
 
 # A CharDef is a specialized register;
@@ -25,10 +26,11 @@ use base qw(LaTeXML::Core::Definition::Register);
 # the result of evaluating the character (more like a regular primitive).
 # When $mode is 'math', interprets $value as a (3-part) mathcode, otherwise just index into current font.
 # When $mathglyph is provided, it is the unicode corresponding to the \mathchar of $value
+# Optionally provide the encoding, otherwise use current encoding when digested.
 sub new {
-  my ($class, $cs, $mode, $value) = @_;
+  my ($class, $cs, $mode, $value, $encoding) = @_;
   return bless { cs => $cs, parameters => undef,
-    mode         => $mode,    value    => $value,
+    mode         => $mode,    value    => $value, encoding => $encoding,
     registerType => 'Number', readonly => 1,
     locator      => $STATE->getStomach->getGullet->getMouth->getLocator }, $class; }
 
@@ -50,11 +52,15 @@ sub invoke {
   my $src   = $$self{locator} && $$self{locator}->toString;
   my $local = $src && $src !~ /\.(?:sty|ltxml|ltxmlc)/;    # Dumps currently have undefined src!
   if ($$self{mode} eq 'text') {    # text; but note defered font/encoding till digestion!
-                                   # Decode the codepoint using current font & encoding
-    my ($glyph, $adjfont) = LaTeXML::Package::FontDecode($nvalue);
+    ## Decode the codepoint using requested encoding ELSE current font & encoding
+    my ($glyph, $adjfont) = LaTeXML::Package::FontDecode($nvalue, $$self{encoding});
+    my %props = ();
+    if ($STATE->lookupValue('IN_MATH')) {    # Add math properties if IN math (even for text \chardef)
+      my $charinfo = unicode_math_properties($glyph);
+      %props = %$charinfo if $charinfo; }
     return Box($glyph, $adjfont, undef,
-      ($local ? Tokens(T_CS('\char'), $value->revert, T_CS('\relax')) : $$self{cs})); }
-  else {                           # Else math mode, mathDecode!
+      ($local ? Tokens(T_CS('\char'), $value->revert, T_CS('\relax')) : $$self{cs}), %props); }
+  else {                                     # Else math mode, mathDecode!
     my ($glyph, $f, $rev, %props) = LaTeXML::Package::decodeMathChar($nvalue);
     if (!defined $props{name}) { # Synthesize name attribute from CS, if needed (Clarify purpose of name!)
       my $n = $self->getCSName;
