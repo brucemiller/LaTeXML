@@ -1195,16 +1195,7 @@ DefMathI('\rhook',      undef, "\x{2E27}");    # TeX 312D
 
 # Ah, since \ldots can appear in text and math....
 DefMacroI('\ldots', undef, '\lx@ldots');
-DefConstructorI('\lx@ldots', undef,
-  "?#isMath(<ltx:XMTok name='ldots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
-  sizer      => "\x{2026}",
-  reversion  => '\ldots',
-  properties => sub {
-    (LookupValue('IN_MATH')
-      ? (font => LookupValue('font')->merge(family => 'serif',
-          series => 'medium', shape => 'upright')->specialize("\x{2026}"))
-      : ()); });    # Since not DefMath!
-                    # And so can \vdots
+
 DefConstructorI('\vdots', undef,
   "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
   sizer      => "\x{22EE}",
