@@ -211,14 +211,20 @@ DefRegister('\showboxdepth'   => Number(3));
 # \tracingrestores  pi    if positive, writes save-stack details to the log file.
 # \tracingstats     pi    if positive, writes memory usage statistics to the log file.
 
+AssignValue(tracingmacros   => Number(0));
+AssignValue(tracingcommands => Number(0));
 DefRegister('\tracingmacros', Number(0),
-  getter => sub { Number((LookupValue('TRACING') || 0) & TRACE_MACROS); },
-  setter => sub { my $p = (LookupValue('TRACING') || 0);
-    AssignValue(TRACING => ($_[0]->valueOf ? $p | TRACE_MACROS : $p & ~TRACE_MACROS)); });
+  getter => sub { LookupValue('tracingmacros'); },
+  setter => sub {
+    AssignValue(tracingmacros => $_[0]);
+    my $p = (LookupValue('TRACING') || 0);
+    AssignValue(TRACING => ($_[0]->valueOf > 0 ? $p | TRACE_MACROS : $p & ~TRACE_MACROS)); });
 DefRegister('\tracingcommands', Number(0),
-  getter => sub { Number((LookupValue('TRACING') || 0) & TRACE_COMMANDS); },
-  setter => sub { my $p = (LookupValue('TRACING') || 0);
-    AssignValue(TRACING => ($_[0]->valueOf ? $p | TRACE_COMMANDS : $p & ~TRACE_COMMANDS)); });
+  getter => sub { LookupValue('tracingcommands'); },
+  setter => sub {
+    AssignValue(tracingcommands => $_[0]);
+    my $p = (LookupValue('TRACING') || 0);
+    AssignValue(TRACING => ($_[0]->valueOf > 0 ? $p | TRACE_COMMANDS : $p & ~TRACE_COMMANDS)); });
 
 DefRegister('\tracingonline'     => Number(0));
 DefRegister('\tracingstats'      => Number(0));
