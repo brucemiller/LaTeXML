@@ -93,6 +93,10 @@ sub DefAccent {
 # Otherwise, use the Util::Unicode module to find the appropriate combining character
 DefPrimitive('\accent Number {}', sub {
     my ($stomach, $num, $letter) = @_;
+    # Arg is really "<character>" (TeX Book p.287)
+    if (T_END->equals($letter)) {
+      $stomach->getGullet->unread($letter);
+      $letter = Tokens(); }
     my $n = $num->valueOf;
     my ($glyph, $adjfont) = FontDecode($n);
     if (my $entry = unicode_accent($glyph)) {
@@ -124,12 +128,12 @@ DefPrimitive('\chardef Token SkipSpaces SkipMatch:=', sub {
 sub ucToken {
   my ($token) = @_;
   my $code = $STATE->lookupUCcode($token->getString);
-  return ((defined $code) && ($code != 0) ? Token(chr($code), $token->getCatcode) : $token); }
+  return ((defined $code) && ($code != 0) ? Token(pack('U', $code), $token->getCatcode) : $token); }
 
 sub lcToken {
   my ($token) = @_;
   my $code = $STATE->lookupLCcode($token->getString);
-  return ((defined $code) && ($code != 0) ? Token(chr($code), $token->getCatcode) : $token); }
+  return ((defined $code) && ($code != 0) ? Token(pack('U', $code), $token->getCatcode) : $token); }
 
 # Note that these are NOT expandable, even though the "return" tokens!
 DefPrimitive('\uppercase GeneralText', sub {
