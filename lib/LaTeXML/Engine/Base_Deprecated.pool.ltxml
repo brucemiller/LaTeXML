@@ -39,6 +39,9 @@ DefMacro('\@@eqno',
 DefMacro('\LTX@nonumber',
   '\lx@DEPRECATE{\LTX@nonumber}{\lx@equation@nonumber}\lx@equation@nonumber');
 
+DefMacro('\LTX@newpage',
+  '\lx@DEPRECATE{\LTX@newpage}{\lx@newpage}\lx@newpage');
+
 DefMacro('\normal@par',
   '\lx@DEPRECATE{\normnal@par}{\lx@normal@par}\lx@normal@par');
 DefMacro('\inner@par',

@@ -23,7 +23,7 @@ use charnames ':full';
 
 DefRegister('\magnification' => Number(1000));
 
-Let('\bye', '\end');
+Let('\bye', '\lx@end@document');
 
 # Most of these are ignored, but...
 DefMacro('\tracingall',
@@ -417,16 +417,6 @@ DefPrimitiveI('\cal', undef, sub {
 
 # Ideally, we should set these sizes from class files
 AssignValue(NOMINAL_FONT_SIZE => 10);
-DefPrimitiveI('\tiny',         undef, undef, font => { size => 5 });
-DefPrimitiveI('\scriptsize',   undef, undef, font => { size => 7 });
-DefPrimitiveI('\footnotesize', undef, undef, font => { size => 8 });
-DefPrimitiveI('\small',        undef, undef, font => { size => 9 });
-DefPrimitiveI('\normalsize',   undef, undef, font => { size => 10 });
-DefPrimitiveI('\large',        undef, undef, font => { size => 12 });
-DefPrimitiveI('\Large',        undef, undef, font => { size => 14.4 });
-DefPrimitiveI('\LARGE',        undef, undef, font => { size => 17.28 });
-DefPrimitiveI('\huge',         undef, undef, font => { size => 20.74 });
-DefPrimitiveI('\Huge',         undef, undef, font => { size => 29.8 });
 
 DefPrimitiveI('\mit', undef, undef, requireMath => 1, font => { family => 'italic' });
 
@@ -541,11 +531,9 @@ DefMacro("~", '\nobreakspace{}');
 DefMacroI('\slash', undef, '/');
 DefPrimitiveI('\filbreak', undef, undef);
 DefMacroI('\goodbreak', undef, '\par');
-DefMacroI('\eject',     undef, '\par\LTX@newpage');
+DefMacroI('\eject',     undef, '\par\lx@newpage');
 Let('\newpage', '\eject');
-DefConstructorI('\LTX@newpage', undef, "^<ltx:pagination role='newpage'/>");
-
-DefMacroI('\supereject', undef, '\par\LTX@newpage');
+DefMacroI('\supereject', undef, '\par\lx@newpage');
 DefPrimitiveI('\removelastskip', undef, undef);
 DefMacroI('\smallbreak', undef, '\par');
 DefMacroI('\medbreak',   undef, '\par');
@@ -766,8 +754,6 @@ DefMathI('\to', undef, "\x{2192}", role => 'ARROW'); # RIGHTWARDS ARROW??? a bit
 foreach my $op ('\hrulefill', '\dotfill', '\rightarrowfill', '\leftarrowfill',
   '\upbracefill', '\downbracefill') {
   DefPrimitiveI($op, undef, undef); }
-
-#Let('\bye', '\end');
 
 Let('\sp', T_SUPER);
 Let('\sb', T_SUB);
@@ -1197,16 +1183,7 @@ DefMathI('\rhook',      undef, "\x{2E27}");    # TeX 312D
 
 # Ah, since \ldots can appear in text and math....
 DefMacroI('\ldots', undef, '\lx@ldots');
-DefConstructorI('\lx@ldots', undef,
-  "?#isMath(<ltx:XMTok name='ldots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
-  sizer      => "\x{2026}",
-  reversion  => '\ldots',
-  properties => sub {
-    (LookupValue('IN_MATH')
-      ? (font => LookupValue('font')->merge(family => 'serif',
-          series => 'medium', shape => 'upright')->specialize("\x{2026}"))
-      : ()); });    # Since not DefMath!
-                    # And so can \vdots
+
 DefConstructorI('\vdots', undef,
   "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
   sizer      => "\x{22EE}",

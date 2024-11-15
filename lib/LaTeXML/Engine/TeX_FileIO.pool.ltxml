@@ -121,6 +121,8 @@ DefPrimitive('\write Number XGeneralText', sub {
       my $handle   = $filename . '_contents';
       my $contents = LookupValue($handle);
       AssignValue($handle => $contents . UnTeX($tokens, 1) . "\n", 'global'); }
+    elsif ($port < 0) {
+      NoteLog(UnTeX($tokens)); }
     else {
       Note(UnTeX($tokens)); }
     return; });
