@@ -62,7 +62,9 @@ our @accent_data = (
     unwrapped => "\x{02DA}", role => 'OVERACCENT' },                      # (or \x{2218} ?)
   { name => 'vec', combiner => "\x{20D7}", standalone => "\N{NBSP}\x{20D7}",    # \vec
     unwrapped => "\x{2192}", role => 'OVERACCENT' },
-  { name => 'tie', combiner => "\x{0361}", standalone => "\N{NBSP}\x{0361}",    # \t
+  { name => 'arch', combiner => "\x{0311}", standalone => "\N{NBSP}\x{0311}",    # ? inverted breve
+    unwrapped => "u", role => 'OVERACCENT' },
+  { name => 'tie', combiner => "\x{0361}", standalone => "\N{NBSP}\x{0361}",    # \t, double inv.breve
     unwrapped => "u", role => 'OVERACCENT' },
   ## UNDERACCENT accents
   { name => 'cedilla', combiner => "\x{0327}", standalone => UTF(0xB8),         # \c
