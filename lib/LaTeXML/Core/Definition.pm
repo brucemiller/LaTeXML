@@ -56,6 +56,9 @@ sub isRegister {
 sub isFontDef {    # ONLY FontDef handles this!
   return ''; }
 
+sub isCharDef {    # ONLY CharDef handles this!
+  return ''; }
+
 sub isPrefix {
   return 0; }
 

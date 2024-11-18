@@ -38,6 +38,9 @@ sub valueOf {
   my ($self) = @_;
   return $$self{value}; }
 
+sub isCharDef {
+  return 1; }
+
 sub setValue {
   my ($self, $value, $scope) = @_;
   Error('unexpected', $self, undef, "Can't assign to chardef " . $self->getCSName);
