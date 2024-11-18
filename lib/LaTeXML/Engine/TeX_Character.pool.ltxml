@@ -67,7 +67,7 @@ sub applyAccent {
     if (($$entry{role} || '') eq 'OVERACCENT') {
       $string =~ tr/\x{0131}\x{0237}/ij/; } }    # Replace dotless i,j with dotted version
   if (($string =~ /[ij]/) && ($combiningchar eq "\x{0307}")) {    # a dot on i,j Not needed
-    $combiningchar = undef; }
+    $combiningchar = ''; }
   my @letters = split(//, $string);
   return Box(($string =~ /^\s*$/
       ? $standalonechar
@@ -87,23 +87,46 @@ sub DefAccent {
     protected => 1);
   return; }
 
-# This will fail if there really are "assignments" after the number! (See TeX Book)
-# We're given a number pointing into the font; the FontMap presumably has the standalone char.
-# If there's no letter to be accented, just use the stanadalone.
+# \accent <number> <optional assignments><character>; See TeX Book p.287
+#   <assignments>: (<prefix>) simple assignment or macro assignment
+#   <character> : letter, other, \char, \chardef token, \noboundary
+# Eventually, we're given a number pointing into the font;
+# the FontMap presumably has the standalone char, to use if there is no base letter
 # Otherwise, use the Util::Unicode module to find the appropriate combining character
-DefPrimitive('\accent Number {}', sub {
-    my ($stomach, $num, $letter) = @_;
-    # Arg is really "<character>" (TeX Book p.287)
-    if (T_END->equals($letter)) {
-      $stomach->getGullet->unread($letter);
-      $letter = Tokens(); }
+DefPrimitive('\accent Number', sub {
+    my ($stomach, $num) = @_;
+    my $gullet = $stomach->getGullet;
+    # Decode & Fetch the accent BEFORE processing any "assignments"
     my $n = $num->valueOf;
     my ($glyph, $adjfont) = FontDecode($n);
+    my @assignments = ();
+    ## Check for (& accumulate) various kinds of <assignments>
+    my ($token, $cc, $defn);
+    while (($token = $gullet->readXNonSpace)
+      && ($defn = $STATE->lookupDefinition($token))
+      && ($defn->isPrefix
+        || $defn->isFontDef
+        || ($defn->isRegister && !$defn->isCharDef)
+        || ($token->getString =~ /^\\(?:def|edef|gdef|xdef)$/))) {
+      push(@assignments, $stomach->invokeToken($token)); }
+    ## Check for various kinds of <character>
+    my $letter = Tokens();
+    if    (!$token) { }
+    elsif ((($cc = $token->getCatcode) == CC_LETTER) || ($cc == CC_OTHER)
+      || ($defn && $defn->isCharDef)) {
+      $letter = $token; }
+    elsif ($token->equals(T_CS('\char'))) {
+      $letter = Tokens(Invocation($token, $gullet->readNumber)); }
+    elsif ($token->equals(T_CS('\noboundary'))) { }    # Treat as empty
+    else {
+      $gullet->unread($token); }                       # No appropriate <character> ? Treat as empty
+    my $result;
     if (my $entry = unicode_accent($glyph)) {
-      applyAccent($stomach, $letter, $$entry{combiner}, $$entry{standalone},
+      $result = applyAccent($stomach, $letter, $$entry{combiner}, $$entry{standalone},
         Invocation(T_CS('\accent'), $num, $letter)); }
     else {    # Unknown accent ?  Attempt to OVERLAY the accent on top of $letter
-      Digest(Tokens(T_CS('\lx@overlay'), T_BEGIN, $letter, T_END, T_BEGIN, T_OTHER($glyph), T_END)); } });
+      $result = Digest(Tokens(T_CS('\lx@overlay'), T_BEGIN, $letter, T_END, T_BEGIN, T_OTHER($glyph), T_END)); }
+    return (@assignments, $result); });
 
 #======================================================================
 # \chardef        iq provides an alternate way to define a control sequence that returns a character.
