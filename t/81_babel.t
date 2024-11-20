@@ -11,8 +11,9 @@ latexml_tests("t/babel",
     numprints => 'numprint.sty',
     german    => 'germanb.ldf',
     greek     => ['greek.ldf', 'lgrenc.def'],
-    french    => ['frenchb.ldf', 'numprint.sty'],
-    page545   => ['germanb.ldf', 'frenchb.ldf'] },
+    french    => { texlive_min => 2017,
+      packages => ['frenchb.ldf', 'numprint.sty'] },
+    page545 => ['germanb.ldf', 'frenchb.ldf'] },
 # babel is a bit iffy between versions, especially in introducing/retracting line breaks in the language macros
 # so compare it in a space-neutral manner
   compare => 'words');

@@ -389,6 +389,7 @@ sub six_apply_mathligatures {
     my $repl;
     if (@tokens && ($repl = $six_mathligatures{ $t->getCSName }{ $tokens[0]->getCSName })) {
       shift(@tokens); push(@r, $repl); }
+    elsif ($t->getCatcode == CC_COMMENT) { }
     else {
       push(@r, $t); } }
   return @r; }

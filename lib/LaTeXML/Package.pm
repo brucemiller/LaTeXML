@@ -51,6 +51,7 @@ use Unicode::Normalize;
 use LaTeXML::Util::Unicode;
 use Text::Balanced;
 use Text::Unidecode;
+use Encode;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefMacro &DefMacroI
@@ -2794,16 +2795,21 @@ sub FontDecodeString {
   my ($string, $encoding, $implicit) = @_;
   return if !defined $string;
   my ($map, $font);
+  my $map_max   = 256;                                     # Up to 256 chars in FontMap
+  my $input_enc = $STATE->lookupValue('INPUT_ENCODING');
+  # BUT, if input was in utf8, we'll assume the upper half 128-256 is ALREADY unicode!
+  if ($input_enc && ($input_enc eq 'utf8')) {
+    $map_max = 128; }
   if (!$encoding) {
     $font     = LookupValue('font');
     $encoding = $font->getEncoding; }
-  if ($encoding && ($map = LoadFontMap($encoding))) {    # OK got some map.
+  if ($encoding && ($map = LoadFontMap($encoding))) {      # OK got some map.
     my ($family, $fmap);
     if ($font && ($family = $font->getFamily) && ($fmap = LookupValue($encoding . '_' . $family . '_fontmap'))) {
-      $map = $fmap; } }                                  # Use the family specific map, if any.
-
+      $map = $fmap; } }                                    # Use the family specific map, if any.
+  $map_max = 128 if $map && !defined($$map[128]);          # ALSO for short font maps
   return join('', grep { defined $_ }
-      map { ($implicit ? (($map && ($_ < 128)) ? $$map[$_] : pack('U', $_))
+      map { ($implicit ? (($map && ($_ < $map_max)) ? $$map[$_] : pack('U', $_))
         : ($map ? $$map[$_] : undef)) }
       map { ord($_) } split(//, $string)); }
 

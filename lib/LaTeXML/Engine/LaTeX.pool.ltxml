@@ -2765,7 +2765,6 @@ DefMacro('\ProvideTextCommandDefault DefToken', '\ProvideTextCommand{#1}{?}');
 
 DefPrimitive('\DeclareTextSymbol DefToken {}{Number}', sub {
     my ($stomach, $cs, $encoding, $code) = @_;
-    $code = $code->valueOf;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
     if (isDefinable($cs)) {    # If not already defined...
@@ -2773,9 +2772,7 @@ DefPrimitive('\DeclareTextSymbol DefToken {}{Number}', sub {
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
     my $ecs = T_CS('\\' . $encoding . $css);
-    DefPrimitiveI($ecs, undef, sub {
-        my ($glyph, $adjfont) = FontDecode($code, $encoding);
-        Box($glyph, $adjfont, undef, $cs); });
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($ecs, 'text', $code, $encoding));
     return; });
 
 DefPrimitive('\DeclareTextSymbolDefault DefToken {}', sub {

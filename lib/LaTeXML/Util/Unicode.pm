@@ -62,7 +62,9 @@ our @accent_data = (
     unwrapped => "\x{02DA}", role => 'OVERACCENT' },                      # (or \x{2218} ?)
   { name => 'vec', combiner => "\x{20D7}", standalone => "\N{NBSP}\x{20D7}",    # \vec
     unwrapped => "\x{2192}", role => 'OVERACCENT' },
-  { name => 'tie', combiner => "\x{0361}", standalone => "\N{NBSP}\x{0361}",    # \t
+  { name => 'arch', combiner => "\x{0311}", standalone => "\N{NBSP}\x{0311}",    # ? inverted breve
+    unwrapped => "u", role => 'OVERACCENT' },
+  { name => 'tie', combiner => "\x{0361}", standalone => "\N{NBSP}\x{0361}",    # \t, double inv.breve
     unwrapped => "u", role => 'OVERACCENT' },
   ## UNDERACCENT accents
   { name => 'cedilla', combiner => "\x{0327}", standalone => UTF(0xB8),         # \c
@@ -357,7 +359,7 @@ our %math_props = (
   ']' => { role => 'CLOSE',     stretchy => 'false' },
   '{' => { role => 'OPEN',      stretchy => 'false' },
   '}' => { role => 'CLOSE',     stretchy => 'false' },
-
+  '&' => { role => 'ADDOP',     meaning  => 'and' },
 ##  ':'        => { role => 'METARELOP' },    # \colon # Seems like good default role
 
   #======================================================================
@@ -490,8 +492,10 @@ our %math_props = (
   "\x{2323}" => { role => 'RELOP' },                                          # \smileSMI},
   "\x{25B3}" => { role => 'ADDOP' },                                          # \bigtriangleup
   "\x{25B7}" => { role => 'ADDOP' },                                          # \triangleright
+  "\x{25B9}" => { role => 'ADDOP' },                                          # \triangleright
   "\x{25BD}" => { role => 'ADDOP' },                                          # \bigtriangledown
   "\x{25C1}" => { role => 'ADDOP' },                                          # \triangleleft
+  "\x{25C3}" => { role => 'ADDOP' },                                          # \triangleleft
   "\x{25CB}" => { role => 'MULOP' },                                          # \bigcirc
   "\x{27C2}" => { role => 'RELOP', meaning => 'perpendicular-to' },           # \perp
   "\x{27E8}" => { role => 'OPEN', name => 'langle', stretchy => 'false' }, # \langle # LEFT-POINTING ANGLE BRACKET
