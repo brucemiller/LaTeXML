@@ -96,9 +96,6 @@ DefMathRewrite(xpath => 'descendant-or-self::ltx:XMWrap['
   });
 
 #======================================================================
-DefPrimitive('\@@endash', sub { Box("\x{2013}", undef, undef, T_CS('\@@endash')); });
-DefPrimitive('\@@emdash', sub { Box("\x{2014}", undef, undef, T_CS('\@@emdash')); });
-
 DefConstructor('\TeX',
   "<ltx:text class='ltx_TeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.2em'>"
     . "T"

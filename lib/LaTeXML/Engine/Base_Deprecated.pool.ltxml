@@ -200,6 +200,11 @@ DefMacro('\@INVISIBLECOMMA',
 DefMacro('\@INVISIBLEPLUS',
   '\lx@DEPRECATE{\@INVISIBLEPLUS}{\lx@InvisiblePlus}\lx@InvisiblePlus');
 
+DefMacro('\@@endash',
+  '\lx@DEPRECATE{\@endash}{\lx@endash}\lx@endash');
+DefMacro('\@@emdash',
+  '\lx@DEPRECATE{\@emdash}{\lx@emdash}\lx@emdash');
+
 # End of stuff to be deprecated.
 #----------------------------------------------------------------------
 

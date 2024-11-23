@@ -41,6 +41,11 @@ sub isDefinable {
 
 #======================================================================
 
+DefPrimitive('\lx@endash', sub {
+    Box("\x{2013}", undef, undef, Tokens(T_OTHER('-'), T_OTHER('-'))); });
+DefPrimitive('\lx@emdash', sub {
+    Box("\x{2014}", undef, undef, Tokens(T_OTHER('-'), T_OTHER('-'), T_OTHER('-'))); });
+
 DefPrimitiveI('\lx@ignorehardspaces', undef, sub {
     my ($stomach) = @_;
     my $gullet = $stomach->getGullet;
