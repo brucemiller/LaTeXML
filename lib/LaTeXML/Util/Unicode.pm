@@ -517,6 +517,7 @@ our %math_props = (
   "\x{2AB0}" => { role => 'RELOP',      meaning => 'succeeds-or-equals' },    # \succeq
   "\x{FF0F}" => { role => 'OPFUNCTION', meaning => 'not' },                   # \not
       #======================================================================
+  "?"       => { role => 'UNKNOWN' }, # Override TeX's mathcode (CLOSE presentationally, not semantic)
   "arccos"  => { role => 'OPFUNCTION',   meaning => 'inverse-cosine' },          # \arccos #
   "arcsin"  => { role => 'OPFUNCTION',   meaning => 'inverse-sine' },            # \arcsin #
   "arctan"  => { role => 'OPFUNCTION',   meaning => 'inverse-tangent' },         # \arctan #
