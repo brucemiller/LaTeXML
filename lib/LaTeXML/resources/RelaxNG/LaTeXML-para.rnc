@@ -16,12 +16,28 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 Para.class |=
      para | logical-block
    | theorem | proof
-   | figure | table | float | pagination
+   | figure | table | float | pagination | rule
 # allow pagination here, to avoid unnecessary extra para!
 
 ## Additionally, it defines these miscellaneous elements that can appear
 ## in both inline and block contexts.
-Misc.class  |= inline-logical-block
+Misc.class  |= inline-logical-block | rule
+
+#======================================================================
+
+rule =
+## A Rule.
+element rule { rule_attributes, rule_model }
+
+## Attributes for \elementref{rule}.
+rule_attributes =
+  Common.attributes,
+  Positionable.attributes,
+  Colorable.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{rule}.
+rule_model = empty
 
 #======================================================================
 

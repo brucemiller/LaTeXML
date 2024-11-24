@@ -14,7 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## The inline module defines basic inline elements used throughout.
 Inline.class |= 
-    \text | emph | del | sub | sup | glossaryref | rule
+    \text | emph | del | sub | sup | glossaryref
   | anchor | ref | cite | bibref
 
 #======================================================================
@@ -130,22 +130,6 @@ glossaryref_attributes =
 
 ## Content model for \elementref{glossaryref}.
 glossaryref_model = Inline.model
-
-#======================================================================
-
-rule =
-## A Rule.
-element rule { rule_attributes, rule_model }
-
-## Attributes for \elementref{rule}.
-rule_attributes =
-  Common.attributes,
-  Positionable.attributes,
-  Colorable.attributes,
-  Backgroundable.attributes
-
-## Content model for \elementref{rule}.
-rule_model = empty
 
 #======================================================================
 
