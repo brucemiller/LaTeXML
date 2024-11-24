@@ -679,6 +679,10 @@ DefConstructor('\hrule RuleSpecification',
     . "(<ltx:rule height='#rheight' depth='#rdepth' width='#rwidth' color='#color'/>))",
   afterConstruct => sub {    # NOTE: Only For xy development!
     Warn('unexpected', 'hrule', $_[0], "Encountered \\hrule in SVG") if inSVG(); },
+  beforeConstruct => sub {
+    my ($document, $whatsit) = @_;
+    my $w = $whatsit->getProperty('rwidth');
+    $_[0]->maybeCloseElement('ltx:p') if $w && ($w eq '100%'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $dims   = $whatsit->getArg(1);

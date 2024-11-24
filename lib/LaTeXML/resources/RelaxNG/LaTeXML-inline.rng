@@ -22,7 +22,6 @@
       <ref name="sub"/>
       <ref name="sup"/>
       <ref name="glossaryref"/>
-      <ref name="rule"/>
       <ref name="anchor"/>
       <ref name="ref"/>
       <ref name="cite"/>
@@ -166,25 +165,6 @@ mixed with arbitrary characters.</a:documentation>
   <define name="glossaryref_model">
     <a:documentation>Content model for \elementref{glossaryref}.</a:documentation>
     <ref name="Inline.model"/>
-  </define>
-  <!-- ====================================================================== -->
-  <define name="rule">
-    <element name="rule">
-      <a:documentation>A Rule.</a:documentation>
-      <ref name="rule_attributes"/>
-      <ref name="rule_model"/>
-    </element>
-  </define>
-  <define name="rule_attributes">
-    <a:documentation>Attributes for \elementref{rule}.</a:documentation>
-    <ref name="Common.attributes"/>
-    <ref name="Positionable.attributes"/>
-    <ref name="Colorable.attributes"/>
-    <ref name="Backgroundable.attributes"/>
-  </define>
-  <define name="rule_model">
-    <a:documentation>Content model for \elementref{rule}.</a:documentation>
-    <empty/>
   </define>
   <!-- ====================================================================== -->
   <define name="ref">
