@@ -1002,9 +1002,7 @@ That’s no bug, it’s <text class="ltx_LaTeX_logo" cssstyle="letter-spacing:-0
       <p>If there are some environments in the same thm-environment,
 the last one gets the endmark:</p>
     </para>
-    <para xml:id="S1.p3">
-      <p><rule height="1px" width="100%"/></p>
-    </para>
+    <rule height="1px" width="100%"/>
     <theorem class="ltx_theorem_Definition" inlist="thm theorem:Definition" xml:id="ThmDefinition1">
       <tags>
         <tag>Definition 1</tag>
@@ -1133,7 +1131,8 @@ the last one gets the endmark:</p>
               <XMath>
                 <XMTok font="upright" name="clubsuit" role="UNKNOWN">♣</XMTok>
               </XMath>
-            </Math></text><rule height="1px" width="100%"/></p>
+            </Math></text></p>
+        <rule height="1px" width="100%"/>
       </para>
     </theorem>
     <theorem class="ltx_theorem_Corollary" inlist="thm theorem:Corollary" xml:id="ThmTheorem2">
@@ -1289,7 +1288,7 @@ same line as the text ends.
             </Math></text></p>
       </para>
     </theorem>
-    <para xml:id="S1.p4">
+    <para xml:id="S1.p3">
       <p>There must be no empty line in the input before the end
 (since then, the end mark is ignored) <break/></p>
     </para>
@@ -1311,7 +1310,7 @@ same line as the text ends.
             </Math></text></p>
       </para>
     </theorem>
-    <para xml:id="S1.p5">
+    <para xml:id="S1.p4">
       <p>Now, there is a corollary which should appear with a different
 name in the list of corollaries:</p>
     </para>
@@ -1355,7 +1354,7 @@ surrounding text.</text></p>
             </Math></text></p>
       </para>
     </theorem>
-    <para xml:id="S1.p6">
+    <para xml:id="S1.p5">
       <p>Here is an example for turning off the endmark automatics and
 manual handling:</p>
     </para>
@@ -1374,7 +1373,7 @@ manual handling:</p>
               </Math></text><break/>some more text, but no automatic endmark set.</text></p>
       </para>
     </theorem>
-    <para xml:id="S1.p7">
+    <para xml:id="S1.p6">
       <p>Also, one should note, that — — is inserted to set
 the endmark at the right margin.</p>
     </para>
@@ -1389,7 +1388,7 @@ the endmark at the right margin.</p>
         <p>It also works for short one’s.</p>
       </para>
     </theorem>
-    <para xml:id="S1.p8">
+    <para xml:id="S1.p7">
       <p>If you are tired of the greek numbers and the indentation for lemmata …
 you can redefine it:</p>
     </para>
@@ -1405,7 +1404,7 @@ you can redefine it:</p>
 continues.</text></p>
       </para>
     </theorem>
-    <para xml:id="S1.p9">
+    <para xml:id="S1.p8">
       <p>the optional argument (i.e. the ‘theorem’-name) can be accessed by
 eg. <verbatim font="typewriter">\Theoremname</verbatim></p>
     </para>
@@ -1420,7 +1419,7 @@ eg. <verbatim font="typewriter">\Theoremname</verbatim></p>
         <p><text font="slanted">Obviously, we are in Theorem somename.</text></p>
       </para>
     </theorem>
-    <para xml:id="S1.p10">
+    <para xml:id="S1.p9">
       <p>Now, we define an environment —KappaTheorem— which uses the same
 style parameters as Theorems and is numbered together with
 Corollaries (Theorems are also numbered with Corollaries).
