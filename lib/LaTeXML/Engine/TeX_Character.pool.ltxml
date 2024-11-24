@@ -54,6 +54,8 @@ DefPrimitive('\char Number', sub {
 # Create a box applying an accent to a letter
 # Hopefully, we'll get a Box from digestion with a plain string.
 # Then we can apply combining accents to it.
+my %typewriter_accents = ("\x{02DC}" => "~", "\x{02C6}" => "^");
+
 sub applyAccent {
   my ($stomach, $letter, $combiningchar, $standalonechar, $reversion) = @_;
   my $box     = $stomach->digest($letter);
@@ -69,6 +71,12 @@ sub applyAccent {
   if (($string =~ /[ij]/) && ($combiningchar eq "\x{0307}")) {    # a dot on i,j Not needed
     $combiningchar = ''; }
   my @letters = split(//, $string);
+  # HACK HACK HACK to mimic real LaTeX's encoding mechanism (until using proper latex.ltx)
+  # Necessary for test cases using \~,\^ in urls, ascii, typewriter...
+  if (my $replacement = $typewriter_accents{$standalonechar}) {
+    if ($font && ((($font->getFamily || '') eq 'typewriter')
+        || (($font->getEncoding || '') eq 'ASCII'))) {
+      return Box($replacement . $string, $font, $locator, Tokens($reversion, $letter)); } }
   return Box(($string =~ /^\s*$/
       ? $standalonechar
       : NFC($letters[0] . $combiningchar . join('', @letters[1 .. $#letters]))),
