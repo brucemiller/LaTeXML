@@ -4809,9 +4809,9 @@ DefPrimitive('\hspace  OptionalMatch:* {Dimension}', sub {
     Box($s, undef, undef, Invocation(T_CS('\hskip'), $length),
       width => $length, isSpace => 1); });
 
-DefPrimitive('\vspace OptionalMatch:* {}', undef);
-DefPrimitive('\addvspace {}',              undef);
-DefPrimitive('\addpenalty {}',             undef);
+DefMacro('\vspace OptionalMatch:* {}', '\vskip #2\relax');
+DefPrimitive('\addvspace {}',  undef);
+DefPrimitive('\addpenalty {}', undef);
 DefPrimitiveI('\@endparenv');
 
 # \hfill, \vfill
