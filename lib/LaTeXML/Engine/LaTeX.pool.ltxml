@@ -1087,6 +1087,8 @@ DefMacro('\@addtofilelist{}', sub {
 #======================================================================
 # Ignored
 NewCounter('page');
+SetCounter(page => Number(1));
+
 DefPrimitive('\pagestyle{}',     undef);
 DefPrimitive('\thispagestyle{}', undef);
 DefPrimitive('\markright{}',     undef);
