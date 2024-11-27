@@ -36,6 +36,7 @@ use strict;
 use warnings;
 use XML::LibXML qw(:all);
 use XML::LibXML::XPathContext;
+use LaTeXML::Common::Error;
 use LaTeXML::Util::Pathname;
 use Encode;
 use Carp;
@@ -235,6 +236,7 @@ sub initialize_catalogs {
   return if $catalogs_initialized;
   $catalogs_initialized = 1;
   foreach my $catalog (pathname_findall('LaTeXML.catalog', installation_subdir => '.')) {
+    RecordInput($catalog);
     XML::LibXML->load_catalog($catalog); }
   return; }
 
