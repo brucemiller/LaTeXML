@@ -3,6 +3,7 @@
 % Note also that older hyperxmp has fewer new options!
 \usepackage{hyperxmp}
 \usepackage[draft,pdftitle={Test Hyperref Metadata},backref]{hyperref}
+\usepackage{xcolor}
 \title{Test Hyperref Metadata}
 \author{A..~Author}
 \hypersetup{
@@ -38,5 +39,17 @@ Special characters still neutralized:
 But macros expanded: \url{http://localhost/dir/\baz}.
 
 And, you get this: \url{http://example.com/\~{}user}
+
+\section{Bounded color}
+A link: \href{https://example.com}{\color{blue}here}.
+
+\subsection{Color should not leak into this heading}
+This text should be black.
+
+\def\simple#1#2{#1 and #2}
+A simple macro: \simple{\color{blue}first}{second}.
+
+\subsection{Color should leak into this heading}
+This text should be blue.
 
 \end{document}
