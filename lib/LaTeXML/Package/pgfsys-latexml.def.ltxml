@@ -22,6 +22,7 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Image;
 use List::Util qw(min max);
+use URI::file;
 
 DebuggableFeature('pgf', "Debug pgf processing");
 
@@ -615,7 +616,7 @@ DefConstructor('\lxSVG@includegraphics{}{} Semiverbatim',
     my @candidates = pathname_findall($graphic, types => ['*'],
       paths => LookupValue('GRAPHICSPATHS'));
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map { pathname_relative($_, $base) } @candidates; }
+      @candidates = map { URI::file->new(pathname_relative($_, $base)) } @candidates; }
     (graphic => $graphic,
       candidates => join(',', @candidates),
       options    => $options); },
