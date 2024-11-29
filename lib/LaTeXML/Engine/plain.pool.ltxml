@@ -47,27 +47,19 @@ DefMacro('\brack',
 #======================================================================
 # Special Characters.
 # Try to give them some sense in math...
-DefMacroI('\#',   undef, '\ifmmode\lx@math@hash\else\lx@text@hash\fi',             protected => 1);
-DefMacroI('\&',   undef, '\ifmmode\lx@math@amp\else\lx@text@amp\fi',               protected => 1);
-DefMacroI('\%',   undef, '\ifmmode\lx@math@percent\else\lx@text@percent\fi',       protected => 1);
-DefMacroI("\\\$", undef, '\ifmmode\lx@math@dollar\else\lx@text@dollar\fi',         protected => 1);
-DefMacroI('\_',   undef, '\ifmmode\lx@math@underscore\else\lx@text@underscore\fi', protected => 1);
-DefPrimitiveI('\lx@text@hash',       undef, '#',  alias => '\#');
-DefPrimitiveI('\lx@text@amp',        undef, '&',  alias => '\&');
-DefPrimitiveI('\lx@text@percent',    undef, '%',  alias => '\%');
-DefPrimitiveI('\lx@text@dollar',     undef, "\$", alias => "\\\$");
-DefPrimitiveI('\lx@text@underscore', undef, '_',  alias => '\_');
-DefMathI('\lx@math@hash',    undef, '#', alias => '\#');
-DefMathI('\lx@math@amp',     undef, '&', role  => 'ADDOP',   meaning => 'and',     alias => '\&');
-DefMathI('\lx@math@percent', undef, '%', role  => 'POSTFIX', meaning => 'percent', alias => '\%');
-DefMathI('\lx@math@dollar', undef, "\$", role => 'OPERATOR', meaning => 'currency-dollar',
-  alias => "\\\$");
-DefMathI('\lx@math@underscore', undef, '_', alias => '\_');
+DefPrimitive('\#', sub {
+    Box('#', undef, undef, T_CS('\#')); });
+DefPrimitive('\&', sub {
+    Box('&', undef, undef, T_CS('\&'), role => 'ADDOP', meaning => 'and'); });
+DefPrimitive('\%', sub {
+    Box('%', undef, undef, T_CS('\%'), role => 'POSTFIX', meaning => 'percent'); });
+DefPrimitive('\$', sub {
+    Box('$', undef, undef, T_CS('\$'), role => 'OPERATOR', meaning => 'currency-dollar'); });
+DefPrimitive('\_', sub {
+    Box('_', undef, undef, T_CS('\_')); });
 
 # Discretionary times; just treat as invisible ?
 DefMathI('\*', undef, "\x{2062}", role => 'MULOP', name => '', meaning => 'times'); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
-
-# These 3 should have some `name' assigned ... but what???
 
 #======================================================================
 # If an XMWrap (presumably from \mathop, \mathbin, etc)
