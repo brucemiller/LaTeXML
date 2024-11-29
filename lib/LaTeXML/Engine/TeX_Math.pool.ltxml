@@ -908,7 +908,10 @@ Let('\vcenter', '\vbox');
 # \overline               c  puts a line over the following character or subformula.
 # \underline              c  puts a line under the following character or subformula.
 
-DefMath('\overline Digested', UTF(0xAF), operator_role => 'OVERACCENT');    # MACRON
+DefMath('\lx@math@overline{}', UTF(0xAF), operator_role => 'OVERACCENT',
+  name => 'overline', alias => '\overline');
+DefConstructor('\lx@text@overline{}',
+  "<ltx:text framed='overline' _noautoclose='1'>#1</ltx:text>");
 DefMath('\lx@math@underline{}', UTF(0xAF), operator_role => 'UNDERACCENT',
   name => 'underline', alias => '\underline');
 DefConstructor('\lx@text@underline{}',
@@ -920,7 +923,10 @@ DefMath('\lx@math@overleftarrow{}', "\x{2190}", operator_role => 'OVERACCENT',
 
 # Careful: Use \protect so that it doesn't expand too early in alignments, etc.
 # [Really shouldn't use \protect, since this is a TeX primitive and \protect is LaTeX]
-DefMacro('\underline{}', '\protect\ifmmode\lx@math@underline{#1}\else\lx@text@underline{#1}\fi');
+DefMacro('\overline{}', '\protect\ifmmode\lx@math@overline{#1}\else\lx@text@overline{#1}\fi',
+  locked => 1);
+DefMacro('\underline{}', '\protect\ifmmode\lx@math@underline{#1}\else\lx@text@underline{#1}\fi',
+  locked => 1);
 
 #======================================================================
 # fraction-like things
