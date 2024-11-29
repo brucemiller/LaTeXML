@@ -46,6 +46,14 @@ DefPrimitive('\lx@endash', sub {
 DefPrimitive('\lx@emdash', sub {
     Box("\x{2014}", undef, undef, Tokens(T_OTHER('-'), T_OTHER('-'), T_OTHER('-'))); });
 
+# Stand in for T_ACTIVE('~')  (and maybe \nobreakspace)
+DefPrimitiveI('\lx@NBSP', undef, sub {
+    Box(UTF(0xA0), undef, undef, T_ACTIVE("~"),
+      width => Dimension('0.333em'), isSpace => 1); }, locked => 1);
+DefPrimitiveI('\lx@nobreakspace', undef, sub {
+    Box(UTF(0xA0), undef, undef, T_CS('\nobreakspace'),
+      width => Dimension('0.333em'), isSpace => 1); });
+
 DefPrimitiveI('\lx@ignorehardspaces', undef, sub {
     my ($stomach) = @_;
     my $gullet = $stomach->getGullet;

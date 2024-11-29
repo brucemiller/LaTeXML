@@ -1951,6 +1951,8 @@ sub afterDigestVerbatim {
   $whatsit->setBody(map { Box($_, $font, $loc, T_OTHER($_)) } @lines, $end);
   return; }
 
+Let('\nobreakspace', '\lx@nobreakspace');
+
 DefPrimitiveI('\@vobeyspaces', undef, sub {
     AssignCatcode(" " => 13);
     Let(T_ACTIVE(" "), '\nobreakspace');

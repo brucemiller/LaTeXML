@@ -519,11 +519,7 @@ DefPrimitiveI('\break',      undef, undef);
 DefPrimitiveI('\nobreak',    undef, undef);
 DefPrimitiveI('\allowbreak', undef, undef);
 
-DefPrimitiveI('\nobreakspace', undef, sub {
-    Box(UTF(0xA0), undef, undef, T_ACTIVE("~"),
-      width => Dimension('0.333em'), isSpace => 1); });
-
-DefMacro("~", '\nobreakspace{}');
+Let(T_ACTIVE('~'), T_CS('\lx@NBSP'));
 
 DefMacroI('\slash', undef, '/');
 DefPrimitiveI('\filbreak', undef, undef);
