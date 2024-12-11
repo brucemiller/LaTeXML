@@ -1087,6 +1087,8 @@ DefMacro('\@addtofilelist{}', sub {
 #======================================================================
 # Ignored
 NewCounter('page');
+SetCounter(page => Number(1));
+
 DefPrimitive('\pagestyle{}',     undef);
 DefPrimitive('\thispagestyle{}', undef);
 DefPrimitive('\markright{}',     undef);
@@ -1948,6 +1950,8 @@ sub afterDigestVerbatim {
   $stomach->egroup;
   $whatsit->setBody(map { Box($_, $font, $loc, T_OTHER($_)) } @lines, $end);
   return; }
+
+Let('\nobreakspace', '\lx@nobreakspace');
 
 DefPrimitiveI('\@vobeyspaces', undef, sub {
     AssignCatcode(" " => 13);
