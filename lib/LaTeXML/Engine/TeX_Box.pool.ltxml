@@ -708,11 +708,54 @@ DefConstructor('\hrule RuleSpecification',
     return; });
 
 # ======================================================================
-# Various leaders, ignored for now...
-DefPrimitiveI('\leaders',  undef, undef);
-DefPrimitiveI('\cleaders', undef, undef);
-DefPrimitiveI('\xleaders', undef, undef);
+# Various leaders, mostly faking it for now...
 
+# \leaders <box or rule><glue>  fills the space specified by <glue> (which may be \hfill)
+#  with copies of the <box or glue>
+# \cleaders similarly, but centers the result, if it doesn't completely fill <glue>
+# \xleaders similarly, but stretches the result, if it doesn't completely fill <glue>
+# Note that the <glue> is NOT a Glue (eg a glue specification), but something like \hfill
+
+# Normally, these are used in a TOC, with a variable width (reflow),
+# so you'd hope for some adaptive CSS approach.
+# But the CSS is tricky, and you need CSS to control the leader's container as well.
+# However, occasionally, leaders appear within an object with an explicitly requested width,
+# so maybe it's reasonable to set the width (or duplicate the filler) to fill that width?
+# Alternatively, you may wish to simply hide ltx_leaders
+DefConstructor('\leaders Digested Digested', sub {
+    my ($document, $filler, $glue) = @_;
+    my $fw = $filler->getWidth;
+    #    my $context = $document->getNode;
+    my $context = $document->getElement;
+    Debug("LEADERS of " . Stringify($filler) . " to fill " . Stringify($glue));
+    my $cbox      = $document->getNodeBox($context);
+    my $container = $document->openElement('ltx:text', _noautoclose => 1);
+    my ($fnode)   = $document->absorb($filler);
+    my ($unwrap, $fillw, $reqw);
+    # EXPLICITLY requested width?
+    if ($fnode && $cbox && ($reqw = $cbox->getProperty('width'))) {
+      if ($document->getNodeQName($fnode) eq 'ltx:rule') {    # Or other stretchable element?
+        Debug("   extend to " . ToString($reqw));
+        $document->setAttribute($fnode, width => $reqw->toAttribute);
+        $document->addClass($fnode, 'ltx_filled_leader');
+        $unwrap = 1; }
+      elsif (($fillw = $filler->getWidth) && ($fillw = $fillw->valueOf)) {
+        my $n = int($reqw->valueOf / $fillw);
+        Debug("  duplicate $n times");
+        $document->addClass($container, 'ltx_filled_leader');
+        for (my $i = 2 ; $i < $n ; $i++) {
+          $document->absorb($filler); } } }
+    else {
+      $document->addClass($container, 'ltx_leader'); }
+    $document->closeElement('ltx:text');
+    $document->unwrapNodes($container) if $unwrap;    # avoid redundant <ltx:text><ltx:rule>
+    return; },
+  ## Hide the rule argument from contributing cell borders to any containing Alignment
+  bounded => 1, beforeDigest => sub { $STATE->assignValue(Alignment => undef); }
+);
+
+Let('\cleaders', '\leaders');
+Let('\xleaders', '\leaders');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 
