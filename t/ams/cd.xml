@@ -12,7 +12,7 @@
         <tag>(1)</tag>
         <tag role="refnum">1</tag>
       </tags>
-      <Math mode="display" tex="\begin{CD}S^{{\mathcal{W}}_{\Lambda}}\otimes T@&gt;{j}&gt;{}&gt;T\\&#10;@V{}V{}V@V{}V{\operatorname{End}P}V\\&#10;(S\otimes T)/I@=(Z\otimes T)/J\end{CD}" text="commutative-diagram@(Array[[S ^ (W _ Lambda) tensor-product T, rightarrowfill@ ^ j, T], [downarrow, , absent downarrow End@(P), , ], [(S tensor-product T) / I, @cd@equals@, (Z tensor-product T) / J]])" xml:id="S0.E1.m1">
+      <Math mode="display" tex="\begin{CD}S^{{\mathcal{W}}_{\Lambda}}\otimes T@&gt;{j}&gt;{}&gt;T\\&#10;@V{}V{}V@V{}V{\operatorname{End}P}V\\&#10;(S\otimes T)/I=(Z\otimes T)/J\end{CD}" text="commutative-diagram@(Array[[S ^ (W _ Lambda) tensor-product T, rightarrow ^ j, T], [downarrow, , absent downarrow End@(P), , ], [(S tensor-product T) / I, =, (Z tensor-product T) / J]])" xml:id="S0.E1.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -39,7 +39,7 @@
                 <XMCell align="center">
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="mid5"/>
-                    <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                    <XMTok class="ltx_horizontally_stretchy" meaning="rightarrow" role="ARROW" stretchy="true" width="30.0pt">→</XMTok>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
                   </XMApp>
                 </XMCell>
@@ -56,7 +56,7 @@
                   <XMApp role="ARROW">
                     <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
                     <XMTok meaning="absent"/>
-                    <XMApp>
+                    <XMApp width="0.0pt">
                       <XMTok fontsize="70%" role="OPFUNCTION" scriptpos="post">End</XMTok>
                       <XMTok font="italic" fontsize="70%" role="UNKNOWN">P</XMTok>
                     </XMApp>
@@ -85,7 +85,7 @@
                   </XMApp>
                 </XMCell>
                 <XMCell align="center">
-                  <XMTok name="@cd@equals@" role="ARROW" stretchy="true">=</XMTok>
+                  <XMTok class="ltx_horizontally_stretchy" meaning="equals" role="ARROW" stretchy="true" width="30.0pt">=</XMTok>
                 </XMCell>
                 <XMCell align="center">
                   <XMApp>
@@ -116,7 +116,7 @@
         <tag>(2)</tag>
         <tag role="refnum">2</tag>
       </tags>
-      <Math mode="display" tex="\begin{CD}\operatorname{cov}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{K%&#10;})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{L})%&#10;\\&#10;@V{}V{}V@A{}A{}A@A{}A{}A@V{}V{}V\\&#10;\operatorname{add}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{add}(\mathcal{K})@&gt;{}&gt;{}&gt;%&#10;\operatorname{cov}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{L})\end{CD}" text="commutative-diagram@(Array[[cov@(L), rightarrowfill@, non@(K), rightarrowfill@, cf@(K), rightarrowfill@, cf@(L)], [downarrow, , uparrow, , uparrow, , downarrow, , ], [add@(L), rightarrowfill@, add@(K), rightarrowfill@, cov@(K), rightarrowfill@, non@(L)]])" xml:id="S0.E2.m1">
+      <Math mode="display" tex="\begin{CD}\operatorname{cov}(\mathcal{L})@&gt;{i}&gt;{j}&gt;\operatorname{non}(\mathcal%&#10;{K})@){i}){})\operatorname{cf}(\mathcal{K})@&gt;{}&gt;{j}&gt;\operatorname{cf}(\mathcal%&#10;{L})\\&#10;@V{}V{}V\Big{\|}\Big{\|}@A{}A{}A\\&#10;\operatorname{add}(\mathcal{L})@&lt;{}&lt;{}&lt;\operatorname{add}(\mathcal{K})@({}({}(%&#10;\operatorname{cov}(\mathcal{K})@&lt;{}&lt;{}&lt;\operatorname{non}(\mathcal{L})\end{CD}" text="commutative-diagram@(Array[[cov@(L), (rightarrow ^ i) _ j, non@(K), rightarrow ^ i, cf@(K), rightarrow _ j, cf@(L)], [downarrow, , ||, , ||, , uparrow, , ], [add@(L), leftarrow, add@(K), leftarrow, cov@(K), leftarrow, non@(L)]])" xml:id="S0.E2.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -142,7 +142,15 @@
                   </XMDual>
                 </XMCell>
                 <XMCell align="center">
-                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                  <XMApp role="ARROW">
+                    <XMTok role="SUBSCRIPTOP" scriptpos="mid5"/>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="mid5"/>
+                      <XMTok class="ltx_horizontally_stretchy" meaning="rightarrow" role="ARROW" stretchy="true" width="30.0pt">→</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                    </XMApp>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
                 </XMCell>
                 <XMCell align="center">
                   <XMDual>
@@ -161,7 +169,11 @@
                   </XMDual>
                 </XMCell>
                 <XMCell align="center">
-                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="mid5"/>
+                    <XMTok class="ltx_horizontally_stretchy" meaning="rightarrow" role="ARROW" stretchy="true" width="30.0pt">→</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                  </XMApp>
                 </XMCell>
                 <XMCell align="center">
                   <XMDual>
@@ -180,7 +192,11 @@
                   </XMDual>
                 </XMCell>
                 <XMCell align="center">
-                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                  <XMApp role="ARROW">
+                    <XMTok role="SUBSCRIPTOP" scriptpos="mid5"/>
+                    <XMTok class="ltx_horizontally_stretchy" meaning="rightarrow" role="ARROW" stretchy="true" width="30.0pt">→</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
                 </XMCell>
                 <XMCell align="center">
                   <XMDual>
@@ -205,15 +221,15 @@
                 </XMCell>
                 <XMCell/>
                 <XMCell align="center">
-                  <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
+                  <XMTok fontsize="160%" name="||" role="VERTBAR">∥</XMTok>
+                </XMCell>
+                <XMCell/>
+                <XMCell align="center">
+                  <XMTok fontsize="160%" name="||" role="VERTBAR">∥</XMTok>
                 </XMCell>
                 <XMCell/>
                 <XMCell align="center">
                   <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
-                </XMCell>
-                <XMCell/>
-                <XMCell align="center">
-                  <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
                 </XMCell>
                 <XMCell/>
                 <XMCell/>
@@ -236,7 +252,7 @@
                   </XMDual>
                 </XMCell>
                 <XMCell align="center">
-                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                  <XMTok class="ltx_horizontally_stretchy" meaning="leftarrow" role="ARROW" stretchy="true" width="30.0pt">←</XMTok>
                 </XMCell>
                 <XMCell align="center">
                   <XMDual>
@@ -255,7 +271,7 @@
                   </XMDual>
                 </XMCell>
                 <XMCell align="center">
-                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                  <XMTok class="ltx_horizontally_stretchy" meaning="leftarrow" role="ARROW" stretchy="true" width="30.0pt">←</XMTok>
                 </XMCell>
                 <XMCell align="center">
                   <XMDual>
@@ -274,7 +290,7 @@
                   </XMDual>
                 </XMCell>
                 <XMCell align="center">
-                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                  <XMTok class="ltx_horizontally_stretchy" meaning="leftarrow" role="ARROW" stretchy="true" width="30.0pt">←</XMTok>
                 </XMCell>
                 <XMCell align="center">
                   <XMDual>

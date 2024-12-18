@@ -43,22 +43,24 @@ DefMacro('\cd@ Token', sub {
     my ($gullet, $token) = @_;
     (T_CS('@' . ToString($token))); });
 
+# Horizontal connectors
 DefMacroI(T_CS('@>'), 'Until:> Until:>',
-  '\lx@hidden@align\cd@stack{>}{\rightarrowfill@}{#1}{#2}\lx@hidden@align');
+  '\lx@hidden@align\lx@amscd@stack{>}{\lx@amscd@rightarrow}{#1}{#2}\lx@hidden@align');
 DefMacroI(T_CS('@)'), 'Until:) Until:)',
-  '\lx@hidden@align\cd@stack{)}{\rightarrowfill@}{#1}{#2}\lx@hidden@align');
+  '\lx@hidden@align\lx@amscd@stack{)}{\lx@amscd@rightarrow}{#1}{#2}\lx@hidden@align');
 DefMacroI(T_CS('@<'), 'Until:< Until:<',
-  '\lx@hidden@align\cd@stack{<}{\leftarrowfill@}{#1}{#2}\lx@hidden@align');
+  '\lx@hidden@align\lx@amscd@stack{<}{\lx@amscd@leftarrow}{#1}{#2}\lx@hidden@align');
 DefMacroI(T_CS('@('), 'Until:( Until:(',
-  '\lx@hidden@align\cd@stack{(}{\leftarrowfill@}{#1}{#2}\lx@hidden@align');
-
-DefMacroI(T_CS('@A'), 'Until:A Until:A',
-  '\cd@adjacent{A}{\Big\uparrow}{#1}{#2}\lx@hidden@align\lx@hidden@align');
-DefMacroI(T_CS('@V'), 'Until:V Until:V',
-  '\cd@adjacent{V}{\Big\downarrow}{#1}{#2}\lx@hidden@align\lx@hidden@align');
-
+  '\lx@hidden@align\lx@amscd@stack{(}{\lx@amscd@leftarrow}{#1}{#2}\lx@hidden@align');
 DefMacroI(T_CS('@='), undef,
-  '\lx@hidden@align\@cd@equals@\lx@hidden@align');
+  '\lx@hidden@align\lx@amscd@equals\lx@hidden@align');
+
+# Vertical connectors
+DefMacroI(T_CS('@A'), 'Until:A Until:A',
+  '\lx@amscd@adjacent{A}{\Big\uparrow}{#1}{#2}\lx@hidden@align\lx@hidden@align');
+DefMacroI(T_CS('@V'), 'Until:V Until:V',
+  '\lx@amscd@adjacent{V}{\Big\downarrow}{#1}{#2}\lx@hidden@align\lx@hidden@align');
+
 DefMacroI(T_CS('@|'), undef,
   '\Big\Vert\lx@hidden@align\lx@hidden@align');
 DefMacroI(T_CS('@\vert'), undef,
@@ -66,15 +68,9 @@ DefMacroI(T_CS('@\vert'), undef,
 DefMacroI(T_CS('@.'), undef,
   '\lx@hidden@align\lx@hidden@align');
 
-# Horizontal
-DefMath('\@cd@equals@', "=", role => 'ARROW', stretchy => 'true', reversion => '@=');
-# Vertical
-DefMath('\@cd@bar@',  "|",        role => 'ARROW', font => { size => 'Big' }, reversion => '@|');
-DefMath('\@cd@vert@', "\x{2225}", role => 'ARROW', font => { size => 'Big' }, reversion => '@\vert');
-
 DefRegister('\minaw@' => Dimension('11.111pt'));
 
-DefConstructor('\cd@stack Undigested {} ScriptStyle ScriptStyle', sub {
+DefConstructor('\lx@amscd@stack Undigested {} ScriptStyle ScriptStyle', sub {
     my ($document, $reversion, $op, $over, $under, %props) = @_;
     my $scriptpos = $props{scriptpos};
     if (!IsEmpty($under)) {
@@ -101,22 +97,38 @@ DefConstructor('\cd@stack Undigested {} ScriptStyle ScriptStyle', sub {
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
   reversion  => '@#1{#3}#1{#4}#1');
 
-# Temporary...
-# Later deal with vertically centering the side things, parser issues...
-
-DefConstructor('\cd@adjacent Undigested {} ScriptStyle ScriptStyle', sub {
+DefConstructor('\lx@amscd@adjacent Undigested {} ScriptStyle ScriptStyle', sub {
     my ($document, $reversion, $op, $left, $right, %props) = @_;
+    # Make the left & right parts width=0, so they don't affect centering
     $document->openElement('ltx:XMWrap', role => 'ARROW');    # Role?
-    $document->insertElement('ltx:XMArg', $left) unless IsEmpty($left);
+    $document->insertElement('ltx:XMArg', $left, width => Dimension(0)) unless IsEmpty($left);
     $document->insertElement('ltx:XMArg', $op);
-    $document->insertElement('ltx:XMArg', $right) unless IsEmpty($right);
+    $document->insertElement('ltx:XMArg', $right, width => Dimension(0)) unless IsEmpty($right);
     $document->closeElement('ltx:XMWrap'); },
   reversion => '@#1{#3}#1{#4}#1');
 
-# This isn't really having the desired effect when transformed to MathML and
-# displayed in Firefox.... have I got it right; has Firefox???
-DefMath('\leftarrowfill@',  "\x{2190}", role => 'ARROW', stretchy => 'true');
-DefMath('\rightarrowfill@', "\x{2192}", role => 'ARROW', stretchy => 'true');
+# These, in case used...
+DefMacro('\leftarrowfill@ {}',      '\lx@amscd@leftarrow');
+DefMacro('\rightarrowfill@ {}',     '\lx@amscd@rightarrow');
+DefMacro('\leftrightarrowfill@ {}', '\lx@amscd@leftrightarrow');
+
+# These are stretchy, widenned version; should be \minCDarrowsidth or \minaw@ wide
+DefPrimitive('\lx@amscd@leftarrow', sub {
+    Box("\x{2190}", undef, undef, '\leftarrow',
+      role => 'ARROW', stretchy => 'true', meaning => 'leftarrow',
+      class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
+DefPrimitive('\lx@amscd@rightarrow', sub {
+    Box("\x{2192}", undef, undef, '\rightarrow',
+      role => 'ARROW', stretchy => 'true', meaning => 'rightarrow',
+      class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
+DefPrimitive('\lx@amscd@leftrightarrow', sub {
+    Box("\x{2194}", undef, undef, '\leftrightarrow',
+      role => 'ARROW', stretchy => 'true', meaning => 'leftrightarrow',
+      class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
+DefPrimitive('\lx@amscd@equals', sub {
+    Box("=", undef, undef, T_OTHER('='),
+      role => 'ARROW', stretchy => 'true', meaning => 'equals',
+      class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
 
 DefRegister('\minCDarrowwidth' => Dimension('2.5pc'));
 
