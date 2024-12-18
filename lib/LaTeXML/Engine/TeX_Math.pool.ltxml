@@ -908,27 +908,28 @@ Let('\vcenter', '\vbox');
 # \overline               c  puts a line over the following character or subformula.
 # \underline              c  puts a line under the following character or subformula.
 
+# Note that (over|under) brace accents act like \limit, but lines, arrows do NOT!
 DefMath('\lx@math@overline{}', UTF(0xAF),
-  operator_role => 'OVERACCENT', scriptpos => 'mid', operator_stretchy => 'true',
+  operator_role => 'OVERACCENT', operator_stretchy => 'true',
   name          => 'overline',   alias     => '\overline');
 DefConstructor('\lx@text@overline{}',
   "<ltx:text framed='overline' _noautoclose='1'>#1</ltx:text>");
 DefMath('\lx@math@underline{}', UTF(0xAF),
-  operator_role => 'UNDERACCENT', scriptpos => 'mid', operator_stretchy => 'true',
+  operator_role => 'UNDERACCENT', operator_stretchy => 'true',
   name          => 'underline',   alias     => '\underline');
 DefConstructor('\lx@text@underline{}',
   "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>");
 DefMath('\lx@math@overrightarrow{}', "\x{2192}",
-  operator_role => 'OVERACCENT',     scriptpos => 'mid', operator_stretchy => 'true',
+  operator_role => 'OVERACCENT',     operator_stretchy => 'true',
   name          => 'overrightarrow', alias     => '\overrightarrow');
 DefMath('\lx@math@overleftarrow{}', "\x{2190}",
-  operator_role => 'OVERACCENT',    scriptpos => 'mid', operator_stretchy => 'true',
+  operator_role => 'OVERACCENT',    operator_stretchy => 'true',
   name          => 'overleftarrow', alias     => '\overleftarrow');
 DefMath('\lx@math@underrightarrow{}', "\x{2192}",
-  operator_role => 'UNDERACCENT',     scriptpos => 'mid', operator_stretchy => 'true',
+  operator_role => 'UNDERACCENT',     operator_stretchy => 'true',
   name          => 'underrightarrow', alias     => '\underrightarrow');
 DefMath('\lx@math@underleftarrow{}', "\x{2190}",
-  operator_role => 'UNDERACCENT',    scriptpos => 'mid', operator_stretchy => 'true',
+  operator_role => 'UNDERACCENT',    operator_stretchy => 'true',
   name          => 'underleftarrow', alias     => '\underleftarrow');
 DefMath('\lx@math@overbrace{}', "\x{23DE}",
   operator_role => 'OVERACCENT', scriptpos => 'mid',        operator_stretchy => 'true',
