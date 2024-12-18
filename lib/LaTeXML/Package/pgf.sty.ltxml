@@ -37,6 +37,11 @@ DefMacro('\pgfsetcolor{}', '\pgfsetcolor@orig{#1}\lxSVG@set@color');
 DefPrimitive('\lxSVG@set@color', sub {
     MergeFont(color => LookupValue('color_pgfstrokecolor')); });
 
+# This seems to be needed to actually set colors (code similar to xxcolor.sty)
+if (XEquals(T_CS('\XC@mcolor'), T_CS('\relax'))) {
+  Let('\XC@mcolor', '\@empty'); }
+AddToMacro('\XC@mcolor', '\pgfsetcolor{.}');
+
 # This makes this conditional always true;  Why???
 DefConditionalI('\ifpgf@relevantforpicturesize', undef, sub { 1; });
 DefMacroI('\pgf@relevantforpicturesizefalse', undef, '');
