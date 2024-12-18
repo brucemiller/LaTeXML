@@ -535,7 +535,14 @@ sub pmml_maybe_resize {
   my $depth  = $node->getAttribute('depth')   || ($parent && $parent->getAttribute('depth'));
   my $xoff   = $node->getAttribute('xoffset') || ($parent && $parent->getAttribute('xoffset'));
   my $yoff   = $node->getAttribute('yoffset') || ($parent && $parent->getAttribute('yoffset'));
-  if ($width || $height || $depth || $xoff || $yoff) {
+  my $role   = $node->getAttribute('role')    || ($parent && $parent->getAttribute('role'));
+  my $unstretchy = (($node->getAttribute('stretchy') || ($parent && $parent->getAttribute('stretchy'))) || 'yes') eq 'no';
+
+  # First, special case hack for stretchy arrows, with specified width
+  # Stretchiness (currently) only has effect within munder/mover!!!!!
+  if ($width && (($role || '') eq 'ARROW') && !$unstretchy) {    # SPECIAL CASE HACK
+    $result = ['m:mover', {}, $result, ['m:mspace', { width => $width }]]; }
+  elsif ($width || $height || $depth || $xoff || $yoff) {
     if    ($$result[0] eq 'm:mpadded') { }
     elsif ($$result[0] eq 'm:mrow') {
       $$result[0] = 'm:mpadded'; }
