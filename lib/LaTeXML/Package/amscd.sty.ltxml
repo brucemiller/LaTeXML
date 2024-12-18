@@ -115,16 +115,20 @@ DefMacro('\leftrightarrowfill@ {}', '\lx@amscd@leftrightarrow');
 # These are stretchy, widenned version; should be \minCDarrowsidth or \minaw@ wide
 DefPrimitive('\lx@amscd@leftarrow', sub {
     Box("\x{2190}", undef, undef, '\leftarrow',
-      role => 'ARROW', stretchy => 'true', meaning => 'rightarrow', width => Dimension('30pt')); });
+      role => 'ARROW', stretchy => 'true', meaning => 'leftarrow',
+      class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
 DefPrimitive('\lx@amscd@rightarrow', sub {
-    Box("\x{2192}", undef, undef, '\rightarrowf',
-      role => 'ARROW', stretchy => 'true', meaning => 'rightarrow', width => Dimension('30pt')); });
+    Box("\x{2192}", undef, undef, '\rightarrow',
+      role => 'ARROW', stretchy => 'true', meaning => 'rightarrow',
+      class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
 DefPrimitive('\lx@amscd@leftrightarrow', sub {
     Box("\x{2194}", undef, undef, '\leftrightarrow',
-      role => 'ARROW', stretchy => 'true', meaning => 'leftrightarrow', width => Dimension('30pt')); });
+      role => 'ARROW', stretchy => 'true', meaning => 'leftrightarrow',
+      class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
 DefPrimitive('\lx@amscd@equals', sub {
     Box("=", undef, undef, T_OTHER('='),
-      role => 'ARROW', stretchy => 'true', meaning => 'equals', width => Dimension('30pt')); });
+      role => 'ARROW', stretchy => 'true', meaning => 'equals',
+      class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
 
 DefRegister('\minCDarrowwidth' => Dimension('2.5pc'));
 
