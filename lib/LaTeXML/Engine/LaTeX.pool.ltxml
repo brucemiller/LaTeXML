@@ -2827,7 +2827,7 @@ DefPrimitive('\DeclarePreloadSizes{}{}{}{}{}', undef);
 # The next font declaration commands are based on
 # http://tex.loria.fr/general/new/fntguide.html
 # we ignore font encoding
-DefPrimitive('\DeclareSymbolFont{}{}{}{}{}', sub {
+DefPrimitive('\DeclareSymbolFont{} ExpandedPartially {}{}{}', sub {
     my ($stomach, $name, $enc, $family, $series, $shape) = @_;
     AssignValue('fontdeclaration@' . ToString($name),
       { family => ToString($family),
