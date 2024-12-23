@@ -252,6 +252,8 @@ test & row \number\rownum\\
 \copy\mybox
 \setbox\mybox=\hbox{Should be Red!}
 {\color{red}\copy\mybox}
+\setbox\mybox=\hbox{The final word should be \textcolor{green}{green}}
+\box\mybox
 
 \section{Custom rgb directives}
 \color{rgb:red,4;green,2;yellow,1} Brown
