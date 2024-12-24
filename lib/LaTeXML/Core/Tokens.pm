@@ -146,9 +146,10 @@ sub packParameters {
 # Should this also trim whitespace? or only if there are braces?
 sub stripBraces {
   my ($self) = @_;
-  my $n      = 1 + $#$self;
-  my $i0     = 0;
-  my $i1     = $n;
+  my $n = 1 + $#$self;
+  return $self unless $n > 1;    # short-circuit on empty tokens.
+  my $i0 = 0;
+  my $i1 = $n;
   # skip past spaces at ends.
   while (($i0 < $n) && ($$self[$i0]->getCatcode == CC_SPACE))     { $i0++; }
   while (($i1 > 0)  && ($$self[$i1 - 1]->getCatcode == CC_SPACE)) { $i1--; }
@@ -170,6 +171,10 @@ sub stripBraces {
     my $j0 = pop(@p);
     if (($j0 == $i0) && ($j1 == $i1 - 1)) {
       $i0++; $i1--; } }
+  # Empty, truncate
+  if ($i0 == $i1) {
+    return bless [], 'LaTeXML::Core::Tokens';
+  }
   return (($i0 < $i1) && (($i0 > 0) || ($i1 < $n))
     ? bless [@$self[$i0 .. $i1 - 1]], 'LaTeXML::Core::Tokens'
     : $self); }
