@@ -24,7 +24,7 @@ DefMacro('\Authfont',  '\normalfont');
 DefMacro('\Authsep',   ',');
 DefMacro('\Authand',   ' and ');
 DefMacro('\Authands',  ', and ');
-DefMacro('\authorcr',  '\\\\\Authfont');
+DefMacro('\authorcr',  '\\\\');
 
 # package bookkeeping
 DefConditional('\ifnewaffil');
