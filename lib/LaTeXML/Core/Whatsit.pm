@@ -94,7 +94,10 @@ sub getTrailer {
 # So a Whatsit can stand in for a List
 sub unlist {
   my ($self) = @_;
-  return ($self); }
+  if (my $box = $self->getProperty('content_box')) {
+    return $box->unlist; }
+  else {
+    return ($self); } }
 
 sub revert {
   my ($self) = @_;
