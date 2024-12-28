@@ -134,11 +134,8 @@ DefConstructorI('\lx@begin@display@math', undef,
     . "</ltx:Math>"
     . "</ltx:equation>",
   reversion    => Tokens(T_MATH, T_MATH),
-  beforeDigest => sub {
-    $_[0]->beginMode('display_math');
-    if (my $toks = LookupRegister(T_CS('\everydisplay'))) {
-      $_[0]->getGullet->unread($toks); }
-    return; }, captureBody => 1);
+  beforeDigest => sub { $_[0]->beginMode('display_math'); },
+  captureBody  => 1);
 DefConstructorI('\lx@end@display@math', undef, "",
   reversion    => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->endMode('display_math'); });
@@ -150,11 +147,8 @@ DefConstructorI('\lx@begin@inline@math', undef,
     . "</ltx:XMath>"
     . "</ltx:Math>",
   reversion    => Tokens(T_MATH),
-  beforeDigest => sub {
-    $_[0]->beginMode('inline_math');
-    if (my $toks = LookupRegister(T_CS('\everymath'))) {
-      $_[0]->getGullet->unread($toks); }
-    return; }, captureBody => 1);
+  beforeDigest => sub { $_[0]->beginMode('inline_math'); },
+  captureBody  => 1);
 DefConstructorI('\\lx@end@inline@math', undef, "",
   reversion    => Tokens(T_MATH),
   beforeDigest => sub { $_[0]->endMode('inline_math'); });

@@ -2045,13 +2045,9 @@ DefConstructorI('\lx@begin@display@math', undef,
     . "</ltx:Math>"
     . "</ltx:equation>",
   alias        => '$$',
-  beforeDigest => sub {
-    $_[0]->beginMode('display_math');
-    if (my $toks = LookupRegister(T_CS('\everydisplay'))) {
-      $_[0]->getGullet->unread($toks); }
-    return; },
-  properties  => sub { RefStepID('equation') },
-  captureBody => 1);
+  beforeDigest => sub { $_[0]->beginMode('display_math'); },
+  properties   => sub { RefStepID('equation') },
+  captureBody  => 1);
 
 DefEnvironment('{displaymath}',
   "<ltx:equation xml:id='#id'>"
@@ -2070,8 +2066,7 @@ DefEnvironment('{math}',
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  mode => 'inline_math',
-);
+  mode => 'inline_math');
 
 Let('\curr@math@size', '\@empty');
 
