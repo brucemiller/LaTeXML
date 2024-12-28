@@ -196,6 +196,10 @@ DefPrimitive('\wlog{}', sub {
     NoteLog(ToString(Expand($_[1])));
     return; },
   locked => 1);
+
+# Use Package's register allocation to avoid allocating same slot twice; and ALWAYS have room!
+DefMacro('\alloc@{}{}{}{}{}', '\lx@alloc@{#2}{\count1#1}{#3}{#5}', locked => 1);
+DefMacro('\ch@ck{}{}{}',      '',                                  locked => 1);
 # From plain.tex
 RawTeX(<<'EoTeX');
 \outer\def\newcount{\alloc@0\count\countdef\insc@unt}
@@ -211,18 +215,9 @@ RawTeX(<<'EoTeX');
 \outer\def\newfam{\alloc@8\fam\chardef\sixt@@n}
 \outer\def\newlanguage{\alloc@9\language\chardef\@cclvi}
 EoTeX
-DefMacro('\e@alloc{}{}{}{}{}{}',
-  '\global\advance#3\@ne
-%  \e@ch@ck{#3}{#4}{#5}#1%
-  \allocationnumber#3\relax
-  \global#2#6\allocationnumber
-%  \wlog{\string#6=\string#1\the\allocationnumber}
-');
-DefMacro('\alloc@{}{}{}{}', '\e@alloc#2#3{\count1#1}#4\float@count');
 
 # This implementation is quite wrong
 DefPrimitive('\newinsert Token', sub { DefRegisterI($_[1], undef, Number(0)); });
-# \alloc@, \ch@ck
 
 # TeX plain uses \newdimen, etc. for these.
 # Is there any advantage to that?

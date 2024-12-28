@@ -36,6 +36,10 @@ Let('\magnification', '\@undefined');
 Let('\@empty',        '\lx@empty');
 Let('\@ifundefined',  '\lx@ifundefined');
 
+# Use Package's register allocation to avoid allocating same slot twice; and ALWAYS have room!
+DefMacro('\e@alloc{}{}{}{}{}{}', '\lx@alloc@{#1}{#3}{#2}{#6}', locked => 1);
+DefMacro('\e@ch@ck{}{}{}{}',     '',                           locked => 1);
+
 #**********************************************************************
 # Basic \documentclass & \documentstyle
 
@@ -771,6 +775,7 @@ sub beginAppendices {
   else {
     NewCounter($counter, 'document', idprefix => 'A');
     DefMacroI('\the' . $counter, undef, '\Alph{' . $counter . '}', scope => 'global'); }
+  SetCounter($counter => Number(0));          # In case register was already defined
   AssignMapping('counter_for_type', appendix => $counter);
   Let(T_CS('\\' . $counter), T_CS('\@@appendix'), 'global');
   Let(T_CS('\@appendix'),    T_CS('\relax'),      'global');
