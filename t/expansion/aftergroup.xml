@@ -119,4 +119,62 @@ No quirks</p>
       <p>VBOX  HBOX An Hbox HBOX Another Hbox</p>
     </para>
   </section>
+  <section inlist="toc" xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
+    <title><tag close=" ">5</tag>Every Math/Display</title>
+    <para xml:id="S5.p1">
+      <p><Math mode="inline" tex="\rightarrow a+b" text="absent rightarrow a + b" xml:id="S5.p1.m1">
+          <XMath>
+            <XMApp>
+              <XMTok name="rightarrow" role="ARROW">→</XMTok>
+              <XMTok meaning="absent"/>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math></p>
+      <equation xml:id="S5.Ex1">
+        <Math mode="display" tex="a+b" text="a + b" xml:id="S5.Ex1.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <p><Math mode="inline" tex="a+b" text="a + b" xml:id="S5.p1.m2">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
+      <equation xml:id="S5.Ex2">
+        <Math mode="display" tex="\rightarrow a+b" text="absent rightarrow a + b" xml:id="S5.Ex2.m1">
+          <XMath>
+            <XMApp>
+              <XMTok name="rightarrow" role="ARROW">→</XMTok>
+              <XMTok meaning="absent"/>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
 </document>
