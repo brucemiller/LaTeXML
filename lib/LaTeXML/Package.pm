@@ -597,9 +597,12 @@ sub allocateRegister {
   if (my $addr = $allocations{$type}) {    # $addr is a Register but MUST be stored as \count<#>
     if (my $n = $STATE->lookupValue($addr)) {
       my $next = $n->valueOf + 1;
+      my $loc  = $type . $next;
+      while ($STATE->isValueBound($loc)) {
+        $next++; $loc = $type . $next; }
       $STATE->assignValue($addr => Number($next), 'global');
-      return $type . $next; }
-    else {                                 # If allocations not set up, punt to unallocated register
+      return $loc; }
+    else {    # If allocations not set up, punt to unallocated register
       return; } }
   else {
     Error('misdefined', $type, undef, "Type $type is not an allocated register type");
@@ -634,8 +637,15 @@ sub NewCounter {
   my $unctr = "UN$ctr";    # UNctr is counter for generating ID's for UN-numbered items.
   if ($within && ($within ne 'document') && !LookupDefinition(T_CS("\\c\@$within"))) {
     NewCounter($within); }
-  my $cs = T_CS("\\c\@$ctr");
-  DefRegisterI($cs, undef, Number(0), allocate => '\count');
+  my $cs       = T_CS("\\c\@$ctr");
+  my $prevdefn = $STATE->lookupMeaning($cs);
+  if ($prevdefn && ((ref $prevdefn) eq 'LaTeXML::Core::Definition::Register')
+    && (($$prevdefn{address} || '') =~ /^\\count/)) {
+    Info('unexpected', $cs, undef, "Counter $ctr was already allocated, skipping"); }
+  else {
+    Warn('unexpected', $cs, undef,
+      "Counter " . ToString($cs) . " was already defined as $prevdefn; redefining") if $prevdefn;
+    DefRegisterI($cs, undef, Number(0), allocate => '\count'); }
   AfterAssignment();
   AssignValue("\\cl\@$ctr" => Tokens(), 'global') unless LookupValue("\\cl\@$ctr");
   DefRegisterI(T_CS("\\c\@$unctr"), undef, Number(0));
@@ -649,9 +659,7 @@ sub NewCounter {
     'global') if $within;
   AssignValue('nested_counters_' . $ctr => $options{nested}, 'global') if $options{nested};
   # default is equivalent to \arabic{ctr}, but w/o using the LaTeX macro!
-  DefMacroI(T_CS("\\the$ctr"), undef, sub {
-      ExplodeText(CounterValue($ctr)->valueOf); },
-    scope => 'global');
+  DefMacroI(T_CS("\\the$ctr"), undef, "\\lx\@counter\@arabic{$ctr}", scope => 'global');
   if (!LookupDefinition(T_CS("\\p\@$ctr"))) {
     DefMacroI(T_CS("\\p\@$ctr"), undef, Tokens(), scope => 'global'); }
   my $prefix = $options{idprefix};
