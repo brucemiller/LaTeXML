@@ -2047,10 +2047,8 @@ DefConstructorI('\lx@begin@display@math', undef,
   alias        => '$$',
   beforeDigest => sub {
     $_[0]->beginMode('display_math');
-    if (my @everymath_toks = $STATE->lookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
-      $_[0]->getGullet->unread(@everymath_toks); }
-    if (my @everydisplay_toks = $STATE->lookupDefinition(T_CS('\everydisplay'))->valueOf->unlist()) {
-      $_[0]->getGullet->unread(@everydisplay_toks); }
+    if (my $toks = LookupRegister(T_CS('\everydisplay'))) {
+      $_[0]->getGullet->unread($toks); }
     return; },
   properties  => sub { RefStepID('equation') },
   captureBody => 1);

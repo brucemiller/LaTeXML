@@ -136,10 +136,8 @@ DefConstructorI('\lx@begin@display@math', undef,
   reversion    => Tokens(T_MATH, T_MATH),
   beforeDigest => sub {
     $_[0]->beginMode('display_math');
-    if (my @everymath_toks = $STATE->lookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
-      $_[0]->getGullet->unread(@everymath_toks); }
-    if (my @everydisplay_toks = $STATE->lookupDefinition(T_CS('\everydisplay'))->valueOf->unlist()) {
-      $_[0]->getGullet->unread(@everydisplay_toks); }
+    if (my $toks = LookupRegister(T_CS('\everydisplay'))) {
+      $_[0]->getGullet->unread($toks); }
     return; }, captureBody => 1);
 DefConstructorI('\lx@end@display@math', undef, "",
   reversion    => Tokens(T_MATH, T_MATH),
@@ -154,8 +152,8 @@ DefConstructorI('\lx@begin@inline@math', undef,
   reversion    => Tokens(T_MATH),
   beforeDigest => sub {
     $_[0]->beginMode('inline_math');
-    if (my @everymath_toks = $STATE->lookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
-      $_[0]->getGullet->unread(@everymath_toks); }
+    if (my $toks = LookupRegister(T_CS('\everymath'))) {
+      $_[0]->getGullet->unread($toks); }
     return; }, captureBody => 1);
 DefConstructorI('\\lx@end@inline@math', undef, "",
   reversion    => Tokens(T_MATH),
@@ -911,26 +909,26 @@ Let('\vcenter', '\vbox');
 # Note that (over|under) brace accents act like \limit, but lines, arrows do NOT!
 DefMath('\lx@math@overline{}', UTF(0xAF),
   operator_role => 'OVERACCENT', operator_stretchy => 'true',
-  name          => 'overline',   alias     => '\overline');
+  name          => 'overline',   alias             => '\overline');
 DefConstructor('\lx@text@overline{}',
   "<ltx:text framed='overline' _noautoclose='1'>#1</ltx:text>");
 DefMath('\lx@math@underline{}', UTF(0xAF),
   operator_role => 'UNDERACCENT', operator_stretchy => 'true',
-  name          => 'underline',   alias     => '\underline');
+  name          => 'underline',   alias             => '\underline');
 DefConstructor('\lx@text@underline{}',
   "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>");
 DefMath('\lx@math@overrightarrow{}', "\x{2192}",
   operator_role => 'OVERACCENT',     operator_stretchy => 'true',
-  name          => 'overrightarrow', alias     => '\overrightarrow');
+  name          => 'overrightarrow', alias             => '\overrightarrow');
 DefMath('\lx@math@overleftarrow{}', "\x{2190}",
   operator_role => 'OVERACCENT',    operator_stretchy => 'true',
-  name          => 'overleftarrow', alias     => '\overleftarrow');
+  name          => 'overleftarrow', alias             => '\overleftarrow');
 DefMath('\lx@math@underrightarrow{}', "\x{2192}",
   operator_role => 'UNDERACCENT',     operator_stretchy => 'true',
-  name          => 'underrightarrow', alias     => '\underrightarrow');
+  name          => 'underrightarrow', alias             => '\underrightarrow');
 DefMath('\lx@math@underleftarrow{}', "\x{2190}",
   operator_role => 'UNDERACCENT',    operator_stretchy => 'true',
-  name          => 'underleftarrow', alias     => '\underleftarrow');
+  name          => 'underleftarrow', alias             => '\underleftarrow');
 DefMath('\lx@math@overbrace{}', "\x{23DE}",
   operator_role => 'OVERACCENT', scriptpos => 'mid',        operator_stretchy => 'true',
   name          => 'overbrace',  alias     => '\overbrace', robust            => 1);
