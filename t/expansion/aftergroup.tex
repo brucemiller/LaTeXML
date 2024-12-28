@@ -102,14 +102,25 @@ Another paragraph.
 \everyhbox={}
 \everyvbox={}
 
-
-% \everymath is NOT (yet) supported.
-% \section{EveryMath}
-% \everymath={.}
-% $a+b$
-
-% \everymath={}
-%  $a+b$
+\section{Every Math/Display}
+{
+ \everymath={\rightarrow}
+ $a+b$
+ \begin{math} a + b \end{math}
+ $$a+b$$
+\[a+b\]
+ \begin{displaymath} a + b \end{displaymath}
+ \begin{equation} a + b \end{equation}
+}
+{
+ \everydisplay={\rightarrow}
+ $a+b$
+ \begin{math} a + b \end{math}
+ $$a+b$$
+\[a+b\]
+ \begin{displaymath} a + b \end{displaymath}
+ \begin{equation} a + b \end{equation}
+}
 
 % $ a + \everymath={} b$
 

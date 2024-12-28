@@ -364,13 +364,18 @@ sub setMode {
     # and save the text font for any embedded text.
     $STATE->assignValue(savedfont         => $curfont, 'local');
     $STATE->assignValue(script_base_level => scalar(@{ $$self{boxing} }));    # See getScriptLevel
-    my $mathfont = $STATE->lookupValue('mathfont')->merge(
+    my $isdisplay = $mode =~ /^display/;
+    my $mathfont  = $STATE->lookupValue('mathfont')->merge(
       color     => $curfont->getColor, background => $curfont->getBackground,
       size      => $curfont->getSize,
-      mathstyle => ($mode =~ /^display/ ? 'display' : 'text'));
+      mathstyle => ($isdisplay ? 'display' : 'text'));
     $STATE->assignValue(font              => $mathfont, 'local');
     $STATE->assignValue(initial_math_font => $mathfont, 'local');
-    $STATE->assignValue(fontfamily        => -1,        'local'); }
+    $STATE->assignValue(fontfamily        => -1,        'local');
+    my $every = ($isdisplay ? T_CS('\everydisplay') : T_CS('\everymath'));
+    my $ereg  = $STATE->lookupDefinition($every);
+    if (my $toks = $ereg && $ereg->isRegister && $ereg->valueOf()) {
+      $self->getGullet->unread($toks); } }
   else {
     # When entering text mode, we should set the font to the text font in use before the math
     # but inherit color and size
