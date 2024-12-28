@@ -84,4 +84,18 @@ Yet another Figure line\\
 
 \scalebox{3}[2]{\includegraphics{foo}}
 
+\section{unvbox and unvcopy}
+%
+\newbox\boxA
+\newbox\boxB
+\newbox\boxC
+\newbox\boxD
+\newbox\boxE
+\setbox\boxA=\vbox spread 1cm{1cm Box}
+\setbox\boxB=\vbox spread 2cm{2cm Box}
+\setbox\boxC=\vbox{\unvcopy\boxA\unvcopy\boxB}
+\setbox\boxD=\vbox{\unvbox\boxA\unvbox\boxB}
+\setbox\boxE=\vbox{\unvbox\boxC\unvbox\boxD}
+%
+via unvbox, unvcopy: \fbox{\box\boxE}
 \end{document}
