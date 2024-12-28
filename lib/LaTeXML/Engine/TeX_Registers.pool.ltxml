@@ -84,7 +84,6 @@ DefMacro('\lx@alloc@ DefToken {} {} DefToken', sub {
     else {
       my $xnext = $STATE->lookupValue($tracker) || Number(0);
       $next = $xnext->valueOf + 1; }
-    my $value = Number($next);
     $STATE->assignValue($tracker => Number($next), 'global');
     return Tokens(T_CS('\allocationnumber'), Explode($next), T_CS('\relax'),
       T_CS('\global'), $allocator, $cs, T_OTHER('='), T_CS('\allocationnumber')); });
