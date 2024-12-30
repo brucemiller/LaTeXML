@@ -4714,9 +4714,9 @@ DefPrimitiveI('\makeglossary', undef, undef);
 # C.11.6 Terminal Input and Output
 #======================================================================
 
-DefPrimitive('\typeout{}', sub {
+DefPrimitive('\typeout ExpandedPartially', sub {
     my ($stomach, $stuff) = @_;
-    Note(ToString(Expand($stuff)));
+    Note(ToString($stuff));
     return; });
 
 DefPrimitive('\typein[]{}', undef);
