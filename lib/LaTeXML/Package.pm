@@ -1383,7 +1383,7 @@ sub flatten {
 my $constructor_options = {    # [CONSTANT]
   mode         => 1, requireMath => 1, forbidMath => 1, font       => 1,
   alias        => 1, reversion   => 1, sizer      => 1, properties => 1,
-  nargs        => 1,
+  nargs        => 1, toAttribute => 1,
   beforeDigest => 1, afterDigest => 1, beforeConstruct => 1, afterConstruct => 1,
   captureBody  => 1, scope       => 1, bounded         => 1, locked         => 1,
   outer        => 1, long        => 1, robust          => 1 };
@@ -1425,6 +1425,7 @@ sub DefConstructorI {
       alias           => (defined $options{alias} ? $options{alias}
         : ($options{robust} ? $cs : undef)),
       reversion   => $options{reversion},
+      toAttribute => $options{toAttribute},
       sizer       => inferSizer($options{sizer}, $options{reversion}),
       captureBody => $options{captureBody},
       properties  => $options{properties} || {},
@@ -1827,7 +1828,8 @@ my $environment_options = {    # [CONSTANT]
   beforeDigest     => 1, afterDigest     => 1,
   afterDigestBegin => 1, beforeDigestEnd => 1, afterDigestBody => 1,
   beforeConstruct  => 1, afterConstruct  => 1,
-  reversion        => 1, sizer           => 1, scope => 1, locked => 1 };
+  reversion        => 1, sizer           => 1, scope => 1, locked => 1,
+  toAttribute      => 1 };
 
 sub DefEnvironment {
   my ($proto, $replacement, %options) = @_;
@@ -1873,8 +1875,9 @@ sub DefEnvironmentI {
       nargs          => $options{nargs},
       captureBody    => 1,
       properties     => $options{properties} || {},
-      (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
-      (defined $sizer              ? (sizer     => $sizer)              : ()),
+      (defined $options{reversion}   ? (reversion   => $options{reversion})   : ()),
+      (defined $options{toAttribute} ? (toAttribute => $options{toAttribute}) : ()),
+      (defined $sizer                ? (sizer       => $sizer)                : ()),
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end{$name}"), "", "",
@@ -1914,8 +1917,9 @@ sub DefEnvironmentI {
       nargs          => $options{nargs},
       captureBody    => T_CS("\\end$name"),           # Required to capture!!
       properties     => $options{properties} || {},
-      (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
-      (defined $sizer              ? (sizer     => $sizer)              : ()),
+      (defined $options{reversion}   ? (reversion   => $options{reversion})   : ()),
+      (defined $options{toAttribute} ? (toAttribute => $options{toAttribute}) : ()),
+      (defined $sizer                ? (sizer       => $sizer)                : ()),
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end$name"), "", "",
@@ -3681,6 +3685,14 @@ provides a control sequence to be used in the C<reversion> instead of
 the one defined in the C<prototype>.  This is a convenient alternative for
 reversion when a 'public' command conditionally expands into
 an internal one, but the reversion should be for the public command.
+
+=item C<toAttribute=E<gt>I<texstring> | I<code>($whatsit,#1,#2,...)>
+
+specifies the conversion of the invocation back into plain text for an attribute value
+(the default is C<toString>).
+The I<textstring> string can include C<#1>, C<#2>...
+The I<code> is called with the C<$whatsit> and digested arguments
+and must return a string.
 
 =item C<sizer=E<gt>I<string> | I<code>($whatsit)>
 
