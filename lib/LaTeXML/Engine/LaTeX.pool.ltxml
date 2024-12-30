@@ -1243,6 +1243,7 @@ DefMacroI('\maketitle', undef,
     . '\global\let\title\relax'
     . '\global\let\author\relax'
     . '\global\let\date\relax'
+    . '\global\let\keywords\relax'
     . '\global\let\and\relax', locked => 1);
 
 DefMacro('\@thanks', '\@empty');
