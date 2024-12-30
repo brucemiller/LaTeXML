@@ -1231,20 +1231,22 @@ DefMacro('\@add@conversion@date', '\@add@frontmatter{ltx:date}[role=creation]{\t
 # Doesn't produce anything (we're already inserting frontmatter),
 # But, it does make the various frontmatter macros into no-ops.
 DefMacroI('\maketitle', undef,
-  '\lx@frontmatterhere'
-    . '\@startsection@hook'
-    . '\global\let\thanks\relax'
-    . '\global\let\maketitle\relax'
-    . '\global\let\@maketitle\relax'
-    . '\global\let\@thanks\@empty'
-    . '\global\let\@author\@empty'
-    . '\global\let\@date\@empty'
-    . '\global\let\@title\@empty'
-    . '\global\let\title\relax'
-    . '\global\let\author\relax'
-    . '\global\let\date\relax'
-    . '\global\let\keywords\relax'
-    . '\global\let\and\relax', locked => 1);
+  '\lx@frontmatterhere\@startsection@hook\lx@deactivate@frontmatter');
+DefPrimitive('\lx@deactivate@frontmatter', sub {
+    Let('\maketitle',  '\relax',  'global');
+    Let('\@maketitle', '\relax',  'global');
+    Let('\@thanks',    '\@empty', 'global');
+    Let('\@author',    '\@empty', 'global');
+    Let('\@date',      '\@empty', 'global');
+    Let('\@title',     '\@empty', 'global');
+    DefMacro('\thanks[]{}', Tokens(), scope => 'global');
+    DefMacro('\title[]{}',  Tokens(), scope => 'global');
+    DefMacro('\author[]{}', Tokens(), scope => 'global');
+    DefMacro('\date{}',     Tokens(), scope => 'global');
+    DefMacro('\keywords{}', Tokens(), scope => 'global');
+    Let('\and', '\relax', scope => 'global');
+    return;
+});
 
 DefMacro('\@thanks', '\@empty');
 # make a throwaway optional argument available for OmniBus use
