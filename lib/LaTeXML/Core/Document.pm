@@ -1376,8 +1376,14 @@ sub makeError {
 # [xml:id and namespaced attributes are always allowed]
 sub setAttribute {
   my ($self, $node, $key, $value) = @_;
-  return                       if (ref $value) && ((!blessed($value)) || !$value->can('toAttribute'));
-  $value = $value->toAttribute if ref $value;
+  return if (ref $value) && ((!blessed($value)) || !$value->can('toAttribute'));
+  if (ref $value) {
+    if ($key eq '_box') {
+      return $self->setNodeBox($node, $value); }
+    elsif ($key eq '_font') {
+      return $self->setNodeFont($node, $value); }
+    else {
+      $value = $value->toAttribute; } }
   if ((defined $value) && ($value ne '')) {    # Skip if `empty'; but 0 is OK!
     if ($key eq 'xml:id') {                    # If it's an ID attribute
       $value = recordID($self, $value, $node);                                 # Do id book keeping
