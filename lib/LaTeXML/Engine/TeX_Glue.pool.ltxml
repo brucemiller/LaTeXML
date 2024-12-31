@@ -79,8 +79,9 @@ DefConstructor('\hskip Glue', sub {
     else {
       #      $document->openText(DimensionToSpaces($length), $props{font}); } },
       $document->absorb(DimensionToSpaces($length)); } },
-  reversion  => sub { revertSkip(T_CS('\hskip'), $_[1]); },
-  properties => sub {
+  reversion   => sub { revertSkip(T_CS('\hskip'), $_[1]); },
+  toAttribute => sub { DimensionToSpaces($_[1]); },
+  properties  => sub {
     my ($stomach, $length) = @_;
     (width => $length, isSpace => 1, isSkip => 1); });
 
