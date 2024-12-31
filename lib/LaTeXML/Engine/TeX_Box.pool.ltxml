@@ -552,7 +552,8 @@ sub adjustBoxColor_rec {
 sub adjustBoxColor_internal {
   my ($color, $box) = @_;
   if (my $font = $box->getFont) {
-    $box->setFont($font->merge(color => $color)); }
+    if (Black->equals($font->getColor)) {
+      $box->setFont($font->merge(color => $color)); } }
   return; }
 
 DefPrimitive('\box Number', sub {
