@@ -33,22 +33,41 @@
   <xsl:preserve-space elements="ltx:text"/>
   <xsl:template match="ltx:text">
     <xsl:param name="context"/>
-    <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-        <xsl:with-param name="extra_classes" select="f:if(@width,'ltx_inline-block','')"/>
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-    </xsl:element>
+    <xsl:variable name="content">
+      <xsl:element name="span" namespace="{$html_ns}">
+        <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+        <xsl:call-template name="add_id"/>
+        <xsl:call-template name="add_attributes">
+          <xsl:with-param name="extra_classes" select="f:if(@width,'ltx_inline-block','')"/>
+        </xsl:call-template>
+        <xsl:apply-templates select="." mode="begin">
+          <xsl:with-param name="context" select="$innercontext"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates>
+          <xsl:with-param name="context" select="$innercontext"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="." mode="end">
+          <xsl:with-param name="context" select="$innercontext"/>
+        </xsl:apply-templates>
+      </xsl:element>
+    </xsl:variable>
+    <xsl:choose>
+      <xsl:when test="contains(concat(' ',@class,' '),' ltx_llap ')">
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx__lap_container</xsl:attribute>
+          <xsl:copy-of select="$content" />
+      </xsl:element>
+      </xsl:when>
+      <xsl:when test="contains(concat(' ',@class,' '),' ltx_rlap ')">
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx__lap_container</xsl:attribute>
+          <xsl:copy-of select="$content" />
+        </xsl:element>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:copy-of select="$content" />
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- Special case: all OTHER attributes have to be outside the "hidden"
