@@ -536,9 +536,10 @@ DefConstructor('\ltx@centerline{}', sub {
   alias   => '\centerline',
   bounded => 1);
 
-# These should be 0 width, but perhaps also shifted?
-DefMacro('\llap{}', '\hbox to 0pt{\hss#1}');
-DefMacro('\rlap{}', '\hbox to 0pt{#1\hss}');
+# rely on RTL trickery to shift the \llap content over the previous text (see CSS)
+# the zero-width space prevents merging the two boxes in a single ltx:text
+DefMacro('\llap{}', '\hbox to 0pt{\@ADDCLASS{ltx_llap}' . "\x{200B}" . '\hbox{\@ADDCLASS{ltx_llap_content}#1}}');
+DefMacro('\rlap{}', '\hbox to 0pt{\@ADDCLASS{ltx_rlap}#1}');
 
 DefMacroI('\m@th', undef, '\mathsurround=0pt ');
 
