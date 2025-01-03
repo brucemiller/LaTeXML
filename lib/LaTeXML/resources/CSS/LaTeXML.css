@@ -510,3 +510,15 @@ cite                 { font-style: normal; }
 
 .ltx_overlay {position:relative; }
 .ltx_overlay > span:nth-child(2) {position:absolute; left:0; }
+
+/* \llap, \rlap */
+.ltx_llap, .ltx_rlap {
+  white-space: nowrap; /* width 0pt causes extreme wrapping otherwise */ }
+
+/* shift \llap over the previous text by shifting text direction */
+.ltx_llap {
+  direction: rtl; }
+
+/* restore LTR inside \llap */
+.ltx_llap_content {
+  direction: ltr; }
