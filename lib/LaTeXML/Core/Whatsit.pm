@@ -223,7 +223,7 @@ sub toAttribute {
   my ($self) = @_;
   my $props  = $$self{properties};
   my $defn   = $self->getDefinition;
-  my $spec   = $$props{toAttribute} || $$defn{toAttribute};
+  my $spec   = $$props{attributeForm} || $$defn{attributeForm};
   if (!defined $spec) {
     return $self->toString; }    # Default
   elsif (ref $spec eq 'CODE') {    # If handled by CODE, call it
@@ -240,7 +240,7 @@ sub toAttribute_aux {
     $value = $self->getArg(ord($code) - ord('0')); }
   else {
     $value = $self->getProperty($code); }
-  $value = $value->toAttribute if (defined $value) && (ref $value);
+  $value = $value->toAttribute if ref $value;
   return $value; }
 
 # See discussion in Box.pm

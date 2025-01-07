@@ -1381,12 +1381,12 @@ sub flatten {
 #   properties      : a hashref listing default values of properties to assign to the Whatsit.
 #                     These properties can be used in the constructor.
 my $constructor_options = {    # [CONSTANT]
-  mode         => 1, requireMath => 1, forbidMath => 1, font       => 1,
-  alias        => 1, reversion   => 1, sizer      => 1, properties => 1,
-  nargs        => 1, toAttribute => 1,
-  beforeDigest => 1, afterDigest => 1, beforeConstruct => 1, afterConstruct => 1,
-  captureBody  => 1, scope       => 1, bounded         => 1, locked         => 1,
-  outer        => 1, long        => 1, robust          => 1 };
+  mode         => 1, requireMath   => 1, forbidMath => 1, font       => 1,
+  alias        => 1, reversion     => 1, sizer      => 1, properties => 1,
+  nargs        => 1, attributeForm => 1,
+  beforeDigest => 1, afterDigest   => 1, beforeConstruct => 1, afterConstruct => 1,
+  captureBody  => 1, scope         => 1, bounded         => 1, locked         => 1,
+  outer        => 1, long          => 1, robust          => 1 };
 
 sub inferSizer {
   my ($sizer, $reversion) = @_;
@@ -1424,13 +1424,13 @@ sub DefConstructorI {
       nargs           => $options{nargs},
       alias           => (defined $options{alias} ? $options{alias}
         : ($options{robust} ? $cs : undef)),
-      reversion   => $options{reversion},
-      toAttribute => $options{toAttribute},
-      sizer       => inferSizer($options{sizer}, $options{reversion}),
-      captureBody => $options{captureBody},
-      properties  => $options{properties} || {},
-      outer       => $options{outer},
-      long        => $options{long}),
+      reversion     => $options{reversion},
+      attributeForm => $options{attributeForm},
+      sizer         => inferSizer($options{sizer}, $options{reversion}),
+      captureBody   => $options{captureBody},
+      properties    => $options{properties} || {},
+      outer         => $options{outer},
+      long          => $options{long}),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
@@ -1799,7 +1799,7 @@ sub defmath_cons {
         ? $cs : $presentation->unlist); }; }
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($defcs, $paramlist,
       ($nargs == 0
-          # If trivial presentation, allow it in Text
+        # If trivial presentation, allow it in Text
         ? ($presentation !~ /(?:\(|\)|\\)/
           ? "?#isMath(<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok)"
@@ -1829,7 +1829,7 @@ my $environment_options = {    # [CONSTANT]
   afterDigestBegin => 1, beforeDigestEnd => 1, afterDigestBody => 1,
   beforeConstruct  => 1, afterConstruct  => 1,
   reversion        => 1, sizer           => 1, scope => 1, locked => 1,
-  toAttribute      => 1 };
+  attributeForm    => 1 };
 
 sub DefEnvironment {
   my ($proto, $replacement, %options) = @_;
@@ -1875,9 +1875,9 @@ sub DefEnvironmentI {
       nargs          => $options{nargs},
       captureBody    => 1,
       properties     => $options{properties} || {},
-      (defined $options{reversion}   ? (reversion   => $options{reversion})   : ()),
-      (defined $options{toAttribute} ? (toAttribute => $options{toAttribute}) : ()),
-      (defined $sizer                ? (sizer       => $sizer)                : ()),
+      (defined $options{reversion}     ? (reversion     => $options{reversion})     : ()),
+      (defined $options{attributeForm} ? (attributeForm => $options{attributeForm}) : ()),
+      (defined $sizer                  ? (sizer         => $sizer)                  : ()),
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end{$name}"), "", "",
@@ -1917,9 +1917,9 @@ sub DefEnvironmentI {
       nargs          => $options{nargs},
       captureBody    => T_CS("\\end$name"),           # Required to capture!!
       properties     => $options{properties} || {},
-      (defined $options{reversion}   ? (reversion   => $options{reversion})   : ()),
-      (defined $options{toAttribute} ? (toAttribute => $options{toAttribute}) : ()),
-      (defined $sizer                ? (sizer       => $sizer)                : ()),
+      (defined $options{reversion}     ? (reversion     => $options{reversion})     : ()),
+      (defined $options{attributeForm} ? (attributeForm => $options{attributeForm}) : ()),
+      (defined $sizer                  ? (sizer         => $sizer)                  : ()),
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end$name"), "", "",
@@ -2479,7 +2479,7 @@ sub AddToMacro {
   else {
     local $LaTeXML::Core::State::UNLOCKED = 1;    # ALLOW redefinitions that only adding to the macro
     DefMacroI($cs, undef, Tokens(map { $_->unlist }
-          map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
+        map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
       nopackParameters => 1, scope => 'global', locked => $$defn{locked}); }
   return; }
 
@@ -3686,9 +3686,10 @@ the one defined in the C<prototype>.  This is a convenient alternative for
 reversion when a 'public' command conditionally expands into
 an internal one, but the reversion should be for the public command.
 
-=item C<toAttribute=E<gt>I<texstring> | I<code>($whatsit,#1,#2,...)>
+=item C<attributeForm=E<gt>I<texstring> | I<code>($whatsit,#1,#2,...)>
 
-specifies the conversion of the invocation back into plain text for an attribute value
+specifies the conversion of the invocation back into plain text
+for an attribute value, used by the C<toAttribute> method
 (the default is C<toString>).
 The I<textstring> string can include C<#1>, C<#2>...
 The I<code> is called with the C<$whatsit> and digested arguments
@@ -3895,6 +3896,8 @@ These options are the same as for L</Primitives>
 =item C<reversion=E<gt>I<reversion>>,
 
 =item C<alias=E<gt>I<cs>>,
+
+=item C<attributeForm=E<gt>I<texstring> | I<code>($whatsit,#1,#2,...)>,
 
 =item C<sizer=E<gt>I<sizer>>,
 
