@@ -1211,9 +1211,9 @@ DefConstructor('\lx@author@prefix', sub {
     my $i          = scalar(@{ $document->findnodes('//ltx:creator[@role="author"]') });
     if    ($i <= 1) { }
     elsif ($i == $nauthors) {
-      $document->setAttribute($node, before => ToString(Digest(T_CS('\lx@author@conj')))); }
+      $document->setAttribute($node, before => Digest(T_CS('\lx@author@conj'))); }
     else {
-      $document->setAttribute($node, before => ToString(Digest(T_CS('\lx@author@sep')))); }
+      $document->setAttribute($node, before => Digest(T_CS('\lx@author@sep'))); }
 });
 
 DefMacro('\@author',                 '\@empty');
@@ -4376,8 +4376,8 @@ DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
   "<ltx:bibref show='#1' bibrefs='#bibrefs' inlist='#bibunit'"
     . " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
   properties => sub { (bibrefs => CleanBibKey($_[2]),
-      separator   => ToString(Digest(LookupValue('CITE_SEPARATOR'))),
-      yyseparator => ToString(Digest(LookupValue('CITE_YY_SEPARATOR'))),
+      separator   => Digest(LookupValue('CITE_SEPARATOR')),
+      yyseparator => Digest(LookupValue('CITE_YY_SEPARATOR')),
       bibunit     => LookupValue('CITE_UNIT')); });
 
 # Simple container for any phrases used in the bibref

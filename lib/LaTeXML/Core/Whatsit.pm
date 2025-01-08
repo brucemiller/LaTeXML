@@ -218,6 +218,31 @@ sub beAbsorbed {
   LaTeXML::Core::Definition::stopProfiling($profiled, 'absorb') if $profiled;
   return @result; }
 
+# Similar to ->revert, but converts to pure string for use in an attribute value
+sub toAttribute {
+  my ($self) = @_;
+  my $props  = $$self{properties};
+  my $defn   = $self->getDefinition;
+  my $spec   = $$props{attributeForm} || $$defn{attributeForm};
+  if (!defined $spec) {
+    return $self->toString; }    # Default
+  elsif (ref $spec eq 'CODE') {    # If handled by CODE, call it
+    $spec = &$spec($self, $self->getArgs); }
+  # Now, similar to substituteParameters, but creating a string.
+  $spec =~ s/#(#|[1-9]|\w+)/ toAttribute_aux($self,$1)/eg;
+  return $spec; }
+
+sub toAttribute_aux {
+  my ($self, $code) = @_;
+  my $value;
+  if    ($code eq '#') { return $code; }
+  elsif ((ord($code) > ord('0')) && (ord($code) <= ord('9'))) {
+    $value = $self->getArg(ord($code) - ord('0')); }
+  else {
+    $value = $self->getProperty($code); }
+  $value = $value->toAttribute if ref $value;
+  return $value; }
+
 # See discussion in Box.pm
 sub computeSize {
   my ($self, %options) = @_;

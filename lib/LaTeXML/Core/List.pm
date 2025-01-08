@@ -17,7 +17,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::Dimension;
 use List::Util qw(min max);
-use base qw(Exporter LaTeXML::Core::Box);
+use base       qw(Exporter LaTeXML::Core::Box);
 our @EXPORT = (qw(&List));
 
 # Tricky; don't really want a separate constructor for a Math List,
@@ -70,6 +70,10 @@ sub revert {
 sub toString {
   my ($self) = @_;
   return join('', grep { defined $_ } map { $_->toString } $self->unlist); }
+
+sub toAttribute {
+  my ($self) = @_;
+  return join('', grep { defined $_ } map { $_->toAttribute } $self->unlist); }
 
 # Methods for overloaded operators
 sub stringify {
