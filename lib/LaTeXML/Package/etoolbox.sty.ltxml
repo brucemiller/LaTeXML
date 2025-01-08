@@ -1296,15 +1296,15 @@ DefMacro('\patchcmd [] DefToken {}{}{}{}', sub {
         Info('unexpected', 'patchcmd', $gullet, "Patchcmd is not supported on LaTeXML-native definitions, will not patch " . ToString($cs));
         return $failure;
       }
-      my $string        = ToString($expansion);
-      my $search_string = ToString($search);
+      my $string        = UnTeX($expansion);
+      my $search_string = UnTeX($search);
       # All characters are meant to be matched as literal, avoid regex interpretation
       $search_string = quotemeta($search_string);
       my $search_regex = qr/$search_string/;
       if ($string =~ $search_regex) {
         # Should the token substitution happen on the actual data structure?
         # string replacement is a quick&dirty way out...
-        my $replace_string = ToString($replace);
+        my $replace_string = UnTeX($replace);
         $string =~ s/$search_regex/$replace_string/;
         # New definition in local scope
         $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $definition->getParameters, $string));
