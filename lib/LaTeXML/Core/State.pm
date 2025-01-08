@@ -227,7 +227,6 @@ sub shiftValue {
   assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
   return shift(@{ $$vtable{$key}[0] }); }
 
-# inline LookupValue after which globally assign an empty Tokens() to undo
 sub removeValue {
   my ($self, $key) = @_;
   if (my $vvec = $$self{value}{$key}) {
@@ -919,6 +918,11 @@ onto the last binding of C<$name>.
 
 Returns whether the value C<$name> is bound. If  C<$frame> is given, check
 whether it is bound in the C<$frame>-th frame, with 0 being the top frame.
+
+=item C<< $value = $STATE->removeValue($name); >>
+
+If a value for C<$name> is assigned, remove its binding from the closest local frame,
+  returning the removed value.
 
 =back
 
