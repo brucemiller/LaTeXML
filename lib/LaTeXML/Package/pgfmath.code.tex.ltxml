@@ -236,7 +236,7 @@ DefMacro('\pgfmathsqrt@ pgfNumber', sub {
 DefMacro('\pgfmathrnd@', sub {
     return pgfmathresult(rand()); });
 DefMacro('\pgfmathrand@', sub {
-    return pgfmathresult(1 + rand(2)); });
+    return pgfmathresult(-1 + rand(2)); });
 DefMacro('\pgfmathfactorial@', sub {
     return pgfmathresult(pgfmathfactorial($_[1])); });
 DefMacro('\pgfmathreciprocal@ pgfNumber', sub {
