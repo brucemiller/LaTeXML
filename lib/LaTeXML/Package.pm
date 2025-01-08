@@ -593,7 +593,7 @@ our %allocations = (
   '\box'   => '\count14', '\toks'  => '\count15');
 
 sub allocateRegister {
-  my ($type) = @_;
+  my ($type, $cs) = @_;
   if (my $addr = $allocations{$type}) {    # $addr is a Register but MUST be stored as \count<#>
     if (my $n = $STATE->lookupValue($addr)) {
       my $next = $n->valueOf + 1;
@@ -605,7 +605,8 @@ sub allocateRegister {
     else {    # If allocations not set up, punt to unallocated register
       return; } }
   else {
-    Error('misdefined', $type, undef, "Type $type is not an allocated register type");
+    Error('misdefined', $type, undef,
+      "Type $type is not an allocated register type, for " . ToString($cs));
     return; } }
 
 #======================================================================
@@ -1305,7 +1306,7 @@ sub DefRegisterI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $type    = $register_types{ ref $value };
   my $address = ($options{address} ? ToString($options{address})
-    : ($options{allocate} ? allocateRegister($options{allocate}) : undef));
+    : ($options{allocate} ? allocateRegister($options{allocate}, $cs) : undef));
   $address = ToString($cs) unless $address;
   if ((defined $value) && ((!defined $options{address}) || !defined LookupValue($address))) {
     AssignValue($address => $value, 'global'); }    # Assign, but do not RE-assign
