@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
+<?latexml package="xcolor"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -129,5 +130,35 @@
         </XMath>
       </Math>
     </equation>
+  </para>
+  <para xml:id="p12">
+    <p>A used box is emptied upto its assignment scope.</p>
+  </para>
+  <para vattach="bottom" xml:id="p13">
+    <p>A must appear once.</p>
+  </para>
+  <para vattach="bottom" xml:id="p14">
+    <p>B must appear once.</p>
+  </para>
+  <para xml:id="p15">
+    <p>Copied boxes should be deep clones and localize their changes.</p>
+  </para>
+  <para vattach="bottom" xml:id="p16">
+    <p>Black, then red, then black.</p>
+  </para>
+  <para vattach="bottom" xml:id="p17">
+    <p><text color="#FF0000">Black, then red, then black.</text></p>
+  </para>
+  <para vattach="bottom" xml:id="p18">
+    <p>Black, then red, then black.</p>
+  </para>
+  <para xml:id="p19">
+    <p>Box use should not unbind ”grandparent” assignments.</p>
+  </para>
+  <para vattach="bottom" xml:id="p20">
+    <p>D must appear twice.</p>
+  </para>
+  <para vattach="bottom" xml:id="p21">
+    <p>D must appear twice.</p>
   </para>
 </document>

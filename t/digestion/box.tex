@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{xcolor}
 \def\testbox#1{%
  \ifvoid#1 Box #1 is empty
  \else\ifhbox#1 Box #1 is horizontal
@@ -34,5 +35,42 @@ Using...
 
 \def\mybox#1{\hbox{#1}}
 \[ a - \lower1ex\mybox{a} \]
+
+A used box is emptied upto its assignment scope.
+
+\newbox\myboxA
+\newbox\myboxB
+\setbox\myboxA\vbox{A must appear once.}
+\setbox\myboxB\vbox{B must appear once.}
+
+\box\myboxA
+\box\myboxA
+
+\begingroup
+  \box\myboxB
+\endgroup
+\box\myboxB
+
+
+Copied boxes should be deep clones and localize their changes.
+
+
+\newbox\myboxC
+\setbox\myboxC\vbox{Black, then red, then black.}
+\copy\myboxC
+{\color{red}\copy\myboxC}
+\copy\myboxC
+
+
+Box use should not unbind "grandparent" assignments.
+
+
+\newbox\myboxD
+\setbox\myboxD\vbox{D must appear twice.}
+\begingroup
+  \setbox\myboxD\vbox{D must appear twice.}
+  \box\myboxD
+\endgroup
+\box\myboxD
 
 \end{document}

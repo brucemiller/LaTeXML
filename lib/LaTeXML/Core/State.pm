@@ -227,6 +227,24 @@ sub shiftValue {
   assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
   return shift(@{ $$vtable{$key}[0] }); }
 
+# inline LookupValue after which globally assign an empty Tokens() to undo
+sub removeValue {
+  my ($self, $key) = @_;
+  if (my $vvec = $$self{value}{$key}) {
+    my $value;
+    # undo ONLY the most recent binding for this value.
+    my $frame;
+    my @frames = @{ $$self{undo} };
+    while (@frames) {
+      $frame = shift(@frames);
+      if (my $n = $$frame{value}{$key}) {    # Undo the bindings, if $key was bound in this frame
+        ($value) = map { shift(@$vvec) } 1 .. $n;
+        delete $$frame{value}{$key};
+        last; }
+      last if $$frame{_FRAME_LOCK_}; }
+    return $value; }
+  return; }
+
 # manage a (global) hash of values
 sub lookupMapping {
   my ($self, $map, $key) = @_;
