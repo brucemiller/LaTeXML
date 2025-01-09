@@ -164,7 +164,10 @@
   <para vattach="bottom" xml:id="p22">
     <p>E will appear inner, once.</p>
   </para>
-  <para vattach="bottom" xml:id="p23">
-    <p>E will trail as outer, once.</p>
+  <para xml:id="p23">
+    <p>group ended.
+<inline-block vattach="bottom">
+        <p>E will trail as outer, once.</p>
+      </inline-block></p>
   </para>
 </document>

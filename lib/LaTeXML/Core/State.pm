@@ -236,9 +236,10 @@ sub removeValue {
     my @frames = @{ $$self{undo} };
     while (@frames) {
       $frame = shift(@frames);
-      if (my $n = $$frame{value}{$key}) {    # Undo the bindings, if $key was bound in this frame
-        ($value) = map { shift(@$vvec) } 1 .. $n;
-        delete $$frame{value}{$key};
+      if (exists $$frame{value}{$key}) {    # Undo the bindings, if $key was bound in this frame
+        if (my $n = $$frame{value}{$key}) {
+          ($value) = map { shift(@$vvec) } 1 .. $n; }
+        $$frame{value}{$key} = 0;
         last; }
       last if $$frame{_FRAME_LOCK_}; }
     return $value; }
