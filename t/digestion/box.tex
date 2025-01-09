@@ -73,4 +73,14 @@ Box use should not unbind ``grandparent'' assignments.
 \endgroup
 \box\myboxD
 
+\newbox\myboxE
+\setbox\myboxE\vbox{E will trail as outer, once.}
+\begingroup
+  \setbox\myboxE\vbox{E will appear inner, once.}
+  \box\myboxE
+  \box\myboxE
+\endgroup
+\box\myboxE
+\box\myboxE
+
 \end{document}
