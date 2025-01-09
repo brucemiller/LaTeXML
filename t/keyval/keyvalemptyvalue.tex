@@ -1,0 +1,10 @@
+\documentclass{article}
+
+\usepackage{keyval}
+\makeatletter
+\define@key{createvalue}{empty}{\def\myempty{#1}}
+\setkeys{createvalue}{empty={}}
+
+\begin{document}
+  \ifx\myempty\@empty Empty.\else Not empty.\fi
+\end{document}
