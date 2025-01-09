@@ -145,7 +145,8 @@ sub packParameters {
 # Trims outer braces (if they balance each other)
 # Should this also trim whitespace? or only if there are braces?
 sub stripBraces {
-  my ($self) = @_;
+  my ($self, $layers) = @_;
+  $layers = 1 unless $layers;
   my $n = 1 + $#$self;
   return $self unless $n > 1;    # short-circuit on empty tokens.
   my $i0 = 0;
@@ -166,11 +167,13 @@ sub stripBraces {
         return $self; } } }    # Unbalanced: Too many }
   return $self if @o;          # Unbalanced: Too many {
   ## COULD strip multiple pairs of braces by checking more @p pairs
-  if (@p) {
-    my $j1 = pop(@p);
-    my $j0 = pop(@p);
-    if (($j0 == $i0) && ($j1 == $i1 - 1)) {
-      $i0++; $i1--; } }
+  while ($layers > 0) {
+    $layers--;
+    if (@p) {
+      my $j1 = pop(@p);
+      my $j0 = pop(@p);
+      if (($j0 == $i0) && ($j1 == $i1 - 1)) {
+        $i0++; $i1--; } } }
   # Empty, truncate
   if ($i0 == $i1) {
     return bless [], 'LaTeXML::Core::Tokens';
