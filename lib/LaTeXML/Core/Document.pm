@@ -20,6 +20,7 @@ use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Radix;
 use Unicode::Normalize;
+use Data::Dumper;
 use Scalar::Util qw(blessed);
 use base         qw(LaTeXML::Common::Object);
 
@@ -1383,7 +1384,7 @@ sub setAttribute {
       return $self->setNodeFont($node, $value); }
     elsif ((!blessed($value)) || !$value->can('toAttribute')) {
       Warn('unexpected', (ref $value), $self,
-        "Don't know how to encode $value as an attribute value");
+        "While setting \"$key\", don't know how to encode $value as an attribute value.", Dumper($value));
       return; }
     else {
       $value = $value->toAttribute; } }
