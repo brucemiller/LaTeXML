@@ -2241,12 +2241,11 @@ DefMacro('\(', '\lx@begin@inline@math');
 DefMacro('\)', '\\lx@end@inline@math');
 
 # Keep from expanding too early, if in alignments, or such.
-DefMacroI('\ensuremath', undef,
-  Tokens(T_CS('\protect'), T_CS('\@ensuremath')));
-DefMacro('\@ensuremath{}', sub {
+DefMacro('\ensuremath{}', sub {
     my ($gullet, $stuff) = @_;
     if (LookupValue('IN_MATH')) { $stuff->unlist; }
-    else { (T_MATH, $stuff->unlist, T_MATH); } });
+    else                        { (T_MATH, $stuff->unlist, T_MATH); } },
+  robust => 1, protected => 1);
 
 # Magic check that math-mode trigger follows
 our $MATHENVS = 'displaymath|equation*?|eqnarray*?'
@@ -4010,9 +4009,11 @@ Tag('ltx:*', 'afterClose:late' => sub {
 
 # These will get filled in during postprocessing.
 # * comes from hyperref
-DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref ?#1(class='ltx_nolink')() labelref='#label' _force_font='true'/>",
-  sizer      => '()',                                     # Don't actually know how big this will be!
-  properties => sub { (label => CleanLabel($_[2])); });
+DefConstructor('\ref OptionalMatch:* Semiverbatim',
+  "<ltx:ref ?#1(class='ltx_nolink')() labelref='#label' _force_font='true'/>",
+  sizer      => '()',                                    # Don't actually know how big this will be!
+  properties => sub { (label => CleanLabel($_[2])); },
+  robust     => 1);
 # "page" does not make sense in xml.  If the user really wants, they will need:
 # \usepackage{latexml} ... \iflatexml alternate\else page \pageref{label}\fi
 Let('\pageref', '\ref');
@@ -4393,7 +4394,8 @@ DefMacro('\cite[] Semiverbatim', sub {
       Tokens(Explode('cite')),
       Tokens($open,
         Invocation(T_CS('\@@bibref'), undef, $keys, undef, undef),
-        ($post ? ($ns, T_SPACE, $post) : ()), $close)); });
+        ($post ? ($ns, T_SPACE, $post) : ()), $close)); },
+  robust => 1);
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
 # For now, defer until document end.
@@ -4778,6 +4780,7 @@ DefMacro('\stretch{}', '0pt plus #1fill\relax');
 DefPrimitive('\newlength DefToken', sub {
     my ($stomach, $cs) = @_;
     DefRegisterI($cs, undef, Glue(0), allocate => '\skip'); });
+
 DefPrimitive('\setlength {Variable}{Dimension}', sub {
     my ($stomach, $variable, $length) = @_;
     my ($defn, @params) = @$variable;
