@@ -164,6 +164,8 @@ sub coerceCS {
   if    (ref $cs) { }
   elsif ($cs =~ s/^\\csname\s+(.*)\\endcsname//) {
     $cs = T_CS('\\' . $1); }
+  elsif ($cs =~ s/^(.)$//) {    # Match an active char
+    ($cs) = TokenizeInternal($1)->unlist; }
   else {
     $cs = T_CS($cs); }
   return $cs; }
@@ -1277,7 +1279,7 @@ sub DefPrimitiveI {
       outer    => $options{outer},
       long     => $options{long},
       isPrefix => $options{isPrefix},
-      alias    => $options{alias},
+      alias    => (defined $options{alias} ? coerceCS($options{alias}) : undef),
       ),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
@@ -1423,7 +1425,7 @@ sub DefConstructorI {
       beforeConstruct => flatten($options{beforeConstruct}),
       afterConstruct  => flatten($options{afterConstruct}),
       nargs           => $options{nargs},
-      alias           => (defined $options{alias} ? $options{alias}
+      alias           => (defined $options{alias} ? coerceCS($options{alias})
         : ($options{robust} ? $cs : undef)),
       reversion     => $options{reversion},
       attributeForm => $options{attributeForm},
@@ -1567,7 +1569,7 @@ sub DefMathI {
   my $nargs   = ($paramlist ? scalar($paramlist->getParameters) : 0);
   my $csname  = $cs->getString;
   my $meaning = $options{meaning};
-  my $name    = $options{alias} || $csname;
+  my $name    = (defined $options{alias} ? ToString($options{alias}) : $csname);
   # Avoid undefs specifically, we'll be doing string comparisons
   $presentation = '' unless defined $presentation;
   $meaning      = '' unless defined $meaning;
@@ -1646,9 +1648,9 @@ sub defmath_common_constructor_options {
   my $sizer          = inferSizer($options{sizer}, $options{reversion});
   my $presentation_s = $presentation && ToString($presentation);
   return (
-    alias => $options{alias} || $cs->getString,
+    alias => (defined $options{alias} ? coerceCS($options{alias}) : $cs),
     (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
-    (defined $sizer              ? (sizer     => $sizer)              : ()),
+    (defined $sizer              ? (sizer => $sizer)                  : ()),
     beforeDigest => flatten(sub { requireMath($cs->getString); },
       ($options{nogroup} ? ()                                        : (sub { $_[0]->bgroup; })),
       ($options{font}    ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1769,9 +1771,8 @@ sub defmath_prim {
         my $locator    = $stomach->getGullet->getLocator;
         my %properties = %options;
         my $font       = LookupValue('font')->merge(%$reqfont)->specialize($string);
-        my $mode       = (LookupValue('IN_MATH') ? 'math' : 'text');
-        my $alias      = (ref $options{alias}    ? $options{alias}
-          : (defined $options{alias} ? T_CS($options{alias}) : undef));
+        my $mode       = (LookupValue('IN_MATH')  ? 'math'                    : 'text');
+        my $alias      = (defined $options{alias} ? coerceCS($options{alias}) : undef);
         my $reversion =
           ((!defined $options{reversion}) && (($options{revert_as} || '') eq 'presentation')
           ? $presentation : $alias // $cs);

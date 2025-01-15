@@ -124,11 +124,7 @@ sub revert {
         @tokens = $self->substituteParameters($spec)
           if $spec ne ''; }
       else {
-        my $alias = $defn->getAlias;
-        if (defined $alias) {
-          push(@tokens, (ref $alias ? $alias : T_CS($alias))) if $alias ne ''; }
-        else {
-          push(@tokens, $defn->getCS); }
+        push(@tokens, $defn->getCSorAlias);
         if (my $parameters = $defn->getParameters) {
           push(@tokens, $parameters->revertArguments($self->getArgs)); } }
       if (defined(my $body = $self->getBody)) {

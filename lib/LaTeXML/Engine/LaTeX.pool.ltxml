@@ -2049,7 +2049,7 @@ DefConstructorI('\lx@begin@display@math', undef,
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  alias        => '$$',
+  reversion    => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->beginMode('display_math'); },
   properties   => sub { RefStepID('equation') },
   captureBody  => 1);

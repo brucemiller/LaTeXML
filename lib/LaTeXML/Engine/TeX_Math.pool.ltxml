@@ -119,8 +119,10 @@ DefConstructorI('\lx@begin@inmath@text', undef,
   "<ltx:XMText>"
     . "#body"
     . "</ltx:XMText>",
-  alias => T_MATH, beforeDigest => sub { $_[0]->beginMode('text'); }, captureBody => 1);
-DefConstructorI('\lx@end@inmath@text', undef, "", alias => T_MATH,
+  alias        => T_MATH,
+  beforeDigest => sub { $_[0]->beginMode('text'); }, captureBody => 1);
+DefConstructorI('\lx@end@inmath@text', undef, "",
+  alias        => T_MATH,
   beforeDigest => sub { $_[0]->endMode('text'); });
 
 #======================================================================

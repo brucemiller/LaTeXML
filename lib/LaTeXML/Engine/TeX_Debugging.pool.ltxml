@@ -108,15 +108,15 @@ DefMacro('\meaning Token', sub {
           $meaning .= ' at ' . $$fontinfo{at} if $$fontinfo{at};
           $type = 'font'; } }
       elsif ($type =~ /(primitive|conditional|constructor)$/i) {
-        $definition = $definition->getCSorAlias;
-        $type       = ref $definition;
+        ($definition) = $definition->getCSorAlias->unlist;    # Get 1st Token!
+        $type = ref $definition;
         $type =~ s/^LaTeXML:://; }
       # The actual tests start here
       if ($type =~ /token$/i) {
         my $cc         = $definition->getCatcode;
         my $char       = $definition->toString;
         my $meaning_cc = $CATCODE_MEANING[$cc] || '';
-        $meaning_cc .= ' ' if $meaning_cc;    # append space separator if defined
+        $meaning_cc .= ' ' if $meaning_cc;                    # append space separator if defined
         $meaning = $meaning_cc . $char; }
       elsif ($type =~ /register$/i) {
         $meaning = $definition->getAddress; }

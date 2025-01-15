@@ -39,13 +39,12 @@ sub getCS {
 
 sub getCSName {
   my ($self) = @_;
-  return (defined $$self{alias} ? $$self{alias} : $$self{cs}->getCSName); }
+  return ($$self{alias} || $$self{cs})->getCSName; }
 
-# NOTE: Need to clean up alias; really should already be Token (or Tokens?)
-# and is not always a CS!
+# NOTE:  alias should be Token (or Tokens?)
 sub getCSorAlias {
   my ($self) = @_;
-  return (defined $$self{alias} ? T_CS($$self{alias}) : $$self{cs}); }
+  return $$self{alias} || $$self{cs}; }
 
 sub isExpandable {
   return 0; }
@@ -109,7 +108,7 @@ sub stringify {
   my ($self) = @_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  my $name = ($$self{alias} || $$self{cs}->getCSName);
+  my $name = $self->getCSName;
   return $type . '[' . ($$self{parameters}
     ? $name . ' ' . Stringify($$self{parameters}) : $name) . ']'; }
 
