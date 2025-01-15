@@ -338,9 +338,11 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
     if ($whatsit) {
       my ($w, $h, $d) = $whatsit->getSize;
       my $ht = $node->getAttribute('height') // $h->add($d)->pxValue;
+      $h = $h->pxValue;
+      $node->setAttribute(style     => "line-height:${h}px");
       $node->setAttribute(width     => $w->pxValue) unless $node->hasAttribute('width');
       $node->setAttribute(height    => $ht)         unless $node->hasAttribute('height');
-      $node->setAttribute(transform => "matrix(1 0 0 -1 0 $ht)");
+      $node->setAttribute(transform => "matrix(1 0 0 -1 0 $h)");
       $node->setAttribute(overflow  => 'visible'); } });
 
 # This attempts to be a generalize vbox construction;
