@@ -1263,7 +1263,7 @@ sub DefPrimitiveI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
-  # Not sure robust entirely makes sense for Primitives, other than LaTeXML vs LaTeX mismatch
+  # robust makes $cs a protected Macro, expanding to primtive with munged cs
   my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
       ->new($defcs, $paramlist, $replacement,
@@ -1409,7 +1409,7 @@ sub DefConstructorI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
-  # Not sure robust entirely makes sense for Constructors, other than LaTeXML vs LaTeX mismatch
+  # robust makes $cs a protected Macro, expanding to primtive with munged cs
   my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new($defcs, $paramlist, $replacement,

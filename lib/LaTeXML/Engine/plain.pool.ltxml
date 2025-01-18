@@ -95,8 +95,8 @@ DefConstructor('\TeX',
     . "X"
     . "</ltx:text>",
   sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); });
-DefPrimitiveI('\i', undef, "\x{0131}");    # LATIN SMALL LETTER DOTLESS I
-DefPrimitiveI('\j', undef, "\x{0237}");
+DefPrimitiveI('\i', undef, "\x{0131}", robust => 1);    # LATIN SMALL LETTER DOTLESS I
+DefPrimitiveI('\j', undef, "\x{0237}", robust => 1);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Alignment code

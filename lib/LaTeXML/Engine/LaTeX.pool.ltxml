@@ -2915,47 +2915,26 @@ DefPrimitiveI('\tenlnw',   undef, undef, font => { family => 'linew10' });
 DefPrimitiveI('\tencirc',  undef, undef, font => { family => 'lcircle10' });
 DefPrimitiveI('\tencircw', undef, undef, font => { family => 'lcirclew10' });
 
-# At least all things on uclclist need to be macros
-DefPrimitiveI('\lx@utf@OE', undef, "\x{0152}", alias => '\OE');    # LATIN CAPITAL LIGATURE OE
-DefPrimitiveI('\lx@utf@oe', undef, "\x{0153}", alias => '\oe');    # LATIN SMALL LIGATURE OE
-DefPrimitiveI('\lx@utf@AE', undef, UTF(0xC6),  alias => '\AE');    # LATIN CAPITAL LETTER AE
-DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6),  alias => '\ae');    # LATIN SMALL LETTER AE
-DefPrimitiveI('\lx@utf@AA', undef, UTF(0xC5), alias => '\AA'); # LATIN CAPITAL LETTER A WITH RING ABOVE
-DefPrimitiveI('\lx@utf@aa', undef, UTF(0xE5), alias => '\aa'); # LATIN SMALL LETTER A WITH RING ABOVE
-DefPrimitiveI('\lx@utf@O',  undef, UTF(0xD8),  alias => '\O');  # LATIN CAPITAL LETTER O WITH STROKE
-DefPrimitiveI('\lx@utf@o',  undef, UTF(0xF8),  alias => '\o');  # LATIN SMALL LETTER O WITH STROKE
-DefPrimitiveI('\lx@utf@L',  undef, "\x{0141}", alias => '\L');  # LATIN CAPITAL LETTER L WITH STROKE
-DefPrimitiveI('\lx@utf@l',  undef, "\x{0142}", alias => '\l');  # LATIN SMALL LETTER L WITH STROKE
-DefPrimitiveI('\lx@utf@ss', undef, UTF(0xDF),  alias => '\ss'); # LATIN SMALL LETTER SHARP S
-DefPrimitiveI('\lx@utf@dh', undef, UTF(0xf0),  alias => '\dh'); # eth
-DefPrimitiveI('\lx@utf@DH', undef, UTF(0xd0),  alias => '\DH'); # Eth (looks same as \DJ!)
-DefPrimitiveI('\lx@utf@dj', undef, "\x{0111}", alias => '\dj'); # d with stroke
-DefPrimitiveI('\lx@utf@DJ', undef, "\x{0110}", alias => '\DJ'); # D with stroke (looks sames as \DH!)
-DefPrimitiveI('\lx@utf@ng', undef, "\x{014B}", alias => '\ng');
-DefPrimitiveI('\lx@utf@NG', undef, "\x{014A}", alias => '\NG');
-DefPrimitiveI('\lx@utf@th', undef, UTF(0xFE),  alias => '\th');
-DefPrimitiveI('\lx@utf@TH', undef, UTF(0xDE),  alias => '\TH');
-
-DefMacroI('\OE', undef, '\lx@utf@OE');
-DefMacroI('\oe', undef, '\lx@utf@oe');
-DefMacroI('\AE', undef, '\lx@utf@AE');
-DefMacroI('\ae', undef, '\lx@utf@ae');
-DefMacroI('\ae', undef, '\lx@utf@ae');
-DefMacroI('\AA', undef, '\lx@utf@AA');
-DefMacroI('\aa', undef, '\lx@utf@aa');
-DefMacroI('\O',  undef, '\lx@utf@O');
-DefMacroI('\o',  undef, '\lx@utf@o');
-DefMacroI('\L',  undef, '\lx@utf@L');
-DefMacroI('\l',  undef, '\lx@utf@l');
-DefMacroI('\ss', undef, '\lx@utf@ss');
-DefMacroI('\dh', undef, '\lx@utf@dh');    # in latex?
-DefMacroI('\DH', undef, '\lx@utf@DH');
-DefMacroI('\dj', undef, '\lx@utf@dj');
-DefMacroI('\DJ', undef, '\lx@utf@DJ');
-DefMacroI('\ng', undef, '\lx@utf@ng');
-DefMacroI('\NG', undef, '\lx@utf@NG');
-DefMacroI('\th', undef, '\lx@utf@th');
-DefMacroI('\TH', undef, '\lx@utf@TH');
+# At least all things on uclclist need to be macros; robust achieves that
+DefPrimitiveI('\OE', undef, "\x{0152}", robust => 1);    # LATIN CAPITAL LIGATURE OE
+DefPrimitiveI('\oe', undef, "\x{0153}", robust => 1);    # LATIN SMALL LIGATURE OE
+DefPrimitiveI('\AE', undef, UTF(0xC6),  robust => 1);    # LATIN CAPITAL LETTER AE
+DefPrimitiveI('\ae', undef, UTF(0xE6),  robust => 1);    # LATIN SMALL LETTER AE
+DefPrimitiveI('\AA', undef, UTF(0xC5),  robust => 1);    # LATIN CAPITAL LETTER A WITH RING ABOVE
+DefPrimitiveI('\aa', undef, UTF(0xE5),  robust => 1);    # LATIN SMALL LETTER A WITH RING ABOVE
+DefPrimitiveI('\O',  undef, UTF(0xD8),  robust => 1);    # LATIN CAPITAL LETTER O WITH STROKE
+DefPrimitiveI('\o',  undef, UTF(0xF8),  robust => 1);    # LATIN SMALL LETTER O WITH STROKE
+DefPrimitiveI('\L',  undef, "\x{0141}", robust => 1);    # LATIN CAPITAL LETTER L WITH STROKE
+DefPrimitiveI('\l',  undef, "\x{0142}", robust => 1);    # LATIN SMALL LETTER L WITH STROKE
+DefPrimitiveI('\ss', undef, UTF(0xDF),  robust => 1);    # LATIN SMALL LETTER SHARP S
+DefPrimitiveI('\dh', undef, UTF(0xf0),  robust => 1);    # eth
+DefPrimitiveI('\DH', undef, UTF(0xd0),  robust => 1);    # Eth (looks same as \DJ!)
+DefPrimitiveI('\dj', undef, "\x{0111}", robust => 1);    # d with stroke
+DefPrimitiveI('\DJ', undef, "\x{0110}", robust => 1);    # D with stroke (looks sames as \DH!)
+DefPrimitiveI('\ng', undef, "\x{014B}", robust => 1);
+DefPrimitiveI('\NG', undef, "\x{014A}", robust => 1);
+DefPrimitiveI('\th', undef, UTF(0xFE),  robust => 1);
+DefPrimitiveI('\TH', undef, UTF(0xDE),  robust => 1);
 
 #======================================================================
 # C.8.2 Defining Environments
