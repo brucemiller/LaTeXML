@@ -5704,7 +5704,7 @@ sub latexChangeCase {
   my ($gullet, $reqcase, $tokens) = @_;
   my $case = $reqcase;
   $case = 'upper' if $reqcase eq 'sentence' or $reqcase eq 'title';
-  $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+  return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       $gullet->unread($tokens);
       my @toks   = ();
       my $inmath = 0;
@@ -5746,8 +5746,7 @@ sub latexChangeCase {
         else {
           Debug("SURPRISE: " . Stringify($tok));
           push(@toks, $tok); } }
-      return Tokens(@toks); });
-  return; }
+      return Tokens(@toks); }); }
 
 DefMacro('\lx@latex@changecase {} GeneralText', sub {
     my ($gullet, $case, $tokens) = @_;
