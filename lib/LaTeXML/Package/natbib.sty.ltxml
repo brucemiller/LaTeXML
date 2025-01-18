@@ -455,7 +455,7 @@ DefMacro('\bibfont',     '');
 DefMacro('\citenumfont', '');
 DefMacro('\bibnumfmt{}', '#1');
 DefRegister('\bibhang', Dimension(0));
-DefRegister('\bibsep',  Dimension(0));
+DefRegister('\bibsep',  Glue(0));
 
 #======================================================================
 # 2.13 Automatic Indexing of Citations
