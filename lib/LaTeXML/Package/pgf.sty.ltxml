@@ -47,13 +47,6 @@ AtBeginDocument(
   '\expandafter\def\expandafter\pgfpicture\expandafter{\expandafter\lxSVG@picture\pgfpicture}'
     . '\expandafter\def\expandafter\endpgfpicture\expandafter{\endpgfpicture\endlxSVG@picture}');
 
-# define "q" forms of some commands??
-DefMacro('\pgfpathqmoveto{}{}', '\pgfpathmoveto{\pgfqpoint{#1}{#2}}');
-DefMacro('\pgfpathqlineto{}{}', '\pgfpathlineto{\pgfqpoint{#1}{#2}}');
-DefMacro('\pgfpathqcircle{}',   '\pgfpathcircle{\pgfpointorigin}{#1}');
-DefMacro('\pgfpathqcurveto{}{}{}{}{}{}',
-  '\pgfpathcurveto{\pgfqpoint{#1}{#2}}{\pgfqpoint{#3}{#4}}{\pgfqpoint{#5}{#6}}');
-
 # Wrap tikzpicture?
 #RawTeX('\expandafter\def\expandafter\tikzpicture\expandafter{\expandafter\lxSVG@picture\tikzpicture}');
 #RawTeX('\expandafter\def\expandafter\endtikzpicture\expandafter{\endtikzpicture\endlxSVG@picture}');
