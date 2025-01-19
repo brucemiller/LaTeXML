@@ -642,9 +642,13 @@ sub NewCounter {
     NewCounter($within); }
   my $cs       = T_CS("\\c\@$ctr");
   my $prevdefn = $STATE->lookupMeaning($cs);
-  if ($prevdefn && ((ref $prevdefn) eq 'LaTeXML::Core::Definition::Register')
-    && (($$prevdefn{address} || '') =~ /^\\count/)) {
-    Info('unexpected', $cs, undef, "Counter $ctr was already allocated, skipping"); }
+  if ($prevdefn && ((ref $prevdefn) eq 'LaTeXML::Core::Definition::Register')) {
+    my $a = ($$prevdefn{address} || '') =~ /^\\count/;
+    ## Note: it is quite reasonable to redefine counters,
+    ## in order to change reseting & nesting.  So, don't be noisy!
+    # Info('unexpected', $cs, undef,
+    #     "Counter $ctr was already ".($a ? 'allocated':'defined').", skipping");
+  }
   else {
     Warn('unexpected', $cs, undef,
       "Counter " . ToString($cs) . " was already defined as $prevdefn; redefining") if $prevdefn;
