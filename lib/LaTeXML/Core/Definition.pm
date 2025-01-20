@@ -37,6 +37,7 @@ sub getCS {
   my ($self) = @_;
   return $$self{cs}; }
 
+# Note: This returns the alias's CSName, if any.
 sub getCSName {
   my ($self) = @_;
   return ($$self{alias} || $$self{cs})->getCSName; }

@@ -164,8 +164,8 @@ sub coerceCS {
   if    (ref $cs) { }
   elsif ($cs =~ s/^\\csname\s+(.*)\\endcsname//) {
     $cs = T_CS('\\' . $1); }
-  elsif ($cs =~ s/^(.)$//) {    # Match an active char
-    ($cs) = TokenizeInternal($1)->unlist; }
+  elsif (length($cs) == 1) {    # Match an active char
+    ($cs) = TokenizeInternal($cs)->unlist; }
   else {
     $cs = T_CS($cs); }
   return $cs; }
@@ -643,9 +643,9 @@ sub NewCounter {
   my $cs       = T_CS("\\c\@$ctr");
   my $prevdefn = $STATE->lookupMeaning($cs);
   if ($prevdefn && ((ref $prevdefn) eq 'LaTeXML::Core::Definition::Register')) {
-    my $a = ($$prevdefn{address} || '') =~ /^\\count/;
     ## Note: it is quite reasonable to redefine counters,
     ## in order to change reseting & nesting.  So, don't be noisy!
+    # my $a = ($$prevdefn{address} || '') =~ /^\\count/;
     # Info('unexpected', $cs, undef,
     #     "Counter $ctr was already ".($a ? 'allocated':'defined').", skipping");
   }
