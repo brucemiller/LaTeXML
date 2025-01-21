@@ -27,8 +27,7 @@ use base qw(LaTeXML::Core::Definition::Primitive);
 sub new {
   my ($class, $cs, $fontid, %traits) = @_;
   return bless { cs => $cs, parameters => undef,
-    fontID  => $fontid,
-    locator => $STATE->getStomach->getGullet->getMouth->getLocator,
+    fontID => $fontid,
     %traits }, $class; }
 
 # Return the "font info" associated with the (TeX) font that this command selects (See \font)

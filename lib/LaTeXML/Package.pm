@@ -164,6 +164,8 @@ sub coerceCS {
   if    (ref $cs) { }
   elsif ($cs =~ s/^\\csname\s+(.*)\\endcsname//) {
     $cs = T_CS('\\' . $1); }
+  elsif (length($cs) == 1) {    # Match an active char
+    ($cs) = TokenizeInternal($cs)->unlist; }
   else {
     $cs = T_CS($cs); }
   return $cs; }
@@ -593,7 +595,7 @@ our %allocations = (
   '\box'   => '\count14', '\toks'  => '\count15');
 
 sub allocateRegister {
-  my ($type) = @_;
+  my ($type, $cs) = @_;
   if (my $addr = $allocations{$type}) {    # $addr is a Register but MUST be stored as \count<#>
     if (my $n = $STATE->lookupValue($addr)) {
       my $next = $n->valueOf + 1;
@@ -605,7 +607,8 @@ sub allocateRegister {
     else {    # If allocations not set up, punt to unallocated register
       return; } }
   else {
-    Error('misdefined', $type, undef, "Type $type is not an allocated register type");
+    Error('misdefined', $type, undef,
+      "Type $type is not an allocated register type, for " . ToString($cs));
     return; } }
 
 #======================================================================
@@ -639,9 +642,13 @@ sub NewCounter {
     NewCounter($within); }
   my $cs       = T_CS("\\c\@$ctr");
   my $prevdefn = $STATE->lookupMeaning($cs);
-  if ($prevdefn && ((ref $prevdefn) eq 'LaTeXML::Core::Definition::Register')
-    && (($$prevdefn{address} || '') =~ /^\\count/)) {
-    Info('unexpected', $cs, undef, "Counter $ctr was already allocated, skipping"); }
+  if ($prevdefn && ((ref $prevdefn) eq 'LaTeXML::Core::Definition::Register')) {
+    ## Note: it is quite reasonable to redefine counters,
+    ## in order to change reseting & nesting.  So, don't be noisy!
+    # my $a = ($$prevdefn{address} || '') =~ /^\\count/;
+    # Info('unexpected', $cs, undef,
+    #     "Counter $ctr was already ".($a ? 'allocated':'defined').", skipping");
+  }
   else {
     Warn('unexpected', $cs, undef,
       "Counter " . ToString($cs) . " was already defined as $prevdefn; redefining") if $prevdefn;
@@ -1260,7 +1267,7 @@ sub DefPrimitiveI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
-  # Not sure robust entirely makes sense for Primitives, other than LaTeXML vs LaTeX mismatch
+  # robust makes $cs a protected Macro, expanding to primtive with munged cs
   my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
       ->new($defcs, $paramlist, $replacement,
@@ -1276,7 +1283,7 @@ sub DefPrimitiveI {
       outer    => $options{outer},
       long     => $options{long},
       isPrefix => $options{isPrefix},
-      alias    => $options{alias},
+      alias    => (defined $options{alias} ? coerceCS($options{alias}) : undef),
       ),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
@@ -1305,7 +1312,7 @@ sub DefRegisterI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $type    = $register_types{ ref $value };
   my $address = ($options{address} ? ToString($options{address})
-    : ($options{allocate} ? allocateRegister($options{allocate}) : undef));
+    : ($options{allocate} ? allocateRegister($options{allocate}, $cs) : undef));
   $address = ToString($cs) unless $address;
   if ((defined $value) && ((!defined $options{address}) || !defined LookupValue($address))) {
     AssignValue($address => $value, 'global'); }    # Assign, but do not RE-assign
@@ -1406,7 +1413,7 @@ sub DefConstructorI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
-  # Not sure robust entirely makes sense for Constructors, other than LaTeXML vs LaTeX mismatch
+  # robust makes $cs a protected Macro, expanding to primtive with munged cs
   my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new($defcs, $paramlist, $replacement,
@@ -1422,7 +1429,7 @@ sub DefConstructorI {
       beforeConstruct => flatten($options{beforeConstruct}),
       afterConstruct  => flatten($options{afterConstruct}),
       nargs           => $options{nargs},
-      alias           => (defined $options{alias} ? $options{alias}
+      alias           => (defined $options{alias} ? coerceCS($options{alias})
         : ($options{robust} ? $cs : undef)),
       reversion     => $options{reversion},
       attributeForm => $options{attributeForm},
@@ -1566,7 +1573,7 @@ sub DefMathI {
   my $nargs   = ($paramlist ? scalar($paramlist->getParameters) : 0);
   my $csname  = $cs->getString;
   my $meaning = $options{meaning};
-  my $name    = $options{alias} || $csname;
+  my $name    = (defined $options{alias} ? ToString($options{alias}) : $csname);
   # Avoid undefs specifically, we'll be doing string comparisons
   $presentation = '' unless defined $presentation;
   $meaning      = '' unless defined $meaning;
@@ -1645,9 +1652,9 @@ sub defmath_common_constructor_options {
   my $sizer          = inferSizer($options{sizer}, $options{reversion});
   my $presentation_s = $presentation && ToString($presentation);
   return (
-    alias => $options{alias} || $cs->getString,
+    alias => (defined $options{alias} ? coerceCS($options{alias}) : $cs),
     (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
-    (defined $sizer              ? (sizer     => $sizer)              : ()),
+    (defined $sizer              ? (sizer => $sizer)                  : ()),
     beforeDigest => flatten(sub { requireMath($cs->getString); },
       ($options{nogroup} ? ()                                        : (sub { $_[0]->bgroup; })),
       ($options{font}    ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1768,9 +1775,8 @@ sub defmath_prim {
         my $locator    = $stomach->getGullet->getLocator;
         my %properties = %options;
         my $font       = LookupValue('font')->merge(%$reqfont)->specialize($string);
-        my $mode       = (LookupValue('IN_MATH') ? 'math' : 'text');
-        my $alias      = (ref $options{alias}    ? $options{alias}
-          : (defined $options{alias} ? T_CS($options{alias}) : undef));
+        my $mode       = (LookupValue('IN_MATH')  ? 'math'                    : 'text');
+        my $alias      = (defined $options{alias} ? coerceCS($options{alias}) : undef);
         my $reversion =
           ((!defined $options{reversion}) && (($options{revert_as} || '') eq 'presentation')
           ? $presentation : $alias // $cs);

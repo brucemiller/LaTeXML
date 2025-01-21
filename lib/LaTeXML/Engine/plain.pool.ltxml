@@ -95,8 +95,8 @@ DefConstructor('\TeX',
     . "X"
     . "</ltx:text>",
   sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); });
-DefPrimitiveI('\i', undef, "\x{0131}");    # LATIN SMALL LETTER DOTLESS I
-DefPrimitiveI('\j', undef, "\x{0237}");
+DefPrimitiveI('\i', undef, "\x{0131}", robust => 1);    # LATIN SMALL LETTER DOTLESS I
+DefPrimitiveI('\j', undef, "\x{0237}", robust => 1);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Alignment code
@@ -159,8 +159,6 @@ RawTeX(<<'EoTeX');
   \mathchardef\@m=1000
   \mathchardef\@M=10000
   \mathchardef\@MM=20000
-  \countdef\m@ne=21\relax
-  \m@ne=-1
 EoTeX
 
 #======================================================================
@@ -506,7 +504,8 @@ DefPrimitiveI('\break',      undef, undef);
 DefPrimitiveI('\nobreak',    undef, undef);
 DefPrimitiveI('\allowbreak', undef, undef);
 
-Let(T_ACTIVE('~'), T_CS('\lx@NBSP'));
+# Curiously, this must be expandable, else things like \MakeUppercase loop.
+DefMacro(T_ACTIVE("~"), T_CS('\lx@NBSP'));
 
 DefMacroI('\slash', undef, '/');
 DefPrimitiveI('\filbreak', undef, undef);

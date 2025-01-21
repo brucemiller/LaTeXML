@@ -79,7 +79,7 @@ DefMacro('\lx@alloc@ DefToken {} {} DefToken', sub {
     $tracker = ToString($tracker);
     my $next;
     if ($stored_registers{ ToString($allocator) }) {
-      $next = LaTeXML::Package::allocateRegister($type);
+      $next = LaTeXML::Package::allocateRegister($type, $cs);
       $next =~ s/^\Q$type\E//; }
     else {
       my $xnext = $STATE->lookupValue($tracker) || Number(0);
