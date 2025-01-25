@@ -565,7 +565,8 @@ DefConstructor('\lxSVG@closescope', sub {
       $n++;
       last if $node->getAttribute('_scopebegin'); }
     return; },
-  sizer => 0);
+  sizer     => 0,
+  reversion => '');
 
 DefConstructor('\lxSVG@beginscope', '',
   afterDigest => sub {
