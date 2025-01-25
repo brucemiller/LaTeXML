@@ -85,9 +85,9 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     else {
       $document->openElement('ltx:picture');
       $document->openElement('svg:svg',
-        version => "1.1",
-        width   => $props{pxwidth}, height => $props{pxheight},
-####        viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
+        version  => "1.1",
+        width    => $props{pxwidth}, height => $props{pxheight},
+        viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
         overflow => "visible");
       my $x0 = -(0 + $props{minx});
       my $y0 = $props{pxheight} + $props{miny};
