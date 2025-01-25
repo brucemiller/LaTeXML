@@ -415,7 +415,11 @@ sub insertBlock {
 
 DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
-    my @block = insertBlock($document, $contents, vattach => 'bottom'); },
+    # Note: passing in empty block_props allows insertBlock to unwrap the container node entirely,
+    #       which is often desired in cases such as \unvbox,
+    #       and can be requested by setting "_unwrapped_block".
+    my %block_props = $props{'_unwrapped_block'} ? () : (vattach => 'bottom');
+    my @block       = insertBlock($document, $contents, %block_props); },
   sizer       => '#2',
   properties  => { layout => 'vertical', vattach => 'bottom' },
   mode        => 'text',
@@ -432,7 +436,8 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
-    insertBlock($document, $contents, vattach => 'top'); },
+    my %block_props = $props{'_unwrapped_block'} ? () : (vattach => 'top');
+    insertBlock($document, $contents, %block_props); },
   sizer       => '#2',
   properties  => { layout => 'vertical', vattach => 'baseline' },
   mode        => 'text',
@@ -574,13 +579,23 @@ DefPrimitive('\unhbox Number', sub {
     my $stuff = LookupValue($box);
     adjustBoxColor($stuff);
     AssignValue($box, undef);
-    (defined $stuff ? $stuff->unlist : List()); });
+    if (ref $stuff eq 'LaTeXML::Core::Whatsit') {
+      $stuff->setProperty("_unwrapped_block" => 1);
+      return $stuff;
+    } else {
+      return (defined $stuff ? $stuff->unlist : List());
+} });
 
 DefPrimitive('\unhcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
     adjustBoxColor($stuff);
-    (defined $stuff ? $stuff->unlist : List()); });
+    if (ref $stuff eq 'LaTeXML::Core::Whatsit') {
+      $stuff->setProperty("_unwrapped_block" => 1);
+      return $stuff;
+    } else {
+      return (defined $stuff ? $stuff->unlist : List());
+} });
 
 # \unvbox<8bit>, \unvcopy<8bit>
 DefPrimitive('\unvbox Number', sub {
@@ -588,13 +603,23 @@ DefPrimitive('\unvbox Number', sub {
     my $stuff = LookupValue($box);
     adjustBoxColor($stuff);
     AssignValue($box, undef);
-    (defined $stuff ? $stuff->unlist : List()); });
+    if (ref $stuff eq 'LaTeXML::Core::Whatsit') {
+      $stuff->setProperty("_unwrapped_block" => 1);
+      return $stuff;
+    } else {
+      return (defined $stuff ? $stuff->unlist : List());
+} });
 
 DefPrimitive('\unvcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
     adjustBoxColor($stuff);
-    (defined $stuff ? $stuff->unlist : List()); });
+    if (ref $stuff eq 'LaTeXML::Core::Whatsit') {
+      $stuff->setProperty("_unwrapped_block" => 1);
+      return $stuff;
+    } else {
+      return (defined $stuff ? $stuff->unlist : List());
+} });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Various box related parameters
