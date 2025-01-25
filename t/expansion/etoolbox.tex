@@ -210,6 +210,11 @@ appending to paramacro: \apptocmd\paramacro{. Post}{ok}{fail}\newline
 prepending to paramacro: \pretocmd\paramacro{Pre. }{ok}{fail}\newline
 \paramacro{first}{second}
 
+\def\spaceymacro{{Bold to \bfseries italic}}
+\spaceymacro
+\patchcmd\spaceymacro{\bfseries}{\it}{}{}
+\spaceymacro
+
 \subsection{Boolean Flags}
 
 \newbool{boolvar}
