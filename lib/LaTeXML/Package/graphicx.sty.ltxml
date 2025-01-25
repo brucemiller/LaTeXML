@@ -64,6 +64,7 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
     my ($stomach, $starred, $kv, $graphic) = @_;
     my $options = graphicX_options($starred, $kv);
     my ($path, @candidates) = image_candidates(ToString($graphic));
+    @candidates = map { URI::file->new($_) } @candidates;
     my $alt = $kv && $kv->getValue('alt');
     (path => $path,
       candidates => join(',', @candidates),

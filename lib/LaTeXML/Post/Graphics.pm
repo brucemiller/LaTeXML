@@ -18,6 +18,7 @@ use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::Image;
 use LaTeXML::Post;
+use URI::file;
 use base qw(LaTeXML::Post::Processor);
 
 #======================================================================
@@ -53,7 +54,7 @@ sub new {
   $$self{trivial_scaling} = $options{trivial_scaling} || 1;
   $$self{graphics_types}  = $options{graphics_types}
     || [qw(svg png gif jpg jpeg
-      eps ps postscript ai pdf)];
+    eps ps postscript ai pdf)];
   $$self{type_properties} = $options{type_properties}
     || {
     ai => { destination_type => 'png',
@@ -135,7 +136,7 @@ sub findGraphicFile {
   my ($self, $doc, $node) = @_;
   if (my $source = $node->getAttribute('graphic')) {
     # if we already have a usable candidate, save ourselves the work
-    my @paths = grep { -e $_ } split(',', $node->getAttribute('candidates') || '');
+    my @paths = grep { -e $_ } (map { URI->new($_, 'file')->file } split(',', $node->getAttribute('candidates') || ''));
     if (!scalar(@paths)) {
       # Find all acceptable image files, in order of search paths
       my ($dir, $name, $reqtype) = pathname_split($source);
