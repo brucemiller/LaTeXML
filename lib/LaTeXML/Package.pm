@@ -111,7 +111,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
 
   # Random low-level token or string operations.
   qw(&CleanID &CleanLabel &CleanIndexKey  &CleanClassName &CleanBibKey &NormalizeBibKey &CleanURL
-    &ComposeURL
+    &ComposeURL &TrimmedCommaList
     &roman &Roman),
   # Math & font state.
   qw(&MergeFont),
@@ -557,6 +557,13 @@ sub ComposeURL {
         : ''),
       $url,
       ($fragid ? '#' . CleanID($fragid) : ''))); }
+
+sub TrimmedCommaList {
+  my ($text) = @_;
+  $text = ToString($text);
+  $text =~ s/^\s+//;
+  $text =~ s/\s+$//;
+  return split(/\s*,\s*/, $text); }
 
 #======================================================================
 # Defining new Control-sequence Parameter types.
