@@ -227,6 +227,24 @@ sub shiftValue {
   assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
   return shift(@{ $$vtable{$key}[0] }); }
 
+sub removeValue {
+  my ($self, $key) = @_;
+  if (my $vvec = $$self{value}{$key}) {
+    my $value;
+    # undo ONLY the most recent binding for this value.
+    my $frame;
+    my @frames = @{ $$self{undo} };
+    while (@frames) {
+      $frame = shift(@frames);
+      if (exists $$frame{value}{$key}) {    # Undo the bindings, if $key was bound in this frame
+        if (my $n = $$frame{value}{$key}) {
+          ($value) = map { shift(@$vvec) } 1 .. $n; }
+        $$frame{value}{$key} = 0;
+        last; }
+      last if $$frame{_FRAME_LOCK_}; }
+    return $value; }
+  return; }
+
 # manage a (global) hash of values
 sub lookupMapping {
   my ($self, $map, $key) = @_;
@@ -901,6 +919,11 @@ onto the last binding of C<$name>.
 
 Returns whether the value C<$name> is bound. If  C<$frame> is given, check
 whether it is bound in the C<$frame>-th frame, with 0 being the top frame.
+
+=item C<< $value = $STATE->removeValue($name); >>
+
+If a value for C<$name> is assigned, remove its binding from the closest local frame,
+  returning the removed value.
 
 =back
 

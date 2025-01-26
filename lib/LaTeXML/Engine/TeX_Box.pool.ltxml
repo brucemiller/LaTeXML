@@ -13,6 +13,7 @@
 package LaTeXML::Package::Pool;
 use strict;
 use warnings;
+use Clone qw(clone);
 use LaTeXML::Package;
 #use Unicode::Normalize;
 #use LaTeXML::Util::Pathname;
@@ -557,14 +558,13 @@ sub adjustBoxColor_internal {
 
 DefPrimitive('\box Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
+    my $stuff = RemoveValue($box);
     adjustBoxColor($stuff);
-    AssignValue($box, undef);
     ($stuff ? $stuff : List()); });
 
 DefPrimitive('\copy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
+    my $stuff = clone(LookupValue($box));
     adjustBoxColor($stuff);
     ($stuff ? $stuff : List()); });
 
