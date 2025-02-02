@@ -90,7 +90,7 @@ DefConstructor('\lx@xy@svgnested Digested',
     return (width => $w, height => $y1, depth => $y0->negate, transform => $transform); });
 
 DefConstructor('\lx@xy@svg Digested',
-  "<ltx:picture><svg:svg overflow='visible' version='1.1' width='#pxwidth' height='#pxheight'>"
+"<ltx:picture imagedepth='#imagedepth'><svg:svg overflow='visible' version='1.1' width='#pxwidth' height='#pxheight' viewBox='#minx #miny #pxwidth #pxheight'>"
     . "<svg:g transform='#transform'>#1</svg:g>"
     . "</svg:svg></ltx:picture>",
   properties => sub {
@@ -101,14 +101,16 @@ DefConstructor('\lx@xy@svg Digested',
       if $LaTeXML::DEBUG{xy};
     my $w         = $x1->subtract($x0);
     my $h         = $y1->subtract($y0);
-    my $x         = $x0->negate->larger(Dimension(0));
+    my $x         = $x0->negate;
     my $yma       = Dimension(LookupValue('IN_MATH') ? '2.5pt' : 0);           # math-axis; fontdimen 22
-    my $y         = $y1->add($yma->subtract($y0->larger(Dimension(0))));
+    my $miny      = $yma->subtract($y0);
+    my $y         = $y1->add($yma->subtract($y0));
     my $transform = "matrix(1 0 0 -1 " . $x->pxValue . ' ' . $y->pxValue . ')';
     Debug("XY size: " . ToString($w) . ' x ' . ToString($h) . ' + ' . 0 . ' @ ' . ToString($x) . ' x ' . ToString($y))
 
       if $LaTeXML::DEBUG{xy};
     return (width => $w, height => $h, pxwidth => $w->pxValue, pxheight => $h->pxValue,
+      minx      => $x->pxValue, miny => $miny->pxValue, imagedepth => int($miny->pxValue + 0.5),
       transform => $transform); });
 
 DefPrimitive('\lx@xy@capturerange', sub {
