@@ -27,16 +27,40 @@ use LaTeXML::Package;
 # \lastkern         iq is 0.0 pt or the last kern on the current list.
 
 # \kern is heavily used by xy.
-# Completely HACK version for the moment
 # Note that \kern should add vertical spacing in vertical modes!
 DefConstructor('\kern Dimension', sub {
     my ($document, $length, %props) = @_;
     my $parent = $document->getNode;
     if ($document->getNodeQName($parent) eq 'svg:g') {
       if (my $x = $length->pxValue) {
-        # HACK HACK HACK
         my $transform = $parent->getAttribute('transform');
         $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
+        if (my @nodes = $parent->childNodes) {
+          # nodes have already been deposited, wrap those in svg:g to avoid shifting them
+          # the code below is essentially Document::wrapNodes, but we add the transform attribute
+          # *before* running afterClose, or collapseSVGGroup will immediately remove the wrapper
+
+          # Check if any of @nodes, or any of it's children, are the current node, and thus still "open"
+          my $leave_open = 0;
+          foreach my $n (@nodes) {
+            if ($document->isOpen($n)) {
+              $leave_open = 1;
+              last; } }
+
+          my $model = $document->getModel;
+          my ($ns, $tag) = $model->decodeQName('svg:g');
+          my $new = $document->openElement_internal($parent, $ns, $tag);
+          $new->setAttribute(transform => 'translate(' . -$x . ',0)');
+          $document->afterOpen($new);
+          $parent->replaceChild($new, $nodes[0]);
+
+          if (my $font = $document->getNodeFont($parent)) {
+            $document->setNodeFont($new, $font); }
+          if (my $box = $document->getNodeBox($parent)) {
+            $document->setNodeBox($new, $box); }
+          foreach my $node (@nodes) {
+            $new->appendChild($node); }
+          $document->afterClose($new) unless $leave_open; }
     } }
     elsif (inSVG()) {
       Warn('unexpected', 'kern', $_[0], "Lost kern in SVG " . ToString($length)); }
