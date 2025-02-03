@@ -22,42 +22,17 @@ use List::Util qw(min max);
 ###$LaTeXML::DEBUG{compiled} = 1 unless $LaTeXML::DEBUG{compiling} || $LaTeXML::DEBUG{nocompiled};
 
 #**********************************************************************
-# CORE TeX; Built-in commands.
+# Ba TeX; Built-in commands.
 #**********************************************************************
-#LaTeXML::Package::LoadPoolX('foo');
-LoadPool('Base_Schema');
-LoadPool('Base_ParameterTypes');
-LoadPool('Base_Utility');
-LoadPool('Base_XMath');
-LoadPool('TeX_Box');
-LoadPool('TeX_Character');
-LoadPool('TeX_Debugging');
-LoadPool('TeX_FileIO');
-LoadPool('TeX_Fonts');
-LoadPool('TeX_Glue');
-LoadPool('TeX_Hyphenation');
-LoadPool('TeX_Inserts');
-LoadPool('TeX_Job');
-LoadPool('TeX_Kern');
-LoadPool('TeX_Logic');
-LoadPool('TeX_Macro');
-LoadPool('TeX_Marks');
-LoadPool('TeX_Math');
-LoadPool('TeX_Page');
-LoadPool('TeX_Paragraph');
-LoadPool('TeX_Penalties');
-LoadPool('TeX_Registers');
-LoadPool('TeX_Tables');
-LoadPool('eTeX');      # unless.... ?
-LoadPool('pdfTeX');    # unless.... ?
+LoadPool('Base');
 
-LoadPool('Base_Deprecated');
+###  LoadPool('plain_bootstrap');
+if ($LaTeXML::DEBUG{compiled}) {
+  loadDump('plain.tex'); }
+elsif (!$LaTeXML::DEBUG{compiling}) {
+  LoadPool('plain'); }
+###  LoadPool('plain_overlay');
 
-##if ($LaTeXML::DEBUG{compiled}) {
-##    loadDump('plain.tex'); }
-##elsif (!$LaTeXML::DEBUG{compiling}) {
-LoadPool('plain');
-##}
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Orphans?
 #======================================================================
