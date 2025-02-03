@@ -29,7 +29,14 @@ use List::Util qw(min max);
 #**********************************************************************
 
 LoadPool('TeX');
-LOAD_LATEX();
+if ($LaTeXML::DEBUG{compiled}) {
+  loadDump('latex.ltx');
+}
+elsif (!$LaTeXML::DEBUG{compiling}) {
+### ??  LoadPool('plain');
+}
+
+####LOAD_LATEX();
 # Apparently LaTeX does NOT define \magnification,
 # and babel uses that to determine whether we're runing LaTeX!!!
 Let('\magnification', '\@undefined');
@@ -216,7 +223,9 @@ DefMacro('\end{}', sub {
 
 # \protect is already in TeX for obscure reasons...
 #Let('\@typeset@protect','\relax');
-RawTeX(<<'EOTeX');
+if (!$LaTeXML::DEBUG{compiled}) {
+
+  RawTeX(<<'EOTeX');
 \def\@ignorefalse{\global\let\if@ignore\iffalse}
 \def\@ignoretrue {\global\let\if@ignore\iftrue}
 \def\zap@space#1 #2{%
@@ -277,7 +286,7 @@ RawTeX(<<'EOTeX');
 \newif\if@noskipsec \@noskipsectrue
 
 EOTeX
-
+}
 #======================================================================
 # C.1.4 Declarations
 #======================================================================
@@ -502,9 +511,11 @@ DefMacro('\@Esphack', '\relax');
 # C.3.3 Footnotes
 #======================================================================
 
-NewCounter('footnote');
-DefMacroI('\thefootnote', undef, '\arabic{footnote}');
-NewCounter('mpfootnote');
+if (!$LaTeXML::DEBUG{compiled}) {
+  NewCounter('footnote');
+  DefMacroI('\thefootnote', undef, '\arabic{footnote}');
+  NewCounter('mpfootnote');
+}
 DefMacroI('\thempfn',             undef, '\thefootnote');
 DefMacroI('\thempfootnote',       undef, '\arabic{mpfootnote}');
 DefMacroI('\footnotetyperefname', undef, 'footnote');
@@ -643,8 +654,10 @@ map { Tag("ltx:$_", autoClose => 1) }
 DefMacro('\secdef {}{} OptionalMatch:*', sub { ($_[3] ? ($_[2]) : ($_[1])); });
 
 DefMacroI('\@startsection@hook', undef, Tokens());
-NewCounter('secnumdepth');
-SetCounter('secnumdepth', Number(3));
+if (!$LaTeXML::DEBUG{compiled}) {
+  NewCounter('secnumdepth');
+  SetCounter('secnumdepth', Number(3));
+}
 DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     my ($gullet, $type, $level, $ignore3, $ignore4, $ignore5, $ignore6, $flag) = @_;
     ### Aside: Guard mode
@@ -836,8 +849,9 @@ DefConstructor('\addcontentsline{}{}{}', sub {
 #======================================================================
 # C.4.4 Style registers
 #======================================================================
-NewCounter('tocdepth');
-
+if (!$LaTeXML::DEBUG{compiled}) {
+  NewCounter('tocdepth');
+}
 #**********************************************************************
 # C.5 Classes, Packages and Page Styles
 #**********************************************************************
@@ -1056,7 +1070,9 @@ Let('\AtEndOfClass', '\AtEndOfPackage');
 
 DefMacro('\AtBeginDvi {}', Tokens());
 
-RawTeX(<<'EoTeX');
+if (!$LaTeXML::DEBUG{compiled}) {
+
+  RawTeX(<<'EoTeX');
 \def\@ifl@t@r#1#2{%
   \ifnum\expandafter\@parse@version@#1//00\@nil<%
         \expandafter\@parse@version@#2//00\@nil
@@ -1071,7 +1087,7 @@ RawTeX(<<'EoTeX');
 \def\@parse@version@dash#1-#2-#3#4#5\@nil{%
   \if\relax#2\relax\else#1\fi#2#3#4 }
 EoTeX
-
+}
 #======================================================================
 # Somewhat related I/O stuff
 DefMacro('\filename@parse{}', sub {
@@ -1091,9 +1107,10 @@ DefMacro('\@addtofilelist{}', sub {
 # C.5.3 Page Styles
 #======================================================================
 # Ignored
-NewCounter('page');
-SetCounter(page => Number(1));
-
+if (!$LaTeXML::DEBUG{compiled}) {
+  NewCounter('page');
+  SetCounter(page => Number(1));
+}
 DefPrimitive('\pagestyle{}',     undef);
 DefPrimitive('\thispagestyle{}', undef);
 DefPrimitive('\markright{}',     undef);
@@ -2666,8 +2683,9 @@ DefPrimitiveI('\operator@font', undef, undef,
 # C.8.1 Defining Commands
 #======================================================================
 
-DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
-
+if (!$LaTeXML::DEBUG{compiled}) {
+  DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
+}
 DefPrimitive('\newcommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
@@ -2783,11 +2801,12 @@ DefPrimitive('\DeclareTextSymbolDefault DefToken {}', sub {
     return; });
 
 #------------------------------------------------------------
-DefPrimitive('\DeclareTextAccent DefToken {}{}', sub {
-    ignoredDefinition('DeclareTextAccent', $_[1]); });
-DefPrimitive('\DeclareTextAccentDefault{}{}',
-  sub { ignoredDefinition('DeclareTextAccentDefault', $_[1]); });
-
+if (!$LaTeXML::DEBUG{compiled}) {
+  DefPrimitive('\DeclareTextAccent DefToken {}{}', sub {
+      ignoredDefinition('DeclareTextAccent', $_[1]); });
+  DefPrimitive('\DeclareTextAccentDefault{}{}',
+    sub { ignoredDefinition('DeclareTextAccentDefault', $_[1]); });
+}
 #------------------------------------------------------------
 # TODO: Need to convert these DefPrimitive's into DefConstroctors
 # that add a preable PI!!!!!!!!!
@@ -2796,11 +2815,12 @@ DefMacro('\fontencoding{}', '\lx@fontencoding{#1}');
 DefMacroI('\f@encoding',  undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
 DefMacroI('\cf@encoding', undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
 
-DefPrimitive('\DeclareTextComposite{}{}{}{}',
-  sub { ignoredDefinition('DeclareTextComposite', $_[1]); });
-DefPrimitive('\DeclareTextCompositeCommand{}{}{}{}',
-  sub { ignoredDefinition('DeclareTextCompositeCommand', $_[1]); });
-
+if (!$LaTeXML::DEBUG{compiled}) {
+  DefPrimitive('\DeclareTextComposite{}{}{}{}',
+    sub { ignoredDefinition('DeclareTextComposite', $_[1]); });
+  DefPrimitive('\DeclareTextCompositeCommand{}{}{}{}',
+    sub { ignoredDefinition('DeclareTextCompositeCommand', $_[1]); });
+}
 DefPrimitive('\UndeclareTextCommand{}{}', undef);
 DefMacro('\UseTextSymbol{}{}', '{\fontencoding{#1}#2}');
 DefMacro('\UseTextAccent{}{}', '{\fontencoding{#1}#2{#3}}');
@@ -5653,15 +5673,16 @@ DefMacroI('\@qrelax', undef, Tokens(Explode('relax')));
 DefMacroI('\@spaces', undef, '\space\space\space\space');
 Let('\@sptoken', T_SPACE);
 
-# NOTE: These ONLY work on robust commands,
-# thus, preceded by \protect, and the CS has a trailing space added!!!
-DefPrimitive('\AddToNoCaseChangeList{DefToken}', sub {
-    my ($stomach, $cs) = @_;
-    # This is analog of \l_text_case_exclude_arg_tl
-    my $protcs = $cs->getString . ' ';    # As if robust!
-    $STATE->assignMapping(text_case_exclude => $protcs => 1); });
-DefMacro('\NoCaseChange{}', '#1', robust => 1);
-RawTeX(<<'EoTeX');
+if (!$LaTeXML::DEBUG{compiled}) {
+  # NOTE: These ONLY work on robust commands,
+  # thus, preceded by \protect, and the CS has a trailing space added!!!
+  DefPrimitive('\AddToNoCaseChangeList{DefToken}', sub {
+      my ($stomach, $cs) = @_;
+      # This is analog of \l_text_case_exclude_arg_tl
+      my $protcs = $cs->getString . ' ';    # As if robust!
+      $STATE->assignMapping(text_case_exclude => $protcs => 1); });
+  DefMacro('\NoCaseChange{}', '#1', robust => 1);
+  RawTeX(<<'EoTeX');
 \AddToNoCaseChangeList{\NoCaseChange}%
 \AddToNoCaseChangeList{\label}%
 \AddToNoCaseChangeList{\ref}%
@@ -5669,7 +5690,7 @@ RawTeX(<<'EoTeX');
 \AddToNoCaseChangeList{\ensuremath}%
 \AddToNoCaseChangeList{\thanks}%
 EoTeX
-
+}
 # Eventually latex3 has \Declare(Lower|Upper|Title)caseMapping
 # Short of that... and noting that \@uclclist might be changed at any time...
 sub prepareCaseMapping {
@@ -5751,8 +5772,9 @@ DefMacro('\lx@latex@changecase {} GeneralText', sub {
     my ($gullet, $case, $tokens) = @_;
     return latexChangeCase($gullet, lc(ToString($case)), $tokens); });
 
-DefMacroI('\@uclclist', undef, '\oe\OE\o\O\ae\AE\dh\DH\dj\DJ\l\L\ng\NG\ss\SS\th\TH');
-RawTeX(<<'EOL');
+if (!$LaTeXML::DEBUG{compiled}) {
+  DefMacroI('\@uclclist', undef, '\oe\OE\o\O\ae\AE\dh\DH\dj\DJ\l\L\ng\NG\ss\SS\th\TH');
+  RawTeX(<<'EOL');
 \DeclareRobustCommand{\MakeUppercase}[1]{{%
   \lx@prepare@case@mapping%
   \def\({$}\let\)\(%
@@ -5797,7 +5819,7 @@ RawTeX(<<'EOL');
 \protected@edef\MakeTitlecase#1{\MakeTitlecase{#1}}
 %\protected@edef\MakeXTitlecase#1{\MakeXTitlecase{#1}}
 EOL
-
+}
 #======================================================================
 
 DefMacroI('\@ehc', undef, "I can't help");
@@ -6002,7 +6024,9 @@ DefMacro('\@font@warning{}',
 
 #======================================================================
 
-RawTeX(<<'EOTeX');
+if (!$LaTeXML::DEBUG{compiled}) {
+
+  RawTeX(<<'EOTeX');
   \chardef\@xxxii=32
   \mathchardef\@Mi=10001
   \mathchardef\@Mii=10002
@@ -6010,25 +6034,25 @@ RawTeX(<<'EOTeX');
   \mathchardef\@Miv=10004
   \def\@fontenc@load@list{\@elt{T1,OT1}}
 EOTeX
-DefMacroI('\@vpt',    undef, '5');
-DefMacroI('\@vipt',   undef, '6');
-DefMacroI('\@viipt',  undef, '7');
-DefMacroI('\@viiipt', undef, '8');
-DefMacroI('\@ixpt',   undef, '9');
-DefMacroI('\@xpt',    undef, '10');
-DefMacroI('\@xipt',   undef, '10.95');
-DefMacroI('\@xiipt',  undef, '12');
-DefMacroI('\@xivpt',  undef, '14.4');
-DefMacroI('\@xviipt', undef, '17.28');
-DefMacroI('\@xxpt',   undef, '20.74');
-DefMacroI('\@xxvpt',  undef, '24.88');
+  DefMacroI('\@vpt',    undef, '5');
+  DefMacroI('\@vipt',   undef, '6');
+  DefMacroI('\@viipt',  undef, '7');
+  DefMacroI('\@viiipt', undef, '8');
+  DefMacroI('\@ixpt',   undef, '9');
+  DefMacroI('\@xpt',    undef, '10');
+  DefMacroI('\@xipt',   undef, '10.95');
+  DefMacroI('\@xiipt',  undef, '12');
+  DefMacroI('\@xivpt',  undef, '14.4');
+  DefMacroI('\@xviipt', undef, '17.28');
+  DefMacroI('\@xxpt',   undef, '20.74');
+  DefMacroI('\@xxvpt',  undef, '24.88');
 
-DefMacroI('\@tempa',  undef, '');
-DefMacroI('\@tempb',  undef, '');
-DefMacroI('\@tempc',  undef, '');
-DefMacroI('\@gtempa', undef, '');
+  DefMacroI('\@tempa',  undef, '');
+  DefMacroI('\@tempb',  undef, '');
+  DefMacroI('\@tempc',  undef, '');
+  DefMacroI('\@gtempa', undef, '');
 
-RawTeX(<<'EOTeX');
+  RawTeX(<<'EOTeX');
 \long\def \loop #1\repeat{%
   \def\iterate{#1\relax  % Extra \relax
                \expandafter\iterate\fi
@@ -6201,7 +6225,7 @@ RawTeX(<<'EOTeX');
 
 \def\glb@settings{}%
 EOTeX
-
+}
 DefMacroI('\@height',      undef, 'height');
 DefMacroI('\@width',       undef, 'width');
 DefMacroI('\@depth',       undef, 'depth');
@@ -6251,10 +6275,12 @@ DefMacroI('\defaultscriptscriptratio', undef, '.5');
 
 #======================================================================
 DefMacroI('\loggingoutput', undef, Tokens());
-DefMacroI('\loggingall',    undef, Tokens());
-DefMacroI('\tracingfonts',  undef, Tokens());
-DefMacroI('\showoverfull',  undef, Tokens());
-DefMacroI('\showoutput',    undef, Tokens());
+if (!$LaTeXML::DEBUG{compiled}) {
+  DefMacroI('\loggingall', undef, Tokens());
+}
+DefMacroI('\tracingfonts', undef, Tokens());
+DefMacroI('\showoverfull', undef, Tokens());
+DefMacroI('\showoutput',   undef, Tokens());
 
 #======================================================================
 # Various symbols, accents, etc from Chapter 3 defined in TeX.pool
