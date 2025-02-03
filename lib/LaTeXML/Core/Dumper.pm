@@ -29,14 +29,14 @@ our @EXPORT_OK = (
   qw($D0 $G0 $MD0 $MG0 $N0),
   qw($PPLAIN),
   qw($TA $TB $TE $TM $TP $TS $TSB $TSP),
-  qw(&Dump &_Exp &_CDef &_Reg &_Par &_Pars &_FDef),
+  qw(&Dump &_Exp &_CDef &_Reg &_Par &_Pars &_FDef &_Font &_RGB),
 );
 our %EXPORT_TAGS = (
   load => [
     qw($D0 $G0 $MD0 $MG0 $N0),
     qw($PPLAIN),
     qw($TA $TB $TE $TM $TP $TS $TSB $TSP),
-    qw(&_Exp &_CDef &_Reg &_Par &_Pars &_FDef),
+    qw(&_Exp &_CDef &_Reg &_Par &_Pars &_FDef &_Font &_RGB),
   ],
 );
 
@@ -91,6 +91,13 @@ sub _Pars {
 sub _FDef {
   my ($cs, $fontID) = @_;
   return LaTeXML::Core::Definition::FontDef->new($cs, $fontID); }
+
+sub _Font {
+  return LaTeXML::Common::Font->new_internal(@_); }
+
+sub _RGB {
+  my($r,$g,$b)=@_;
+  return bless ['rgb', $r, $g, $b], 'LaTeXML::Common::Color::rgb'; }
 
 #======================================================================
 our %transchar = (
@@ -202,8 +209,15 @@ sub dump_rec {
       return '_FDef(' . dump_rec($$object{cs}) . ')'; }
     else {
       return; } }
+  elsif ($object->isa('LaTeXML::Common::Font')) {
+    # Likely never shows in dump file, but need for bookkeeping (compare predump to dump)
+    return '_Font(' . join(',', map { dump_rec($_); } @$object) . ')'; }
+  elsif ($object->isa('LaTeXML::Common::Color')) {
+    # Likely never shows in dump file, but need for bookkeeping (compare predump to dump)
+    return '_RGB(' . join(',', map { dump_rec($_); } $object->rgb->components) . ')'; }
   else {
-    Warn('unexpected', $type, undef, "Trying to dump $object within $LaTeXML::DUMPING_KEY")
+      Warn('unexpected', $type, undef, "Trying to dump $object within $LaTeXML::DUMPING_KEY",
+	  'Object is '.Stringify($object))
       if $LaTeXML::DUMPING_KEY;
     return;
   }
