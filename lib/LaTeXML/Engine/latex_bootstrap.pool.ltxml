@@ -1,0 +1,64 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | latex_bootstrap                                                     | #
+# | Bootstrap code for reading latex.ltx for LaTeXML                    | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LoadPool('plain_bootstrap');
+
+#======================================================================
+# For pretty CSS-based logos
+DefConstructor('\LaTeX',
+  "<ltx:text class='ltx_LaTeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.1em'>"
+    . "L"
+    . "<ltx:text cssstyle='font-variant:small-caps;' yoffset='0.4ex'>a</ltx:text>"
+    . "T"
+    . "<ltx:text cssstyle='font-variant:small-caps;font-size:120%' yoffset='-0.2ex'>e</ltx:text>"
+    . "X"
+    . "</ltx:text>",
+  sizer => sub { (Dimension('2.6em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  enterHorizontal => 1);
+DefConstructor('\LaTeXe',
+  "<ltx:text class='ltx_LaTeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.1em'>"
+    . "L"
+    . "<ltx:text cssstyle='font-variant:small-caps;' yoffset='0.4ex'>a</ltx:text>"
+    . "T"
+    . "<ltx:text cssstyle='font-variant:small-caps;font-size:120%' yoffset='-0.2ex'>e</ltx:text>"
+    . "X"
+    . "\x{2002}2<ltx:text cssstyle='font-style:italic' yoffset='-0.3ex'>\x{03B5}</ltx:text>"
+    . "</ltx:text>",
+  sizer => sub { (Dimension('3.7em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  enterHorizontal => 1);
+
+#======================================================================
+# Use LaTeXML's register allocation to avoid allocating same slot twice;
+# and we ALWAYS have room!
+DefMacro('\e@alloc{}{}{}{}{}{}', '\lx@alloc@{#1}{#3}{#2}{#6}', locked => 1);
+DefMacro('\e@ch@ck{}{}{}{}',     '',                           locked => 1);
+DefPrimitive('\newcounter{}[]', sub {
+    NewCounter(ToString(Expand($_[1])), $_[2] && ToString(Expand($_[2])));
+    return; }, locked => 1);
+DefMacro('\@definecounter', '\newcounter', locked => 1);
+
+#======================================================================
+# Verify this still needs to be captured, here:
+Let('\@@input', '\input');    # Save TeX's version.
+
+#======================================================================
+# Disable these, due to different font handling
+DefMacro('\try@load@fontshape', '', locked => 1);
+DefMacro('\define@newfont',     '', locked => 1);
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+

@@ -205,9 +205,19 @@ DefMacro('\@INVISIBLEPLUS',
   '\lx@DEPRECATE{\@INVISIBLEPLUS}{\lx@InvisiblePlus}\lx@InvisiblePlus');
 
 DefMacro('\@@endash',
-  '\lx@DEPRECATE{\@endash}{\lx@endash}\lx@endash');
+  '\lx@DEPRECATE{\@@endash}{\lx@endash}\lx@endash');
 DefMacro('\@@emdash',
-  '\lx@DEPRECATE{\@emdash}{\lx@emdash}\lx@emdash');
+  '\lx@DEPRECATE{\@@emdash}{\lx@emdash}\lx@emdash');
+
+DefMacro('\ltx@leftline',
+  '\lx@DEPRECATE{\ltx@leftline}{\lx@leftline}\lx@leftline');
+DefMacro('\ltx@rightline',
+  '\lx@DEPRECATE{\ltx@rightline}{\lx@rightline}\lx@rightline');
+DefMacro('\ltx@centerline',
+  '\lx@DEPRECATE{\ltx@centerline}{\lx@centerline}\lx@centerline');
+
+DefMacro('\ltx@input',
+  '\lx@DEPRECATE{\ltx@input}{\lx@latex@input}\lx@latex@input');
 
 # End of stuff to be deprecated.
 #----------------------------------------------------------------------

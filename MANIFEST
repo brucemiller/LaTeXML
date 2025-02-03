@@ -72,6 +72,7 @@ lib/LaTeXML/Core/MuGlue.pm
 lib/LaTeXML/Core/Pair.pm
 lib/LaTeXML/Core/PairList.pm
 
+lib/LaTeXML/Core/Dumper.pm
 # ....
 lib/LaTeXML/MathGrammar
 lib/LaTeXML/MathParser.pm
@@ -320,6 +321,7 @@ lib/LaTeXML/resources/Profiles/standard.opt
 #==================================================
 lib/LaTeXML/Engine/AmSTeX.pool.ltxml
 lib/LaTeXML/Engine/BibTeX.pool.ltxml
+lib/LaTeXML/Engine/Base.pool.ltxml
 lib/LaTeXML/Engine/Base_Schema.pool.ltxml
 lib/LaTeXML/Engine/Base_ParameterTypes.pool.ltxml
 lib/LaTeXML/Engine/Base_XMath.pool.ltxml
@@ -345,11 +347,16 @@ lib/LaTeXML/Engine/TeX_Paragraph.pool.ltxml
 lib/LaTeXML/Engine/TeX_Penalties.pool.ltxml
 lib/LaTeXML/Engine/TeX_Registers.pool.ltxml
 lib/LaTeXML/Engine/TeX_Tables.pool.ltxml
-lib/LaTeXML/Engine/plain.pool.ltxml
+lib/LaTeXML/Engine/plain_base.pool.ltxml
 lib/LaTeXML/Engine/LaTeX.pool.ltxml
 lib/LaTeXML/Engine/eTeX.pool.ltxml
-lib/LaTeXML/Engine/expl3.pool.ltxml
 lib/LaTeXML/Engine/pdfTeX.pool.ltxml
+lib/LaTeXML/Engine/plain_bootstrap.pool.ltxml
+lib/LaTeXML/Engine/plain_constructs.pool.ltxml
+lib/LaTeXML/Engine/latex_base.pool.ltxml
+lib/LaTeXML/Engine/latex_bootstrap.pool.ltxml
+lib/LaTeXML/Engine/latex_constructs.pool.ltxml
+lib/LaTeXML/Engine/math_common.pool.ltxml
 
 #==================================================
 # Supported Packages

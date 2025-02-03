@@ -1,0 +1,44 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | plain_bootstrap                                                     | #
+# | Bootstrap code for reading plain.tex for LaTeXML                    | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# For a pretty CSS-based logo
+DefConstructor('\TeX',
+  "<ltx:text class='ltx_TeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.2em'>"
+    . "T"
+    . "<ltx:text cssstyle='font-variant:small-caps;font-size:120%;' yoffset='-0.2ex'>e</ltx:text>"
+    . "X"
+    . "</ltx:text>",
+  sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  enterHorizontal => 1);
+
+#======================================================================
+# Use LaTeXML's register allocation to avoid allocating same slot twice;
+# and we ALWAYS have room!
+DefMacro('\alloc@{}{}{}{}{}', '\lx@alloc@{#2}{\count1#1}{#3}{#5}', locked => 1);
+DefMacro('\ch@ck{}{}{}',      '',                                  locked => 1);
+
+#======================================================================
+# Use LaTeXML's conditional machinery
+DefPrimitive('\newif DefToken', sub {
+    my ($ignore, $cs) = @_;
+    DefConditionalI($cs, undef);
+    return; }, locked => 1);
+
+#======================================================================
+DefPrimitiveI('\leavevmode',    undef, sub { $_[0]->enterHorizontal; });
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

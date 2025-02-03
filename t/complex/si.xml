@@ -516,9 +516,9 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
       </para>
       <para xml:id="S1.SS1.p5">
         <p>Pretty nonsensical stuff?
-<Math mode="inline" tex="1.\pi\text{\times}{10}^{3}" text="1.\piE+3" xml:id="S1.SS1.p5.m1">
+<Math mode="inline" tex="1.\pi\text{\times}{10}^{3}" text="1.πE+3" xml:id="S1.SS1.p5.m1">
             <XMath>
-              <XMApp meaning="1.\piE+3">
+              <XMApp meaning="1.πE+3">
                 <XMText meaning="times" role="MULOP" xml:id="S1.SS1.p5.m1.2">×</XMText>
                 <XMDual xml:id="S1.SS1.p5.m1.1">
                   <XMTok meaning="1.π" role="NUMBER"/>
@@ -627,12 +627,12 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                 </XMDual>
               </XMApp>
             </XMath>
-          </Math><break/><Math mode="inline" tex="1.23(\pi)" text="uncertain@(1.23, 0.0π)" xml:id="S1.SS1.p6.m3">
+          </Math><break/><Math mode="inline" tex="1.23(\pi)" text="uncertain@(1.23, 0.π)" xml:id="S1.SS1.p6.m3">
             <XMath>
               <XMApp>
                 <XMTok meaning="uncertain" role="MULOP">⁢</XMTok>
                 <XMTok meaning="1.23" role="NUMBER" xml:id="S1.SS1.p6.m3.1">1.23</XMTok>
-                <XMDual meaning="0.0π" xml:id="S1.SS1.p6.m3.2">
+                <XMDual meaning="0.π" xml:id="S1.SS1.p6.m3.2">
                   <XMRef idref="S1.SS1.p6.m3.2.1"/>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="false">(</XMTok>
@@ -2461,7 +2461,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                 <XMDual>
                   <XMTok meaning="2.67°" role="NUMBER"/>
                   <XMApp>
-                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMHint depth="0.0pt" height="0.0pt" meaning="times" name="thinspace" role="MULOP" width="3.0mu"/>
                     <XMTok meaning="2.67" role="NUMBER">2.67</XMTok>
                     <XMTok lpadding="0pt" meaning="arcdegree" role="UNKNOWN">°</XMTok>
                   </XMApp>
@@ -2507,13 +2507,22 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                 <XMDual>
                   <XMTok meaning="6°7′6.5″" role="NUMBER"/>
                   <XMApp>
-                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok meaning="6" role="NUMBER">6</XMTok>
-                    <XMTok lpadding="0pt" meaning="arcdegree" role="UNKNOWN" rpadding="1.7pt">°</XMTok>
-                    <XMTok meaning="7" role="NUMBER">7</XMTok>
-                    <XMTok lpadding="0pt" meaning="arcminute" role="UNKNOWN" rpadding="1.7pt">′</XMTok>
-                    <XMTok meaning="6.5" role="NUMBER">6.5</XMTok>
-                    <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                    <XMHint depth="0.0pt" height="0.0pt" meaning="plus" name="thinspace" role="ADDOP" width="3.0mu"/>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="6" role="NUMBER">6</XMTok>
+                      <XMTok lpadding="0pt" meaning="arcdegree" role="UNKNOWN">°</XMTok>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="7" role="NUMBER">7</XMTok>
+                      <XMTok lpadding="0pt" meaning="arcminute" role="UNKNOWN">′</XMTok>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="6.5" role="NUMBER">6.5</XMTok>
+                      <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                    </XMApp>
                   </XMApp>
                 </XMDual>
               </XMath>
@@ -2591,19 +2600,19 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                 <XMDual>
                   <XMTok meaning="-0°2′" role="NUMBER"/>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
                     <XMApp>
-                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMTok meaning="0" role="NUMBER">0</XMTok>
                         <XMTok lpadding="0pt" meaning="arcdegree" role="UNKNOWN">°</XMTok>
                       </XMApp>
-                    </XMApp>
-                    <XMApp>
-                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMTok meaning="2" role="NUMBER">2</XMTok>
-                      <XMTok lpadding="0pt" meaning="arcminute" role="UNKNOWN">′</XMTok>
+                      <XMApp>
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok meaning="2" role="NUMBER">2</XMTok>
+                        <XMTok lpadding="0pt" meaning="arcminute" role="UNKNOWN">′</XMTok>
+                      </XMApp>
                     </XMApp>
                   </XMApp>
                 </XMDual>
@@ -2613,19 +2622,19 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                 <XMDual>
                   <XMTok meaning="-0°3″" role="NUMBER"/>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
                     <XMApp>
-                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMTok meaning="0" role="NUMBER">0</XMTok>
                         <XMTok lpadding="0pt" meaning="arcdegree" role="UNKNOWN">°</XMTok>
                       </XMApp>
-                    </XMApp>
-                    <XMApp>
-                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMTok meaning="3" role="NUMBER">3</XMTok>
-                      <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                      <XMApp>
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok meaning="3" role="NUMBER">3</XMTok>
+                        <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                      </XMApp>
                     </XMApp>
                   </XMApp>
                 </XMDual>
@@ -2638,19 +2647,19 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                 <XMDual>
                   <XMTok meaning="-1°0′" role="NUMBER"/>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
                     <XMApp>
-                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMTok meaning="1" role="NUMBER">1</XMTok>
                         <XMTok lpadding="0pt" meaning="arcdegree" role="UNKNOWN">°</XMTok>
                       </XMApp>
-                    </XMApp>
-                    <XMApp>
-                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMTok meaning="0" role="NUMBER">0</XMTok>
-                      <XMTok lpadding="0pt" meaning="arcminute" role="UNKNOWN">′</XMTok>
+                      <XMApp>
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok meaning="0" role="NUMBER">0</XMTok>
+                        <XMTok lpadding="0pt" meaning="arcminute" role="UNKNOWN">′</XMTok>
+                      </XMApp>
                     </XMApp>
                   </XMApp>
                 </XMDual>
@@ -2674,19 +2683,19 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                 <XMDual>
                   <XMTok meaning="-0′3″" role="NUMBER"/>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
                     <XMApp>
-                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMTok meaning="0" role="NUMBER">0</XMTok>
                         <XMTok lpadding="0pt" meaning="arcminute" role="UNKNOWN">′</XMTok>
                       </XMApp>
-                    </XMApp>
-                    <XMApp>
-                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMTok meaning="3" role="NUMBER">3</XMTok>
-                      <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                      <XMApp>
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok meaning="3" role="NUMBER">3</XMTok>
+                        <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                      </XMApp>
                     </XMApp>
                   </XMApp>
                 </XMDual>
@@ -2699,19 +2708,19 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                 <XMDual>
                   <XMTok meaning="-1°0″" role="NUMBER"/>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
                     <XMApp>
-                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMTok meaning="1" role="NUMBER">1</XMTok>
                         <XMTok lpadding="0pt" meaning="arcdegree" role="UNKNOWN">°</XMTok>
                       </XMApp>
-                    </XMApp>
-                    <XMApp>
-                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMTok meaning="0" role="NUMBER">0</XMTok>
-                      <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                      <XMApp>
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok meaning="0" role="NUMBER">0</XMTok>
+                        <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                      </XMApp>
                     </XMApp>
                   </XMApp>
                 </XMDual>
@@ -2721,19 +2730,19 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                 <XMDual>
                   <XMTok meaning="-2′0″" role="NUMBER"/>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
                     <XMApp>
-                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMTok meaning="2" role="NUMBER">2</XMTok>
                         <XMTok lpadding="0pt" meaning="arcminute" role="UNKNOWN">′</XMTok>
                       </XMApp>
-                    </XMApp>
-                    <XMApp>
-                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMTok meaning="0" role="NUMBER">0</XMTok>
-                      <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                      <XMApp>
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok meaning="0" role="NUMBER">0</XMTok>
+                        <XMTok lpadding="0pt" meaning="arcsecond" role="UNKNOWN">″</XMTok>
+                      </XMApp>
                     </XMApp>
                   </XMApp>
                 </XMDual>
