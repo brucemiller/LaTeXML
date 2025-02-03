@@ -94,37 +94,7 @@ eval {    # Catch errors
   $latexml->withState(sub {
       my ($state) = @_;
       if ($initfile) {
-        my $request = $initfile;
-        my ($dir, $name, $ext);
-        if (my $pathname = pathname_find($request,
-            paths => $state->lookupValue('SEARCHPATHS'))
-          || pathname_kpsewhich($request,
-            paths => $state->lookupValue('SEARCHPATHS'))
-        ) {
-          $request = $pathname;
-          ($dir, $name, $ext) = pathname_split($request); }
-        else {
-          Fatal('missing_file', $request, undef, "Can't find $mode file $request",
-            LaTeXML::Package::maybeReportSearchPaths()); }
-        ProgressSpinup("Digesting $mode $name");
-        $latexml->initializeState("Base.pool");    #, @{ $$self{preload} || [] });
-        $state->assignValue(SOURCEFILE      => $request);
-        $state->assignValue(SOURCEDIRECTORY => $dir) if defined $dir;
-        $state->unshiftValue(SEARCHPATHS => $dir)
-          if defined $dir && !grep { $_ eq $dir } @{ $state->lookupValue('SEARCHPATHS') };
-        $state->unshiftValue(GRAPHICSPATHS => $dir)
-
-          if defined $dir && !grep { $_ eq $dir } @{ $state->lookupValue('GRAPHICSPATHS') };
-
-        $state->installDefinition(LaTeXML::Core::Definition::Expandable->new(LaTeXML::Core::Token::T_CS('\jobname'), undef,
-            LaTeXML::Core::Tokens::Tokens(LaTeXML::Package::Explode($name))));
-        # Reverse order, since last opened is first read!
-        ##$self->loadPostamble($options{postamble}) if $options{postamble};
-        ##LaTeXML::Package::InputContent($request);
-        ##$self->loadPreamble($options{preamble}) if $options{preamble};
-        LaTeXML::Package::Pool::DumpFile($request);
-        $digested = $latexml->finishDigestion;
-        ProgressSpindown("Digesting $mode $name"); }
+        $latexml->iniTeX($initfile); }
       else {
         # ========================================
         # First read and digest whatever we're given.
