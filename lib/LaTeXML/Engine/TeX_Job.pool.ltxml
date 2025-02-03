@@ -13,6 +13,8 @@
 package LaTeXML::Package::Pool;
 use strict;
 use warnings;
+use LaTeXML::Global;
+use LaTeXML::Core::Dumper;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -77,44 +79,64 @@ DefMacro('\dump', sub {
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ####$LaTeXML::DEBUG{compiled} = 1 unless $LaTeXML::DEBUG{compiling} || $LaTeXML::DEBUG{nocompiled};
+
 sub loadDump {
   my ($file) = @_;
   my $stage = "Loading compiled $file";
   ProgressSpinup($stage);
   $file = ToString($file);
   my ($dir, $name, $type) = pathname_split($file);
-  my $path = '/tmp/' . $name . '.' . $type . '.ltxmlc';
-  Debug("Loading $file from $path");
+  my $path     = '/tmp/' . $name . '.' . $type . '.ltxmlc';
+  my $predump  = $name . '_bootstrap';
+  my $postdump = $name . '_overlay';
+
+  if (FindFile($predump, type => 'pool', installation_subdir => 'Engine')) {
+    LoadPool($predump); }
+  else {
+    Debug("No pre-dump pool file: $predump"); }
+
+  if (FindFile($path, installation_subdir => 'Engine')) {
+    Debug("Loading $file from $path"); }
+  else {
+    Fatal('expected', 'dumpfile', undef, "No dump file: $path could be found; Aborting!"); }
+
   # DDS version
-  our $FREEZE = undef;
   my $istage = "reading";
   ProgressSpinup($istage);
   my $result = do($path);
   ProgressSpindown($istage);
   if (!$result) { Debug("Load failed with $@"); }
-  my $nsym = 0;
-  my $nlet = 0;
-  Debug("Got $FREEZE");
+  my $nsym  = 0;
+  my $nlet  = 0;
+  my $nskip = 0;
+  my $DUMP  = $LaTeXML::Internal::Dump::DUMP;
+  Debug("Got $DUMP");
   $istage = "installing";
   ProgressSpinup($istage);
 
-  foreach my $table_name (sort keys %$FREEZE) {
-    my $data = $$FREEZE{$table_name};
+  foreach my $table_name (sort keys %$DUMP) {
+    my $data = $$DUMP{$table_name};
     foreach my $key (sort keys %$data) {
-      # Risky? And Risky if NOT!!! (loops)
-      if (defined $$STATE{$table_name}{$key}[0]) {    # SKIP if already defined (by binding?)
-            #        Debug("SKIPPING latex.ltx redefinition of $key in $table_name");
-        next; }
+     #       # Risky? And Risky if NOT!!! (loops)
+     # ######      if (defined $$STATE{$table_name}{$key}[0]) {    # SKIP if already defined (by binding?)
+     #      if ((defined $$STATE{$table_name}{$key}[0])     # SKIP if already defined (by binding?)
+     #          && !$$previous_undump{$table_name}{$key}){
+     #         $nskip++;
+     # ##        Debug("SKIPPING latex.ltx redefinition of $key in $table_name"
+     # ##              .($$previous_undump{$table_name}{$key} ? " previously dumped":'')
+     # ##);
+     #         next; }
       my $value = $$data{$key};
-      next if ($table_name eq 'meaning') && !ref $value;
+####      next if ($table_name eq 'meaning') && !ref $value;
       $nsym++;
+####      $$previous_undump{$table_name}{$key} = 1;
       LaTeXML::Core::State::assign_internal($STATE, $table_name, $key, $value, 'global'); } }
   ProgressSpindown($istage);
   $istage = "\\lets";
   ProgressSpinup($istage);
   # Deferred lookup of \let symbols
   foreach my $table_name (qw(meaning)) {
-    my $data = $$FREEZE{$table_name};
+    my $data = $$DUMP{$table_name};
     foreach my $key (sort keys %$data) {
       my $value = $$data{$key};
       next if !$value || ref $value;
@@ -124,33 +146,149 @@ sub loadDump {
       Debug("Missing binding '$key' => '$value'") unless $truevalue;
       LaTeXML::Core::State::assign_internal($STATE, $table_name, $key, $truevalue, 'global'); } }
   ProgressSpindown($istage);
-  Debug("Retrieved $nsym ($nlet \\lets) from $path!");
+  Debug("Retrieved $nsym (skipped $nskip; $nlet \\lets) from $path!");
+  if (FindFile($postdump, type => 'pool', installation_subdir => 'Engine')) {
+    LoadPool($postdump); }
+  else {
+    Debug("No post-dump pool file: $postdump"); }
   ProgressSpindown($stage);
   return; }
 
-sub LOAD_LATEX {
-  LoadPool('eTeX');      # unless.... ?
-  LoadPool('pdfTeX');    # unless.... ?
-  if (!$LaTeXML::DEBUG{compiling}
-    && $LaTeXML::DEBUG{compiled}) {
-    # Try this after (most) primitives & parameter types have been defined
-    Let('\@@input', '\input');    # Save TeX's version.
-    DefMacro('\try@load@fontshape', '', locked => 1);
-    DefMacro('\define@newfont',     '', locked => 1);
-    ##loadCompiled('latex.ltx');
-    loadDump('latex.ltx');
-    # Then restore some things (not lockable?)
-    # Some are code compatibility issues, some are gratuitous test case differences
-    $STATE->assignValue(font     => LaTeXML::Common::Font->textDefault(), 'global');
-    $STATE->assignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'global');
-    DefMacroI('\f@encoding',  undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
-    DefMacroI('\cf@encoding', undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
+my @tables = (qw(value meaning
+    catcode mathcode sfcode lccode uccode delcode));
+my %IGNORED_SYMBOLS = map { $_ => 1; }
+  qw(
+  value:DOCUMENT_REWRITE_RULES
+  value:PARAMETER_TYPES
+  value:TAG_PROPERTIES
+  value:MATH_LIGATURES
+  value:TEXT_LIGATURES),
+  # \lnot, \to let to \neg, \rightarrow in pre 2017 TeXlive; gratuitously screws up tests
+  qw(
+  meaning:\lnot
+  meaning:\to
+  );
 
-    DefMacro('\hline', '\noalign{\@@alignment@hline}');
-    DefMacroI('\ldots', undef, '\lx@ldots');    # for tests?
+my $frozen_types = {};
 
-    Let('\par', '\lx@normal@par');
-    #    LoadPool('LaTeX');
-    return; } }
+#======================================================================
+our $DUMP_HEADER = <<'EoCode';
+#======================================================================
+package LaTeXML::Internal::Dump;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Core::Dumper qw(:load);
+#======================================================================
+EoCode
+# In a dummy .tex file, use
+#    \compile{somestyle}
+# to load somestyle.sty and create somestyle.sty.ltxmlc
+DefPrimitive('\compile{}', sub {
+    my ($stomach, $file) = @_;
+    DumpFile($file);
+    return; });
+
+sub DumpFile {
+  my ($file) = @_;
+  $file = ToString($file);
+  my ($dir, $name, $type) = pathname_split($file);
+  $type = 'sty' unless $type;
+
+  # What to save? Naive approach: Dump ALL symbols BEFORE loading;
+  my $predump = $name . '_bootstrap';
+  if (FindFile($predump, type => 'pool', installation_subdir => 'Engine')) {
+    LoadPool($predump); }
+  else {
+    Debug("No pre-dump pool file: $predump"); }
+  Debug("Pre-dump scan");
+  my $pre_DUMP = {};
+  foreach my $table_name (@tables) {
+    my $table = $$STATE{$table_name};
+    foreach my $key (sort keys %$table) {
+      my $dump_key = $table_name . ':' . $key;
+      next if $IGNORED_SYMBOLS{$dump_key};
+      my $value = $$table{$key}[0];
+      Debug("POPFILENAME Seen in PRE") if $key eq '\@p@pfilename';
+      my $dump     = LaTeXML::Core::Dumper::Dump($value, $dump_key);
+      my $dumpable = !(ref $value) || defined $dump;
+      $$pre_DUMP{$table_name}{$key} = ($dumpable ? $dump : $value); } }
+  Debug("pre-dump found " . join(',', map { $_ . '=' . scalar(keys %{ $$pre_DUMP{$_} }); } @tables));
+  # Now load the file
+  Debug("Loading $file");
+  if (my $path = FindFile($name, type => $type)) {
+    LaTeXML::Package::loadTeXDefinitions($name, $path, type => $type); }
+  else {
+    Fatal('expected', $file, "Couldn't find definitions file $file"); }
+  #    Debug("Extracting symbols");
+  Debug("Extracting symbols " . join(',', map { $_ . '=' . scalar(keys %{ $$STATE{$_} }); } @tables));
+  my $DUMP  = {};
+  my $nsym  = 0;
+  my $nlets = 0;
+  $frozen_types = {};
+  foreach my $table_name (sort @tables) {
+    my $table = $$STATE{$table_name};
+    foreach my $key (sort keys %$table) {
+      my $dump_key = $table_name . ':' . $key;
+      next if $IGNORED_SYMBOLS{$dump_key};
+      my $value    = $$table{$key}[0];
+      my $dump     = LaTeXML::Core::Dumper::Dump($value, $dump_key);
+      my $dumpable = !(ref $value) || defined $dump;
+      my $check    = ($dumpable ? $dump : $value);
+      Debug("POPFILENAME Seen " . ($dumpable ? "IS" : "IS NOT") . " dumpable") if $key eq '\@p@pfilename';
+###        if ($check ne ($$pre_DUMP{$table_name}{$key} ||'')) {    # Value changed
+      if ($check ne ($$pre_DUMP{$table_name}{$key} // '')) {    # Value changed
+        $nsym++;
+        # \let symbols? Worry about WHICH value of original cs to use? before/after?????
+        if (($table_name eq 'meaning') && $value && $value->isaDefinition) {    # a Definition?
+          my $orig_cs = $value->getCSName;
+          if ($key ne $orig_cs) {    # was \let to a DIFFERENT cs, not new binding
+            $nlets++;
+            my $tmp;
+            if (($tmp = $$table{$orig_cs}[0]) && ($value eq $tmp)) {    # bound to current defn; Easy
+                  # \let to the current defn; do let assignment after load
+              $$DUMP{$table_name}{$key} = LaTeXML::Core::Dumper::Dump($orig_cs, $dump_key);
+              next; }
+            elsif (($tmp = $$pre_DUMP{$table_name}{$orig_cs}) && ($check eq $tmp)) {
+              # \let to defn from BEFORE loading ltx; arrange to get that value on loading.
+              $$DUMP{$table_name}{$key} = 'LookupDefinition(' . LaTeXML::Core::Dumper::Dump($value->getCS, $dump_key) . ')';
+              next; }
+            # Otherwise, could search for definition in current table?
+            # Or not... jsut assign it a newly built defn.
+        } }
+        if ($dumpable) {
+          $$DUMP{$table_name}{$key} = $dump; }
+        else {
+          Warn('unexpected', $table_name, undef,
+            "Do not know how to dump $table_name for $key : " . Stringify($value)); }
+  } } }
+  #----------------------------------------------------------------------
+  Debug("Found $nsym new symbols; $nlets were \\let");
+  Debug("Froze " . join(', ', map { "$$frozen_types{$_} $_"; } sort keys %$frozen_types));
+  my $dest = '/tmp/' . $name . '.' . $type . '.ltxmlc';
+  Debug("Storing $name in $dest");
+  my $OUT;
+  open($OUT, '>', $dest)
+    or Fatal('I/O', $dest, "Failed to open format file '$dest': $!");
+  binmode($OUT, ':encoding(UTF-8)');
+  print $OUT ('#' x 80) . "\n";
+  print $OUT "## Dump of $name\n";
+  print $OUT "## Generated file, do not edit!\n";
+  print $OUT $DUMP_HEADER;
+
+##    foreach my $const (sort keys %CONSTANTS) {
+##      print $OUT "my \$$const = $CONSTANTS{$const};\n"; }
+  print $OUT "our \$DUMP = {\n";
+  foreach my $table_name (@tables) {
+    print $OUT "$table_name => {\n";
+    foreach my $key (sort keys %{ $$DUMP{$table_name} }) {
+      my $dump_key = $table_name . ':' . $key;
+      print $OUT LaTeXML::Core::Dumper::Dump($key, $dump_key) . ' => ' . $$DUMP{$table_name}{$key} . ",\n"; }
+    print $OUT "},\n"; }
+  print $OUT "},\n";
+  close($OUT);
+  Debug("Stored into $dest");
+  return; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
