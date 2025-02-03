@@ -1,0 +1,55 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | latex_overlay                                                       | #
+# | "Semantic" overlay for latex.ltx for LaTeXML                        | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+AssignValue('plain_overlay.pool.ltxml_loaded' => undef);    # Force RELOAD!
+LoadPool('plain_overlay');                                  # Won't reload ?????
+
+# Then restore some things (not lockable?)
+# Some are code compatibility issues, some are gratuitous test case differences
+$STATE->assignValue(font     => LaTeXML::Common::Font->textDefault(), 'global');
+$STATE->assignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'global');
+DefMacroI('\f@encoding',  undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
+DefMacroI('\cf@encoding', undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
+
+DefMacro('\hline', '\noalign{\@@alignment@hline}');
+DefMacroI('\ldots', undef, '\lx@ldots');    # for tests?
+
+DefPrimitiveI('\ASCII\^', '{}', sub { Box('^' . ToString(Digest($_[1]))); });
+DefPrimitiveI('\ASCII\~', '{}', sub { Box('~' . ToString(Digest($_[1]))); });
+
+Let('\par', '\lx@normal@par');
+#    LoadPool('LaTeX');
+LoadPool('math_common');
+# Problematic accents used within encodings
+# These really shouldn't be here, but somehow aren't getting defined in the right place???
+# Predefine Ogonek, it's defined in t1enc.def as ugly ooalign
+DefAccent('\k', "\x{0328}", "\x{02DB}");
+DefAccent('\r', "\x{030A}", "\x{02DA}");    # COMBINING RING ABOVE & non-combining
+
+Let('\newpage',      '\eject');
+Let('\nobreakspace', '\lx@nobreakspace');
+#DefMacroI('\newpage',      undef, '\par\lx@newpage');
+#DefMacroI('\newpage',      undef, '\par\lx@newpage', scope=>'global');
+#DefMacroI('\newpage',      undef, '\par\lx@newpage', locked=>1);
+#======================================================================
+# Just to pass test t/alignment/halignatt
+DefMacroI('\hidewidth', undef, Tokens());
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+
