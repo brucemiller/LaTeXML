@@ -81,8 +81,6 @@ my $serialized;
 eval {    # Catch errors
   UseLog($logfile);
   Note("$LaTeXML::IDENTITY processing $source");
-
-  print STDERR "\nLPATHS=" . join(',', @paths) . "\n";
   $latexml = LaTeXML::Core->new(
     preload         => [@preload],
     searchpaths     => [@paths],
