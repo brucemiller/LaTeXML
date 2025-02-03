@@ -126,7 +126,7 @@ sub dump_rec {
     if ($string =~ /^-?\d+(?:\.\d*)?$/) {
       return $object; }
     elsif ($string eq '\\') {
-      "'\\\\'"; }
+      return "'\\\\'"; }
     elsif ($string !~ /[^a-zA-Z0-9\@\$#\.,!:;+\-\*\/\?=~_^``\"&\(\)\[\]\<\>\{\}\|% \\]/) { # Only contains simple chars?
       $string =~ s/\\/\\\\/g;
       return "'" . $string . "'"; }    # single quoted string.
