@@ -198,6 +198,8 @@ sub iniTeX {
 
       $state->installDefinition(LaTeXML::Core::Definition::Expandable->new(T_CS('\jobname'), undef,
           Tokens(Explode($name))));
+      $state->installDefinition(LaTeXML::Core::Definition::Expandable->new(T_CS('\dump'), undef,
+          Tokens()));
       LaTeXML::Package::Pool::DumpFile($request);
       $self->finishDigestion;
       ProgressSpindown("Digesting $mode $name");
