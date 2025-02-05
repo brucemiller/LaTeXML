@@ -29,14 +29,14 @@ our @EXPORT_OK = (
   qw($D0 $G0 $MD0 $MG0 $N0),
   qw($PPLAIN),
   qw($TA $TB $TE $TM $TP $TS $TSB $TSP),
-  qw(&Dump &_Exp &_CDef &_Reg &_Par &_Pars &_FDef &_Font &_RGB),
+  qw(&Dump &_Exp &_CDef &_Reg &_Par &_Pars &_FDef &_Font &_RGB &_L),
 );
 our %EXPORT_TAGS = (
   load => [
     qw($D0 $G0 $MD0 $MG0 $N0),
     qw($PPLAIN),
     qw($TA $TB $TE $TM $TP $TS $TSB $TSP),
-    qw(&_Exp &_CDef &_Reg &_Par &_Pars &_FDef &_Font &_RGB),
+    qw(&_Exp &_CDef &_Reg &_Par &_Pars &_FDef &_Font &_RGB &_L),
   ],
 );
 
@@ -98,6 +98,9 @@ sub _Font {
 sub _RGB {
   my($r,$g,$b)=@_;
   return bless ['rgb', $r, $g, $b], 'LaTeXML::Common::Color::rgb'; }
+
+sub _L {
+    return $STATE->lookupDefinition(T_CS($_[0])); }
 
 #======================================================================
 our %transchar = (
