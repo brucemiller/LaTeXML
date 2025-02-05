@@ -78,7 +78,6 @@ DefMacro('\dump', sub {
     Warn('unexpected', 'dump', $_[0], "Do not know how to \\dump yet, sorry"); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-####$LaTeXML::DEBUG{compiled} = 1 unless $LaTeXML::DEBUG{compiling} || $LaTeXML::DEBUG{nocompiled};
 
 sub loadDump {
   my ($file) = @_;
@@ -93,14 +92,12 @@ sub loadDump {
   if (FindFile($predump, type => 'pool', installation_subdir => 'Engine')) {
     LoadPool($predump); }
   else {
-    Debug("No pre-dump pool file: $predump"); }
+    Debug("No dump bootstrap: $predump"); }
 
   if (FindFile($path, installation_subdir => 'Engine')) {
     Debug("Loading $file from $path"); }
   else {
     Fatal('expected', 'dumpfile', undef, "No dump file: $path could be found; Aborting!"); }
-
-  # DDS version
   my $istage = "reading";
   ProgressSpinup($istage);
   my $result = do($path);
@@ -108,49 +105,24 @@ sub loadDump {
   if (!$result) { Debug("Load failed with $@"); }
   my $nsym  = 0;
   my $nlet  = 0;
-  my $nskip = 0;
   my $DUMP  = $LaTeXML::Internal::Dump::DUMP;
   Debug("Got $DUMP");
   $istage = "installing";
   ProgressSpinup($istage);
-
   foreach my $table_name (sort keys %$DUMP) {
     my $data = $$DUMP{$table_name};
     foreach my $key (sort keys %$data) {
-     #       # Risky? And Risky if NOT!!! (loops)
-     # ######      if (defined $$STATE{$table_name}{$key}[0]) {    # SKIP if already defined (by binding?)
-     #      if ((defined $$STATE{$table_name}{$key}[0])     # SKIP if already defined (by binding?)
-     #          && !$$previous_undump{$table_name}{$key}){
-     #         $nskip++;
-     # ##        Debug("SKIPPING latex.ltx redefinition of $key in $table_name"
-     # ##              .($$previous_undump{$table_name}{$key} ? " previously dumped":'')
-     # ##);
-     #         next; }
-      my $value = $$data{$key};
-####      next if ($table_name eq 'meaning') && !ref $value;
+     my $value = $$data{$key};
+     if(($table_name eq 'meaning') && (defined $value) && (! ref $value)){
+	 $nlet++; $value = $$data{$value}; } # $value is the CS we're \let'ting to.
       $nsym++;
-####      $$previous_undump{$table_name}{$key} = 1;
       LaTeXML::Core::State::assign_internal($STATE, $table_name, $key, $value, 'global'); } }
   ProgressSpindown($istage);
-  $istage = "\\lets";
-  ProgressSpinup($istage);
-  # Deferred lookup of \let symbols
-  foreach my $table_name (qw(meaning)) {
-    my $data = $$DUMP{$table_name};
-    foreach my $key (sort keys %$data) {
-      my $value = $$data{$key};
-      next if !$value || ref $value;
-      $nsym++;
-      $nlet++;
-      my $truevalue = $STATE->lookupMeaning(T_CS($value));
-      Debug("Missing binding '$key' => '$value'") unless $truevalue;
-      LaTeXML::Core::State::assign_internal($STATE, $table_name, $key, $truevalue, 'global'); } }
-  ProgressSpindown($istage);
-  Debug("Retrieved $nsym (skipped $nskip; $nlet \\lets) from $path!");
+  Debug("Retrieved $nsym ($nlet \\lets) from $path!");
   if (FindFile($postdump, type => 'pool', installation_subdir => 'Engine')) {
     LoadPool($postdump); }
   else {
-    Debug("No post-dump pool file: $postdump"); }
+    Debug("No dump overlay: $postdump"); }
   ProgressSpindown($stage);
   return; }
 
@@ -235,8 +207,6 @@ sub DumpFile {
       my $dump     = LaTeXML::Core::Dumper::Dump($value, $dump_key);
       my $dumpable = !(ref $value) || defined $dump;
       my $check    = ($dumpable ? $dump : $value);
-      Debug("POPFILENAME Seen " . ($dumpable ? "IS" : "IS NOT") . " dumpable") if $key eq '\@p@pfilename';
-###        if ($check ne ($$pre_DUMP{$table_name}{$key} ||'')) {    # Value changed
       if ($check ne ($$pre_DUMP{$table_name}{$key} // '')) {    # Value changed
         $nsym++;
         # \let symbols? Worry about WHICH value of original cs to use? before/after?????
@@ -245,14 +215,14 @@ sub DumpFile {
           if ($key ne $orig_cs) {    # was \let to a DIFFERENT cs, not new binding
             $nlets++;
             my $tmp;
-            if (($tmp = $$table{$orig_cs}[0]) && ($value eq $tmp)) {    # bound to current defn; Easy
+            if (($tmp = $$pre_DUMP{$table_name}{$orig_cs}) && ($check eq $tmp)) {
+		# \let is defn from BEFORE loading; arrange to get that value on loading.
+		$dumpable = 1;
+		$dump = '_L(' . LaTeXML::Core::Dumper::Dump($orig_cs, $dump_key) . ')'; }
+            elsif (($tmp = $$table{$orig_cs}[0]) && ($value eq $tmp)) {    # bound to current defn; Easy
                   # \let to the current defn; do let assignment after load
-              $$DUMP{$table_name}{$key} = LaTeXML::Core::Dumper::Dump($orig_cs, $dump_key);
-              next; }
-            elsif (($tmp = $$pre_DUMP{$table_name}{$orig_cs}) && ($check eq $tmp)) {
-              # \let to defn from BEFORE loading ltx; arrange to get that value on loading.
-              $$DUMP{$table_name}{$key} = 'LookupDefinition(' . LaTeXML::Core::Dumper::Dump($value->getCS, $dump_key) . ')';
-              next; }
+		$dumpable = 1;
+		$dump = LaTeXML::Core::Dumper::Dump($orig_cs, $dump_key); }
             # Otherwise, could search for definition in current table?
             # Or not... jsut assign it a newly built defn.
         } }
@@ -275,9 +245,6 @@ sub DumpFile {
   print $OUT "## Dump of $name\n";
   print $OUT "## Generated file, do not edit!\n";
   print $OUT $DUMP_HEADER;
-
-##    foreach my $const (sort keys %CONSTANTS) {
-##      print $OUT "my \$$const = $CONSTANTS{$const};\n"; }
   print $OUT "our \$DUMP = {\n";
   foreach my $table_name (@tables) {
     print $OUT "$table_name => {\n";
