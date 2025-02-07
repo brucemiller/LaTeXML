@@ -218,7 +218,7 @@ sub DumpFile {
             if (($tmp = $$pre_DUMP{$table_name}{$orig_cs}) && ($check eq $tmp)) {
 		# \let is defn from BEFORE loading; arrange to get that value on loading.
 		$dumpable = 1;
-		$dump = '_L(' . LaTeXML::Core::Dumper::Dump($orig_cs, $dump_key) . ')'; }
+		$dump = '_Lt(' . LaTeXML::Core::Dumper::Dump($orig_cs, $dump_key) . ')'; }
             elsif (($tmp = $$table{$orig_cs}[0]) && ($value eq $tmp)) {    # bound to current defn; Easy
                   # \let to the current defn; do let assignment after load
 		$dumpable = 1;
