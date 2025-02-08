@@ -15,6 +15,21 @@ use warnings;
 use File::Find qw(find);
 use URI::file;
 
+our $XPATH = undef;
+
+# 'mathml' property
+our $xpath_mathml = '//m:math';
+# 'svg' property
+our $xpath_svg = '//svg:svg';
+# 'scripted' property
+our $xpath_forms    = '//xhtml:form';                   # only within XHTML documents
+our $xpath_scripted = '//xhtml:script | //svg:script'
+  . ' | //xhtml:*/@*[starts-with(name(),"on")]'
+  . ' | //m:*/@*[starts-with(name(),"on")]'
+  . ' | //svg:*/@*[starts-with(name(),"on")]';          # for XHTML and SVG
+# We should inspect //xhtml:script/@type to ensure that the content is a
+# script, not a data block. But LaTeXML does not produce data blocks anyway.
+
 our $uuid_tiny_installed;
 
 BEGIN {
@@ -69,6 +84,11 @@ sub new {
 sub initialize {
   my ($self, $doc) = @_;
   my $directory = $$self{siteDirectory};
+  # 0. Register HTML5 namespaces
+  $XPATH = $LaTeXML::Post::Document::XPATH;
+  $XPATH->registerNS('xhtml' => 'http://www.w3.org/1999/xhtml');
+  $XPATH->registerNS('m'     => 'http://www.w3.org/1998/Math/MathML');
+  $XPATH->registerNS('svg'   => 'http://www.w3.org/2000/svg');
   # 1. Create mimetype declaration
   my $EPUB_FH;
   my $mime_path = pathname_concat($directory, 'mimetype');
@@ -177,8 +197,9 @@ sub process {
       $item->setAttribute('href',       $item_url);
       $item->setAttribute('media-type', "application/xhtml+xml");
       my @properties;
-      push @properties, 'mathml' if $doc->findnode('//*[local-name() = "math"]');
-      push @properties, 'svg'    if $doc->findnode('//*[local-name() = "svg"]');
+      push @properties, 'scripted' if $doc->findnode($xpath_scripted . ' | ' . $xpath_forms);
+      push @properties, 'mathml'   if $doc->findnode($xpath_mathml);
+      push @properties, 'svg'      if $doc->findnode($xpath_svg);
       push(@properties, 'nav') if $doc->findnode('//*[@class="ltx_toclist"]');    # Should be only 1
       my $properties = join(" ", @properties);
       $item->setAttribute('properties', $properties) if $properties;
@@ -218,7 +239,22 @@ sub finalize {
     my $file_url  = URI::file->new($file);
     $file_item->setAttribute('id',         url_id($file_url));
     $file_item->setAttribute('href',       $file_url);
-    $file_item->setAttribute('media-type', $file_type); }
+    $file_item->setAttribute('media-type', $file_type);
+
+    if ($file_type eq 'image/svg+xml') {
+      my @properties;
+      my $doc;
+      eval {
+        $doc = XML::LibXML->load_xml(location => pathname_concat($OPS_directory, $file)); };
+      if ($@) {
+        Error('parsing', $file, undef, "$@"); }
+      else {
+        push @properties, 'scripted' if $XPATH->findnodes($xpath_scripted, $doc);
+        push @properties, 'mathml  ' if $XPATH->findnodes($xpath_mathml,   $doc);
+        my $properties = join(" ", @properties);
+        $file_item->setAttribute('properties', $properties) if $properties; } }
+
+  }
 
   # Write the content.opf file to disk
   my $directory    = $$self{siteDirectory};
