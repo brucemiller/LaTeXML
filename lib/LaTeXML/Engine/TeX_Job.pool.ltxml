@@ -91,14 +91,9 @@ sub loadDump {
 
   if (FindFile($predump, type => 'pool', installation_subdir => 'Engine')) {
     LoadPool($predump); }
-  else {
-    Debug("No dump bootstrap: $predump"); }
-
-  if (FindFile($path, installation_subdir => 'Engine')) {
-    Debug("Loading $file from $path"); }
-  else {
+  if (! FindFile($path, installation_subdir => 'Engine')) {
     Fatal('expected', 'dumpfile', undef, "No dump file: $path could be found; Aborting!"); }
-  my $istage = "reading";
+  my $istage = "reading $path";
   ProgressSpinup($istage);
   my $result = do($path);
   ProgressSpindown($istage);
@@ -106,7 +101,6 @@ sub loadDump {
   my $nsym  = 0;
   my $nlet  = 0;
   my $DUMP  = $LaTeXML::Internal::Dump::DUMP;
-  Debug("Got $DUMP");
   $istage = "installing";
   ProgressSpinup($istage);
   foreach my $table_name (sort keys %$DUMP) {
@@ -118,11 +112,9 @@ sub loadDump {
       $nsym++;
       LaTeXML::Core::State::assign_internal($STATE, $table_name, $key, $value, 'global'); } }
   ProgressSpindown($istage);
-  Debug("Retrieved $nsym ($nlet \\lets) from $path!");
+  Debug("Retrieved $nsym ($nlet \\lets) from $path");
   if (FindFile($postdump, type => 'pool', installation_subdir => 'Engine')) {
     LoadPool($postdump); }
-  else {
-    Debug("No dump overlay: $postdump"); }
   ProgressSpindown($stage);
   return; }
 
@@ -218,7 +210,7 @@ sub DumpFile {
             if (($tmp = $$pre_DUMP{$table_name}{$orig_cs}) && ($check eq $tmp)) {
 		# \let is defn from BEFORE loading; arrange to get that value on loading.
 		$dumpable = 1;
-		$dump = '_Lt(' . LaTeXML::Core::Dumper::Dump($orig_cs, $dump_key) . ')'; }
+		$dump = 'Lt(' . LaTeXML::Core::Dumper::Dump($orig_cs, $dump_key) . ')'; }
             elsif (($tmp = $$table{$orig_cs}[0]) && ($value eq $tmp)) {    # bound to current defn; Easy
                   # \let to the current defn; do let assignment after load
 		$dumpable = 1;

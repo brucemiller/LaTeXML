@@ -19,8 +19,6 @@ use LaTeXML::Util::Pathname;
 use charnames ':full';
 use List::Util qw(min max);
 
-####$LaTeXML::DEBUG{compiled} = 1 unless $LaTeXML::DEBUG{compiling} || $LaTeXML::DEBUG{nocompiled};
-
 #======================================================================
 # BASE TeX; Built-in commands.
 #======================================================================
