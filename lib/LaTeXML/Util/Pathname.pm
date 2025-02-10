@@ -423,12 +423,13 @@ sub pathname_kpsewhich {
 sub build_kpse_cache {
   $kpse_cache = {};    # At least we've tried.
   return unless $kpsewhich;
-  # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
   $kpse_toolchain = "--miktex-admin" if ($ENV{"LATEXML_KPSEWHICH_MIKTEX_ADMIN"});
-  my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\' $kpse_toolchain`; chomp($texmf);
-  # These are directories which contain the tex related files we're interested in.
-  # (but they're typically below where the ls-R indexes are!)
-  my $texpaths = `"$kpsewhich" --show-path tex $kpse_toolchain`; chomp($texpaths);
+  # Get 2 bits of data from kpsewhich (with 1 call!)
+  # texmf: ALL the directories used for any purposes, including docs, fonts, etc
+  # texpaths: the directories which contain the TeX related files we're interested in
+  #. (but they're typically below where the ls-R indexes are!)
+  my ($texmf,$texpaths) = split("\n",
+      `"$kpsewhich" --expand-var \'\\\$TEXMF\' --show-path tex $kpse_toolchain`); 
   my @filters  = ();    # Really shouldn't end up empty.
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
@@ -448,9 +449,9 @@ sub build_kpse_cache {
       open($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
       while (<$LSR>) {
         chop;
-        next if !$_ || /^%/;
-        if (/^(.*?):$/) {    # Move to a new subdirectory
-          $subdir = $1;
+        next if !$_ || (substr($_, 0, 1) eq '%');
+	if(substr($_, -1) eq ':'){
+          $subdir = substr($_, 0, -1);
           $subdir =~ s|^\./||;             # remove prefix
           my $d = $dir . '/' . $subdir;    # Hopefully OS safe, for comparison?
           $skip = !$filterre || $d !~ /$filterre/;
