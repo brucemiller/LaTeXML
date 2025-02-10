@@ -29,16 +29,16 @@ our @EXPORT_OK = (
   qw($D0 $G0 $MD0 $MG0 $N0),
   qw($P),
   qw($TA $TB $TE $TM $TP $TS $TSB $TSP $CR),
-  qw(&_T &_L &_O &_TA &_TC &_TM &_A &_Ts),
-  qw(&Dump &_E &_CD &_R &_P &_Ps &_FD &_F &_RGB &_Lt &_N &_D &_G &_Md &_Mg),
+  qw(&T &L &O &TA &TC &TM &A &Ts),
+  qw(&Dump &E &CD &R &P &Ps &FD &F &RGB &Lt &N &D &G &Md &Mg),
 );
 our %EXPORT_TAGS = (
   load => [
     qw($D0 $G0 $MD0 $MG0 $N0),
     qw($P),
     qw($TA $TB $TE $TM $TP $TS $TSB $TSP $CR),
-    qw(&_T &_L &_O &_TA &_TC &_TM &_A &_Ts),
-    qw(&_E &_CD &_R &_P &_Ps &_FD &_F &_RGB &_Lt &_N &_D &_G &_Md &_Mg),
+    qw(&T &L &O &TA &TC &TM &A &Ts),
+    qw(&E &CD &R &P &Ps &FD &F &RGB &Lt &N &D &G &Md &Mg),
   ],
 );
 
@@ -56,7 +56,7 @@ our %EXPORT_TAGS = (
 # Definitions
 
 # Deferred lookup of a \let control sequence
-sub _Lt {
+sub Lt {
     return $STATE->lookupDefinition(T_CS($_[0])); }
 
 #======================================================================
@@ -186,17 +186,17 @@ sub dump_hash {
 #======================================================================
 # Number, Dimension, Glue, MuDimension, MuGlue
 my %zname = (Number => 'N0', Dimension => 'D0', Glue => 'G0', MuDimension => 'MD0', MuGlue => 'MG0');
-my %qname = (Number => '_N', Dimension => '_D', Glue => '_G', MuDimension => '_Md', MuGlue => '_Mg');
+my %qname = (Number => 'N', Dimension => 'D', Glue => 'G', MuDimension => 'Md', MuGlue => 'Mg');
 our $N0  = Number(0);
 our $D0  = Dimension(0);
 our $G0  = Glue(0, 0, 0, 0, 0);
 our $MD0 = MuDimension(0);
 our $MG0 = MuGlue(0, 0, 0, 0, 0);
-sub _N  { return bless [$_[0]], 'LaTeXML::Common::Number'; }
-sub _D  { return bless [$_[0]], 'LaTeXML::Common::Dimension'; }
-sub _G  { return bless [@_],    'LaTeXML::Common::Glue'; }
-sub _Md { return bless [$_[0]], 'LaTeXML::Core::MuDimension'; }
-sub _Mg { return bless [@_],    'LaTeXML::Core::MuGlue'; }
+sub N  { return bless [$_[0]], 'LaTeXML::Common::Number'; }
+sub D  { return bless [$_[0]], 'LaTeXML::Common::Dimension'; }
+sub G  { return bless [@_],    'LaTeXML::Common::Glue'; }
+sub Md { return bless [$_[0]], 'LaTeXML::Core::MuDimension'; }
+sub Mg { return bless [@_],    'LaTeXML::Core::MuGlue'; }
 
 sub dump_number {
   my ($num) = @_;
@@ -207,16 +207,16 @@ sub dump_number {
   my @comp = @$num;
   if (!grep { (defined $_) && ($_ != 0); } $comp[0], $comp[1], $comp[3]) {    # Zero?
     return '$' . $zname{$name}; }                                             # use constant
-  return $f . '(' . join(',', map { LaTeXML::Core::Dumper::dump_rec($_); } @comp) . ')'; }
+  return $f . '(' . join(',', map { dump_rec($_); } @comp) . ')'; }
 
 #======================================================================
 # Token & Tokens
 our @CATCODE_TYPE =    #[CONSTANT]
   qw(??Escape $TB $TE $TM
   $TA ??EOL $TP $TSP
-  $TSB ??Ignore $TS _L?
-  _O? _TA? _TC? ??Invalid
-  _T? _TM? _A? ??NoExpand1);
+  $TSB ??Ignore $TS L?
+  O? TA? TC? ??Invalid
+  T? TM? A? ??NoExpand1);
 our $TA     = T_ALIGN;
 our $TB     = T_BEGIN;
 our $TE     = T_END;
@@ -226,14 +226,14 @@ our $TS     = T_SPACE;
 our $CR     = Token("\n", 10);
 our $TSB    = T_SUB;
 our $TSP    = T_SUPER;
-sub _T  { return bless [$_[0], CC_CS],      'LaTeXML::Core::Token'; }
-sub _L  { return bless [$_[0], CC_LETTER],  'LaTeXML::Core::Token'; }
-sub _O  { return bless [$_[0], CC_OTHER],   'LaTeXML::Core::Token'; }
-sub _TA { return bless [$_[0], CC_ACTIVE],  'LaTeXML::Core::Token'; }
-sub _TC { return bless [$_[0], CC_COMMENT], 'LaTeXML::Core::Token'; }
-sub _TM { return bless [$_[0], CC_MARKER],  'LaTeXML::Core::Token'; }
-sub _A  { return bless [$_[0], CC_ARG],     'LaTeXML::Core::Token'; }
-sub _Ts { return bless [@_], 'LaTeXML::Core::Tokens'; }
+sub T  { return bless [$_[0], CC_CS],      'LaTeXML::Core::Token'; }
+sub L  { return bless [$_[0], CC_LETTER],  'LaTeXML::Core::Token'; }
+sub O  { return bless [$_[0], CC_OTHER],   'LaTeXML::Core::Token'; }
+sub TA { return bless [$_[0], CC_ACTIVE],  'LaTeXML::Core::Token'; }
+sub TC { return bless [$_[0], CC_COMMENT], 'LaTeXML::Core::Token'; }
+sub TM { return bless [$_[0], CC_MARKER],  'LaTeXML::Core::Token'; }
+sub A  { return bless [$_[0], CC_ARG],     'LaTeXML::Core::Token'; }
+sub Ts { return bless [@_], 'LaTeXML::Core::Tokens'; }
 
 sub dump_token {
   my ($token) = @_;
@@ -256,32 +256,32 @@ sub dump_token {
 
 sub dump_tokens {
   my ($tokens) = @_;
-  return '_Ts(' . join(',', map { dump_rec($_); } @$tokens) . ')'; }
+  return 'Ts(' . join(',', map { dump_rec($_); } @$tokens) . ')'; }
 
 #======================================================================
 # Fonts, Colors
-sub _F {
+sub F {
   return LaTeXML::Common::Font->new_internal(@_); }
 
-sub _RGB {
+sub RGB {
   my($r,$g,$b)=@_;
   return bless ['rgb', $r, $g, $b], 'LaTeXML::Common::Color::rgb'; }
 
 sub dump_font {
   my($font)=@_;
   # Likely never shows in dump file, but need for bookkeeping (compare predump to dump)
-  return '_F(' . join(',', map { dump_rec($_); } @$font) . ')'; }
+  return 'F(' . join(',', map { dump_rec($_); } @$font) . ')'; }
 
 sub dump_color {
   my($color)=@_;
   # Likely never shows in dump file, but need for bookkeeping (compare predump to dump)
-  return '_RGB(' . join(',', map { dump_rec($_); } $color->rgb->components) . ')'; }
+  return 'RGB(' . join(',', map { dump_rec($_); } $color->rgb->components) . ')'; }
 
 #======================================================================
 # Parameter & Parameters
 our $P      = LaTeXML::Core::Parameter->new('Plain', '{}');
-sub _P  { return LaTeXML::Core::Parameter->new(@_); }
-sub _Ps { return bless [@_], 'LaTeXML::Core::Parameters'; }
+sub P  { return LaTeXML::Core::Parameter->new(@_); }
+sub Ps { return bless [@_], 'LaTeXML::Core::Parameters'; }
 
 sub dump_parameter {
   my ($parameter) = @_;
@@ -295,28 +295,25 @@ sub dump_parameter {
   if ($$parameter{novalue}) {
     $options .= ',novalue=>1'; }
   if (my $extra = $$parameter{extra}) {
-    $options .= ',extra=>' . LaTeXML::Core::Dumper::dump_rec($extra); }
-  return '_P('
-    . LaTeXML::Core::Dumper::dump_rec($type) . ','
-    . LaTeXML::Core::Dumper::dump_rec($spec)
-    . $options . ')'; }
+    $options .= ',extra=>' . dump_rec($extra); }
+  return 'P(' . dump_rec($type) . ',' . dump_rec($spec) . $options . ')'; }
 
 sub dump_parameters {
   my($parameters)=@_;
-  return '_Ps(' . join(',', map { dump_rec($_); } @$parameters) . ')'; }
+  return 'Ps(' . join(',', map { dump_rec($_); } @$parameters) . ')'; }
 
 #======================================================================
 # Various Definitions
-sub _E {
+sub E {
   my ($cs, $parameters, $expansion, %traits) = @_;
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     %traits }, 'LaTeXML::Core::Definition::Expandable'; }
 
-sub _FD {
+sub FD {
   my ($cs, $fontID) = @_;
   return LaTeXML::Core::Definition::FontDef->new($cs, $fontID); }
 
-sub _CD {
+sub CD {
   my ($cs, $mode, $value) = @_;
   return bless { cs => $cs, parameters => undef,
     mode         => $mode,    value    => $value,
@@ -324,7 +321,7 @@ sub _CD {
   }, 'LaTeXML::Core::Definition::CharDef'; }
 
 # Register
-sub _R {
+sub R {
   my ($cs, $parameters, %traits) = @_;
   $traits{address} = ToString($cs) unless defined $traits{address};
   return bless { cs => $cs, parameters => $parameters,
@@ -334,7 +331,7 @@ sub dump_expandable {
   my($object)=@_;
   return unless ((ref $$object{expansion}) || 'notcode') ne 'CODE';
   my $expansion = $object->getExpansion;
-  return '_E(' . join(',',
+  return 'E(' . join(',',
     dump_rec($$object{cs}),
     dump_rec($$object{parameters}),
     dump_rec($expansion),
@@ -344,13 +341,13 @@ sub dump_expandable {
 
 sub dump_fontdef {
   my($object)=@_;
-  return '_FD(' . join(',', dump_rec($$object{cs}),
+  return 'FD(' . join(',', dump_rec($$object{cs}),
       dump_rec($$object{fontID})) . ')'; }
 
 sub dump_chardef {
   my($object)=@_;
   my $role = $$object{role};
-  return '_CD(' . join(',',
+  return 'CD(' . join(',',
     dump_rec($$object{cs}),
     dump_rec($$object{mode}),
     dump_rec($$object{value}),) . ')'; }
@@ -359,7 +356,7 @@ sub dump_register {
   my($object)=@_;
   return if ($$object{getter} || $$object{setter});
   my $name = $$object{name};
-  return '_R(' . join(',',
+  return 'R(' . join(',',
       dump_rec($$object{cs}),
       dump_rec($$object{parameters}),
       'registerType=>' . dump_rec($$object{registerType}),
@@ -373,7 +370,7 @@ sub dump_primitive {
   my($object)=@_;
   # Really can only dump \font primitives?
   if ($$object{font} && !ref $$object{replacement}) {    # only changes font? defined by \font
-    return '_FD(' . dump_rec($$object{cs}) . ')'; }
+    return 'FD(' . dump_rec($$object{cs}) . ')'; }
   else {
     return; } }
 #======================================================================
