@@ -31,6 +31,7 @@ our @EXPORT_OK = (
   qw($TA $TB $TE $TM $TP $TS $TSB $TSP $CR),
   qw(&T &L &O &TA &TC &TM &A &Ts),
   qw(&Dump &E &CD &R &P &Ps &FD &F &RGB &Lt &N &D &G &Md &Mg),
+  qw(&Iv &I &Ic &Im &Is &Il &Iu &Id),
 );
 our %EXPORT_TAGS = (
   load => [
@@ -39,6 +40,7 @@ our %EXPORT_TAGS = (
     qw($TA $TB $TE $TM $TP $TS $TSB $TSP $CR),
     qw(&T &L &O &TA &TC &TM &A &Ts),
     qw(&E &CD &R &P &Ps &FD &F &RGB &Lt &N &D &G &Md &Mg),
+    qw(&Iv &I &Ic &Im &Is &Il &Iu &Id),
   ],
 );
 
@@ -46,6 +48,16 @@ our %EXPORT_TAGS = (
 # It saves the changes to STATE due to loading a package or binding.
 # Note that although it supports closures within the stored values,
 # it does NOT arrange for subs defined separately in a blnding to be saved.
+
+#======================================================================
+sub Iv { LaTeXML::Core::State::assign_internal($STATE, 'value', $_[0], $_[1], 'global');} 
+sub I  { LaTeXML::Core::State::assign_internal($STATE, 'meaning', $_[0], $_[1], 'global');} 
+sub Ic { LaTeXML::Core::State::assign_internal($STATE, 'catcode', $_[0], $_[1], 'global');} 
+sub Im { LaTeXML::Core::State::assign_internal($STATE, 'mathcode', $_[0], $_[1], 'global');} 
+sub Is { LaTeXML::Core::State::assign_internal($STATE, 'sfcode', $_[0], $_[1], 'global');} 
+sub Il { LaTeXML::Core::State::assign_internal($STATE, 'lccode', $_[0], $_[1], 'global');}
+sub Iu { LaTeXML::Core::State::assign_internal($STATE, 'uccode', $_[0], $_[1], 'global');}
+sub Id { LaTeXML::Core::State::assign_internal($STATE, 'delcode', $_[0], $_[1], 'global');} 
 #======================================================================
 # Shorthand constants
 #======================================================================
@@ -304,29 +316,59 @@ sub dump_parameters {
 
 #======================================================================
 # Various Definitions
+# sub E {
+#   my ($cs, $parameters, $expansion, %traits) = @_;
+#   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
+#     %traits }, 'LaTeXML::Core::Definition::Expandable'; }
+
+# sub FD {
+#   my ($cs, $fontID) = @_;
+#   return LaTeXML::Core::Definition::FontDef->new($cs, $fontID); }
+
+# sub CD {
+#   my ($cs, $mode, $value) = @_;
+#   return bless { cs => $cs, parameters => undef,
+#     mode         => $mode,    value    => $value,
+#     registerType => 'Number', readonly => 1,
+#   }, 'LaTeXML::Core::Definition::CharDef'; }
+
+# # Register
+# sub R {
+#   my ($cs, $parameters, %traits) = @_;
+#   $traits{address} = ToString($cs) unless defined $traits{address};
+#   return bless { cs => $cs, parameters => $parameters,
+#     %traits }, 'LaTeXML::Core::Definition::Register'; }
 sub E {
   my ($cs, $parameters, $expansion, %traits) = @_;
-  return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
-    %traits }, 'LaTeXML::Core::Definition::Expandable'; }
+  my $defn= bless { cs => $cs, parameters => $parameters, expansion => $expansion,
+	    %traits }, 'LaTeXML::Core::Definition::Expandable';
+  LaTeXML::Core::State::assign_internal($STATE, 'meaning',$cs->getCSName,$defn,'global');
+  return; }
 
 sub FD {
   my ($cs, $fontID) = @_;
-  return LaTeXML::Core::Definition::FontDef->new($cs, $fontID); }
+  my $defn=  LaTeXML::Core::Definition::FontDef->new($cs, $fontID);
+  LaTeXML::Core::State::assign_internal($STATE, 'meaning',$cs->getCSName,$defn,'global');
+  return; }
 
 sub CD {
   my ($cs, $mode, $value) = @_;
-  return bless { cs => $cs, parameters => undef,
+  my $defn=   bless { cs => $cs, parameters => undef,
     mode         => $mode,    value    => $value,
     registerType => 'Number', readonly => 1,
-  }, 'LaTeXML::Core::Definition::CharDef'; }
+  }, 'LaTeXML::Core::Definition::CharDef';
+  LaTeXML::Core::State::assign_internal($STATE, 'meaning',$cs->getCSName,$defn,'global');
+  return; }
 
-# Register
 sub R {
   my ($cs, $parameters, %traits) = @_;
   $traits{address} = ToString($cs) unless defined $traits{address};
-  return bless { cs => $cs, parameters => $parameters,
-    %traits }, 'LaTeXML::Core::Definition::Register'; }
+  my $defn=   bless { cs => $cs, parameters => $parameters,
+		      %traits }, 'LaTeXML::Core::Definition::Register';
+  LaTeXML::Core::State::assign_internal($STATE, 'meaning',$cs->getCSName,$defn,'global');
+  return; }
 
+# Register
 sub dump_expandable {
   my($object)=@_;
   return unless ((ref $$object{expansion}) || 'notcode') ne 'CODE';
