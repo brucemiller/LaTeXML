@@ -95,8 +95,17 @@
       <xsl:call-template name="add_classes"/>
       <xsl:call-template name="copy_foreign_attributes"/>
       <xsl:apply-templates select="." mode="add_RDFa"/>
+      <xsl:if test="@imagedepth | svg:svg/@style">
+        <xsl:attribute name="style">
+          <xsl:if test="@imagedepth">
+            <xsl:value-of select="concat('vertical-align:',-@imagedepth,'px')"/>
+            <xsl:if test="svg:svg/@style">;</xsl:if>
+          </xsl:if>
+          <xsl:value-of select="svg:svg/@style"/>
+        </xsl:attribute>
+      </xsl:if>
       <!-- but copy other svg:svg attributes -->
-      <xsl:for-each select="svg:svg/@*">
+      <xsl:for-each select="svg:svg/@*[name() != 'style']">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
       <xsl:apply-templates select="svg:svg/*"/>
