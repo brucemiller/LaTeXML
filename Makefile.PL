@@ -59,6 +59,7 @@ WriteMakefile(NAME => 'LaTeXML',
   PREREQ_PM => {
     'Archive::Zip'      => 0,
     'DB_File'           => 0,
+    'Clone'             => 0,
     'File::Which'       => 0,
     'Getopt::Long'      => 2.37,
     'Image::Size'       => 0,

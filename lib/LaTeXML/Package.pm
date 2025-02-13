@@ -107,6 +107,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &LookupLCcode &AssignLCcode
     &LookupUCcode &AssignUCcode
     &LookupDelcode &AssignDelcode
+    &RemoveValue
   ),
 
   # Random low-level token or string operations.
@@ -279,6 +280,10 @@ sub UnshiftValue {
 sub ShiftValue {
   my ($name) = @_;
   return $STATE->shiftValue($name); }
+
+sub RemoveValue {
+  my ($name) = @_;
+  return $STATE->removeValue($name); }
 
 sub LookupMapping {
   my ($map, $key) = @_;
