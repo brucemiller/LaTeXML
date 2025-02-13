@@ -311,6 +311,7 @@ sub beAbsorbed {
   &{ $$self{openContainer} }($document, ($attr ? %$attr : ()),
     cwidth       => $$self{cwidth}, cheight => $$self{cheight}, cdepth => $$self{cdepth},
     rowheights   => $$self{rowheights},
+    rowdepths    => $$self{rowdepths},
     columnwidths => $$self{columnwidths},
   );
   foreach my $row (@rows) {
@@ -513,6 +514,7 @@ sub showSize {
 sub normalize_sum_sizes {
   my ($self)     = @_;
   my @rowheights = ();
+  my @rowdepths  = ();
   my @colwidths  = ();
   my @colrights  = ();
   my @collefts   = ();
@@ -564,6 +566,7 @@ sub normalize_sum_sizes {
     $$row{tpadding} = Dimension($rowt);
     $$row{bpadding} = Dimension($rowb);
     # NOTE: Should be storing column widths to; individually, as well as per-column!
+    push(@rowdepths,  $rowd);
     push(@rowheights, $rowh + $rowd); }    # somehow our heights are way too short????
   ## Now compute the positions
   my @rowpos = ();
@@ -588,8 +591,10 @@ sub normalize_sum_sizes {
   $$self{cdepth}       = Dimension(0);
   @colwidths           = map { Dimension($_); } @colwidths;
   @rowheights          = map { Dimension($_); } @rowheights;
+  @rowdepths           = map { Dimension($_); } @rowdepths;
   $$self{columnwidths} = [@colwidths];
   $$self{rowheights}   = [@rowheights];
+  $$self{rowdepths}    = [@rowdepths];
 
   for (my $i = 0 ; $i < scalar(@rowheights) ; $i++) {
     my $row   = $rows[$i];
