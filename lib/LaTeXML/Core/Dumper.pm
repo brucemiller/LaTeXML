@@ -26,40 +26,45 @@ use LaTeXML::Package;
 use base (qw(Exporter));
 our @EXPORT    = (qw(&Dump));
 our @EXPORT_OK = (
+  qw(&Dump),
   qw($D0 $G0 $MD0 $MG0 $N0),
   qw($P),
   qw($TA $TB $TE $TM $TP $TS $TSB $TSP $CR),
-  qw(&T &L &O &TA &TC &TM &A &Ts),
-  qw(&Dump &E &CD &R &P &Ps &FD &F &RGB &Lt &N &D &G &Md &Mg),
-  qw(&I &II &Iv &Ic &Im &Is &Il &Iu &Id),
+  qw(&C &L &O &TA &TC &TM &A &T),
+  qw(&N &D &G &Md &Mg),
+  qw(&E &CD &R &P &Ps &FD &F &RGB),
+  qw(&I &Im &Lt &V &Cc &Mc &Sc &Lc &Uc &Dc),
 );
 our %EXPORT_TAGS = (
   load => [
     qw($D0 $G0 $MD0 $MG0 $N0),
     qw($P),
     qw($TA $TB $TE $TM $TP $TS $TSB $TSP $CR),
-    qw(&T &L &O &TA &TC &TM &A &Ts),
-    qw(&E &CD &R &P &Ps &FD &F &RGB &Lt &N &D &G &Md &Mg),
-    qw(&I &II &Iv &Ic &Im &Is &Il &Iu &Id),
+    qw(&C &L &O &TA &TC &TM &A &T),
+    qw(&N &D &G &Md &Mg),
+    qw(&E &CD &R &P &Ps &FD &F &RGB),
+    qw(&I &Im &Lt &V &Cc &Mc &Sc &Lc &Uc &Dc),
   ],
 );
 
 #======================================================================
-# Installer constants
+# Dump Shorthands
 #======================================================================
-# Shorthand, efficient, object creators for use in Dump'd formats
+# Dump files get read by Perl on each run, and the file size affects the speed,
+# as well as general directness & efficiency.
+# Thus we use very short, Huffman-esque, names for constructors & installers.
 # Since calls to these are derived from instanciated objects,
 # we can assume validation of the arguments.
 
-sub Iv { LaTeXML::Core::State::assign_internal($STATE, 'value',   $_[0], $_[1], 'global'); return; }
-sub Ic { LaTeXML::Core::State::assign_internal($STATE, 'catcode', $_[0], $_[1], 'global'); return; }
-sub Im { LaTeXML::Core::State::assign_internal($STATE, 'mathcode', $_[0], $_[1], 'global'); return; }
-sub Is { LaTeXML::Core::State::assign_internal($STATE, 'sfcode',  $_[0], $_[1], 'global'); return; }
-sub Il { LaTeXML::Core::State::assign_internal($STATE, 'lccode',  $_[0], $_[1], 'global'); return; }
-sub Iu { LaTeXML::Core::State::assign_internal($STATE, 'uccode',  $_[0], $_[1], 'global'); return; }
-sub Id { LaTeXML::Core::State::assign_internal($STATE, 'delcode', $_[0], $_[1], 'global'); return; }
-sub I  { LaTeXML::Core::State::assign_internal($STATE, 'meaning', $_[0], $_[1], 'global'); return; }
-sub II { LaTeXML::Core::State::assign_internal($STATE, 'meaning', $_[0]->getCSName, $_[0], 'global'); return; }
+sub V  { LaTeXML::Core::State::assign_internal($STATE, 'value',   $_[0], $_[1], 'global'); return; }
+sub Cc { LaTeXML::Core::State::assign_internal($STATE, 'catcode', $_[0], $_[1], 'global'); return; }
+sub Mc { LaTeXML::Core::State::assign_internal($STATE, 'mathcode', $_[0], $_[1], 'global'); return; }
+sub Sc { LaTeXML::Core::State::assign_internal($STATE, 'sfcode',  $_[0], $_[1], 'global'); return; }
+sub Lc { LaTeXML::Core::State::assign_internal($STATE, 'lccode',  $_[0], $_[1], 'global'); return; }
+sub Uc { LaTeXML::Core::State::assign_internal($STATE, 'uccode',  $_[0], $_[1], 'global'); return; }
+sub Dc { LaTeXML::Core::State::assign_internal($STATE, 'delcode', $_[0], $_[1], 'global'); return; }
+sub Im  { LaTeXML::Core::State::assign_internal($STATE, 'meaning', $_[0], $_[1], 'global'); return; }
+sub I { LaTeXML::Core::State::assign_internal($STATE, 'meaning', $_[0]->getCSName, $_[0], 'global'); return; }
 
 sub Lt {
   my $d = LaTeXML::Core::State::lookupDefinition($STATE, T_CS($_[1]));
@@ -222,7 +227,7 @@ our @CATCODE_TYPE =    #[CONSTANT]
   $TA ??EOL $TP $TSP
   $TSB ??Ignore $TS L?
   O? TA? TC? ??Invalid
-  T? TM? A? ??NoExpand1);
+  C? TM? A? ??NoExpand1);
 our $TA  = T_ALIGN;
 our $TB  = T_BEGIN;
 our $TE  = T_END;
@@ -232,14 +237,14 @@ our $TS  = T_SPACE;
 our $CR  = Token("\n", 10);
 our $TSB = T_SUB;
 our $TSP = T_SUPER;
-sub T  { return bless [$_[0], CC_CS],      'LaTeXML::Core::Token'; }
+sub C  { return bless [$_[0], CC_CS],      'LaTeXML::Core::Token'; }
 sub L  { return bless [$_[0], CC_LETTER],  'LaTeXML::Core::Token'; }
 sub O  { return bless [$_[0], CC_OTHER],   'LaTeXML::Core::Token'; }
 sub TA { return bless [$_[0], CC_ACTIVE],  'LaTeXML::Core::Token'; }
 sub TC { return bless [$_[0], CC_COMMENT], 'LaTeXML::Core::Token'; }
 sub TM { return bless [$_[0], CC_MARKER],  'LaTeXML::Core::Token'; }
 sub A  { return bless [$_[0], CC_ARG],     'LaTeXML::Core::Token'; }
-sub Ts { return bless [@_], 'LaTeXML::Core::Tokens'; }
+sub T  { return bless [@_], 'LaTeXML::Core::Tokens'; }
 
 sub dump_token {
   my ($token) = @_;
@@ -262,7 +267,7 @@ sub dump_token {
 
 sub dump_tokens {
   my ($tokens) = @_;
-  return 'Ts(' . join(',', map { dump_rec($_); } @$tokens) . ')'; }
+  return 'T(' . join(',', map { dump_rec($_); } @$tokens) . ')'; }
 
 #======================================================================
 # Fonts, Colors
@@ -281,7 +286,9 @@ sub dump_font {
 sub dump_color {
   my ($color) = @_;
   # Likely never shows in dump file, but need for bookkeeping (compare predump to dump)
-  return 'RGB(' . join(',', map { dump_rec($_); } $color->rgb->components) . ')'; }
+###  return 'RGB(' . join(',', map { dump_rec($_); } $color->rgb->components) . ')'; }
+  my @c = $color->rgb->components;
+  return ((grep @c) ? 'RGB(' . join(',', map { dump_rec($_); } @c) . ')' : 'Black'); }
 
 #======================================================================
 # Parameter & Parameters
