@@ -41,24 +41,6 @@ elsif (!$LaTeXML::DEBUG{compiling}) {
 # define it here (only approxmiately), since it's already useful.
 Let('\protect', '\relax');
 
-# Is this real, or an accident/typo ? If real, Where does it come from?
-DefRegister('\everyhelp', Tokens());
-
-# Cleanup the pre & post tokens for halign columns in math mode.
-# If a pair of $..$ enclose stuff that is "OK" in math mode, we don't need the $.
-# Note that the 1st $ is switching OUT of math mode!
-# BUT: This is never used???
-sub stripDupMath {
-  my (@tokens) = @_;
-  my @poss = grep { $tokens[$_]->defined_as(T_MATH) } 0 .. $#tokens;
-  shift(@poss) if scalar(@poss) % 2;    # Get pairs!
-  while (@poss) {
-    my ($p2, $p1) = (pop(@poss), pop(@poss));
-    splice(@tokens, $p1, 2) if $p2 == $p1 + 1; }
-  return @tokens; }
-
-DefMacro('\hiderel{}', "#1");           # Just ignore, for now...
-
 #======================================================================
 # LaTeX Trigger Hook
 # Auto-load the format according to the initial control-sequences seen

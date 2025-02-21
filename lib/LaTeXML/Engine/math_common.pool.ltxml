@@ -300,6 +300,8 @@ Let('\le', '\leq');
 Let('\ge', '\geq');
 Let('\ne', '\neq');
 
+# Discretionary times
+DefMathI('\*', undef, "\x{2062}", role => 'MULOP', name => '', meaning => 'times');
 #----------------------------------------------------------------------
 # Not;  (Is fullwidth solidus appropriate for when \not appears in isolation?)
 DefMathI('\not', undef, "\x{FF0F}", role => 'OPFUNCTION', meaning => 'not');

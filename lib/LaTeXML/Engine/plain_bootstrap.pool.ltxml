@@ -50,9 +50,6 @@ DefConstructor('\Bigg {}', '#1', bounded => 1, font => { size => 'Bigg' }, locke
 ###DefRegister('\lx@default@jot'           => LookupRegister('\jot'));
 DefRegister('\lx@default@jot' => Dimension('3pt'));
 
-DefPrimitiveI('\L', undef, "\x{0141}", locked => 1);    # LATIN CAPITAL LETTER L WITH STROKE
-DefPrimitiveI('\l', undef, "\x{0142}", locked => 1);    # LATIN SMALL LETTER L WITH STROKE
-
 DefPrimitiveI('\leavevmode', undef, undef, locked => 1);
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

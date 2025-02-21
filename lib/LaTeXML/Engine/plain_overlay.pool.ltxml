@@ -17,6 +17,9 @@ use LaTeXML::Package;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Tag('ltx:text', autoOpen => 1, autoClose => 1);
 #======================================================================
+DefPrimitiveI('\L', undef, "\x{0141}");    # LATIN CAPITAL LETTER L WITH STROKE
+DefPrimitiveI('\l', undef, "\x{0142}");    # LATIN SMALL LETTER L WITH STROKE
+
 # Corrections to accents
 # plain defines as complicated ooalign...
 DefAccent('\c',             "\x{0327}", UTF(0xB8), below => 1);   # COMBINING CEDILLA & CEDILLA
@@ -368,6 +371,8 @@ DefPrimitiveI('\cal', undef, sub {
 
 # Primarily for UnTeX
 DefPrimitiveI('\allowbreak', undef, undef);
+
+LoadPool('math_common');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
