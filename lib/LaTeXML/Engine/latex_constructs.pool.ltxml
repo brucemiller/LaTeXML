@@ -1,7 +1,7 @@
 # -*- mode: Perl -*-
 # /=====================================================================\ #
-# | latex_overlay                                                       | #
-# | "Semantic" overlay for latex.ltx for LaTeXML                        | #
+# | latex_constructs                                                    | #
+# | "Semantic" constructs for latex.ltx for LaTeXML                     | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
@@ -16,9 +16,9 @@ use warnings;
 use LaTeXML::Package;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-AssignValue('plain_overlay.pool.ltxml_loaded' => undef);    # Force RELOAD!
-AssignValue('math_common.pool.ltxml_loaded'   => undef);    # Force RELOAD!
-LoadPool('plain_overlay');                                  # Won't reload ?????
+AssignValue('plain_constructs.pool.ltxml_loaded' => undef);   # Force RELOAD!
+AssignValue('math_common.pool.ltxml_loaded'   => undef);      # Force RELOAD!
+LoadPool('plain_constructs');                                 # Won't reload ?????
 
 # Then restore some things (not lockable?)
 # Some are code compatibility issues, some are gratuitous test case differences

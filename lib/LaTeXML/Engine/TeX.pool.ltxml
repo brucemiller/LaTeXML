@@ -31,7 +31,7 @@ if ($LaTeXML::DEBUG{compiled}) {
   loadDump('plain.tex'); }
 elsif (!$LaTeXML::DEBUG{compiling}) {
   LoadPool('plain'); }
-###  LoadPool('plain_overlay');
+###  LoadPool('plain_constructs');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Orphans?

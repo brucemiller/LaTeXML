@@ -86,7 +86,7 @@ sub loadDump {
   my ($dir, $name, $type) = pathname_split($file);
   my $path     = '/tmp/' . $name . '.' . $type . '.ltxmlc';
   my $predump  = $name . '_bootstrap';
-  my $postdump = $name . '_overlay';
+  my $postdump = $name . '_constructs';
 
   if (FindFile($predump, type => 'pool', installation_subdir => 'Engine')) {
     LoadPool($predump); }
