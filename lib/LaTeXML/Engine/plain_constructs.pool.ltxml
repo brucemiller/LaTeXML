@@ -334,7 +334,7 @@ DefMacro('\cases{}',
   '\lx@gen@plain@cases{meaning=cases,left=\lx@left\{,conditionmode=text,style=\textstyle}{#1}');
 
 #======================================================================
-# Paginagion
+# Pagination
 DefMacroI('\eject',      undef, '\par\lx@newpage');
 DefMacroI('\supereject', undef, '\par\lx@newpage');
 Let('\end', '\lx@end@document');

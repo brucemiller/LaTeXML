@@ -101,41 +101,6 @@ DefMacroI(T_CS('\@currnamestack'), undef, Tokens());
 Let('\@currname', '\lx@empty');
 Let('\@currext',  '\lx@empty');
 
-#======================================================================
-# After all other rewrites have acted, a little cleanup
-# [This suggests that it should be (one of) the LAST (math) rewrite applied?
-# Do we need to define it last?]
-DefRewrite(xpath => 'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
-  replace => sub { my ($document, $wrap) = @_;
-    if (my $node = $document->getFirstChildElement($wrap)) {
-      # Copy attributes but NOT internal ones,
-      # NOR xml:id, else we get clashes
-      foreach my $attribute ($wrap->attributes) {
-        if ($attribute->nodeType == XML_ATTRIBUTE_NODE) {
-          my $attr = $document->getNodeQName($attribute);
-          $document->setAttribute($node, $attr => $attribute->getValue)
-            unless ($attr eq 'xml:id') || $attr =~ /^_/;
-          if    ($attr =~ /^_/) { }
-          elsif ($attr eq 'xml:id') {
-            my $id = $attribute->getValue;
-            if (my $previd = $node->getAttribute('xml:id')) {    # Keep original id
-                  # but swap any references to the one on the wrapper!
-              foreach my $ref ($document->findnodes("//*[\@idref='$id']")) {
-                $ref->setAttribute(idref => $previd); }
-              $wrap->removeAttribute('xml"id');
-              $document->unRecordID($id); }
-            else {
-              $wrap->removeAttribute('xml:id');
-              $document->unRecordID($id);
-              $document->setAttribute($node, 'xml:id' => $id); } }
-          else {
-            $document->setAttribute($node, $attr => $attribute->getValue); } } }
-      # But keep $node's font from being overwritten.
-      $document->setNodeFont($wrap, $document->getNodeFont($node));
-      ## WHY THIS????
-      $document->getNode->appendChild($node);
-} });
-
 #**********************************************************************
 
 1;

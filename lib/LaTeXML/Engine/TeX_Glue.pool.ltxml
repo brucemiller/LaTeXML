@@ -18,6 +18,7 @@ use LaTeXML::Package;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Glue Family of primitive control sequences
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DefRegister('\lx@default@jot' => Dimension('3pt'));
 
 #======================================================================
 # Inserting, removing glue

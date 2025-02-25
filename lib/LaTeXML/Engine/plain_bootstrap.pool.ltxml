@@ -25,7 +25,8 @@ DefConstructor('\TeX',
   sizer  => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); },
   locked => 1);
 
-# Use Package's register allocation to avoid allocating same slot twice; and ALWAYS have room!
+# Use Package's register allocation to avoid allocating same slot twice;
+# and ALWAYS have room!
 DefMacro('\alloc@{}{}{}{}{}', '\lx@alloc@{#2}{\count1#1}{#3}{#5}', locked => 1);
 DefMacro('\ch@ck{}{}{}',      '',                                  locked => 1);
 
@@ -33,22 +34,6 @@ DefPrimitive('\newif DefToken', sub {
     my ($ignore, $cs) = @_;
     DefConditionalI($cs, undef);
     return; }, locked => 1);
-DefConstructor('\sqrt OptionalInScriptStyle Digested',
-  "?#1(<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
-    . "</ltx:XMApp>)"
-    . "(<ltx:XMApp><ltx:XMTok meaning='square-root'/>"
-    . "<ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>)",
-  locked => 1);
-# These originally had Token as parameter, rather than {}..... Why?
-# Note that in TeX, \big{((} will only enlarge the 1st paren!!!
-DefConstructor('\big {}',  '#1', bounded => 1, font => { size => 'big' },  locked => 1);
-DefConstructor('\Big {}',  '#1', bounded => 1, font => { size => 'Big' },  locked => 1);
-DefConstructor('\bigg {}', '#1', bounded => 1, font => { size => 'bigg' }, locked => 1);
-DefConstructor('\Bigg {}', '#1', bounded => 1, font => { size => 'Bigg' }, locked => 1);
-
-###DefRegister('\lx@default@jot'           => LookupRegister('\jot'));
-DefRegister('\lx@default@jot' => Dimension('3pt'));
 
 DefPrimitiveI('\leavevmode', undef, undef, locked => 1);
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
