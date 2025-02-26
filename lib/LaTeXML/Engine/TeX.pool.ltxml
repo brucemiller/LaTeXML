@@ -33,14 +33,6 @@ if ($LaTeXML::DEBUG{compiled}) {
 else {
   LoadPool('plain'); }
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Orphans?
-#======================================================================
-
-# This is LaTeX, but used a little in the Primitives?
-# define it here (only approxmiately), since it's already useful.
-Let('\protect', '\relax');
-
 #======================================================================
 # LaTeX Trigger Hook
 # Auto-load the format according to the initial control-sequences seen
