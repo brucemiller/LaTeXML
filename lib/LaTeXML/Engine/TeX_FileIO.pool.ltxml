@@ -21,6 +21,22 @@ use LaTeXML::Util::Pathname;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # File I/O Family of primitive control sequences
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# This block is technically LaTeX, but Package also does file bookkeeping
+DefMacroI(T_CS('\@currnamestack'), undef, Tokens());
+Let('\@currname', '\lx@empty');
+Let('\@currext',  '\lx@empty');
+
+DefMacro('\lx@pushfilename',
+    '\xdef\@currnamestack{{\@currname}{\@currext}{\the\catcode`\@}\@currnamestack}');
+DefMacro('\lx@popfilename', '\expandafter\lx@p@pfilename\@currnamestack\@nil');
+DefMacro('\lx@p@pfilename {}{}{} Until:\@nil',
+   '\gdef\@currname{#1}%
+    \gdef\@currext{#2}%
+    \catcode`\@#3\relax
+    \gdef\@currnamestack{#4}');
+
 #======================================================================
 # Low-level input
 #----------------------------------------------------------------------
