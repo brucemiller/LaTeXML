@@ -30,13 +30,13 @@ use List::Util qw(min max);
 
 LoadPool('TeX');
 if ($LaTeXML::DEBUG{compiled}) {
-  loadDump('latex.ltx');
-}
-elsif (!$LaTeXML::DEBUG{compiling}) {
-### ??  LoadPool('plain');
+  LoadPool('latex_bootstrap');
+  LoadPool('/tmp/latex_dump');
+  LoadPool('latex_constructs'); }
+else {
+### ??  LoadPool('latex');
 }
 
-####LOAD_LATEX();
 # Apparently LaTeX does NOT define \magnification,
 # and babel uses that to determine whether we're runing LaTeX!!!
 Let('\magnification', '\@undefined');

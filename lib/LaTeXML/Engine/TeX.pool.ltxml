@@ -26,12 +26,12 @@ use List::Util qw(min max);
 #**********************************************************************
 LoadPool('Base');
 
-###  LoadPool('plain_bootstrap');
 if ($LaTeXML::DEBUG{compiled}) {
-  loadDump('plain.tex'); }
-elsif (!$LaTeXML::DEBUG{compiling}) {
+  LoadPool('plain_bootstrap');
+  LoadPool('/tmp/plain_dump');
+  LoadPool('plain_constructs'); }
+else {
   LoadPool('plain'); }
-###  LoadPool('plain_constructs');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Orphans?
