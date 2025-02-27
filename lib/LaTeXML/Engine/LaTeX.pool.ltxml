@@ -35,6 +35,8 @@ if ($LaTeXML::DEBUG{compiled}) {
   LoadPool('latex_constructs'); }
 else {
 ### ??  LoadPool('latex');
+  Let('\@pushfilename','\lx@pushfilename');
+  Let('\@popfilename', '\lx@popfilename');
 }
 
 # Apparently LaTeX does NOT define \magnification,
