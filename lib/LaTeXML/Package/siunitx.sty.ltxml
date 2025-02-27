@@ -203,7 +203,8 @@ sub six_match_keys {
   while (($t = $$tokens[0])
     && grep { scalar(@$tokens) && $t->equals($_) } @tomatch) {
     shift(@$tokens);
-    push(@matched, $t) unless $t->equals(T_SPACE); }
+    push(@matched, $t) unless $t->equals(T_SPACE);
+    push(@matched, T_SPACE) if $t->getCatcode == CC_CS; }
   return (@matched ? Tokens(@matched) : undef); }
 
 sub six_match_sign {
