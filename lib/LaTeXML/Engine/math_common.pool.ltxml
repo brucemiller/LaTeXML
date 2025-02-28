@@ -530,6 +530,8 @@ DefMath('\widetilde Digested', UTF(0x7E), operator_role => 'OVERACCENT'); # TILD
 #   scriptpos => 'mid', operator_stretchy => 'true', robust => 1);
 # DefMath('\underbrace {}', "\x{23DF}", operator_role => 'UNDERACCENT',     # BOTTOM CURLY BRACKET
 #   scriptpos => 'mid', operator_stretchy => 'true', robust => 1);
+Let('\overbrace',  '\lx@math@overbrace');
+Let('\underbrace', '\lx@math@underbrace');
 
 # NOTE that all the above accents REQUIRE math mode
 # EXCEPT underline, overrightarrow and overleftarrow!
@@ -588,19 +590,6 @@ DefConstructor('\big {}',  '#1', bounded => 1, font => { size => 'big' });
 DefConstructor('\Big {}',  '#1', bounded => 1, font => { size => 'Big' });
 DefConstructor('\bigg {}', '#1', bounded => 1, font => { size => 'bigg' });
 DefConstructor('\Bigg {}', '#1', bounded => 1, font => { size => 'Bigg' });
-
-sub addDelimiterRole {
-  my ($document, $role) = @_;
-  my $current = $document->getNode;
-  my $delim   = $document->getLastChildElement($current) || $current;
-  my $delim_role = (($delim && ($delim->nodeType == XML_ELEMENT_NODE) && $delim->getAttribute('role')) || '<none>');
-  # if there is some delimiter-like role on the "delimiter", switch it, otherwise, leave it alone!
-  if ($delim && ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR|<none>)$/)) {
-    ## Maybe we shouldn't switch VERTBAR ?
-    ## The catch is that occasionally people use a single \Bigl (or whatever)
-    ## where they should have used a \Big
-    $document->setAttribute($delim, role => $role); }
-  return; }
 
 # The "m" versions are defined in e-Tex and other places.
 DefConstructor('\bigl {}', '#1', bounded => 1, font => { size => 'big' },

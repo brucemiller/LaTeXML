@@ -23,12 +23,12 @@ use LaTeXML::Util::Pathname;
 #**********************************************************************
 LoadPool('Base');
 
+LoadPool('plain_bootstrap');
 if ($LaTeXML::DEBUG{compiled}) {
-  LoadPool('plain_bootstrap');
-  LoadPool('/tmp/plain_dump');
-  LoadPool('plain_constructs'); }
+  LoadPool('/tmp/plain_dump'); }
 else {
   LoadPool('plain'); }
+LoadPool('plain_constructs');
 
 #======================================================================
 # AutoLoad Trigger Hooks for LaTeX, AmSTeX,...

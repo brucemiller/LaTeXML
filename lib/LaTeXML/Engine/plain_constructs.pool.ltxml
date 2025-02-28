@@ -59,28 +59,6 @@ DefConstructor('\@math@baccent {}',
     return; });
 
 #======================================================================
-# \mapstochar is the bar fragment in front of arrows; No sensible unicode?
-# AND needs a ligature to assemble \mapsto, \longmapsto!!!
-DefMathI('\mapstochar', undef, "\x{2E20}");    # TeX 3237
-DefMathI('\mapsto',     undef, "\x{21A6}", role => 'ARROW', meaning => 'maps-to');
-DefMathI('\longmapsto', undef, "\x{27FC}", role => 'ARROW');
-
-# Similarly, these are defined by pre/appending \relbar or \Relbar
-# This would also need ligatures to recover
-DefMathI('\longleftarrow',      undef, "\x{27F5}", role => 'ARROW');
-DefMathI('\Longleftarrow',      undef, "\x{27F8}", role => 'ARROW');
-DefMathI('\longrightarrow',     undef, "\x{27F6}", role => 'ARROW');
-DefMathI('\Longrightarrow',     undef, "\x{27F9}", role => 'ARROW');
-DefMathI('\longleftrightarrow', undef, "\x{27F7}", role => 'METARELOP');
-DefMathI('\Longleftrightarrow', undef, "\x{27FA}", role => 'METARELOP');
-
-DefMathI('\cong', undef, "\x{2245}", role => 'RELOP', meaning => 'approximately-equals');
-
-DefMathI('\hookleftarrow',  undef, "\x{21A9}", role => 'ARROW');    # LEFTWARDS ARROW WITH HOOK
-DefMathI('\hookrightarrow', undef, "\x{21AA}", role => 'ARROW');    # RIGHTWARDS ARROW WITH HOOK
-
-DefMathI('\cdots', undef, "\x{22EF}", role => 'ID');                # MIDLINE HORIZONTAL ELLIPSIS
-
 DefMacro('\hrulefill', '\leaders\hrule\hfill');
 DefMacro('\dotfill',   '\leaders\hbox{.}\hfill');                   # Not exactly, but...
 DefMath('\leftarrowfill',  "\x{2190}", role => 'ARROW', stretchy => 'true');
@@ -88,74 +66,10 @@ DefMath('\rightarrowfill', "\x{2192}", role => 'ARROW', stretchy => 'true');
 DefMath('\upbracefill',    "\x{23DF}", role => 'ARROW', stretchy => 'true');    # for \underbrace
 DefMath('\downbracefill',  "\x{23DE}", role => 'ARROW', stretchy => 'true');    # for \overbrace
 
-Let('\overbrace',  '\lx@math@overbrace');
-Let('\underbrace', '\lx@math@underbrace');
-# Math or Text mode, but puts into math mode!
-DefMacro('\overrightarrow{}', '\protect\ifmmode\lx@math@overrightarrow{#1}\else$\lx@math@overrightarrow{#1}$\fi');
-DefMacro('\overleftarrow{}', '\protect\ifmmode\lx@math@overleftarrow{#1}\else$\lx@math@overleftarrow{#1}$\fi');
 
 #======================================================================
-# Not;  (Is fullwidth solidus appropriate for when \not appears in isolation?)
-DefMathI('\not', undef, "\x{FF0F}", role => 'OPFUNCTION', meaning => 'not');
-# Match negations of many operators
-our %NOTS = ('=' => "\x{2260}", '<' => "\x{226E}", '>' => "\x{226F}",
-  "\x{2208}" => "\x{2209}",                              #\in=>\notin
-  "\x{2264}" => "\x{2270}", "\x{2265}" => "\x{2271}",    # Less eq, greater eq.
-  "\x{227A}" => "\x{2280}", "\x{227B}" => "\x{2281}",    # prec, succ
-  "\x{2AAF}" => "\x{22E0}", "\x{2AB0}" => "\x{22E1}",    # preceq, succeq
-  "\x{2282}" => "\x{2284}", "\x{2283}" => "\x{2285}",    # subset, supset
-  "\x{2286}" => "\x{2288}", "\x{2287}" => "\x{2289}",    # subseteq, supseteq
-  "\x{2291}" => "\x{22E2}", "\x{2290}" => "\x{22E3}",    # sqsubseteq, sqsupseteq
-  "\x{2261}" => "\x{2262}",                              # equiv
-  "\x{224D}" => "\x{226D}", "\x{2248}" => "\x{2249}",    # asymp, approx
-  "\x{22B2}" => "\x{22EA}", "\x{22B3}" => "\x{22EB}",    # lhd, rhd
-  "\x{22B4}" => "\x{22EC}", "\x{22B5}" => "\x{22ED}",    # unlhd, unrhd
-  "\x{2203}" => "\x{2204}",                              # Exists
-);
-
-# For a \not operator that is followed by anything, concoct an appropriate not or cancelation.
-DefRewrite(select => ["descendant-or-self::ltx:XMTok[text()='\x{FF0F}' and \@meaning='not']"
-      . "[ following-sibling::*]", 2],
-  replace => sub {
-    my ($doc, $not, $thing) = @_;
-####    Debug("NOT: " . Stringify($not) . " applied to " . Stringify($thing));
-    my $text = ($doc->getModel->getNodeQName($thing) eq 'ltx:XMTok')
-      && $thing->textContent;
-
-    if ((!defined $text) || (length($text) != 1)) {    # Not simple char token.
-      my $box = $doc->getNodeBox($not);
-      $doc->openElement('ltx:XMApp', _box => $box);    # Wrap with a cancel op
-      my $strike = $doc->insertMathToken(undef, role => 'ENCLOSE', enclose => 'updiagonalstrike',
-        meaning => 'not', _box => $box);
-      if (my $id = $not->getAttribute('xml:id')) {
-        $not->removeAttribute('xml:id');
-        $doc->unRecordID($id);
-        $doc->setAttribute($strike, 'xml:id' => $id); }
-      $doc->getNode->appendChild($thing);
-      $doc->closeElement('ltx:XMApp'); }
-    else {
-      # For simple tokens, we'll modify the relevant content & attributes
-      # [children removed, id's presumably ignorable]
-      map { $_->unbindNode() } $thing->childNodes;
-      my $new = defined $NOTS{$text} ? $NOTS{$text} : $text . "\x{0338}";
-      $thing->appendText($new);
-      if (my $meaning = $thing->getAttribute('meaning')) {
-        $doc->setAttribute($thing, meaning => "not-$meaning"); }
-      if (my $name = $thing->getAttribute('name') || $text) {
-        $doc->setAttribute($thing, name => "not-$name"); }
-      # and put the node back in
-      $doc->getNode->appendChild($thing);
-      # Since the <not> element is disappearing, if it had an id that was referenced...!?!?
-      if (my $id = $not->getAttribute('xml:id')) {
-        foreach my $n ($doc->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']")) {
-          $doc->removeNode($n); } }    # ? Hopefully this is safe.
-} });
-
-#======================================================================
-# Why is \to called out specially as not dumpable??
-DefMathI('\to', undef, "\x{2192}", role => 'ARROW'); # RIGHTWARDS ARROW??? a bit more explicitly relation-like?
-    # These, since \halign (used in plain.tex) should switch to text mode
-    # and also the semantics of the equation number?
+# These, since \halign (used in plain.tex) should switch to text mode
+# and also the semantics of the equation number?
 DefMacro('\eqalign{}',
   '\@@eqalign{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@eqalign{}',
@@ -337,6 +251,7 @@ DefMacro('\cases{}',
 # Pagination
 DefMacroI('\eject',      undef, '\par\lx@newpage');
 DefMacroI('\supereject', undef, '\par\lx@newpage');
+Let('\newpage', '\eject');
 Let('\end', '\lx@end@document');
 Let('\bye', '\lx@end@document');
 
