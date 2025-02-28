@@ -15,14 +15,10 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LoadPool('plain_bootstrap');
 
-LoadPool('eTeX');      # unless.... ?
-LoadPool('pdfTeX');    # unless.... ?
-
-# Use Package's register allocation to avoid allocating same slot twice; and ALWAYS have room!
-DefMacro('\e@alloc{}{}{}{}{}{}', '\lx@alloc@{#1}{#3}{#2}{#6}', locked => 1);
-DefMacro('\e@ch@ck{}{}{}{}',     '',                           locked => 1);
-
+#======================================================================
+# For pretty CSS-based logos
 DefConstructor('\LaTeX',
   "<ltx:text class='ltx_LaTeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.1em'>"
     . "L"
@@ -45,23 +41,24 @@ DefConstructor('\LaTeXe',
   sizer  => sub { (Dimension('3.7em'), Dimension('1.6ex'), Dimension('0.5ex')); },
   locked => 1);
 
-# Try this after (most) primitives & parameter types have been defined
-Let('\@@input', '\input');    # Save TeX's version.
-DefMacro('\try@load@fontshape', '', locked => 1);
-DefMacro('\define@newfont',     '', locked => 1);
-
+#======================================================================
+# Use LaTeXML's register allocation to avoid allocating same slot twice;
+# and we ALWAYS have room!
+DefMacro('\e@alloc{}{}{}{}{}{}', '\lx@alloc@{#1}{#3}{#2}{#6}', locked => 1);
+DefMacro('\e@ch@ck{}{}{}{}',     '',                           locked => 1);
 DefPrimitive('\newcounter{}[]', sub {
     NewCounter(ToString(Expand($_[1])), $_[2] && ToString(Expand($_[2])));
     return; }, locked => 1);
 DefMacro('\@definecounter', '\newcounter', locked => 1);
 
+#======================================================================
+# Verify this still needs to be captured, here:
+Let('\@@input', '\input');    # Save TeX's version.
+
+#======================================================================
+# Disable these, due to different font handling
 DefMacro('\try@load@fontshape', '', locked => 1);
 DefMacro('\define@newfont',     '', locked => 1);
-
-# Force reload of plain_bootstrap! (really needed?)
-AssignValue('plain_bootstrap.pool.ltxml_loaded' => undef);    # Force RELOAD!
-LoadPool('plain_bootstrap');                                  # Won't reload ?????
-
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 
