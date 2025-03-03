@@ -179,6 +179,7 @@ DefPrimitiveI('\>', undef, sub {
     Box("\x{2005}", undef, undef, T_CS('\>'),
       name  => 'medspace', isSpace => 1,
       width => LookupRegister('\medmuskip')); });
+Let('\:', '\>');
 
 DefPrimitiveI('\;', undef, sub {
     Box("\x{2004}", undef, undef, T_CS('\;'),
