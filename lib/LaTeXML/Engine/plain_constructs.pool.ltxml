@@ -134,18 +134,18 @@ DefConstructor('\footnote{}{}',
     $whatsit->setProperty(($change ? 'prenote' : 'mark') => $mark);
     return; });
 
-DefMacro('\leftline Undigested',   '\ltx@leftline{\hbox{#1}}');
-DefMacro('\rightline Undigested',  '\ltx@rightline{\hbox{#1}}');
-DefMacro('\centerline Undigested', '\ltx@centerline{\hbox{#1}}');
-DefConstructor('\ltx@leftline{}', sub {
+DefMacro('\leftline Undigested',   '\lx@leftline{\hbox{#1}}');
+DefMacro('\rightline Undigested',  '\lx@rightline{\hbox{#1}}');
+DefMacro('\centerline Undigested', '\lx@centerline{\hbox{#1}}');
+DefConstructor('\lx@leftline{}', sub {
     alignLine($_[0], $_[1], 'left'); },
   alias   => '\leftline',
   bounded => 1);
-DefConstructor('\ltx@rightline{}', sub {
+DefConstructor('\lx@rightline{}', sub {
     alignLine($_[0], $_[1], 'right'); },
   alias   => '\rightline',
   bounded => 1);
-DefConstructor('\ltx@centerline{}', sub {
+DefConstructor('\lx@centerline{}', sub {
     alignLine($_[0], $_[1], 'center'); },
   alias   => '\centerline',
   bounded => 1);
