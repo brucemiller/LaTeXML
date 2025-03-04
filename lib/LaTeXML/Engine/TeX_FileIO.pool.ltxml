@@ -182,7 +182,7 @@ DefPrimitive('\special XGeneralText', sub {
           push(@kv, T_OTHER($prop), T_OTHER("="), T_OTHER($1)); } }
       @kv = (T_OTHER("["), @kv, T_OTHER("]")) if @kv;
       $stomach->getGullet->unread(
-        T_CS('\ltx@special@graphics'), @kv, T_BEGIN, T_OTHER($graphic), T_END); }
+        T_CS('\lx@special@graphics'), @kv, T_BEGIN, T_OTHER($graphic), T_END); }
     else {
       Info('ignored', 'special', $stomach, 'Unrecognized TeX Special' . ToString($arg)); }
     return; });
@@ -195,7 +195,7 @@ DefKeyVal('SpecialPS', 'hsize',   '');
 DefKeyVal('SpecialPS', 'vsize',   '');
 DefKeyVal('SpecialPS', 'hscale',  '');
 DefKeyVal('SpecialPS', 'vscale',  '');
-DefConstructor('\ltx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
+DefConstructor('\lx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
   "<ltx:graphics graphic='#path' candidates='#candidates' options='#options'/>",
   sizer      => \&image_graphicx_sizer,
   properties => sub {
