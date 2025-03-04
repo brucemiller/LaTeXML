@@ -16,15 +16,13 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 
-###$LaTeXML::DEBUG{compiled} = 1 unless $LaTeXML::DEBUG{nocompiled};
-
 #**********************************************************************
 # Ba TeX; Built-in commands.
 #**********************************************************************
 LoadPool('Base');
 
 LoadPool('plain_bootstrap');
-if ($LaTeXML::DEBUG{compiled}) {
+if ($ENV{LATEXML_USEDUMP}) {
   LoadPool('/tmp/plain_dump'); }
 else {
   LoadPool('plain'); }

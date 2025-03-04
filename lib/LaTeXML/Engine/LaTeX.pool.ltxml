@@ -30,7 +30,7 @@ use List::Util qw(min max);
 
 LoadPool('TeX');
 LoadPool('latex_bootstrap');
-if ($LaTeXML::DEBUG{compiled}) {
+if ($ENV{LATEXML_USEDUMP}) {
   LoadPool('/tmp/latex_dump'); }
 else {
   LoadPool('latex'); }
