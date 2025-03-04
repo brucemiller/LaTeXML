@@ -212,6 +212,9 @@ DefMacro('\ltx@rightline',
 DefMacro('\ltx@centerline',
   '\lx@DEPRECATE{\ltx@centerline}{\lx@centerline}\lx@centerline');
 
+DefMacro('\ltx@input',
+  '\lx@DEPRECATE{\ltx@input}{\lx@latex@input}\lx@latex@input');
+
 # End of stuff to be deprecated.
 #----------------------------------------------------------------------
 
