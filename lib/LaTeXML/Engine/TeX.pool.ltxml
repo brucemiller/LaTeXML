@@ -51,7 +51,7 @@ foreach my $ltx3trigger (qw(ExplSyntaxOn
   #     if they are triggered with a raw .sty file for example,
   #     the expl3 support will "expire" at the end of the current scope,
   #     and e.g. \ExplSyntaxOn will once again be undefined.
-  DefAutoload($ltx3trigger, 'expl3.pool.ltxml'); }
+  DefAutoload($ltx3trigger, 'expl3.sty.ltxml'); }
 
 # Seemingly good candidates to trigger AmSTeX ??
 foreach my $amstrigger (qw(BlackBoxes NoBlackBoxes
