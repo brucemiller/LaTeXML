@@ -25,7 +25,7 @@ LoadPool('plain_bootstrap');
 if ($ENV{LATEXML_USEDUMP}) {
   LoadPool('/tmp/plain_dump'); }
 else {
-  LoadPool('plain'); }
+  LoadPool('plain_base'); }
 LoadPool('plain_constructs');
 
 #======================================================================

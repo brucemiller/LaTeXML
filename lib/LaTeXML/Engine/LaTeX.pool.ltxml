@@ -33,7 +33,7 @@ LoadPool('latex_bootstrap');
 if ($ENV{LATEXML_USEDUMP}) {
   LoadPool('/tmp/latex_dump'); }
 else {
-  LoadPool('latex'); }
+  LoadPool('latex_base'); }
 LoadPool('latex_constructs');
 #**********************************************************************
 1;
