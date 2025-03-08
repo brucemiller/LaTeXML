@@ -113,6 +113,12 @@ my %font_family = (
   pxmi  => { family   => 'serif', shape => 'italic' },
   pxsya => { encoding => 'AMSa' },
   pxsyb => { encoding => 'AMSb' },
+  # Pretend to recognize plain & latex's extra fonts (currently no encoding set up)
+  manfnt   => { family => 'graphic', encoding=>'manfnt' },
+  line     => { family => 'graphic', encoding=>'line' },
+  linew    => { family => 'graphic', encoding=>'line',    series=>'bold' },
+  lcircle  => { family => 'graphic', encoding=>'lcircle' },
+  lcirclew => { family => 'graphic', encoding=>'lcircle', series=>'bold' },
   # Pretend to recognize xy's fonts
   xydash => { family => 'graphic' },
   xyatip => { family => 'graphic' },
