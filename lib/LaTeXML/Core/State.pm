@@ -141,8 +141,9 @@ sub assign_internal {
   # since this is called extremely often and should be highly standardized
   if (my $globaldefs = $$self{value}{'\globaldefs'}) {
     if (my $global_value = $$globaldefs[0][0]) {
+      if($scope && ($scope ne 'global') && ($scope ne 'local')){} # ONLY override these
       # magic TeX register override: \globaldefs
-      if ($global_value == 1) {
+      elsif ($global_value == 1) {
         $scope = 'global'; }
       elsif ($global_value == -1) {
         $scope = 'local'; } } }
