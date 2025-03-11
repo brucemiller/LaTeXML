@@ -559,7 +559,7 @@ DefPrimitive('\box Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
     adjustBoxColor($stuff);
-    AssignValue($box, undef);
+    AssignValue($box, undef, 'inplace');
     ($stuff ? $stuff : List()); });
 
 DefPrimitive('\copy Number', sub {
@@ -573,7 +573,7 @@ DefPrimitive('\unhbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
     adjustBoxColor($stuff);
-    AssignValue($box, undef);
+    AssignValue($box, undef, 'inplace');
     (defined $stuff ? $stuff->unlist : List()); });
 
 DefPrimitive('\unhcopy Number', sub {
@@ -587,7 +587,7 @@ DefPrimitive('\unvbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
     adjustBoxColor($stuff);
-    AssignValue($box, undef);
+    AssignValue($box, undef, 'inplace');
     (defined $stuff ? $stuff->unlist : List()); });
 
 DefPrimitive('\unvcopy Number', sub {

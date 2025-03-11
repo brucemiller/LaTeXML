@@ -169,6 +169,12 @@ sub assign_internal {
     else {                                    # Otherwise, push new value & set 1 to be undone
       $$self{undo}[0]{$table}{$key} = 1;
       unshift(@{ $$self{$table}{$key} }, $value); } }    # And push new binding.
+  elsif ($scope eq 'inplace') {                          # Special case for \box & friends
+    if (exists $$self{$table}{$key}) {        # If the value was previously assigned AT ALL
+      $$self{$table}{$key}[0] = $value; }     # Simply replace the value in its frame
+    else {                                    # Otherwise, push new value, like local
+      $$self{undo}[0]{$table}{$key} = 1;
+      unshift(@{ $$self{$table}{$key} }, $value); } }    # And push new binding.
   else {
     assign_internal($self, 'stash', $scope, [], 'global') unless $$self{stash}{$scope}[0];
     push(@{ $$self{stash}{$scope}[0] }, [$table, $key, $value]);
@@ -834,6 +840,7 @@ determines how the assignment is made.  The allowed values and their implication
  global   : global assignment.
  local    : local assignment, within the current grouping.
  undef    : global if \global preceded, else local (default)
+ inplace  : assigns in same frame as previously set (for unsetting \box)
  <name>   : stores the assignment in a `scope' which
             can be loaded later.
 
