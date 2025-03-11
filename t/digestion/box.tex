@@ -1,25 +1,36 @@
 \documentclass{article}
 \def\testbox#1{%
- \ifvoid#1 Box #1 is empty
- \else\ifhbox#1 Box #1 is horizontal
- \else\ifvbox#1 Box #1 is vertical
+ \ifvoid#1 Box \string#1 is void
+ \else\ifhbox#1 Box \string#1 is horizontal
+ \else\ifvbox#1 Box \string#1 is vertical
  \fi\fi\fi
  \par}
 \begin{document}
-\setbox100=\hbox{Goodbye}
-\testbox{100}
-\setbox101=\hbox{Hello}
-\testbox{101}
-\setbox102=\vbox{\box101,\box100}
-\testbox{102}
+\newbox\myboxA
+\newbox\myboxB
+\newbox\myboxC
+Not yet set:\testbox{\myboxA}
+\setbox\myboxA=\hbox{}
+Set empty:\testbox{\myboxA}
+\setbox\myboxA=\hbox{Goodbye}
+\testbox{\myboxA}
+\setbox\myboxB=\hbox{Hello}
+\testbox{\myboxB}
+\setbox\myboxC=\vbox{\box\myboxB,\box\myboxA}
+\testbox{\myboxC}
 
-Using...
-\box102
+Combined: \box\myboxC
+And now: \testbox{\myboxA}.
 
-\setbox103=\hbox{}
-\testbox{103}
+Curious unsetting behavior:
+\setbox\myboxA=\hbox{Once}
+Once? \box\myboxA \box\myboxA.
 
-\testbox{104}
+\setbox\myboxA=\hbox{Once}
+Once? {\box\myboxA\box\myboxA}\box\myboxA\box\myboxA.
+
+\setbox\myboxA=\hbox{ and Again}
+Once? {\setbox\myboxA=\hbox{Once}\box\myboxA\box\myboxA}\box\myboxA\box\myboxA.
 
 \[ a + \hbox{a}\]
 \[ a + \vbox{a}\]
