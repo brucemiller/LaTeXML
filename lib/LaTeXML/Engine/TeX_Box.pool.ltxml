@@ -478,8 +478,12 @@ DefPrimitive('\setbox Number SkipSpaces SkipMatch:=', sub {
     # Should afterDigest be responsible for resetting flags?
     my $scope = $STATE->getPrefix('global') && 'global';
     $STATE->clearPrefixes;    # before invoke, below; we've saved the only relevant one (global)
+    # Digest box starting from Default color, background; TeX Boxes don't record these.
+    my $font = $STATE->lookupValue('font');
+    $STATE->assignValue(font => $font->merge(color => Black, background => undef));
     my ($stuff, @rest) = $stomach->invokeToken($stomach->getGullet->readXToken);
     AssignValue('box' . $_[1]->valueOf => $stuff, $scope);
+    $STATE->assignValue(font => $font);
     @rest; });
 
 # <box dimension> = \ht | \wd | \dp
@@ -515,85 +519,75 @@ DefRegister('\dp Number', Dimension(0),
     $stuff->setDepth($value) if $stuff;
     return; });
 
+# Adjust the default color of $box to be the current color,
+# creating a copy of the box if needed.
 sub adjustBoxColor {
   my ($box) = @_;
   my $font = LookupValue('font');
-  if (my $color = $font && $font->getColor) {
-    if (!Black->equals($color)) {
-      adjustBoxColor_rec($color, {}, $box); } }
-  return; }
+  my $color = $font && $font->getColor;
+  my $bgcolor = $font && $font->getBackground;
+  if(($color && !Black->equals($color)) || ($bgcolor && !White->equals($bgcolor))){
+    return adjustBoxColor_rec($color, $bgcolor, {}, $box); }
+  return $box; }
 
 sub adjustBoxColor_rec {
   no warnings 'recursion';
-  my ($color, $adjusted, @boxes) = @_;
-  foreach my $box (@boxes) {
-    next unless defined $box;
-    next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
-    $$adjusted{$box} = 1;
-    my $r = ref $box;
-    next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
-    # NASTY access to internal structure; but worth a whole API for this one hack???
-    if ($r eq 'LaTeXML::Core::Box') {
-      adjustBoxColor_internal($color, $box); }
-    elsif ($r eq 'LaTeXML::Core::List') {
-      adjustBoxColor_rec($color, $adjusted, $box->unlist); }
-    elsif ($r eq 'LaTeXML::Core::Whatsit') {
-      adjustBoxColor_internal($color, $box);
-      # now recurse on contained boxes (args AND properties!)
-      adjustBoxColor_rec($color, $adjusted, $box->getArgs);
-      adjustBoxColor_rec($color, $adjusted, values %{ $box->getPropertiesRef }); }
-    elsif ($r eq 'LaTeXML::Core::Alignment') {
-      foreach my $row (@{ $$box{rows} }) {
-        foreach my $col (@{ $$row{columns} }) {
-          adjustBoxColor_rec($color, $adjusted, $$col{boxes}->unlist) if $$col{boxes}; } } }
-  }
-  return; }
-
-sub adjustBoxColor_internal {
-  my ($color, $box) = @_;
-  if (my $font = $box->getFont) {
-    $box->setFont($font->merge(color => $color)); }
-  return; }
+  my ($fg, $bg, $cache, $box) = @_;
+  return $box unless $box;
+  return $$cache{$box} if $$cache{$box};    # Nested, possibly circular, structures
+  my $type = ref $box;
+  my $adj = $box;
+  if($type eq 'ARRAY'){
+    $adj = [map { adjustBoxColor_rec($fg, $bg, $cache, $_); } @$box]; }
+  elsif($type eq 'HASH'){
+    $adj = {map { $_=>adjustBoxColor_rec($fg, $bg, $cache, $$box{$_}); } keys %$box}; }
+  # NASTY access to internal structure; but worth a whole API for this one hack???
+  elsif ($type =~ /^LaTeXML::Core::(?:Box|List|Whatsit|Alignment)$/) { # blessed hashes!
+    $$cache{$box} = $adj = bless {%$box}, $type; # Cache BEFORE recursion!
+    map { $$adj{$_} = adjustBoxColor_rec($fg, $bg, $cache, $$box{$_}); } keys %$box; }
+  elsif($type eq 'LaTeXML::Common::Font'){
+    # Replace "default" color & background color by the requested $fg,$bg.
+    # We'll use eq (of refs) hoping that detects inherited defaults,
+    # rather than explicitly assigned black or white colors.
+    $adj = $box;
+    $adj = $adj->merge(color => $fg)      if Black eq ($box->getColor || Black);
+    $adj = $adj->merge(background => $bg) if White eq ($box->getBackground || White); }
+  $$cache{$box} = $adj;
+  return $adj; }
 
 DefPrimitive('\box Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     AssignValue($box, undef, 'inplace');
     ($stuff ? $stuff : List()); });
 
 DefPrimitive('\copy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     ($stuff ? $stuff : List()); });
 
 # \unhbox<8bit>, \unhcopy<8bit>
 DefPrimitive('\unhbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     AssignValue($box, undef, 'inplace');
     (defined $stuff ? $stuff->unlist : List()); });
 
 DefPrimitive('\unhcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     (defined $stuff ? $stuff->unlist : List()); });
 
 # \unvbox<8bit>, \unvcopy<8bit>
 DefPrimitive('\unvbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     AssignValue($box, undef, 'inplace');
     (defined $stuff ? $stuff->unlist : List()); });
 
 DefPrimitive('\unvcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     (defined $stuff ? $stuff->unlist : List()); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
