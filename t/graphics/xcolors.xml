@@ -642,10 +642,18 @@ A=100*13 = 1300pt;</p>
       <tag role="refnum">11</tag>
       <tag role="typerefnum">§11</tag>
     </tags>
-    <title><tag close=" ">11</tag>Boxes</title>
+    <title><tag close=" ">11</tag>Setting and Using Boxes</title>
     <para xml:id="S11.p1">
-      <p>Should NOT be Red!
-<text color="#FF0000">Should be Red!</text></p>
+      <p>Black on White!</p>
+    </para>
+    <para xml:id="S11.p2">
+      <p><text backgroundcolor="#FFFFFF" color="#000000">Black on White!</text></p>
+    </para>
+    <para xml:id="S11.p3">
+      <p><text backgroundcolor="#00FF00" color="#FF0000">Red on Green!</text></p>
+    </para>
+    <para xml:id="S11.p4">
+      <p><text backgroundcolor="#00FF00" color="#FF0000">Red on Green, but <text backgroundcolor="#0000FF" color="#00FF00">Green on Blue!</text></text></p>
     </para>
   </section>
   <section inlist="toc" xml:id="S12">
