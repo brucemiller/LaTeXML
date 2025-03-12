@@ -527,32 +527,32 @@ sub adjustBoxColor {
   my $color = $font && $font->getColor;
   my $bgcolor = $font && $font->getBackground;
   if(($color && !Black->equals($color)) || ($bgcolor && !White->equals($bgcolor))){
-    return adjustBoxColor_rec($color, $bgcolor, {}, $box); }
+    return _color_adjust($color, $bgcolor, {}, $box); }
   return $box; }
 
-sub adjustBoxColor_rec {
+sub _color_adjust {
   no warnings 'recursion';
-  my ($fg, $bg, $cache, $box) = @_;
-  return $box unless $box;
-  return $$cache{$box} if $$cache{$box};    # Nested, possibly circular, structures
-  my $type = ref $box;
-  my $adj = $box;
+  my ($fg, $bg, $cache, $object) = @_;
+  return $object unless $object;
+  return $$cache{$object} if $$cache{$object};    # Nested, possibly circular, structures
+  my $type = ref $object;
+  my $adj = $object;
   if($type eq 'ARRAY'){
-    $adj = [map { adjustBoxColor_rec($fg, $bg, $cache, $_); } @$box]; }
+    $adj = [map { _color_adjust($fg, $bg, $cache, $_); } @$object]; }
   elsif($type eq 'HASH'){
-    $adj = {map { $_=>adjustBoxColor_rec($fg, $bg, $cache, $$box{$_}); } keys %$box}; }
+    $adj = {map { $_=>_color_adjust($fg, $bg, $cache, $$object{$_}); } keys %$object}; }
   # NASTY access to internal structure; but worth a whole API for this one hack???
   elsif ($type =~ /^LaTeXML::Core::(?:Box|List|Whatsit|Alignment)$/) { # blessed hashes!
-    $$cache{$box} = $adj = bless {%$box}, $type; # Cache BEFORE recursion!
-    map { $$adj{$_} = adjustBoxColor_rec($fg, $bg, $cache, $$box{$_}); } keys %$box; }
+    $$cache{$object} = $adj = bless {%$object}, $type; # Cache BEFORE recursion!
+    map { $$adj{$_} = _color_adjust($fg, $bg, $cache, $$object{$_}); } keys %$object; }
   elsif($type eq 'LaTeXML::Common::Font'){
     # Replace "default" color & background color by the requested $fg,$bg.
     # We'll use eq (of refs) hoping that detects inherited defaults,
     # rather than explicitly assigned black or white colors.
-    $adj = $box;
-    $adj = $adj->merge(color => $fg)      if Black eq ($box->getColor || Black);
-    $adj = $adj->merge(background => $bg) if White eq ($box->getBackground || White); }
-  $$cache{$box} = $adj;
+    $adj = $object;
+    $adj = $adj->merge(color => $fg)      if Black eq ($object->getColor || Black);
+    $adj = $adj->merge(background => $bg) if White eq ($object->getBackground || White); }
+  $$cache{$object} = $adj;
   return $adj; }
 
 DefPrimitive('\box Number', sub {
