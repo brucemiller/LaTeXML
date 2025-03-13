@@ -443,6 +443,8 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 .ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }
 /*.ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; white-space:nowrap; }*/
 
+.ltx_foreignobject_container { display:flex; width:100%; height:100%; align-items:end; justify-items:center; justify-content:center; }
+
 /*======================================================================
  Low-level Basics */
 /* Note that LaTeX(ML)'s font model doesn't map quite exactly to CSS's */
