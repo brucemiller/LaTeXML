@@ -530,6 +530,9 @@ sub adjustBoxColor {
     return _color_adjust($color, $bgcolor, {}, $box); }
   return $box; }
 
+# This internal function essentially clones all digested objects (Box, List, Whatsit,...)
+# while adjusting any contained Font objects as it goes. If a font uses a default clor
+# or background, it will be changed to the requested colors.
 sub _color_adjust {
   no warnings 'recursion';
   my ($fg, $bg, $cache, $object) = @_;
