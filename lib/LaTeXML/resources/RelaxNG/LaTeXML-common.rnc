@@ -273,7 +273,7 @@ Imageable.attributes =
   ## baseline of the content shown in the image.
   ## When displayed inilne, an image with a positive \attr{depth}
   ## should be shifted down relative to the baseline of neighboring material.
-  attribute imagedepth { xsd:integer }?,
+  attribute imagedepth { xsd:float }?,
 
   ## a description of the image
   attribute description { text }?
