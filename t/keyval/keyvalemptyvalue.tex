@@ -1,0 +1,19 @@
+\documentclass{article}
+
+\usepackage{keyval}
+\makeatletter
+\define@key{empty}{empty}{\def\myempty{1 #1}}
+\setkeys{empty}{empty={}}
+\define@key{eempty}{eempty}{\def\myeempty{2 #1}}
+\setkeys{eempty}{eempty={{}}}
+\define@key{eeempty}{eeempty}{\def\myeeempty{3 #1}}
+\setkeys{eeempty}{eeempty={{{}}}}
+\define@key{eeeempty}{eeeempty}{\def\myeeeempty{4 #1}}
+\setkeys{eeeempty}{eeeempty={{{}}}}
+
+\begin{document}
+  \expandafter\detokenize\expandafter{\myempty}
+  \expandafter\detokenize\expandafter{\myeempty}
+  \expandafter\detokenize\expandafter{\myeeempty}
+  \expandafter\detokenize\expandafter{\myeeeempty}
+\end{document}
