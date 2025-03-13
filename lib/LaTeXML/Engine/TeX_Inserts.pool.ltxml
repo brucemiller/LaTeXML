@@ -36,8 +36,7 @@ DefPrimitive('\insert Number', undef);    # Just let the insertion get processed
 DefPrimitive('\vsplit Number Match:to Dimension', sub {
     # analog to \box for now.
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     ($stuff ? $stuff : List()); });
 
 DefMacroI('\splitfirstmark', undef, Tokens());
