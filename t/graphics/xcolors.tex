@@ -254,6 +254,9 @@ test & row \number\rownum\\
 \setbox\mybox=\hbox{{\color{black}\colorbox{white}{Black on White!}}}
 \copy\mybox
 
+{\color{blue}\global\setbox\mybox=\hbox{Red on Green!}}
+{\color{red}\colorbox{green}{\copy\mybox}}
+
 \setbox\mybox=\hbox{Red on Green!}
 {\color{red}\colorbox{green}{\copy\mybox}}
 
