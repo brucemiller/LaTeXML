@@ -15,8 +15,8 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+LoadPool('LaTeX');              # if autotriggered, we'll want LaTeX.
 InputDefinitions('expl3', type => 'lua');
-
 InputDefinitions('expl3', type => 'sty', noltxml => 1);
 
 1;
