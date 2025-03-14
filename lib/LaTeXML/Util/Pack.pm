@@ -15,7 +15,7 @@ use warnings;
 
 use LaTeXML::Util::Pathname;
 use File::Spec::Functions qw(catfile);
-use File::Path qw(rmtree);
+use File::Path            qw(rmtree);
 use IO::String;
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 
@@ -250,7 +250,7 @@ sub get_archive {
     # or Fatal('expected', 'directory', undef,
     # "Expected a directory to archive '$directory':", $@);
     or (print STDERR 'Fatal:expected:directory Failed to compress directory \'$directory\': $@');
-  my @entries = grep { /^[^.]/ } readdir($dirhandle);
+  my @entries = sort (grep { /^[^.]/ } readdir($dirhandle));
   closedir $dirhandle;
   my @files = grep { !/$archive_file_exclusion_regex/ && -f pathname_concat($directory, $_) } @entries;
   my @subdirs = grep { -d File::Spec->catdir($directory, $_) } @entries;
