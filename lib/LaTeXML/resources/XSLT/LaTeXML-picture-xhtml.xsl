@@ -95,8 +95,17 @@
       <xsl:call-template name="add_classes"/>
       <xsl:call-template name="copy_foreign_attributes"/>
       <xsl:apply-templates select="." mode="add_RDFa"/>
+      <xsl:if test="@imagedepth | svg:svg/@style">
+        <xsl:attribute name="style">
+          <xsl:if test="@imagedepth">
+            <xsl:value-of select="concat('vertical-align:',-@imagedepth,'px')"/>
+            <xsl:if test="svg:svg/@style">;</xsl:if>
+          </xsl:if>
+          <xsl:value-of select="svg:svg/@style"/>
+        </xsl:attribute>
+      </xsl:if>
       <!-- but copy other svg:svg attributes -->
-      <xsl:for-each select="svg:svg/@*">
+      <xsl:for-each select="svg:svg/@*[name() != 'style']">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
       <xsl:apply-templates select="svg:svg/*"/>
@@ -139,10 +148,23 @@
         </xsl:choose>
       </xsl:for-each>
       <xsl:choose>
-        <!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
-        <xsl:when test="local-name()='foreignObject'
-                        and not(namespace-uri(child::*) = $SVG_NAMESPACE)">
-          <xsl:apply-templates mode='copy-foreign'/>
+        <xsl:when test="local-name()='foreignObject'">
+          <!-- center the content within foreignObject (note that display:flex does not work on foreignObject so we use two wrappers) -->
+          <xsl:element name="div" namespace="{$html_ns}">
+            <xsl:attribute name="class">ltx_foreignobject_container</xsl:attribute>
+            <xsl:element name="div" namespace="{$html_ns}">
+              <xsl:attribute name="class">ltx_foreignobject_content</xsl:attribute>
+              <!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
+              <xsl:choose>
+                <xsl:when test="not(namespace-uri(child::*) = $SVG_NAMESPACE)">
+                  <xsl:apply-templates mode='copy-foreign'/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:apply-templates/>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:element>
+          </xsl:element>
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates/>
