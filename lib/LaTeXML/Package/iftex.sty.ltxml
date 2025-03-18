@@ -43,18 +43,24 @@ DefConditional('\ifalephtex');
 DefConditional('\ifAlephTeX');
 DefConditional('\iftutex');
 DefConditional('\ifTUTeX');
+DefConditional('\iftexpadtex');
+DefConditional('\ifTexpadTeX');
+DefConditional('\ifhint');
+DefConditional('\ifHINT');
 
-DefMacroI('\RequireeTeX',     undef, undef);
-DefMacroI('\RequirePDFTeX',   undef, undef);
-DefMacroI('\RequireXeTeX',    undef, undef);
-DefMacroI('\RequireLuaTeX',   undef, undef);
-DefMacroI('\RequireLuaHBTeX', undef, undef);
-DefMacroI('\RequirepTeX',     undef, undef);
-DefMacroI('\RequireupTeX',    undef, undef);
-DefMacroI('\RequirepTeXng',   undef, undef);
-DefMacroI('\RequireVTeX',     undef, undef);
-DefMacroI('\RequireAlephTeX', undef, undef);
-DefMacroI('\RequireTUTeX',    undef, undef);
+DefMacroI('\RequireeTeX',      undef, undef);
+DefMacroI('\RequirePDFTeX',    undef, undef);
+DefMacroI('\RequireXeTeX',     undef, undef);
+DefMacroI('\RequireLuaTeX',    undef, undef);
+DefMacroI('\RequireLuaHBTeX',  undef, undef);
+DefMacroI('\RequirepTeX',      undef, undef);
+DefMacroI('\RequireupTeX',     undef, undef);
+DefMacroI('\RequirepTeXng',    undef, undef);
+DefMacroI('\RequireVTeX',      undef, undef);
+DefMacroI('\RequireAlephTeX',  undef, undef);
+DefMacroI('\RequireTUTeX',     undef, undef);
+DefMacroI('\RequireTexpadTeX', undef, undef);
+DefMacroI('\RequireHINT',      undef, undef);
 
 #======================================================================
 1;

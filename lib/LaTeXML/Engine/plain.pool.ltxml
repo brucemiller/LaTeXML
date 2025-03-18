@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use charnames ':full';
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #**********************************************************************
@@ -22,7 +23,7 @@ use LaTeXML::Package;
 
 DefRegister('\magnification' => Number(1000));
 
-Let('\bye', '\end');
+Let('\bye', '\lx@end@document');
 
 # Most of these are ignored, but...
 DefMacro('\tracingall',
@@ -46,27 +47,19 @@ DefMacro('\brack',
 #======================================================================
 # Special Characters.
 # Try to give them some sense in math...
-DefMacroI('\#',   undef, '\ifmmode\lx@math@hash\else\lx@text@hash\fi',             protected => 1);
-DefMacroI('\&',   undef, '\ifmmode\lx@math@amp\else\lx@text@amp\fi',               protected => 1);
-DefMacroI('\%',   undef, '\ifmmode\lx@math@percent\else\lx@text@percent\fi',       protected => 1);
-DefMacroI("\\\$", undef, '\ifmmode\lx@math@dollar\else\lx@text@dollar\fi',         protected => 1);
-DefMacroI('\_',   undef, '\ifmmode\lx@math@underscore\else\lx@text@underscore\fi', protected => 1);
-DefPrimitiveI('\lx@text@hash',       undef, '#',  alias => '\#');
-DefPrimitiveI('\lx@text@amp',        undef, '&',  alias => '\&');
-DefPrimitiveI('\lx@text@percent',    undef, '%',  alias => '\%');
-DefPrimitiveI('\lx@text@dollar',     undef, "\$", alias => "\\\$");
-DefPrimitiveI('\lx@text@underscore', undef, '_',  alias => '\_');
-DefMathI('\lx@math@hash',    undef, '#', alias => '\#');
-DefMathI('\lx@math@amp',     undef, '&', role  => 'ADDOP',   meaning => 'and',     alias => '\&');
-DefMathI('\lx@math@percent', undef, '%', role  => 'POSTFIX', meaning => 'percent', alias => '\%');
-DefMathI('\lx@math@dollar', undef, "\$", role => 'OPERATOR', meaning => 'currency-dollar',
-  alias => "\\\$");
-DefMathI('\lx@math@underscore', undef, '_', alias => '\_');
+DefPrimitive('\#', sub {
+    Box('#', undef, undef, T_CS('\#')); });
+DefPrimitive('\&', sub {
+    Box('&', undef, undef, T_CS('\&'), role => 'ADDOP', meaning => 'and'); });
+DefPrimitive('\%', sub {
+    Box('%', undef, undef, T_CS('\%'), role => 'POSTFIX', meaning => 'percent'); });
+DefPrimitive('\$', sub {
+    Box('$', undef, undef, T_CS('\$'), role => 'OPERATOR', meaning => 'currency-dollar'); });
+DefPrimitive('\_', sub {
+    Box('_', undef, undef, T_CS('\_')); });
 
 # Discretionary times; just treat as invisible ?
 DefMathI('\*', undef, "\x{2062}", role => 'MULOP', name => '', meaning => 'times'); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
-
-# These 3 should have some `name' assigned ... but what???
 
 #======================================================================
 # If an XMWrap (presumably from \mathop, \mathbin, etc)
@@ -95,9 +88,6 @@ DefMathRewrite(xpath => 'descendant-or-self::ltx:XMWrap['
   });
 
 #======================================================================
-DefPrimitive('\@@endash', sub { Box("\x{2013}", undef, undef, T_CS('\@@endash')); });
-DefPrimitive('\@@emdash', sub { Box("\x{2014}", undef, undef, T_CS('\@@emdash')); });
-
 DefConstructor('\TeX',
   "<ltx:text class='ltx_TeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.2em'>"
     . "T"
@@ -105,8 +95,8 @@ DefConstructor('\TeX',
     . "X"
     . "</ltx:text>",
   sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); });
-DefPrimitiveI('\i', undef, "\x{0131}");    # LATIN SMALL LETTER DOTLESS I
-DefPrimitiveI('\j', undef, "\x{0237}");
+DefPrimitiveI('\i', undef, "\x{0131}", robust => 1);    # LATIN SMALL LETTER DOTLESS I
+DefPrimitiveI('\j', undef, "\x{0237}", robust => 1);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Alignment code
@@ -169,8 +159,6 @@ RawTeX(<<'EoTeX');
   \mathchardef\@m=1000
   \mathchardef\@M=10000
   \mathchardef\@MM=20000
-  \countdef\m@ne=21\relax
-  \m@ne=-1
 EoTeX
 
 #======================================================================
@@ -206,6 +194,10 @@ DefPrimitive('\wlog{}', sub {
     NoteLog(ToString(Expand($_[1])));
     return; },
   locked => 1);
+
+# Use Package's register allocation to avoid allocating same slot twice; and ALWAYS have room!
+DefMacro('\alloc@{}{}{}{}{}', '\lx@alloc@{#2}{\count1#1}{#3}{#5}', locked => 1);
+DefMacro('\ch@ck{}{}{}',      '',                                  locked => 1);
 # From plain.tex
 RawTeX(<<'EoTeX');
 \outer\def\newcount{\alloc@0\count\countdef\insc@unt}
@@ -221,18 +213,9 @@ RawTeX(<<'EoTeX');
 \outer\def\newfam{\alloc@8\fam\chardef\sixt@@n}
 \outer\def\newlanguage{\alloc@9\language\chardef\@cclvi}
 EoTeX
-DefMacro('\e@alloc{}{}{}{}{}{}',
-  '\global\advance#3\@ne
-%  \e@ch@ck{#3}{#4}{#5}#1%
-  \allocationnumber#3\relax
-  \global#2#6\allocationnumber
-%  \wlog{\string#6=\string#1\the\allocationnumber}
-');
-DefMacro('\alloc@{}{}{}{}', '\e@alloc#2#3{\count1#1}#4\float@count');
 
 # This implementation is quite wrong
 DefPrimitive('\newinsert Token', sub { DefRegisterI($_[1], undef, Number(0)); });
-# \alloc@, \ch@ck
 
 # TeX plain uses \newdimen, etc. for these.
 # Is there any advantage to that?
@@ -407,23 +390,22 @@ DefPrimitiveI('\sl', undef, undef,
 DefPrimitiveI('\sc', undef, undef,
   font => { shape => 'smallcaps', family => 'serif', series => 'medium' });
 
-DefPrimitiveI('\cal', undef, undef,
-  font => { family => 'caligraphic', series => 'medium', shape => 'upright' });
+DefPrimitiveI('\cal', undef, sub {
+    if (LookupValue('IN_MATH')) {
+      MergeFont(family => 'caligraphic', series => 'medium', shape => 'upright', encoding => 'OMS');
+      return Box(undef, undef, undef, T_CS('\cal'));
+    }
+    return; });
 
 # Ideally, we should set these sizes from class files
 AssignValue(NOMINAL_FONT_SIZE => 10);
-DefPrimitiveI('\tiny',         undef, undef, font => { size => 5 });
-DefPrimitiveI('\scriptsize',   undef, undef, font => { size => 7 });
-DefPrimitiveI('\footnotesize', undef, undef, font => { size => 8 });
-DefPrimitiveI('\small',        undef, undef, font => { size => 9 });
-DefPrimitiveI('\normalsize',   undef, undef, font => { size => 10 });
-DefPrimitiveI('\large',        undef, undef, font => { size => 12 });
-DefPrimitiveI('\Large',        undef, undef, font => { size => 14.4 });
-DefPrimitiveI('\LARGE',        undef, undef, font => { size => 17.28 });
-DefPrimitiveI('\huge',         undef, undef, font => { size => 20.74 });
-DefPrimitiveI('\Huge',         undef, undef, font => { size => 29.8 });
 
 DefPrimitiveI('\mit', undef, undef, requireMath => 1, font => { family => 'italic' });
+
+DefPrimitiveI('\mit', undef, sub {
+    if (LookupValue('IN_MATH')) {
+      MergeFont(family => 'math', shape => 'italic'); }
+    return; });
 
 DefPrimitiveI('\frenchspacing',    undef, undef);
 DefPrimitiveI('\nonfrenchspacing', undef, undef);
@@ -522,20 +504,15 @@ DefPrimitiveI('\break',      undef, undef);
 DefPrimitiveI('\nobreak',    undef, undef);
 DefPrimitiveI('\allowbreak', undef, undef);
 
-DefPrimitiveI('\nobreakspace', undef, sub {
-    Box(UTF(0xA0), undef, undef, T_ACTIVE("~"),
-      width => Dimension('0.333em'), isSpace => 1); });
-
-DefMacro("~", '\nobreakspace{}');
+# Curiously, this must be expandable, else things like \MakeUppercase loop.
+DefMacro(T_ACTIVE("~"), T_CS('\lx@NBSP'));
 
 DefMacroI('\slash', undef, '/');
 DefPrimitiveI('\filbreak', undef, undef);
 DefMacroI('\goodbreak', undef, '\par');
-DefMacroI('\eject',     undef, '\par\LTX@newpage');
+DefMacroI('\eject',     undef, '\par\lx@newpage');
 Let('\newpage', '\eject');
-DefConstructorI('\LTX@newpage', undef, "^<ltx:pagination role='newpage'/>");
-
-DefMacroI('\supereject', undef, '\par\LTX@newpage');
+DefMacroI('\supereject', undef, '\par\lx@newpage');
 DefPrimitiveI('\removelastskip', undef, undef);
 DefMacroI('\smallbreak', undef, '\par');
 DefMacroI('\medbreak',   undef, '\par');
@@ -696,21 +673,21 @@ DefPrimitiveI('\pounds',    undef, UTF(0xA3));                          # POUND 
 
 DefAccent('\`',           "\x{0300}", UTF(0x60));  # COMBINING GRAVE ACCENT & GRAVE ACCENT
 DefAccent("\\'",          "\x{0301}", UTF(0xB4));  # COMBINING ACUTE ACCENT & ACUTE ACCENT
-DefAccent('\^',           "\x{0302}", UTF(0x5E));  # COMBINING CIRCUMFLEX ACCENT & CIRCUMFLEX ACCENT
+DefAccent('\^',           "\x{0302}", "\x{02C6}"); # COMBINING CIRCUMFLEX ACCENT & CIRCUMFLEX ACCENT
 DefAccent('\"',           "\x{0308}", UTF(0xA8));  # COMBINING DIAERESIS & DIAERESIS
-DefAccent('\~',           "\x{0303}", "~");        # COMBINING TILDE
+DefAccent('\~',           "\x{0303}", "\x{02DC}"); # COMBINING TILDE
 DefAccent('\=',           "\x{0304}", UTF(0xAF));  # COMBINING MACRON & MACRON
 DefAccent('\.',           "\x{0307}", "\x{02D9}"); # COMBINING DOT ABOVE & DOT ABOVE
 DefAccent('\u',           "\x{0306}", "\x{02D8}"); # COMBINING BREVE & BREVE
 DefAccent('\v',           "\x{030C}", "\x{02C7}"); # COMBINING CARON & CARON
-DefAccent('\@ringaccent', "\x{030A}", "o");        # COMBINING RING ABOVE & non-combining
-DefAccent('\r',           "\x{030A}", "o");        # COMBINING RING ABOVE & non-combining
+DefAccent('\@ringaccent', "\x{030A}", "\x{02DA}"); # COMBINING RING ABOVE & non-combining
+DefAccent('\r',           "\x{030A}", "\x{02DA}"); # COMBINING RING ABOVE & non-combining
 DefAccent('\H',           "\x{030B}", "\x{02DD}"); # COMBINING DOUBLE ACUTE ACCENT & non-combining
 DefAccent('\c',           "\x{0327}", UTF(0xB8), below => 1);    # COMBINING CEDILLA & CEDILLA
     # NOTE: The next two get define for math, as well; See below
-DefAccent('\@text@daccent', "\x{0323}", '.',       below => 1);   # COMBINING DOT BELOW & DOT (?)
-DefAccent('\@text@baccent', "\x{0331}", UTF(0xAF), below => 1);   # COMBINING MACRON BELOW  & MACRON
-DefAccent('\t',             "\x{0361}", "-");    # COMBINING DOUBLE INVERTED BREVE & ???? What????
+DefAccent('\@text@daccent', "\x{0323}", '.', below => 1);    # COMBINING DOT BELOW & DOT (?)
+DefAccent('\@text@baccent', "\x{0331}", '_', below => 1);    # COMBINING MACRON BELOW  & MACRON
+DefAccent('\t', "\x{0361}", "\N{NBSP}\x{0361}");   # COMBINING DOUBLE INVERTED BREVE & ???? What????
     # this one's actually defined in mathscinet.sty, but just stick it here!
 DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
                                                      # I doubt that latter covers multiple chars...?
@@ -753,11 +730,12 @@ DefConstructor('\@math@baccent {}',
 
 DefMathI('\to', undef, "\x{2192}", role => 'ARROW'); # RIGHTWARDS ARROW??? a bit more explicitly relation-like?
 
-foreach my $op ('\hrulefill', '\dotfill', '\rightarrowfill', '\leftarrowfill',
-  '\upbracefill', '\downbracefill') {
-  DefPrimitiveI($op, undef, undef); }
-
-#Let('\bye', '\end');
+DefMacro('\hrulefill', '\leaders\hrule\hfill');
+DefMacro('\dotfill',   '\leaders\hbox{.}\hfill');    # Not exactly, but...
+DefMath('\leftarrowfill',  "\x{2190}", role => 'ARROW', stretchy => 'true');
+DefMath('\rightarrowfill', "\x{2192}", role => 'ARROW', stretchy => 'true');
+DefMath('\upbracefill',    "\x{23DF}", role => 'ARROW', stretchy => 'true');    # for \underbrace
+DefMath('\downbracefill',  "\x{23DE}", role => 'ARROW', stretchy => 'true');    # for \overbrace
 
 Let('\sp', T_SUPER);
 Let('\sb', T_SUB);
@@ -961,8 +939,8 @@ DefMathI('\wr',       undef, "\x{2240}", role => 'MULOP');
 DefMathI('\diamond',         undef, "\x{22C4}", role => 'ADDOP');
 DefMathI('\bigtriangleup',   undef, "\x{25B3}", role => 'ADDOP');
 DefMathI('\bigtriangledown', undef, "\x{25BD}", role => 'ADDOP');
-DefMathI('\triangleleft',    undef, "\x{25C1}", role => 'ADDOP');
-DefMathI('\triangleright',   undef, "\x{25B7}", role => 'ADDOP');
+DefMathI('\triangleleft',    undef, "\x{22B2}", role => 'ADDOP');
+DefMathI('\triangleright',   undef, "\x{22B3}", role => 'ADDOP');
 DefMathI('\lhd',   undef, "\x{22B2}", role => 'ADDOP', meaning => 'subgroup-of');
 DefMathI('\rhd',   undef, "\x{22B3}", role => 'ADDOP', meaning => 'contains-as-subgroup');
 DefMathI('\unlhd', undef, "\x{22B4}", role => 'ADDOP', meaning => 'subgroup-of-or-equals');
@@ -1187,16 +1165,7 @@ DefMathI('\rhook',      undef, "\x{2E27}");    # TeX 312D
 
 # Ah, since \ldots can appear in text and math....
 DefMacroI('\ldots', undef, '\lx@ldots');
-DefConstructorI('\lx@ldots', undef,
-  "?#isMath(<ltx:XMTok name='ldots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
-  sizer      => "\x{2026}",
-  reversion  => '\ldots',
-  properties => sub {
-    (LookupValue('IN_MATH')
-      ? (font => LookupValue('font')->merge(family => 'serif',
-          series => 'medium', shape => 'upright')->specialize("\x{2026}"))
-      : ()); });    # Since not DefMath!
-                    # And so can \vdots
+
 DefConstructorI('\vdots', undef,
   "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
   sizer      => "\x{22EE}",
@@ -1246,11 +1215,9 @@ DefMath('\dot Digested',  "\x{02D9}", operator_role => 'OVERACCENT');     # DOT 
 DefMath('\ddot Digested', UTF(0xA8),  operator_role => 'OVERACCENT');     # DIAERESIS
 DefMath('\widehat Digested', UTF(0x5E), operator_role => 'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
 DefMath('\widetilde Digested', UTF(0x7E), operator_role => 'OVERACCENT'); # TILDE [plain? also amsfonts]
-# These aren't handled as simple accents by TeX, so no Digested
-DefMath('\overbrace {}', "\x{23DE}", operator_role => 'OVERACCENT',       # TOP CURLY BRACKET
-  scriptpos => 'mid', robust => 1);
-DefMath('\underbrace {}', "\x{23DF}", operator_role => 'UNDERACCENT',     # BOTTOM CURLY BRACKET
-  scriptpos => 'mid', robust => 1);
+
+Let('\overbrace',  '\lx@math@overbrace');
+Let('\underbrace', '\lx@math@underbrace');
 
 # NOTE that all the above accents REQUIRE math mode
 # EXCEPT underline, overrightarrow and overleftarrow!

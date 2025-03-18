@@ -124,11 +124,7 @@ sub revert {
         @tokens = $self->substituteParameters($spec)
           if $spec ne ''; }
       else {
-        my $alias = $defn->getAlias;
-        if (defined $alias) {
-          push(@tokens, (ref $alias ? $alias : T_CS($alias))) if $alias ne ''; }
-        else {
-          push(@tokens, $defn->getCS); }
+        push(@tokens, $defn->getCSorAlias);
         if (my $parameters = $defn->getParameters) {
           push(@tokens, $parameters->revertArguments($self->getArgs)); } }
       if (defined(my $body = $self->getBody)) {
@@ -217,6 +213,31 @@ sub beAbsorbed {
   my @result = $defn->doAbsorbtion($document, $self);
   LaTeXML::Core::Definition::stopProfiling($profiled, 'absorb') if $profiled;
   return @result; }
+
+# Similar to ->revert, but converts to pure string for use in an attribute value
+sub toAttribute {
+  my ($self) = @_;
+  my $props  = $$self{properties};
+  my $defn   = $self->getDefinition;
+  my $spec   = $$props{attributeForm} || $$defn{attributeForm};
+  if (!defined $spec) {
+    return $self->toString; }    # Default
+  elsif (ref $spec eq 'CODE') {    # If handled by CODE, call it
+    $spec = &$spec($self, $self->getArgs); }
+  # Now, similar to substituteParameters, but creating a string.
+  $spec =~ s/#(#|[1-9]|\w+)/ toAttribute_aux($self,$1)/eg;
+  return $spec; }
+
+sub toAttribute_aux {
+  my ($self, $code) = @_;
+  my $value;
+  if    ($code eq '#') { return $code; }
+  elsif ((ord($code) > ord('0')) && (ord($code) <= ord('9'))) {
+    $value = $self->getArg(ord($code) - ord('0')); }
+  else {
+    $value = $self->getProperty($code); }
+  $value = $value->toAttribute if ref $value;
+  return $value; }
 
 # See discussion in Box.pm
 sub computeSize {

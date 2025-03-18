@@ -31,6 +31,8 @@ sub Box {
   $font    = $STATE->lookupValue('font')               unless defined $font;
   $locator = $STATE->getStomach->getGullet->getLocator unless defined $locator;
   $tokens  = LaTeXML::Core::Token::T_OTHER($string) if $string && !defined $tokens;
+  if ((!defined $properties{isSpace}) && (defined $string) && ($string =~ /^\s*$/)) {
+    $properties{isSpace} = 1; }
   if ($properties{isSpace} && ($properties{width} || $properties{height} || $properties{depth})) {
     $properties{width}  = Dimension(0) unless defined $properties{width};
     $properties{height} = Dimension(0) unless defined $properties{height};
@@ -138,12 +140,7 @@ sub beAbsorbed {
 
 sub getProperty {
   my ($self, $key) = @_;
-  if ($key eq 'isSpace') {
-    return $$self{properties}{$key} if defined $$self{properties}{$key};
-    my $tex = LaTeXML::Core::Token::UnTeX($$self{tokens});  # !
-    return (defined $tex) && ($tex =~ /^\s*$/); }           # Check the TeX code, not (just) the string!
-  else {
-    return $$self{properties}{$key}; } }
+  return $$self{properties}{$key}; }
 
 sub getProperties {
   my ($self) = @_;

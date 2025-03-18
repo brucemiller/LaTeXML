@@ -41,6 +41,19 @@ sub isDefinable {
 
 #======================================================================
 
+DefPrimitive('\lx@endash', sub {
+    Box("\x{2013}", undef, undef, Tokens(T_OTHER('-'), T_OTHER('-'))); });
+DefPrimitive('\lx@emdash', sub {
+    Box("\x{2014}", undef, undef, Tokens(T_OTHER('-'), T_OTHER('-'), T_OTHER('-'))); });
+
+# Stand in for T_ACTIVE('~')  (and maybe \nobreakspace)
+DefPrimitiveI('\lx@NBSP', undef, sub {
+    Box(UTF(0xA0), undef, undef, T_ACTIVE("~"),
+      width => Dimension('0.333em'), isSpace => 1); }, locked => 1);
+DefPrimitiveI('\lx@nobreakspace', undef, sub {
+    Box(UTF(0xA0), undef, undef, T_CS('\nobreakspace'),
+      width => Dimension('0.333em'), isSpace => 1); });
+
 DefPrimitiveI('\lx@ignorehardspaces', undef, sub {
     my ($stomach) = @_;
     my $gullet = $stomach->getGullet;
@@ -176,10 +189,7 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
     $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END));
     AssignValue(inPreamble => $inpreamble);
     return; },
-  beforeDigest => sub {
-    $_[0]->bgroup; },
-  afterDigest => sub {
-    $_[0]->egroup; });
+  bounded => 1);
 
 # Append a piece of data to an existing frontmatter item that is contained in <$tag>
 # If $label is given, look for an item which has label=>$label,

@@ -118,18 +118,35 @@ sub complement {
 
 # Mix $self*$fraction + $color*(1-$fraction)
 sub mix {
-  my ($self, $color, $fraction) = @_;
-  $color = $color->convert($self->model) unless $self->model eq $color->model;
-  my @a = $self->components;
-  my @b = $color->components;
-  return $self->new(map { $fraction * $a[$_] + (1 - $fraction) * $b[$_] } 0 .. $#a); }
+  my ($self, $other, $fraction) = @_;
+  my $base       = $self;
+  my $base_model = $base->model;
+  my $mix_model  = $other->model;
+  if ($base_model ne $mix_model) {
+    # mixing 'rgb|cmy' with 'gray' should yield 'rgb|cmy'.
+    if ($base_model eq 'gray') {
+      $base = $base->convert($mix_model);
+    } else {
+      $other = $other->convert($base_model);
+  } }
+  my @a = $base->components;
+  my @b = $other->components;
+  return $base->new(map { $fraction * $a[$_] + (1 - $fraction) * $b[$_] } 0 .. $#a); }
 
 sub add {
-  my ($self, $color) = @_;
-  $color = $color->convert($self->model) unless $self->model eq $color->model;
-  my @a = $self->components;
-  my @b = $color->components;
-  return $self->new(map { $a[$_] + $b[$_] } 0 .. $#a); }
+  my ($self, $other) = @_;
+  my $base       = $self;
+  my $base_model = $base->model;
+  my $mix_model  = $other->model;
+  if ($base_model ne $mix_model) {
+    # mixing 'rgb|cmy' with 'gray' should yield 'rgb|cmy'.
+    if ($base_model eq 'gray') {
+      $base = $base->convert($mix_model);
+    } else {
+      $other = $other->convert($base_model); } }
+  my @a = $base->components;
+  my @b = $other->components;
+  return $base->new(map { $a[$_] + $b[$_] } 0 .. $#a); }
 
 # The next 2 methods multiply the components of a color by some value(s)
 # This assumes that such a thing makes sense in the given model, for some purpose.

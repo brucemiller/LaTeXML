@@ -239,24 +239,39 @@ DefPrimitiveI('\dont_expand', undef, sub {
 # \the
 #----------------------------------------------------------------------
 # \the              c  returns character tokens for an internal quantity's or parameter's current value.
-
-# \the<internal quantity>
-DefMacro('\the Register', sub {
-    my ($gullet, $variable) = @_;
-    return () unless $variable;
-    my ($defn, @args) = @$variable;
-    if (!$defn || $defn eq 'missing') {
-      Error('expected', "<register>", $gullet, "a register was expected to be here"); return (); }
-    my $type = $defn->isRegister;
-    if (!$type) {
-      my $cs = ToString($defn->getCS);
-      if ($cs eq '\font') {    # what to do here?
-        return T_CS('\tenrm'); }
-      Error('unexpected', "\\the$cs", $gullet, "You can't use $cs after \\the"); return (); }
-    my $value = $defn->valueOf(@args);
-    ## In all cases, these should be OTHER, except for space. (!?)
-    my @tokens = ($type eq 'Tokens' ? ($value ? $value->unlist : ()) : Explode(ToString($value)));
-    return @tokens; });
+# The argument to \the is a variety of "Internal Quantities", being parameters,
+# registers, internal registers, codenames, etc. See TeX Book, pp.214--215.
+# [Since \the is expandable, perhaps should just be built into \the's code? Never need to revert]
+DefMacro('\the', sub {
+    my ($gullet) = @_;
+    my $token = $gullet->readXToken;
+    if (!defined $token) {
+      Error('expected', '<register>', $gullet,
+        "A <register> was supposed to be here", "Got nothing.");
+      return T_OTHER('0'); }
+    my $defn = LookupDefinition($token);
+    if (!defined $defn) {    # the token is Undefined
+      if ($token && ($token->getCatcode == CC_CS)) {    # but IS a cs \something
+        Error('expected', '<register>', $gullet,
+          "A <register> was supposed to be here", "Got " . Stringify($token),
+          "Defining it now.");
+        # Hackery: to avoid potential repeated errors, define it now as a number register
+        DefRegisterI($token, undef, Number(0));         # Dimension, or what?
+        return T_OTHER('0'); } }
+    elsif (my $type = $defn->isRegister) {              # SOME kind of register is acceptable
+      my @args  = ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ());
+      my $value = $defn->valueOf(@args);
+      return (($type eq 'Token') || $type eq 'Tokens'
+        ? ($value ? $value->unlist : ()) : Explode(ToString($value))); }
+    elsif ($defn->getCSName eq '\font') {
+      # HACK to get the \fontcmd that would have selected the current font (see FontDef)
+      return $STATE->lookupValue('current_FontDef') || T_CS('\tenrm'); }    # ????
+    elsif ($defn->isFontDef) {    # Or a propert TeX \fontcmd defined by \font
+      return $defn->getCS; }
+    # If we fall through to here, whatever $token is shouln't have been used with \the
+    my $t = ToString($token);
+    Error('unexpected', "\\the$t", $gullet, "You can't use $t after \\the");
+    return T_OTHER('0'); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

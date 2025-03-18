@@ -39,6 +39,9 @@ DefMacro('\@@eqno',
 DefMacro('\LTX@nonumber',
   '\lx@DEPRECATE{\LTX@nonumber}{\lx@equation@nonumber}\lx@equation@nonumber');
 
+DefMacro('\LTX@newpage',
+  '\lx@DEPRECATE{\LTX@newpage}{\lx@newpage}\lx@newpage');
+
 DefMacro('\normal@par',
   '\lx@DEPRECATE{\normnal@par}{\lx@normal@par}\lx@normal@par');
 DefMacro('\inner@par',
@@ -196,6 +199,11 @@ DefMacro('\@INVISIBLECOMMA',
   '\lx@DEPRECATE{\@INVISIBLECOMMA}{\lx@InvisibleComma}\lx@InvisibleComma');
 DefMacro('\@INVISIBLEPLUS',
   '\lx@DEPRECATE{\@INVISIBLEPLUS}{\lx@InvisiblePlus}\lx@InvisiblePlus');
+
+DefMacro('\@@endash',
+  '\lx@DEPRECATE{\@endash}{\lx@endash}\lx@endash');
+DefMacro('\@@emdash',
+  '\lx@DEPRECATE{\@emdash}{\lx@emdash}\lx@emdash');
 
 # End of stuff to be deprecated.
 #----------------------------------------------------------------------

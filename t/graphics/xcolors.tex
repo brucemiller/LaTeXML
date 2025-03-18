@@ -246,12 +246,22 @@ test & row \number\rownum\\
 \end{testcolors}
 \endgroup
 
-\section{Boxes}
+\section{Setting and Using Boxes}
 \newbox\mybox
-\setbox\mybox=\hbox{Should NOT be Red!}
+{\color{red}\global\setbox\mybox=\hbox{Black on White!}}
 \copy\mybox
-\setbox\mybox=\hbox{Should be Red!}
-{\color{red}\copy\mybox}
+
+\setbox\mybox=\hbox{{\color{black}\colorbox{white}{Black on White!}}}
+\copy\mybox
+
+{\color{blue}\global\setbox\mybox=\hbox{Red on Green!}}
+{\color{red}\colorbox{green}{\copy\mybox}}
+
+\setbox\mybox=\hbox{Red on Green!}
+{\color{red}\colorbox{green}{\copy\mybox}}
+
+\setbox\mybox=\hbox{Red on Green, but \color{green}\colorbox{blue}{Green on Blue!}}
+{\color{red}\colorbox{green}{\copy\mybox}}
 
 \section{Custom rgb directives}
 \color{rgb:red,4;green,2;yellow,1} Brown

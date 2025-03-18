@@ -439,9 +439,6 @@ DefConstructor('\lxSVG@eorulefalse',     '', alias => '\pgfsys@eorulefalse',   s
 
 DefMacro('\lxSVG@setcolor{}{}', '\ifpgfpicture\lxSVG@begingroup{#1={#2}}\fi');
 
-# Need to defer until after color/xcolor are loaded!
-AtBeginDocument('\def\XC@mcolor{\pgfsetcolor{.}}');
-
 #=====================================================================
 # Implementation
 
@@ -565,7 +562,8 @@ DefConstructor('\lxSVG@closescope', sub {
       $n++;
       last if $node->getAttribute('_scopebegin'); }
     return; },
-  sizer => 0);
+  sizer     => 0,
+  reversion => '');
 
 DefConstructor('\lxSVG@beginscope', '',
   afterDigest => sub {

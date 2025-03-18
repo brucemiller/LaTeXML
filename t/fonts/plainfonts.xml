@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <para>
+    <p>Testing low-level <text class="ltx_TeX_logo" cssstyle="letter-spacing:-0.2em; margin-right:0.2em">T<text cssstyle="font-variant:small-caps;font-size:120%;" yoffset="-0.2ex">e</text>X</text> font manipulations.</p>
+  </para>
+  <para>
+    <p>Stock plain fonts:</p>
+  </para>
+  <para>
+    <p>– Font “font(cmr10; “font):XXX; hyphen=45.</p>
+  </para>
+  <para>
+    <p>– Font “fiverm(cmr5; select font cmr5):X<text fontsize="50%">X</text>X; hyphen=45.</p>
+  </para>
+  <para>
+    <p>– Font “tenrm(cmr10; select font cmr10):XXX; hyphen=45.</p>
+  </para>
+  <para>
+    <p>New 5pt fonts, new default <text font="typewriter">hyphenchar=99</text>.
+<text font="bold">All</text> shared; <text font="typewriter">scaled</text> mapped to <text font="typewriter">at</text>:</p>
+  </para>
+  <para>
+    <p>– Font “myrmfiveA(cmr10; select font cmr10 at 5.0pt):X<text fontsize="50%">X</text>X; hyphen=99.</p>
+  </para>
+  <para>
+    <p>– Font “myrmfiveB(cmr10; select font cmr10 at 5.0pt):X<text fontsize="50%">X</text>X; hyphen=99.</p>
+  </para>
+  <para>
+    <p>– Font “myrmfiveC(cmr10; select font cmr10 at 5.0pt):X<text fontsize="50%">X</text>X; hyphen=99.</p>
+  </para>
+  <para>
+    <p>Bump <text font="typewriter">hyphenchar=100</text> on myrmfiveA:</p>
+  </para>
+  <para>
+    <p>– Font “myrmfiveA(cmr10; select font cmr10 at 5.0pt):X<text fontsize="50%">X</text>X; hyphen=100.</p>
+  </para>
+  <para>
+    <p>– Font “myrmfiveB(cmr10; select font cmr10 at 5.0pt):X<text fontsize="50%">X</text>X; hyphen=100.</p>
+  </para>
+  <para>
+    <p>– Font “myrmfiveC(cmr10; select font cmr10 at 5.0pt):X<text fontsize="50%">X</text>X; hyphen=100.</p>
+  </para>
+  <para>
+    <p>Bump <text font="typewriter">hyphenchar=101</text> on myrmfiveA, <text font="italic">as if</text> grouped:</p>
+  </para>
+  <para>
+    <p>– Font “myrmfiveA(cmr10; select font cmr10 at 5.0pt):X<text fontsize="50%">X</text>X; hyphen=101.</p>
+  </para>
+  <para>
+    <p>– Font “myrmfiveB(cmr10; select font cmr10 at 5.0pt):X<text fontsize="50%">X</text>X; hyphen=101.</p>
+  </para>
+  <para>
+    <p>– Font “myrmfiveC(cmr10; select font cmr10 at 5.0pt):X<text fontsize="50%">X</text>X; hyphen=101.</p>
+  </para>
+  <para>
+    <p>While stock fonts should be unchanged</p>
+  </para>
+  <para>
+    <p>– Font “fiverm(cmr5; select font cmr5):X<text fontsize="50%">X</text>X; hyphen=45.</p>
+  </para>
+  <para>
+    <p>– Font “tenrm(cmr10; select font cmr10):XXX; hyphen=45.</p>
+  </para>
+  <para>
+    <p>“font is weird;
+it snapshots of the current font;
+but compare meanings:</p>
+  </para>
+  <para>
+    <p><text fontsize="50%">– Font “font(cmr5; “font):XXX; hyphen=45.</text></p>
+  </para>
+  <para>
+    <p>– Font “fiverm(cmr5; select font cmr5):X<text fontsize="50%">X</text>X; hyphen=45.</p>
+  </para>
+  <para>
+    <p>– Font “textfont2(cmsy10; “textfont2):X𝒳X; hyphen=45.</p>
+  </para>
+  <para>
+    <p>Testing plain math fonts:</p>
+  </para>
+  <para>
+    <p>“noop:  abc123 and <Math mode="inline" tex="{abc123}" text="a * b * c * 123">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            <XMTok font="italic" role="UNKNOWN">c</XMTok>
+            <XMTok meaning="123" role="NUMBER">123</XMTok>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para>
+    <p>“rm:  abc123 and <Math mode="inline" tex="{\rm abc123}" text="abc123">
+        <XMath>
+          <XMTok role="UNKNOWN">abc123</XMTok>
+        </XMath>
+      </Math></p>
+  </para>
+  <para>
+    <p>“mit:  abc123 and <Math mode="inline" tex="{abc123}" text="a * b * c * 123">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            <XMTok font="italic" role="UNKNOWN">c</XMTok>
+            <XMTok meaning="123" role="NUMBER">123</XMTok>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para>
+    <p>“cal:  abc123 and <Math mode="inline" tex="{\cal abc123}" text="absent does-not-prove list@() * infinity element-of contains">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="does-not-prove" role="METARELOP">⊣</XMTok>
+            <XMTok meaning="absent"/>
+            <XMApp>
+              <XMTok meaning="element-of" role="RELOP">∈</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMDual>
+                  <XMApp>
+                    <XMTok meaning="list"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok name="lfloor" role="OPEN" stretchy="false">⌊</XMTok>
+                    <XMTok name="rfloor" role="CLOSE" stretchy="false">⌋</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok meaning="infinity" role="ID">∞</XMTok>
+              </XMApp>
+              <XMTok meaning="contains" role="RELOP">∋</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para>
+    <p>“it: <text font="italic"> abc123</text> and <Math mode="inline" tex="{\it abc123}" text="abc123">
+        <XMath>
+          <XMTok font="italic" role="UNKNOWN">abc123</XMTok>
+        </XMath>
+      </Math></p>
+  </para>
+  <para>
+    <p>“sl: <text font="slanted"> abc123</text> and <Math mode="inline" tex="{\sl abc123}" text="abc123">
+        <XMath>
+          <XMTok font="slanted" role="UNKNOWN">abc123</XMTok>
+        </XMath>
+      </Math></p>
+  </para>
+  <para>
+    <p>“bf: <text font="bold"> abc123</text> and <Math mode="inline" tex="{\bf abc123}" text="abc123">
+        <XMath>
+          <XMTok font="bold" role="UNKNOWN">abc123</XMTok>
+        </XMath>
+      </Math></p>
+  </para>
+  <para>
+    <p>“tt: <text font="typewriter"> abc123</text> and <Math mode="inline" tex="{\tt abc123}" text="abc123">
+        <XMath>
+          <XMTok font="typewriter" role="UNKNOWN">abc123</XMTok>
+        </XMath>
+      </Math></p>
+  </para>
+  <para>
+    <p>Testing Text glyph lookup.</p>
+  </para>
+  <para>
+    <p>Normal:
+ı;A.
+<text font="italic">ζ</text>;<text font="italic">A</text>.
+<text font="bold">ı</text>;<text font="bold">A</text>.
+<text font="typewriter">ı</text>;<text font="typewriter">A</text>.
+<text font="slanted">ı</text>;<text font="slanted">A</text>.
+<text font="italic">ı</text>;<text font="italic">A</text>.</p>
+  </para>
+  <para>
+    <p>Symbol:
+≍;𝒜.
+<text font="bold">≍</text>;<text font="bold">𝒜</text>.
+(;⎠.</p>
+  </para>
+  <para>
+    <p>AMS:
+↠;⊐.
+⋨;𝔸.</p>
+  </para>
+</document>

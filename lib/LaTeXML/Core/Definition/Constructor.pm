@@ -60,10 +60,6 @@ sub getSizer {
   my ($self) = @_;
   return $$self{sizer}; }
 
-sub getAlias {
-  my ($self) = @_;
-  return $$self{alias}; }
-
 sub getNumArgs {
   my ($self) = @_;
   return $$self{nargs} if defined $$self{nargs};

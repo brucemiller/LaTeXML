@@ -29,6 +29,8 @@ DefMacro('\nombre{}', '\@ifpackageloaded{numprint}{\numprint{#1}}{\ltx@orig@nomb
 AtBeginDocument(sub {
     Let('\degre', '\textdegree');
     DefMacro('\degres', '\hbox to 0.3em{\degre}');
+    Let('\tild',        '\textasciitilde');
+    Let('\circonflexe', '\textasciicircum');
 });
 
 1;

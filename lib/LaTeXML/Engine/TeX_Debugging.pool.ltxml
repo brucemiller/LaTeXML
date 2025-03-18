@@ -102,20 +102,21 @@ DefMacro('\meaning Token', sub {
       $type =~ s/^LaTeXML:://;
       # Pre-step: We can't extract the bodies of definitions which are defined via Perl subroutines.
       # So do the next best thing -- represent them as their tokens.
-      if ($type =~ /(primitive|conditional|constructor)$/i) {
-        $definition = $definition->getCSorAlias;
-        $type       = ref $definition;
-        $type =~ s/^LaTeXML:://;
-        if (my $fontinfo = LookupValue('fontinfo_' . ToString($definition))) {
-          $meaning = 'select font ' . ($$fontinfo{fontname} || 'fontname');
+      if ($type =~ /fontdef$/i) {
+        if (my $fontinfo = $definition->isFontDef) {
+          $meaning = 'select font ' . ($$fontinfo{name} || 'fontname');
           $meaning .= ' at ' . $$fontinfo{at} if $$fontinfo{at};
           $type = 'font'; } }
+      elsif ($type =~ /(primitive|conditional|constructor)$/i) {
+        ($definition) = $definition->getCSorAlias->unlist;    # Get 1st Token!
+        $type = ref $definition;
+        $type =~ s/^LaTeXML:://; }
       # The actual tests start here
       if ($type =~ /token$/i) {
         my $cc         = $definition->getCatcode;
         my $char       = $definition->toString;
         my $meaning_cc = $CATCODE_MEANING[$cc] || '';
-        $meaning_cc .= ' ' if $meaning_cc;    # append space separator if defined
+        $meaning_cc .= ' ' if $meaning_cc;                    # append space separator if defined
         $meaning = $meaning_cc . $char; }
       elsif ($type =~ /register$/i) {
         $meaning = $definition->getAddress; }
@@ -210,14 +211,20 @@ DefRegister('\showboxdepth'   => Number(3));
 # \tracingrestores  pi    if positive, writes save-stack details to the log file.
 # \tracingstats     pi    if positive, writes memory usage statistics to the log file.
 
+AssignValue(tracingmacros   => Number(0));
+AssignValue(tracingcommands => Number(0));
 DefRegister('\tracingmacros', Number(0),
-  getter => sub { Number((LookupValue('TRACING') || 0) & TRACE_MACROS); },
-  setter => sub { my $p = (LookupValue('TRACING') || 0);
-    AssignValue(TRACING => ($_[0]->valueOf ? $p | TRACE_MACROS : $p & ~TRACE_MACROS)); });
+  getter => sub { LookupValue('tracingmacros'); },
+  setter => sub {
+    AssignValue(tracingmacros => $_[0]);
+    my $p = (LookupValue('TRACING') || 0);
+    AssignValue(TRACING => ($_[0]->valueOf > 0 ? $p | TRACE_MACROS : $p & ~TRACE_MACROS)); });
 DefRegister('\tracingcommands', Number(0),
-  getter => sub { Number((LookupValue('TRACING') || 0) & TRACE_COMMANDS); },
-  setter => sub { my $p = (LookupValue('TRACING') || 0);
-    AssignValue(TRACING => ($_[0]->valueOf ? $p | TRACE_COMMANDS : $p & ~TRACE_COMMANDS)); });
+  getter => sub { LookupValue('tracingcommands'); },
+  setter => sub {
+    AssignValue(tracingcommands => $_[0]);
+    my $p = (LookupValue('TRACING') || 0);
+    AssignValue(TRACING => ($_[0]->valueOf > 0 ? $p | TRACE_COMMANDS : $p & ~TRACE_COMMANDS)); });
 
 DefRegister('\tracingonline'     => Number(0));
 DefRegister('\tracingstats'      => Number(0));

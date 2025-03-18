@@ -1,3 +1,14 @@
+0.8.9 2024-Winter
+      - This release addresses a large variety of usability, fidelity, robustness,
+        portability and output-quality issues.
+      - 
+     Incompatible changes:
+      * The API of several low-level internal functions have changed. In the unlikely
+        event you have used these in your own bindings, they will need to be updated.
+      * ltx:rule is now allowed in Block and Para contexts, as well as the previous Inline.
+     Other changes:
+      - LaTeXML::Core::CharDef->new($cs,$mode,$value)
+      - decodeMathCode($mathcode,$reversion) returns ($glyph,$font,$reversion,%mathproperties)
 0.8.8 2024-02-29
       - This release addresses a large variety of usability, fidelity, robustness,
         portability and output-quality issues.

@@ -64,10 +64,8 @@ sub invoke {
   my $replacement = $$self{replacement};
 
   if (!ref $replacement) {
-    my $alias = $$self{alias};
-    $alias = T_CS($alias) if $alias && !ref $alias;
     push(@result, Box($replacement, undef, undef,
-        Tokens($alias || $$self{cs}, ($parms ? $parms->revertArguments(@args) : ())),
+        Tokens($self->getCSorAlias, ($parms ? $parms->revertArguments(@args) : ())),
         (defined $replacement ? () : (isEmpty => 1)))); }
   else {
     push(@result, &{ $$self{replacement} }($stomach, @args)); }

@@ -16,6 +16,11 @@ use warnings;
 use LaTeXML::Package;
 
 #======================================================================
-InputDefinitions('textcase', type => 'sty', noltxml => 1);
+# This functionality is now included in base LaTeX
+#InputDefinitions('textcase', type => 'sty', noltxml => 1);
+# We only need to bind the old textcase names.
+Let('\MakeTextUppercase', '\MakeUppercase');
+Let('\MakeTextLowercase', '\MakeLowercase');
+Let('\MakeTextTitlecase', '\MakeTitlecase');
 #======================================================================
 1;

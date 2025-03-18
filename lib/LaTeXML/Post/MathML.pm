@@ -18,8 +18,9 @@ use LaTeXML::Util::Unicode;
 use LaTeXML::Post;
 use LaTeXML::Common::Font;
 use List::Util qw(max);
-use base       qw(LaTeXML::Post::MathProcessor);
-use base       qw(Exporter);
+use charnames ':full';
+use base qw(LaTeXML::Post::MathProcessor);
+use base qw(Exporter);
 our @EXPORT = (
   qw( &DefMathML ),
   qw( &pmml &pmml_scriptsize &pmml_smaller
@@ -383,8 +384,6 @@ sub getXMHintSpacing {
   else {
     return 0; } }
 
-my $NBSP = pack('U', 0xA0);                                               # CONSTANT
-
 sub pmml_internal {
   no warnings 'recursion';
   my ($node) = @_;
@@ -506,8 +505,8 @@ sub pmml_internal {
       ['m:mtext', {}, $node->textContent]]; }
   else {
     my $text = $node->textContent;    #  Spaces are significant here
-    $text =~ s/^\s+/$NBSP/;
-    $text =~ s/\s+$/$NBSP/;
+    $text =~ s/^\s+/\N{NBSP}/;
+    $text =~ s/\s+$/\N{NBSP}/;
     return ['m:mtext', {}, $text]; } }
 
 sub needsMathstyle {
@@ -536,7 +535,15 @@ sub pmml_maybe_resize {
   my $depth  = $node->getAttribute('depth')   || ($parent && $parent->getAttribute('depth'));
   my $xoff   = $node->getAttribute('xoffset') || ($parent && $parent->getAttribute('xoffset'));
   my $yoff   = $node->getAttribute('yoffset') || ($parent && $parent->getAttribute('yoffset'));
-  if ($width || $height || $depth || $xoff || $yoff) {
+  my $role   = $node->getAttribute('role')    || ($parent && $parent->getAttribute('role'));
+  my $class  = $node->getAttribute('class')    || ($parent && $parent->getAttribute('class'));
+
+  # First, special case hack for stretchy arrows, with specified width
+  # Stretchiness (currently) only has effect within munder/mover!!!!!
+  if ($width && (($role || '') eq 'ARROW')
+     && (($class||'') =~ /\bltx_horizontally_stretchy\b/)) {    # SPECIAL CASE HACK
+    $result = ['m:mover', {}, $result, ['m:mspace', { width => $width }]]; }
+  elsif ($width || $height || $depth || $xoff || $yoff) {
     if    ($$result[0] eq 'm:mpadded') { }
     elsif ($$result[0] eq 'm:mrow') {
       $$result[0] = 'm:mpadded'; }
@@ -1027,7 +1034,7 @@ sub pmml_text_aux {
   my $type = $node->nodeType;
   if ($type == XML_TEXT_NODE) {
     my ($string, %mmlattr) = stylizeContent($node, 'm:mtext', %attr);
-    $string =~ s/^\s+/$NBSP/; $string =~ s/\s+$/$NBSP/;
+    $string =~ s/^\s+/\N{NBSP}/; $string =~ s/\s+$/\N{NBSP}/;
     return ['m:mtext', {%mmlattr}, $string]; }
   elsif ($type == XML_DOCUMENT_FRAG_NODE) {
     return map { pmml_text_aux($_, %attr) } $node->childNodes; }

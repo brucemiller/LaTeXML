@@ -75,7 +75,7 @@ DefKeyVal('LTXML', 'dpi', 'Number', '', code => sub {
     $STATE->assignValue(DPI => ToString($_[1]));
     AtBeginDocument(Tokens(T_CS('\lx@save@parameter'), T_OTHER('DPI'), T_BEGIN, $_[1], T_END)); });
 DefKeyVal('LTXML', 'magnify', 'Number', '', code => sub {
-    AtBeginDocument(Tokens(T_CS('\lx@save@parameter'), T_OTHER('magnifiy'), T_BEGIN, $_[1], T_END)); });
+    AtBeginDocument(Tokens(T_CS('\lx@save@parameter'), T_OTHER('magnify'), T_BEGIN, $_[1], T_END)); });
 DefKeyVal('LTXML', 'upsample', 'Number', '', code => sub {
     AtBeginDocument(Tokens(T_CS('\lx@save@parameter'), T_OTHER('upsample'), T_BEGIN, $_[1], T_END)); });
 DefKeyVal('LTXML', 'zoomout', 'Number', '', code => sub {

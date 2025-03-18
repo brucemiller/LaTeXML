@@ -24,13 +24,36 @@
       <ref name="table"/>
       <ref name="float"/>
       <ref name="pagination"/>
+      <ref name="rule"/>
     </choice>
   </define>
   <!-- allow pagination here, to avoid unnecessary extra para! -->
   <define name="Misc.class" combine="choice">
     <a:documentation>Additionally, it defines these miscellaneous elements that can appear
 in both inline and block contexts.</a:documentation>
-    <ref name="inline-logical-block"/>
+    <choice>
+      <ref name="inline-logical-block"/>
+      <ref name="rule"/>
+    </choice>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="rule">
+    <element name="rule">
+      <a:documentation>A Rule.</a:documentation>
+      <ref name="rule_attributes"/>
+      <ref name="rule_model"/>
+    </element>
+  </define>
+  <define name="rule_attributes">
+    <a:documentation>Attributes for \elementref{rule}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Positionable.attributes"/>
+    <ref name="Colorable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+  </define>
+  <define name="rule_model">
+    <a:documentation>Content model for \elementref{rule}.</a:documentation>
+    <empty/>
   </define>
   <!-- ====================================================================== -->
   <define name="para">

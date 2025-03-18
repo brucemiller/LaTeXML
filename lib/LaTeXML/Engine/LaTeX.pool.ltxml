@@ -36,6 +36,10 @@ Let('\magnification', '\@undefined');
 Let('\@empty',        '\lx@empty');
 Let('\@ifundefined',  '\lx@ifundefined');
 
+# Use Package's register allocation to avoid allocating same slot twice; and ALWAYS have room!
+DefMacro('\e@alloc{}{}{}{}{}{}', '\lx@alloc@{#1}{#3}{#2}{#6}', locked => 1);
+DefMacro('\e@ch@ck{}{}{}{}',     '',                           locked => 1);
+
 #**********************************************************************
 # Basic \documentclass & \documentstyle
 
@@ -771,6 +775,7 @@ sub beginAppendices {
   else {
     NewCounter($counter, 'document', idprefix => 'A');
     DefMacroI('\the' . $counter, undef, '\Alph{' . $counter . '}', scope => 'global'); }
+  SetCounter($counter => Number(0));          # In case register was already defined
   AssignMapping('counter_for_type', appendix => $counter);
   Let(T_CS('\\' . $counter), T_CS('\@@appendix'), 'global');
   Let(T_CS('\@appendix'),    T_CS('\relax'),      'global');
@@ -1087,6 +1092,8 @@ DefMacro('\@addtofilelist{}', sub {
 #======================================================================
 # Ignored
 NewCounter('page');
+SetCounter(page => Number(1));
+
 DefPrimitive('\pagestyle{}',     undef);
 DefPrimitive('\thispagestyle{}', undef);
 DefPrimitive('\markright{}',     undef);
@@ -1204,9 +1211,9 @@ DefConstructor('\lx@author@prefix', sub {
     my $i          = scalar(@{ $document->findnodes('//ltx:creator[@role="author"]') });
     if    ($i <= 1) { }
     elsif ($i == $nauthors) {
-      $document->setAttribute($node, before => ToString(Digest(T_CS('\lx@author@conj')))); }
+      $document->setAttribute($node, before => Digest(T_CS('\lx@author@conj'))); }
     else {
-      $document->setAttribute($node, before => ToString(Digest(T_CS('\lx@author@sep')))); }
+      $document->setAttribute($node, before => Digest(T_CS('\lx@author@sep'))); }
 });
 
 DefMacro('\@author',                 '\@empty');
@@ -1383,8 +1390,9 @@ sub applyAligningContext {
   if (my $container = LookupValue('ALIGNING_NODE')) {
     my ($node, $previous) = @$container;
     my @children = $node->childNodes;
-    while (my $skip = shift(@children)) {
-      last if !$previous || $previous->isSameNode($skip); }
+    if ($previous) {
+      while (my $skip = shift(@children)) {
+        last if $previous->isSameNode($skip); } }
     while (my $child = shift(@children)) {
       setAlignOrClass($document, $child, $align, $class) if $child->nodeType == XML_ELEMENT_NODE; } }
   return; }
@@ -1948,6 +1956,8 @@ sub afterDigestVerbatim {
   $whatsit->setBody(map { Box($_, $font, $loc, T_OTHER($_)) } @lines, $end);
   return; }
 
+Let('\nobreakspace', '\lx@nobreakspace');
+
 DefPrimitiveI('\@vobeyspaces', undef, sub {
     AssignCatcode(" " => 13);
     Let(T_ACTIVE(" "), '\nobreakspace');
@@ -2039,16 +2049,10 @@ DefConstructorI('\lx@begin@display@math', undef,
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  alias        => '$$',
-  beforeDigest => sub {
-    $_[0]->beginMode('display_math');
-    if (my @everymath_toks = $STATE->lookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
-      $_[0]->getGullet->unread(@everymath_toks); }
-    if (my @everydisplay_toks = $STATE->lookupDefinition(T_CS('\everydisplay'))->valueOf->unlist()) {
-      $_[0]->getGullet->unread(@everydisplay_toks); }
-    return; },
-  properties  => sub { RefStepID('equation') },
-  captureBody => 1);
+  reversion    => Tokens(T_MATH, T_MATH),
+  beforeDigest => sub { $_[0]->beginMode('display_math'); },
+  properties   => sub { RefStepID('equation') },
+  captureBody  => 1);
 
 DefEnvironment('{displaymath}',
   "<ltx:equation xml:id='#id'>"
@@ -2067,8 +2071,7 @@ DefEnvironment('{math}',
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  mode => 'inline_math',
-);
+  mode => 'inline_math');
 
 Let('\curr@math@size', '\@empty');
 
@@ -2238,12 +2241,11 @@ DefMacro('\(', '\lx@begin@inline@math');
 DefMacro('\)', '\\lx@end@inline@math');
 
 # Keep from expanding too early, if in alignments, or such.
-DefMacroI('\ensuremath', undef,
-  Tokens(T_CS('\protect'), T_CS('\@ensuremath')));
-DefMacro('\@ensuremath{}', sub {
+DefMacro('\ensuremath{}', sub {
     my ($gullet, $stuff) = @_;
     if (LookupValue('IN_MATH')) { $stuff->unlist; }
-    else { (T_MATH, $stuff->unlist, T_MATH); } });
+    else                        { (T_MATH, $stuff->unlist, T_MATH); } },
+  robust => 1, protected => 1);
 
 # Magic check that math-mode trigger follows
 our $MATHENVS = 'displaymath|equation*?|eqnarray*?'
@@ -2763,8 +2765,7 @@ DefMacro('\ProvideTextCommandDefault DefToken', '\ProvideTextCommand{#1}{?}');
 #------------------------------------------------------------
 
 DefPrimitive('\DeclareTextSymbol DefToken {}{Number}', sub {
-    my ($gullet, $cs, $encoding, $code) = @_;
-    $code = $code->valueOf;
+    my ($stomach, $cs, $encoding, $code) = @_;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
     if (isDefinable($cs)) {    # If not already defined...
@@ -2772,11 +2773,14 @@ DefPrimitive('\DeclareTextSymbol DefToken {}{Number}', sub {
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
     my $ecs = T_CS('\\' . $encoding . $css);
-    DefPrimitiveI($ecs, undef, FontDecode($code, $encoding));
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($ecs, 'text', $code, $encoding));
     return; });
 
-# hmmm... what needs doing here; basically it means use this encoding as the default for the symbol
-DefMacro('\DeclareTextSymbolDefault DefToken {}', '');    # '\DeclareTextSymbol{#1}{?}');
+DefPrimitive('\DeclareTextSymbolDefault DefToken {}', sub {
+    my ($stomach, $cs, $encoding) = @_;
+    $encoding = ToString(Expand($encoding));
+    DefMacroI(T_CS('\\?' . ToString($cs)), undef, T_CS('\\' . $encoding . ToString($cs)));
+    return; });
 
 #------------------------------------------------------------
 DefPrimitive('\DeclareTextAccent DefToken {}{}', sub {
@@ -2804,8 +2808,9 @@ DefMacro('\UseTextAccent{}{}', '{\fontencoding{#1}#2{#3}}');
 DefPrimitive('\DeclareMathAccent DefToken {}{} {Number}', sub {
     my ($stomach, $cs, $kind, $class, $code) = @_;
     $class = ToString($class);
-    my $info  = LookupValue('fontdeclaration@' . $class);
-    my $glyph = FontDecode($code->valueOf, ($info ? $$info{encoding} : $class));
+    my $info = LookupValue('fontdeclaration@' . $class);
+    #    my $glyph = FontDecode($code->valueOf, ($info ? $$info{encoding} : $class));
+    my ($glyph) = FontDecode($code->valueOf, ($info ? $$info{encoding} : $class));
     DefMathI($cs, 'Digested', $glyph, operator_role => 'OVERACCENT');
     return AddToPreamble('\DeclareMathAccent', $cs, $kind, $class, $code); });
 
@@ -2819,7 +2824,7 @@ DefPrimitive('\DeclarePreloadSizes{}{}{}{}{}', undef);
 # The next font declaration commands are based on
 # http://tex.loria.fr/general/new/fntguide.html
 # we ignore font encoding
-DefPrimitive('\DeclareSymbolFont{}{}{}{}{}', sub {
+DefPrimitive('\DeclareSymbolFont{} ExpandedPartially {}{}{}', sub {
     my ($stomach, $name, $enc, $family, $series, $shape) = @_;
     AssignValue('fontdeclaration@' . ToString($name),
       { family => ToString($family),
@@ -2853,12 +2858,12 @@ my $symboltype_roles = {
   '\mathord'  => 'ID',   '\mathop'    => 'BIGOP', '\mathbin'   => 'BINOP', '\mathrel' => 'RELOP',
   '\mathopen' => 'OPEN', '\mathclose' => 'CLOSE', '\mathpunct' => 'PUNCT' };
 DefPrimitive('\DeclareMathSymbol DefToken SkipSpaces DefToken {}{Number}', sub {
-    my ($stomach, $cs, $type, $font, $code) = @_;
-    my $encoding = ToString($font);    # Or maybe just a font name or class?
+    my ($stomach, $cs, $type, $fontkind, $code) = @_;
+    my $encoding = ToString($fontkind);    # Or maybe just a font name or class?
     if (my $decl = LookupValue('fontdeclaration@' . $encoding)) {
       $encoding = $$decl{encoding} if $$decl{encoding}; }
-    my $glyph = FontDecode($code->valueOf, $encoding);
-    my $role  = $$symboltype_roles{ ToString($type) };
+    my ($glyph) = FontDecode($code->valueOf, $encoding);
+    my $role = $$symboltype_roles{ ToString($type) };
     DefMathI($cs, undef, $glyph, role => $role);
     return; });
 
@@ -2910,47 +2915,26 @@ DefPrimitiveI('\tenlnw',   undef, undef, font => { family => 'linew10' });
 DefPrimitiveI('\tencirc',  undef, undef, font => { family => 'lcircle10' });
 DefPrimitiveI('\tencircw', undef, undef, font => { family => 'lcirclew10' });
 
-# At least all things on uclclist need to be macros
-DefPrimitiveI('\lx@utf@OE', undef, "\x{0152}", alias => '\OE');    # LATIN CAPITAL LIGATURE OE
-DefPrimitiveI('\lx@utf@oe', undef, "\x{0153}", alias => '\oe');    # LATIN SMALL LIGATURE OE
-DefPrimitiveI('\lx@utf@AE', undef, UTF(0xC6),  alias => '\AE');    # LATIN CAPITAL LETTER AE
-DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6),  alias => '\ae');    # LATIN SMALL LETTER AE
-DefPrimitiveI('\lx@utf@AA', undef, UTF(0xC5), alias => '\AA'); # LATIN CAPITAL LETTER A WITH RING ABOVE
-DefPrimitiveI('\lx@utf@aa', undef, UTF(0xE5), alias => '\aa'); # LATIN SMALL LETTER A WITH RING ABOVE
-DefPrimitiveI('\lx@utf@O',  undef, UTF(0xD8),  alias => '\O');  # LATIN CAPITAL LETTER O WITH STROKE
-DefPrimitiveI('\lx@utf@o',  undef, UTF(0xF8),  alias => '\o');  # LATIN SMALL LETTER O WITH STROKE
-DefPrimitiveI('\lx@utf@L',  undef, "\x{0141}", alias => '\L');  # LATIN CAPITAL LETTER L WITH STROKE
-DefPrimitiveI('\lx@utf@l',  undef, "\x{0142}", alias => '\l');  # LATIN SMALL LETTER L WITH STROKE
-DefPrimitiveI('\lx@utf@ss', undef, UTF(0xDF),  alias => '\ss'); # LATIN SMALL LETTER SHARP S
-DefPrimitiveI('\lx@utf@dh', undef, UTF(0xf0),  alias => '\dh'); # eth
-DefPrimitiveI('\lx@utf@DH', undef, UTF(0xd0),  alias => '\DH'); # Eth (looks same as \DJ!)
-DefPrimitiveI('\lx@utf@dj', undef, "\x{0111}", alias => '\dj'); # d with stroke
-DefPrimitiveI('\lx@utf@DJ', undef, "\x{0110}", alias => '\DJ'); # D with stroke (looks sames as \DH!)
-DefPrimitiveI('\lx@utf@ng', undef, "\x{014B}", alias => '\ng');
-DefPrimitiveI('\lx@utf@NG', undef, "\x{014A}", alias => '\NG');
-DefPrimitiveI('\lx@utf@th', undef, UTF(0xFE),  alias => '\th');
-DefPrimitiveI('\lx@utf@TH', undef, UTF(0xDE),  alias => '\TH');
-
-DefMacroI('\OE', undef, '\lx@utf@OE');
-DefMacroI('\oe', undef, '\lx@utf@oe');
-DefMacroI('\AE', undef, '\lx@utf@AE');
-DefMacroI('\ae', undef, '\lx@utf@ae');
-DefMacroI('\ae', undef, '\lx@utf@ae');
-DefMacroI('\AA', undef, '\lx@utf@AA');
-DefMacroI('\aa', undef, '\lx@utf@aa');
-DefMacroI('\O',  undef, '\lx@utf@O');
-DefMacroI('\o',  undef, '\lx@utf@o');
-DefMacroI('\L',  undef, '\lx@utf@L');
-DefMacroI('\l',  undef, '\lx@utf@l');
-DefMacroI('\ss', undef, '\lx@utf@ss');
-DefMacroI('\dh', undef, '\lx@utf@dh');    # in latex?
-DefMacroI('\DH', undef, '\lx@utf@DH');
-DefMacroI('\dj', undef, '\lx@utf@dj');
-DefMacroI('\DJ', undef, '\lx@utf@DJ');
-DefMacroI('\ng', undef, '\lx@utf@ng');
-DefMacroI('\NG', undef, '\lx@utf@NG');
-DefMacroI('\th', undef, '\lx@utf@th');
-DefMacroI('\TH', undef, '\lx@utf@TH');
+# At least all things on uclclist need to be macros; robust achieves that
+DefPrimitiveI('\OE', undef, "\x{0152}", robust => 1);    # LATIN CAPITAL LIGATURE OE
+DefPrimitiveI('\oe', undef, "\x{0153}", robust => 1);    # LATIN SMALL LIGATURE OE
+DefPrimitiveI('\AE', undef, UTF(0xC6),  robust => 1);    # LATIN CAPITAL LETTER AE
+DefPrimitiveI('\ae', undef, UTF(0xE6),  robust => 1);    # LATIN SMALL LETTER AE
+DefPrimitiveI('\AA', undef, UTF(0xC5),  robust => 1);    # LATIN CAPITAL LETTER A WITH RING ABOVE
+DefPrimitiveI('\aa', undef, UTF(0xE5),  robust => 1);    # LATIN SMALL LETTER A WITH RING ABOVE
+DefPrimitiveI('\O',  undef, UTF(0xD8),  robust => 1);    # LATIN CAPITAL LETTER O WITH STROKE
+DefPrimitiveI('\o',  undef, UTF(0xF8),  robust => 1);    # LATIN SMALL LETTER O WITH STROKE
+DefPrimitiveI('\L',  undef, "\x{0141}", robust => 1);    # LATIN CAPITAL LETTER L WITH STROKE
+DefPrimitiveI('\l',  undef, "\x{0142}", robust => 1);    # LATIN SMALL LETTER L WITH STROKE
+DefPrimitiveI('\ss', undef, UTF(0xDF),  robust => 1);    # LATIN SMALL LETTER SHARP S
+DefPrimitiveI('\dh', undef, UTF(0xf0),  robust => 1);    # eth
+DefPrimitiveI('\DH', undef, UTF(0xd0),  robust => 1);    # Eth (looks same as \DJ!)
+DefPrimitiveI('\dj', undef, "\x{0111}", robust => 1);    # d with stroke
+DefPrimitiveI('\DJ', undef, "\x{0110}", robust => 1);    # D with stroke (looks sames as \DH!)
+DefPrimitiveI('\ng', undef, "\x{014B}", robust => 1);
+DefPrimitiveI('\NG', undef, "\x{014A}", robust => 1);
+DefPrimitiveI('\th', undef, UTF(0xFE),  robust => 1);
+DefPrimitiveI('\TH', undef, UTF(0xDE),  robust => 1);
 
 #======================================================================
 # C.8.2 Defining Environments
@@ -4004,9 +3988,11 @@ Tag('ltx:*', 'afterClose:late' => sub {
 
 # These will get filled in during postprocessing.
 # * comes from hyperref
-DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref ?#1(class='ltx_nolink')() labelref='#label' _force_font='true'/>",
-  sizer      => '()',                                     # Don't actually know how big this will be!
-  properties => sub { (label => CleanLabel($_[2])); });
+DefConstructor('\ref OptionalMatch:* Semiverbatim',
+  "<ltx:ref ?#1(class='ltx_nolink')() labelref='#label' _force_font='true'/>",
+  sizer      => '()',                                    # Don't actually know how big this will be!
+  properties => sub { (label => CleanLabel($_[2])); },
+  robust     => 1);
 # "page" does not make sense in xml.  If the user really wants, they will need:
 # \usepackage{latexml} ... \iflatexml alternate\else page \pageref{label}\fi
 Let('\pageref', '\ref');
@@ -4263,11 +4249,22 @@ DefConstructor('\lx@bibitem[] Semiverbatim',
     . "#tags"
     . "<ltx:bibblock>",
   afterDigest => sub {
+    # check if the previous bibitem had an empty body,
+    # in which case prune it and reuse its ID and counters.
+    # this happens due to auto-open being a bit fragile (see issue #2403)
+    my $pruned_prev = 0;
+    if (my $prev_item = $LaTeXML::LIST[-1]) {
+      if (ref $prev_item eq 'LaTeXML::Core::Whatsit' and
+        $prev_item->getDefinition->getCS->getCSName eq '\lx@bibitem' and
+        not($prev_item->getArg(1)) and IsEmpty($prev_item->getArg(2))) {
+        $pruned_prev = 1;
+        Info('empty', 'bibitem', $_[0], "Encountered an empty \\bibitem, likely auto-opened without need. Pruning and reusing its id.");
+        pop(@LaTeXML::LIST); } }
     my $tag = $_[1]->getArg(1);
     my $key = CleanBibKey($_[1]->getArg(2));
     if ($tag) {
       $_[1]->setProperties(key => $key,
-        RefStepID('@bibitem'),
+        ($pruned_prev ? RefCurrentID('@bibitem') : RefStepID('@bibitem')),
         tags => Digest(T_BEGIN,
           T_CS('\def'), T_CS('\the@bibitem'), T_BEGIN, Revert($tag), T_END,
           Invocation(T_CS('\lx@make@tags'), T_OTHER('@bibitem')),
@@ -4359,8 +4356,8 @@ DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
   "<ltx:bibref show='#1' bibrefs='#bibrefs' inlist='#bibunit'"
     . " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
   properties => sub { (bibrefs => CleanBibKey($_[2]),
-      separator   => ToString(Digest(LookupValue('CITE_SEPARATOR'))),
-      yyseparator => ToString(Digest(LookupValue('CITE_YY_SEPARATOR'))),
+      separator   => Digest(LookupValue('CITE_SEPARATOR')),
+      yyseparator => Digest(LookupValue('CITE_YY_SEPARATOR')),
       bibunit     => LookupValue('CITE_UNIT')); });
 
 # Simple container for any phrases used in the bibref
@@ -4376,7 +4373,8 @@ DefMacro('\cite[] Semiverbatim', sub {
       Tokens(Explode('cite')),
       Tokens($open,
         Invocation(T_CS('\@@bibref'), undef, $keys, undef, undef),
-        ($post ? ($ns, T_SPACE, $post) : ()), $close)); });
+        ($post ? ($ns, T_SPACE, $post) : ()), $close)); },
+  robust => 1);
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
 # For now, defer until document end.
@@ -4697,9 +4695,9 @@ DefPrimitiveI('\makeglossary', undef, undef);
 # C.11.6 Terminal Input and Output
 #======================================================================
 
-DefPrimitive('\typeout{}', sub {
+DefPrimitive('\typeout ExpandedPartially', sub {
     my ($stomach, $stuff) = @_;
-    Note(ToString(Expand($stuff)));
+    Note(ToString($stuff));
     return; });
 
 DefPrimitive('\typein[]{}', undef);
@@ -4737,8 +4735,8 @@ DefPrimitive('\nopagebreak[]', undef);
 DefPrimitiveI('\columnbreak', undef, undef);    # latex? or multicol?
 DefPrimitive('\enlargethispage OptionalMatch:* {}', undef);
 
-DefMacroI('\clearpage',       undef, '\LTX@newpage');
-DefMacroI('\cleardoublepage', undef, '\LTX@newpage');
+DefMacroI('\clearpage',       undef, '\lx@newpage');
+DefMacroI('\cleardoublepage', undef, '\lx@newpage');
 DefPrimitiveI('\samepage', undef, undef);
 
 #**********************************************************************
@@ -4761,6 +4759,7 @@ DefMacro('\stretch{}', '0pt plus #1fill\relax');
 DefPrimitive('\newlength DefToken', sub {
     my ($stomach, $cs) = @_;
     DefRegisterI($cs, undef, Glue(0), allocate => '\skip'); });
+
 DefPrimitive('\setlength {Variable}{Dimension}', sub {
     my ($stomach, $variable, $length) = @_;
     my ($defn, @params) = @$variable;
@@ -4794,9 +4793,9 @@ DefPrimitive('\hspace  OptionalMatch:* {Dimension}', sub {
     Box($s, undef, undef, Invocation(T_CS('\hskip'), $length),
       width => $length, isSpace => 1); });
 
-DefPrimitive('\vspace OptionalMatch:* {}', undef);
-DefPrimitive('\addvspace {}',              undef);
-DefPrimitive('\addpenalty {}',             undef);
+DefMacro('\vspace OptionalMatch:* {}', '\vskip #2\relax');
+DefPrimitive('\addvspace {}',  undef);
+DefPrimitive('\addpenalty {}', undef);
 DefPrimitiveI('\@endparenv');
 
 # \hfill, \vfill
@@ -5654,30 +5653,149 @@ DefMacroI('\@qrelax', undef, Tokens(Explode('relax')));
 DefMacroI('\@spaces', undef, '\space\space\space\space');
 Let('\@sptoken', T_SPACE);
 
-DefMacroI('\@uclclist', undef, '\oe\OE\o\O\ae\AE\dh\DH\dj\DJ\l\L\ng\NG\ss\SS\th\TH');
+# NOTE: These ONLY work on robust commands,
+# thus, preceded by \protect, and the CS has a trailing space added!!!
+DefPrimitive('\AddToNoCaseChangeList{DefToken}', sub {
+    my ($stomach, $cs) = @_;
+    # This is analog of \l_text_case_exclude_arg_tl
+    my $protcs = $cs->getString . ' ';    # As if robust!
+    $STATE->assignMapping(text_case_exclude => $protcs => 1); });
+DefMacro('\NoCaseChange{}', '#1', robust => 1);
+RawTeX(<<'EoTeX');
+\AddToNoCaseChangeList{\NoCaseChange}%
+\AddToNoCaseChangeList{\label}%
+\AddToNoCaseChangeList{\ref}%
+\AddToNoCaseChangeList{\cite}%
+\AddToNoCaseChangeList{\ensuremath}%
+\AddToNoCaseChangeList{\thanks}%
+EoTeX
 
+# Eventually latex3 has \Declare(Lower|Upper|Title)caseMapping
+# Short of that... and noting that \@uclclist might be changed at any time...
+sub prepareCaseMapping {
+  $STATE->assignMapping(text_uppercase => '\i ' => T_LETTER('I'));
+  $STATE->assignMapping(text_uppercase => '\j ' => T_LETTER('J'));
+  my @pairs = $STATE->lookupDefinition(T_CS('\@uclclist'))->getExpansion->unlist;
+  while (@pairs) {
+    my ($l, $u) = (shift(@pairs), shift(@pairs));
+    $STATE->assignMapping(text_uppercase => $l->getString . ' ' => $u);
+    $STATE->assignMapping(text_lowercase => $u->getString . ' ' => $l); }
+  return; }
+DefPrimitive('\lx@prepare@case@mapping', \&prepareCaseMapping);
+
+# Cases: lowercase,uppercase are obvious;
+# There may be some controversy, but TO ME:
+#   capitalize means to uppercase the first character
+#   titlecase means capitalize all words, except "trivial" ones (and,or...)
+#   sentence case means capitalize first word
+# LaTeX's \MakeTitlecase does sentence case, but this may change in future!
+# There is also some confusion about whether things like sentence case should
+# ONLY uppercase the first and lowercase the rest, or leave it alone.
+# Apparently there are language issues?
+#
+# To handle more such cases, we'd probably want to refactor the following
+# to be more reentrant, (eg. split arg into words)
+# and deal locally with \@uclclist, \i,\j, etc.
+# Can't even properly do sentence case, as it is!
+# But let's try this for now (maybe reading latex.ltx is best long-run)
+# latex3 uses \text_expand to manage the string;
+# seemingly a loop readXToken is similar enogh?
+sub latexChangeCase {
+  my ($gullet, $reqcase, $tokens) = @_;
+  my $case = $reqcase;
+  $case = 'upper' if $reqcase eq 'sentence' or $reqcase eq 'title';
+  return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+      $gullet->unread($tokens);
+      my @toks   = ();
+      my $inmath = 0;
+      ## Read while expanding, but careful not to expand \dont_expand'd tokens!
+      while (my $tok = $gullet->readXToken(0, 0, 0)) {
+        my $cc = $$tok[1];
+        if ($cc == CC_MATH) {
+          $inmath = !$inmath;
+          push(@toks, $tok); }
+        elsif ($inmath) {
+          push(@toks, $tok); }
+        elsif (($cc == CC_LETTER) || ($cc == CC_OTHER)) {
+          # LaTeX 3 uses Unicode data tables; we'll punt to Perl
+          push(@toks, Token(($case eq 'upper' ? uc($$tok[0]) : lc($$tok[0])), $cc));
+          $case = 'lower' if $reqcase eq 'sentence' or $reqcase eq 'title'; }
+        elsif ($cc == CC_SPACE) {
+          push(@toks, T_SPACE);    # HACK (not $tok) to match latex3!
+          $case = 'upper' if $reqcase eq 'title'; }
+        elsif (($cc != CC_CS) && ($cc != CC_ACTIVE)) {
+          push(@toks, $tok); }
+        elsif ($tok->equals(T_CS('\protect'))) {
+          my $next = $gullet->readToken(0);    # DONT expand this (yet)
+          ## but check if we're supposed to exclude arg from case change
+          my $string = $next->getString;
+          if ($STATE->lookupMapping('text_case_exclude', $string)) {
+            my $opt = $gullet->readOptional;
+            my $arg = $gullet->readArg;
+            # Wow! Optional arg gets case change!
+            $opt = latexChangeCase($gullet, $case, $opt)
+              if $opt && !$inmath;
+            push(@toks, $tok, $next,
+              ($opt ? (T_OTHER('['), $opt, T_OTHER(']')) : ()),
+              T_BEGIN, $arg, T_END); }
+          elsif (my $changed = $STATE->lookupMapping('text_' . $case . 'case', $string)) {
+            push(@toks, $changed);
+            $case = 'lower' if $reqcase eq 'sentence' or $reqcase eq 'title'; }
+          else {
+            push(@toks, $tok, $next); } }
+        else {
+          push(@toks, $tok); } }
+      return Tokens(@toks); }); }
+
+DefMacro('\lx@latex@changecase {} GeneralText', sub {
+    my ($gullet, $case, $tokens) = @_;
+    return latexChangeCase($gullet, lc(ToString($case)), $tokens); });
+
+DefMacroI('\@uclclist', undef, '\oe\OE\o\O\ae\AE\dh\DH\dj\DJ\l\L\ng\NG\ss\SS\th\TH');
 RawTeX(<<'EOL');
 \DeclareRobustCommand{\MakeUppercase}[1]{{%
-      \def\i{I}\def\j{J}%
-      \def\reserved@a##1##2{\let##1##2\reserved@a}%
-      \expandafter\reserved@a\@uclclist\reserved@b{\reserved@b\@gobble}%
-      \let\UTF@two@octets@noexpand\@empty
-      \let\UTF@three@octets@noexpand\@empty
-      \let\UTF@four@octets@noexpand\@empty
-      \protected@edef\reserved@a{\uppercase{#1}}%
-      \reserved@a
+  \lx@prepare@case@mapping%
+  \def\({$}\let\)\(%
+  \let\UTF@two@octets@noexpand\@empty
+  \let\UTF@three@octets@noexpand\@empty
+  \let\UTF@four@octets@noexpand\@empty
+  \edef\reserved@a{\lx@latex@changecase{upper}{#1}}%
+  \reserved@a
    }}
 \DeclareRobustCommand{\MakeLowercase}[1]{{%
-      \def\reserved@a##1##2{\let##2##1\reserved@a}%
-      \expandafter\reserved@a\@uclclist\reserved@b{\reserved@b\@gobble}%
-      \let\UTF@two@octets@noexpand\@empty
-      \let\UTF@three@octets@noexpand\@empty
-      \let\UTF@four@octets@noexpand\@empty
-      \protected@edef\reserved@a{\lowercase{#1}}%
-      \reserved@a
+  \lx@prepare@case@mapping%
+  \def\({$}\let\)\(%
+  \let\UTF@two@octets@noexpand\@empty
+  \let\UTF@three@octets@noexpand\@empty
+  \let\UTF@four@octets@noexpand\@empty
+  \edef\reserved@a{\lx@latex@changecase{lower}{#1}}%
+  \reserved@a
    }}
+\DeclareRobustCommand{\MakeTitlecase}[1]{{%
+  \lx@prepare@case@mapping%
+  \def\({$}\let\)\(%
+  \let\UTF@two@octets@noexpand\@empty
+  \let\UTF@three@octets@noexpand\@empty
+  \let\UTF@four@octets@noexpand\@empty
+  \edef\reserved@a{\lx@latex@changecase{sentence}{#1}}%
+  \reserved@a
+   }}
+
+%\DeclareRobustCommand{\MakeXTitlecase}[1]{{%
+%  \lx@prepare@case@mapping%
+%  \def\({$}\let\)\(%
+%  \let\UTF@two@octets@noexpand\@empty
+%  \let\UTF@three@octets@noexpand\@empty
+%  \let\UTF@four@octets@noexpand\@empty
+%  \edef\reserved@a{\lx@latex@changecase{title}{#1}}%
+%  \reserved@a
+%   }}
+
+% Trickery to avoid losing {} around arg
 \protected@edef\MakeUppercase#1{\MakeUppercase{#1}}
 \protected@edef\MakeLowercase#1{\MakeLowercase{#1}}
+\protected@edef\MakeTitlecase#1{\MakeTitlecase{#1}}
+%\protected@edef\MakeXTitlecase#1{\MakeXTitlecase{#1}}
 EOL
 
 #======================================================================
@@ -6275,8 +6393,8 @@ Let('\mathalpha', '\relax');
 DefPrimitive('\mathhexbox {}{}{}', sub {
     my ($stomach, $a, $b, $c) = @_;
     my $n = ToString($a) * 256 + ToString($b) * 16 + ToString($c);
-    my ($role, $glyph) = decodeMathChar($n);
-    return Box($glyph, LookupValue('font')->specialize($glyph)); });
+    my ($glyph, $f, $rev, %props) = decodeMathChar($n);
+    return Box($glyph, $f, undef, undef, %props); });
 
 DefMacroI('\nocorrlist', undef, ',.');
 Let('\nocorr',    '\relax');

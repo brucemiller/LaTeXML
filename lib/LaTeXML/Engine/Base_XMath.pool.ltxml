@@ -376,6 +376,18 @@ DefConstructor('\lx@text@tweaked RequiredKeyVals {}',
     $whatsit->setProperties($kv->getPairs); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DefConstructorI('\lx@ldots', undef,
+  "?#isMath(<ltx:XMTok name='ldots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
+  sizer      => "\x{2026}",
+  reversion  => '\ldots',
+  properties => sub {
+    (LookupValue('IN_MATH')
+      ? (font => LookupValue('font')->merge(family => 'serif',
+          series => 'medium', shape => 'upright')->specialize("\x{2026}"))
+      : ()); });    # Since not DefMath!
+                    # And so can \vdots
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Support for rewrite rules
 #**********************************************************************
 DefConstructor('\WildCard[]', "<_WildCard_>#1</_WildCard_>");

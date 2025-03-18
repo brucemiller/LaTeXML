@@ -14,7 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-use Unicode::Normalize;
+use LaTeXML::Util::Unicode;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Character Family of primitive control sequences
@@ -29,8 +29,8 @@ DefPrimitiveI('\ ', undef, sub {
       name => 'space', isSpace => 1, width => Dimension('0.5em')); });
 
 DefPrimitive('\char Number', sub {
-    Box(FontDecode($_[1]->valueOf), undef, undef,
-      Tokens(T_CS('\char'), $_[1]->revert, T_CS('\relax'))); });
+    my ($glyph, $adjfont) = FontDecode($_[1]->valueOf);
+    Box($glyph, $adjfont, undef, Tokens(T_CS('\char'), $_[1]->revert, T_CS('\relax'))); });
 
 #======================================================================
 # \accent         c  places an accent on a character.
@@ -54,15 +54,29 @@ DefPrimitive('\char Number', sub {
 # Create a box applying an accent to a letter
 # Hopefully, we'll get a Box from digestion with a plain string.
 # Then we can apply combining accents to it.
+my %typewriter_accents = ("\x{02DC}" => "~", "\x{02C6}" => "^");
+
 sub applyAccent {
   my ($stomach, $letter, $combiningchar, $standalonechar, $reversion) = @_;
   my $box     = $stomach->digest($letter);
   my $locator = $box->getLocator;
   my $font    = $box->getFont;
   my $string  = $box->toString;
-  $string =~ tr/\x{0131}\x{0237}/ij/;
   $string =~ s/\s/ /g;
+  # In Unicode (but not always (La)TeX), overaccents generally mask the dots of i,j.
+  # So we replace dotless so NFC can normalize better.
+  if (my $entry = unicode_accent($standalonechar)) {
+    if (($$entry{role} || '') eq 'OVERACCENT') {
+      $string =~ tr/\x{0131}\x{0237}/ij/; } }    # Replace dotless i,j with dotted version
+  if (($string =~ /[ij]/) && ($combiningchar eq "\x{0307}")) {    # a dot on i,j Not needed
+    $combiningchar = ''; }
   my @letters = split(//, $string);
+  # HACK HACK HACK to mimic real LaTeX's encoding mechanism (until using proper latex.ltx)
+  # Necessary for test cases using \~,\^ in urls, ascii, typewriter...
+  if (my $replacement = $typewriter_accents{$standalonechar}) {
+    if ($font && ((($font->getFamily || '') eq 'typewriter')
+        || (($font->getEncoding || '') eq 'ASCII'))) {
+      return Box($replacement . $string, $font, $locator, Tokens($reversion, $letter)); } }
   return Box(($string =~ /^\s*$/
       ? $standalonechar
       : NFC($letters[0] . $combiningchar . join('', @letters[1 .. $#letters]))),
@@ -70,43 +84,57 @@ sub applyAccent {
 
 # Defines an accent command using a combining char that follows the
 # 1st char of the argument.  In cases where there is no argument, $standalonechar is used.
+# Ideally, the pair match up with an entry in Util::Unicode's accents
 sub DefAccent {
   my ($accent, $combiningchar, $standalonechar, %options) = @_;
-  $options{above} = 1 if !(defined $options{above}) && !$options{below};
-  # Used for converting a char used as an above-accent to a combining char (See \accent)
-  AssignMapping('accent_combiner_above', $standalonechar => $combiningchar) if $options{above};
-  AssignMapping('accent_combiner_below', $standalonechar => $combiningchar) unless $options{above};
-  DefMacroI($accent, "{}",
-    Tokens(T_CS('\lx@applyaccent'), T_OTHER($accent),
-      T_OTHER($combiningchar), T_OTHER($standalonechar),
-      T_BEGIN, T_ARG(1), T_END),
+  $accent = T_CS($accent) unless ref $accent;
+  DefPrimitiveI($accent, "{}", sub {
+      my ($stomach, $letter) = @_;
+      applyAccent($stomach, $letter, $combiningchar, $standalonechar,
+        Tokens($accent, T_BEGIN, $letter, T_END)); },
     protected => 1);
   return; }
 
-DefPrimitiveI('\lx@applyaccent', "DefToken Token Token {}", sub {
-    my ($stomach, $accent, $combiningchar, $standalonechar, $letter) = @_;
-    applyAccent($stomach, $letter, $combiningchar->getString, $standalonechar->getString,
-      Tokens(T_CS($accent->getString), T_BEGIN, $letter, T_END)); },
-  mode => 'text');
-
-# This will fail if there really are "assignments" after the number!
-# We're given a number pointing into the font, from which we can derive the standalone char.
-# From that, we want to figure out the combining character, but there could be one for
-# both the above & below cases!  We'll prefer the above case.
-DefPrimitive('\accent Number {}', sub {
-    my ($stomach, $num, $letter) = @_;
-    my $n        = $num->valueOf;
-    my $fontinfo = lookupFontinfo(LookupValue('textfont_0'));
-    my $acc      = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : chr($n));
-    my $reversion = Invocation(T_CS('\accent'), $num, $letter);
-    # NOTE: REVERSE LOOKUP in above accent list for the non-spacing accent char
-    # BUT, \accent always (?) makes an above type accent... doesn't it?
-    if (my $combiner = LookupMapping('accent_combiner_above', $acc)
-      || LookupMapping('accent_combiner_below', $acc)) {
-      applyAccent($stomach, $letter, $combiner, $acc, $reversion); }
+# \accent <number> <optional assignments><character>; See TeX Book p.287
+#   <assignments>: (<prefix>) simple assignment or macro assignment
+#   <character> : letter, other, \char, \chardef token, \noboundary
+# Eventually, we're given a number pointing into the font;
+# the FontMap presumably has the standalone char, to use if there is no base letter
+# Otherwise, use the Util::Unicode module to find the appropriate combining character
+DefPrimitive('\accent Number', sub {
+    my ($stomach, $num) = @_;
+    my $gullet = $stomach->getGullet;
+    # Decode & Fetch the accent BEFORE processing any "assignments"
+    my $n = $num->valueOf;
+    my ($glyph, $adjfont) = FontDecode($n);
+    my @assignments = ();
+    ## Check for (& accumulate) various kinds of <assignments>
+    my ($token, $cc, $defn);
+    while (($token = $gullet->readXNonSpace)
+      && ($defn = $STATE->lookupDefinition($token))
+      && ($defn->isPrefix
+        || $defn->isFontDef
+        || ($defn->isRegister && !$defn->isCharDef)
+        || ($token->getString =~ /^\\(?:def|edef|gdef|xdef)$/))) {
+      push(@assignments, $stomach->invokeToken($token)); }
+    ## Check for various kinds of <character>
+    my $letter = Tokens();
+    if    (!$token) { }
+    elsif ((($cc = $token->getCatcode) == CC_LETTER) || ($cc == CC_OTHER)
+      || ($defn && $defn->isCharDef)) {
+      $letter = $token; }
+    elsif ($token->equals(T_CS('\char'))) {
+      $letter = Tokens(Invocation($token, $gullet->readNumber)); }
+    elsif ($token->equals(T_CS('\noboundary'))) { }    # Treat as empty
     else {
-      Warn('unexpected', "accent$n", $stomach, "Accent '$n' not recognized");
-      Box(ToString($letter), undef, undef, $reversion); } });
+      $gullet->unread($token); }                       # No appropriate <character> ? Treat as empty
+    my $result;
+    if (my $entry = unicode_accent($glyph)) {
+      $result = applyAccent($stomach, $letter, $$entry{combiner}, $$entry{standalone},
+        Invocation(T_CS('\accent'), $num, $letter)); }
+    else {    # Unknown accent ?  Attempt to OVERLAY the accent on top of $letter
+      $result = Digest(Tokens(T_CS('\lx@overlay'), T_BEGIN, $letter, T_END, T_BEGIN, T_OTHER($glyph), T_END)); }
+    return (@assignments, $result); });
 
 #======================================================================
 # \chardef        iq provides an alternate way to define a control sequence that returns a character.
@@ -118,7 +146,7 @@ DefPrimitive('\chardef Token SkipSpaces SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
     $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
     my $value = $stomach->getGullet->readNumber();
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value));
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, 'text', $value));
     AfterAssignment();
     return; });
 
@@ -131,12 +159,12 @@ DefPrimitive('\chardef Token SkipSpaces SkipMatch:=', sub {
 sub ucToken {
   my ($token) = @_;
   my $code = $STATE->lookupUCcode($token->getString);
-  return ((defined $code) && ($code != 0) ? Token(chr($code), $token->getCatcode) : $token); }
+  return ((defined $code) && ($code != 0) ? Token(pack('U', $code), $token->getCatcode) : $token); }
 
 sub lcToken {
   my ($token) = @_;
   my $code = $STATE->lookupLCcode($token->getString);
-  return ((defined $code) && ($code != 0) ? Token(chr($code), $token->getCatcode) : $token); }
+  return ((defined $code) && ($code != 0) ? Token(pack('U', $code), $token->getCatcode) : $token); }
 
 # Note that these are NOT expandable, even though the "return" tokens!
 DefPrimitive('\uppercase GeneralText', sub {

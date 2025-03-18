@@ -3,21 +3,46 @@
 \begin{document}
 
 \section{Testing Accents}
-\begin{tabular}{c|cccccc|c}
-         &    a  &    o  &    A  &    O  &    \i  &    ao \\\hline
-`        & \`{a} & \`{o} & \`{A} & \`{O} & \`{\i} & \`{ao} & \accent18 a\\
-'        & \'{a} & \'{o} & \'{A} & \'{O} & \'{\i} & \'{ao} & \accent19 a\\
-\verb|^| & \^{a} & \^{o} & \^{A} & \^{O} & \^{\i} & \^{ao} & \accent94 a\\
-"        & \"{a} & \"{o} & \"{A} & \"{O} & \"{\i} & \"{ao} & \accent"7F a\\
-\verb|~| & \~{a} & \~{o} & \~{A} & \~{O} & \~{\i} & \~{ao} & \accent"7E a\\
-=        & \={a} & \={o} & \={A} & \={O} & \={\i} & \={ao} & \accent22 a\\
-.        & \.{a} & \.{o} & \.{A} & \.{O} & \.{\i} & \.{ao} & \accent95 a\\
-u        & \u{a} & \u{o} & \u{A} & \u{O} & \u{\i} & \u{ao} & \accent20 a\\
-v        & \v{a} & \v{o} & \v{A} & \v{O} & \v{\i} & \v{ao} & \accent94 a\\
-H        & \H{a} & \H{o} & \H{A} & \H{O} & \H{\i} & \H{ao} & \accent"7D a\\
-t        & \t{a} & \t{o} & \t{A} & \t{O} & \t{\i} & \t{ao} & \\
-c        & \c{a} & \c{o} & \c{A} & \c{O} & \c{\i} & \c{ao} & \accent24 a\\
-d        & \d{a} & \d{o} & \d{A} & \d{O} & \d{\i} & \d{ao} & \accent`. a\\
-b        & \b{a} & \b{o} & \b{A} & \b{O} & \b{\i} & \b{ao} & \accent22 a\\
+\begin{tabular}{c|ccccccc|c}
+         &    a  &    o  &    A  &    O  &    i  &    \i  &    ao \\\hline
+`        & \`{a} & \`{o} & \`{A} & \`{O} & \`{i} & \`{\i} & \`{ao} & \accent18 a\\
+'        & \'{a} & \'{o} & \'{A} & \'{O} & \'{i} & \'{\i} & \'{ao} & \accent19 a\\
+\verb|^| & \^{a} & \^{o} & \^{A} & \^{O} & \^{i} & \^{\i} & \^{ao} & \accent94 a\\
+"        & \"{a} & \"{o} & \"{A} & \"{O} & \"{i} & \"{\i} & \"{ao} & \accent"7F a\\
+\verb|~| & \~{a} & \~{o} & \~{A} & \~{O} & \~{i} & \~{\i} & \~{ao} & \accent"7E a\\
+=        & \={a} & \={o} & \={A} & \={O} & \={i} & \={\i} & \={ao} & \accent22 a\\
+.        & \.{a} & \.{o} & \.{A} & \.{O} & \.{i} & \.{\i} & \.{ao} & \accent95 a\\
+u        & \u{a} & \u{o} & \u{A} & \u{O} & \u{i} & \u{\i} & \u{ao} & \accent20 a\\
+v        & \v{a} & \v{o} & \v{A} & \v{O} & \v{i} & \v{\i} & \v{ao} & \accent94 a\\
+H        & \H{a} & \H{o} & \H{A} & \H{O} & \H{i} & \H{\i} & \H{ao} & \accent"7D a\\
+t        & \t{a} & \t{o} & \t{A} & \t{O} & \t{i} & \t{\i} & \t{ao} & \\
+c        & \c{a} & \c{o} & \c{A} & \c{O} & \c{i} & \c{\i} & \c{ao} & \accent24 a\\
+d        & \d{a} & \d{o} & \d{A} & \d{O} & \d{i} & \d{\i} & \d{ao} & \accent`. a\\
+b        & \b{a} & \b{o} & \b{A} & \b{O} & \b{i} & \b{\i} & \b{ao} & \accent22 a\\
+ & & & & & & & & \accent"30 X\\
 \end{tabular}
+\section{Low-level Accent}
+\def\amacro{a}
+\chardef\achar"61
+\accent'27 a%
+\accent'27 \amacro%
+\accent'27 \char"61%
+\accent'27 \achar%
+
+\accent'27 {b}%
+{\accent'27}b%
+
+\font\mybf=cmb10
+{\mybf a\accent'27 bc};{a\accent'27 \mybf bc};{a{\accent'27 \mybf b}c}.%
+
+\newcount\myz \myz=123\relax
+
+(z=\the\myz)
+{
+\accent'27 c%
+\accent'27 \global\myz=234 c%
+\accent'27 \myz=345 c%
+\accent'27 \def\foo{c} \foo%
+}
+(z=\the\myz)
 \end{document}

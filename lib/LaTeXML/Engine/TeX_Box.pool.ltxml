@@ -53,13 +53,22 @@ DefConstructor('\lx@hidden@egroup', '',
   reversion   => '');
 
 #======================================================================
-DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
+# A few useful low-level boxing things
 
 DefConstructor('\lx@framed[]{}',
   "<ltx:text framed='#frame' _noautoclose='1'>#2</ltx:text>",
   properties => { frame => sub { ToString($_[1] || 'rectangle'); } });
+
 DefConstructor('\lx@hflipped{}',
   "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>");
+
+DefConstructor('\lx@overlay{}{}',
+  "<ltx:text class='ltx_overlay'>"
+    . "<ltx:text class='ltx_overlay_base' _noautoclose='1'>#1</ltx:text>"
+    . "<ltx:text class='ltx_overlay_over' _noautoclose='1'>#2</ltx:text></ltx:text>");
+
+#======================================================================
+DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
 
 sub reportNoUnicode {
   my ($cs) = @_;
@@ -77,7 +86,7 @@ DefPrimitive('\lx@math@nounicode DefToken', sub {
     Box(ToString($cs), undef, undef, $cs, class => 'ltx_nounicode'); });
 
 DefConstructor('\lx@text@nounicode DefToken',
-  "<ltx:text _no_autoclose='true' class='ltx_nounicode'>#1</ltx:text>",
+  "<ltx:text _noautoclose='true' class='ltx_nounicode'>#1</ltx:text>",
   afterDigest => sub {
     reportNoUnicode(ToString($_[1]->getArg(0))); });
 
@@ -359,7 +368,7 @@ sub insertBlock {
   my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
   my $container = $document->openElement('ltx:_CaptureBlock_', '_vertical_mode_' => 1, %blockattr);
   $document->absorb($contents);
-  my @nodes     = $container->childNodes;
+  my @nodes     = content_nodes($container);
   my @node_tags = map { $document->getNodeQName($_); } @nodes;
   my $nnodes    = scalar(@nodes);
   $document->closeToNode($container, 1);
@@ -469,8 +478,12 @@ DefPrimitive('\setbox Number SkipSpaces SkipMatch:=', sub {
     # Should afterDigest be responsible for resetting flags?
     my $scope = $STATE->getPrefix('global') && 'global';
     $STATE->clearPrefixes;    # before invoke, below; we've saved the only relevant one (global)
+    # Digest box starting from Default color, background; TeX Boxes don't record these.
+    my $font = $STATE->lookupValue('font');
+    $STATE->assignValue(font => $font->merge(color => Black, background => undef));
     my ($stuff, @rest) = $stomach->invokeToken($stomach->getGullet->readXToken);
     AssignValue('box' . $_[1]->valueOf => $stuff, $scope);
+    $STATE->assignValue(font => $font);
     @rest; });
 
 # <box dimension> = \ht | \wd | \dp
@@ -506,85 +519,78 @@ DefRegister('\dp Number', Dimension(0),
     $stuff->setDepth($value) if $stuff;
     return; });
 
+# Adjust the default color of $box to be the current color,
+# creating a copy of the box if needed.
 sub adjustBoxColor {
   my ($box) = @_;
   my $font = LookupValue('font');
-  if (my $color = $font && $font->getColor) {
-    if (!Black->equals($color)) {
-      adjustBoxColor_rec($color, {}, $box); } }
-  return; }
+  my $color = $font && $font->getColor;
+  my $bgcolor = $font && $font->getBackground;
+  if(($color && !Black->equals($color)) || ($bgcolor && !White->equals($bgcolor))){
+    return _color_adjust($color, $bgcolor, {}, $box); }
+  return $box; }
 
-sub adjustBoxColor_rec {
+# This internal function essentially clones all digested objects (Box, List, Whatsit,...)
+# while adjusting any contained Font objects as it goes. If a font uses a default clor
+# or background, it will be changed to the requested colors.
+sub _color_adjust {
   no warnings 'recursion';
-  my ($color, $adjusted, @boxes) = @_;
-  foreach my $box (@boxes) {
-    next unless defined $box;
-    next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
-    $$adjusted{$box} = 1;
-    my $r = ref $box;
-    next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
-    # NASTY access to internal structure; but worth a whole API for this one hack???
-    if ($r eq 'LaTeXML::Core::Box') {
-      adjustBoxColor_internal($color, $box); }
-    elsif ($r eq 'LaTeXML::Core::List') {
-      adjustBoxColor_rec($color, $adjusted, $box->unlist); }
-    elsif ($r eq 'LaTeXML::Core::Whatsit') {
-      adjustBoxColor_internal($color, $box);
-      # now recurse on contained boxes (args AND properties!)
-      adjustBoxColor_rec($color, $adjusted, $box->getArgs);
-      adjustBoxColor_rec($color, $adjusted, values %{ $box->getPropertiesRef }); }
-    elsif ($r eq 'LaTeXML::Core::Alignment') {
-      foreach my $row (@{ $$box{rows} }) {
-        foreach my $col (@{ $$row{columns} }) {
-          adjustBoxColor_rec($color, $adjusted, $$col{boxes}->unlist) if $$col{boxes}; } } }
-  }
-  return; }
-
-sub adjustBoxColor_internal {
-  my ($color, $box) = @_;
-  if (my $font = $box->getFont) {
-    $box->setFont($font->merge(color => $color)); }
-  return; }
+  my ($fg, $bg, $cache, $object) = @_;
+  return $object unless $object;
+  return $$cache{$object} if $$cache{$object};    # Nested, possibly circular, structures
+  my $type = ref $object;
+  my $adj = $object;
+  if($type eq 'ARRAY'){
+    $adj = [map { _color_adjust($fg, $bg, $cache, $_); } @$object]; }
+  elsif($type eq 'HASH'){
+    $adj = {map { $_=>_color_adjust($fg, $bg, $cache, $$object{$_}); } keys %$object}; }
+  # NASTY access to internal structure; but worth a whole API for this one hack???
+  elsif ($type =~ /^LaTeXML::Core::(?:Box|List|Whatsit|Alignment)$/) { # blessed hashes!
+    $$cache{$object} = $adj = bless {%$object}, $type; # Cache BEFORE recursion!
+    map { $$adj{$_} = _color_adjust($fg, $bg, $cache, $$object{$_}); } keys %$object; }
+  elsif($type eq 'LaTeXML::Common::Font'){
+    # Replace "default" color & background color by the requested $fg,$bg.
+    # We'll use eq (of refs) hoping that detects inherited defaults,
+    # rather than explicitly assigned black or white colors.
+    $adj = $object;
+    $adj = $adj->merge(color => $fg)      if Black eq ($object->getColor || Black);
+    $adj = $adj->merge(background => $bg) if White eq ($object->getBackground || White); }
+  $$cache{$object} = $adj;
+  return $adj; }
 
 DefPrimitive('\box Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
-    AssignValue($box, undef);
+    my $stuff = adjustBoxColor(LookupValue($box));
+    AssignValue($box, undef, 'inplace');
     ($stuff ? $stuff : List()); });
 
 DefPrimitive('\copy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     ($stuff ? $stuff : List()); });
 
 # \unhbox<8bit>, \unhcopy<8bit>
 DefPrimitive('\unhbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
-    AssignValue($box, undef);
+    my $stuff = adjustBoxColor(LookupValue($box));
+    AssignValue($box, undef, 'inplace');
     (defined $stuff ? $stuff->unlist : List()); });
 
 DefPrimitive('\unhcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     (defined $stuff ? $stuff->unlist : List()); });
 
 # \unvbox<8bit>, \unvcopy<8bit>
 DefPrimitive('\unvbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
-    AssignValue($box, undef);
+    my $stuff = adjustBoxColor(LookupValue($box));
+    AssignValue($box, undef, 'inplace');
     (defined $stuff ? $stuff->unlist : List()); });
 
 DefPrimitive('\unvcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    adjustBoxColor($stuff);
+    my $stuff = adjustBoxColor(LookupValue($box));
     (defined $stuff ? $stuff->unlist : List()); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -670,6 +676,10 @@ DefConstructor('\hrule RuleSpecification',
     . "(<ltx:rule height='#rheight' depth='#rdepth' width='#rwidth' color='#color'/>))",
   afterConstruct => sub {    # NOTE: Only For xy development!
     Warn('unexpected', 'hrule', $_[0], "Encountered \\hrule in SVG") if inSVG(); },
+  beforeConstruct => sub {
+    my ($document, $whatsit) = @_;
+    my $w = $whatsit->getProperty('rwidth');
+    $_[0]->maybeCloseElement('ltx:p') if $w && ($w eq '100%'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $dims   = $whatsit->getArg(1);
@@ -695,11 +705,54 @@ DefConstructor('\hrule RuleSpecification',
     return; });
 
 # ======================================================================
-# Various leaders, ignored for now...
-DefPrimitiveI('\leaders',  undef, undef);
-DefPrimitiveI('\cleaders', undef, undef);
-DefPrimitiveI('\xleaders', undef, undef);
+# Various leaders, mostly faking it for now...
 
+# \leaders <box or rule><glue>  fills the space specified by <glue> (which may be \hfill)
+#  with copies of the <box or glue>
+# \cleaders similarly, but centers the result, if it doesn't completely fill <glue>
+# \xleaders similarly, but stretches the result, if it doesn't completely fill <glue>
+# Note that the <glue> is NOT a Glue (eg a glue specification), but something like \hfill
+
+# Normally, these are used in a TOC, with a variable width (reflow),
+# so you'd hope for some adaptive CSS approach.
+# But the CSS is tricky, and you need CSS to control the leader's container as well.
+# However, occasionally, leaders appear within an object with an explicitly requested width,
+# so maybe it's reasonable to set the width (or duplicate the filler) to fill that width?
+# Alternatively, you may wish to simply hide ltx_leaders
+DefConstructor('\leaders Digested Digested', sub {
+    my ($document, $filler, $glue) = @_;
+    my $fw = $filler->getWidth;
+    #    my $context = $document->getNode;
+    my $context = $document->getElement;
+    Debug("LEADERS of " . Stringify($filler) . " to fill " . Stringify($glue));
+    my $cbox      = $document->getNodeBox($context);
+    my $container = $document->openElement('ltx:text', _noautoclose => 1);
+    my ($fnode)   = $document->absorb($filler);
+    my ($unwrap, $fillw, $reqw);
+    # EXPLICITLY requested width?
+    if ($fnode && $cbox && ($reqw = $cbox->getProperty('width'))) {
+      if ($document->getNodeQName($fnode) eq 'ltx:rule') {    # Or other stretchable element?
+        Debug("   extend to " . ToString($reqw));
+        $document->setAttribute($fnode, width => $reqw->toAttribute);
+        $document->addClass($fnode, 'ltx_filled_leader');
+        $unwrap = 1; }
+      elsif (($fillw = $filler->getWidth) && ($fillw = $fillw->valueOf)) {
+        my $n = int($reqw->valueOf / $fillw);
+        Debug("  duplicate $n times");
+        $document->addClass($container, 'ltx_filled_leader');
+        for (my $i = 2 ; $i < $n ; $i++) {
+          $document->absorb($filler); } } }
+    else {
+      $document->addClass($container, 'ltx_leader'); }
+    $document->closeElement('ltx:text');
+    $document->unwrapNodes($container) if $unwrap;    # avoid redundant <ltx:text><ltx:rule>
+    return; },
+  ## Hide the rule argument from contributing cell borders to any containing Alignment
+  bounded => 1, beforeDigest => sub { $STATE->assignValue(Alignment => undef); }
+);
+
+Let('\cleaders', '\leaders');
+Let('\xleaders', '\leaders');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 

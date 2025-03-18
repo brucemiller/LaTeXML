@@ -2,6 +2,7 @@
 <?latexml class="article"?>
 <?latexml package="hyperxmp"?>
 <?latexml package="hyperref" options="draft,pdftitle=Test Hyperref Metadata,backref"?>
+<?latexml package="xcolor"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_authors_1line" prefix="cc: http://creativecommons.org/ns# dcterms: http://purl.org/dc/terms/">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -43,8 +44,47 @@
       <p>But macros expanded: <ref class="ltx_url" font="typewriter" href="http://localhost/dir/index.html">http://localhost/dir/index.html</ref>.</p>
     </para>
     <para xml:id="S2.p4">
-      <p>And, you get this: <ref class="ltx_url" font="typewriter" href="http://example.com/{̃}user">http://example.com/{̃}user</ref></p>
+      <p>And, you get this: <ref class="ltx_url" font="typewriter" href="http://example.com/~{}user">http://example.com/~{}user</ref></p>
     </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="autoref">section 3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Bounded color</title>
+    <para xml:id="S3.p1">
+      <p>A link: <ref class="ltx_href" color="#0000FF" href="https://example.com">here</ref>.</p>
+    </para>
+    <subsection inlist="toc" xml:id="S3.SS1">
+      <tags>
+        <tag>3.1</tag>
+        <tag role="autoref">subsection 3.1</tag>
+        <tag role="refnum">3.1</tag>
+        <tag role="typerefnum">§3.1</tag>
+      </tags>
+      <title><tag close=" ">3.1</tag>Color should not leak into this heading</title>
+      <para xml:id="S3.SS1.p1">
+        <p>This text should be black.</p>
+      </para>
+      <para xml:id="S3.SS1.p2">
+        <p>A simple macro: <text color="#0000FF">first and second.</text></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS2">
+      <tags>
+        <tag>3.2</tag>
+        <tag role="autoref">subsection 3.2</tag>
+        <tag role="refnum">3.2</tag>
+        <tag role="typerefnum">§3.2</tag>
+      </tags>
+      <title color="#0000FF"><tag close=" ">3.2</tag>Color should leak into this heading</title>
+      <para xml:id="S3.SS2.p1">
+        <p><text color="#0000FF">This text should be blue.</text></p>
+      </para>
+    </subsection>
   </section>
   <rdf about="" content="An Author" property="dcterms:creator"/>
   <rdf about="" content="Not subject to copyright" property="dcterms:rights"/>

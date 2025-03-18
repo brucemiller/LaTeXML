@@ -20,6 +20,7 @@ use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Radix;
 use Unicode::Normalize;
+use Data::Dumper;
 use Scalar::Util qw(blessed);
 use base         qw(LaTeXML::Common::Object);
 
@@ -498,10 +499,10 @@ sub serialize_aux {
       (map { $_ . '="' . $atnodes{$_} . '"' } sort keys %atnodes)
     );
     my $noindent_children = ($heuristic
-        # This emulates libxml2's heuristic
-        #     ? $noindent || grep { $_->nodeType != XML_ELEMENT_NODE } @children
+      # This emulates libxml2's heuristic
+      #     ? $noindent || grep { $_->nodeType != XML_ELEMENT_NODE } @children
       ? $noindent || grep { $_->nodeType == XML_TEXT_NODE } @children
-        # This is the "Correct" way to determine whether to add indentation
+      # This is the "Correct" way to determine whether to add indentation
       : $model->canContain(getNodeQName($self, $node), '#PCDATA'));
     return join('',
       ($noindent ? '' : $indent), $start,
@@ -1376,32 +1377,46 @@ sub makeError {
 # [xml:id and namespaced attributes are always allowed]
 sub setAttribute {
   my ($self, $node, $key, $value) = @_;
-  return                       if (ref $value) && ((!blessed($value)) || !$value->can('toAttribute'));
-  $value = $value->toAttribute if ref $value;
-  if ((defined $value) && ($value ne '')) {    # Skip if `empty'; but 0 is OK!
-    if ($key eq 'xml:id') {                    # If it's an ID attribute
-      $value = recordID($self, $value, $node);                                 # Do id book keeping
-      $node->setAttributeNS($LaTeXML::Common::XML::XML_NS, 'id', $value); }    # and bypass all ns stuff
-    elsif ($key !~ /:/) {    # No colon; no namespace (the common case!)
-                             # Ignore attributes not allowed by the model,
-                             # but accept "internal" attributes.
-      my $model = $$self{model};
-      my $qname = $model->getNodeQName($node);
-      if ($model->canHaveAttribute($qname, $key) || $key =~ /^_/) {
-        $node->setAttribute($key => $value); } }
-    else {                   # Accept any namespaced attributes
-      my ($ns, $name) = $$self{model}->decodeQName($key);
-      if ($ns) {             # If namespaced attribute (must have prefix!
-        my $prefix = $node->lookupNamespacePrefix($ns);    # namespace already declared?
-        if (!$prefix) {                                    # if namespace not already declared
-          $prefix = $$self{model}->getDocumentNamespacePrefix($ns, 1);             # get the prefix to use
-          getDocument($self)->documentElement->setNamespace($ns, $prefix, 0); }    # and declare it
-        if ($prefix eq '#default') {    # Probably shouldn't happen...?
+  my $model = $$self{model};
+  ## First, a couple of special case internal attributes
+  if ($key eq '_box') {
+    return $self->setNodeBox($node, $value); }
+  elsif ($key eq '_font') {
+    return $self->setNodeFont($node, $value); }
+  ## Next, verify the attribute allowed by Model, else internal or namespaced
+  elsif (($key =~ /:/) || ($key =~ /^_/)
+    || $model->canHaveAttribute($model->getNodeQName($node), $key)) {
+    ## OK, we're going to use the value, so make sure it's a string.
+    if (ref $value) {
+      if ((!blessed($value)) || !$value->can('toAttribute')) {
+        Warn('unexpected', (ref $value), $self,
+          "While setting attribute $key, Don't know how to encode $value",
+          Dumper($value));
+        return; }
+      else {
+        $value = $value->toAttribute; } }
+    if ((!defined $value) || ($value eq '')) {    # Useless value, after all
+      return; }
+    if ($key eq 'xml:id') {                       # If it's an ID attribute
+      $value = recordID($self, $value, $node);    # Do id book keeping
+      ## and bypass all ns stuff
+      $node->setAttributeNS($LaTeXML::Common::XML::XML_NS, 'id', $value); }
+    elsif ($key =~ /:/) {                         # ANY namespaced attribute
+      my ($ns, $name) = $model->decodeQName($key);
+      if ($ns) {                                  # If namespaced attribute (must have prefix!
+        my $prefix = $node->lookupNamespacePrefix($ns);    # already declared?
+        if (!$prefix) {                                    # Nope, not yet!
+          ## Create prefix to use, and declare it
+          $prefix = $model->getDocumentNamespacePrefix($ns, 1);
+          getDocument($self)->documentElement->setNamespace($ns, $prefix, 0); }
+        if ($prefix eq '#default') {                       # Probably shouldn't happen...?
           $node->setAttribute($name => $value); }
         else {
           $node->setAttributeNS($ns, "$prefix:$name" => $value); } }
       else {
-        $node->setAttribute($name => $value); } } }    # redundant case...
+        $node->setAttribute($name => $value); } }
+    else {    # Allowed (but NON-namespaced) or internal attribute
+      $node->setAttribute($key => $value); } }
   return; }
 
 sub addSSValues {
@@ -1652,11 +1667,17 @@ sub collapseXMDual {
 
 #**********************************************************************
 # Record the Box that created this node.
+# $box should be a Box/List/Whatsit object; else a previously recorded string
 sub setNodeBox {
   my ($self, $node, $box) = @_;
   return unless $box;
-  my $boxid = "$box";
-  $$self{node_boxes}{$boxid} = $box;
+  my $boxid = "$box";    # Effectively the address
+  if (ref $box) {
+    $$self{node_boxes}{$boxid} = $box; }
+  elsif (!$$self{node_boxes}{$box}) {
+    # Could get string for $box when copying nodes; should already be internned
+    Warn('internal', 'nonbox', $self,
+      "setNodeBox recording unknown source box: $box"); }
   return $node->setAttribute(_box => $boxid); }
 
 sub getNodeBox {
@@ -1667,14 +1688,20 @@ sub getNodeBox {
   if (my $boxid = $node->getAttribute('_box')) {
     return $$self{node_boxes}{$boxid}; } }
 
+# Record the font used on this node.
+# $font should be a Font object; else a previously recorded string
 sub setNodeFont {
   my ($self, $node, $font) = @_;
-  return unless ref $font;    # ?
-  my $fontid = $font->toString;
-  $$self{node_fonts}{$fontid} = $font;
+  my $fontid = (ref $font ? $font->toString : $font);
+  return unless $font;    # ?
   if ($node->nodeType == XML_ELEMENT_NODE) {
+    if (ref $font) {
+      $$self{node_fonts}{$fontid} = $font; }
+    elsif (!$$self{node_fonts}{$font}) {
+      # Could get string for $font when copying nodes; should already be internned
+      Warn('internal', 'nonfont', $self,
+        "setNodeFont recording unknown font: $font"); }
     $node->setAttribute(_font => $fontid); }
-  # otherwise, probably just ignorable?
   return; }
 
 # Possibly a sign of a design flaw; Set the node's font & all children that HAD the same font.
@@ -1695,7 +1722,9 @@ sub getNodeFont {
   my $t;
   while ($node && (($t = $node->nodeType) != XML_ELEMENT_NODE)) {
     $node = $node->parentNode; }
-  return ($node && ($t == XML_ELEMENT_NODE) && $$self{node_fonts}{ $node->getAttribute('_font') })
+  my $f;
+  return ($node && ($t == XML_ELEMENT_NODE)
+      && ($f = $node->getAttribute('_font')) && $$self{node_fonts}{$f})
     || LaTeXML::Common::Font->textDefault(); }
 
 sub getNodeLanguage {

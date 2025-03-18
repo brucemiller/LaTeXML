@@ -50,5 +50,9 @@ DefRegister('\pagefilstretch'   => Dimension(0));
 DefRegister('\pagefillstretch'  => Dimension(0));
 DefRegister('\pagefilllstretch' => Dimension(0));
 
+#======================================================================
+# Usable for things line \clearpage, etc.
+DefConstructorI('\lx@newpage', undef, "^<ltx:pagination role='newpage'/>");
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

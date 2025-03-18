@@ -54,6 +54,7 @@ lib/LaTeXML/Core/Definition.pm
 lib/LaTeXML/Core/Definition/Expandable.pm
 lib/LaTeXML/Core/Definition/Conditional.pm
 lib/LaTeXML/Core/Definition/Primitive.pm
+lib/LaTeXML/Core/Definition/FontDef.pm
 lib/LaTeXML/Core/Definition/Register.pm
 lib/LaTeXML/Core/Definition/CharDef.pm
 lib/LaTeXML/Core/Definition/Constructor.pm
@@ -1249,6 +1250,9 @@ t/expansion/numexpr.xml
 t/expansion/parindent.pdf
 t/expansion/parindent.tex
 t/expansion/parindent.xml
+t/expansion/partial.pdf
+t/expansion/partial.tex
+t/expansion/partial.xml
 t/expansion/pdftex_expanded.pdf
 t/expansion/pdftex_expanded.tex
 t/expansion/pdftex_expanded.xml
@@ -1352,6 +1356,9 @@ t/fonts/mixed.xml
 t/fonts/omencodings.pdf
 t/fonts/omencodings.tex
 t/fonts/omencodings.xml
+t/fonts/plainfonts.pdf
+t/fonts/plainfonts.tex
+t/fonts/plainfonts.xml
 t/fonts/sizes.pdf
 t/fonts/sizes.tex
 t/fonts/sizes.xml
@@ -1399,6 +1406,9 @@ t/grouping/scopemacro.latexml
 t/grouping/scopemacro.pdf
 t/grouping/scopemacro.tex
 t/grouping/scopemacro.xml
+t/keyval/keyvalemptyvalue.pdf
+t/keyval/keyvalemptyvalue.tex
+t/keyval/keyvalemptyvalue.xml
 t/keyval/keyvalinline.pdf
 t/keyval/keyvalinline.tex
 t/keyval/keyvalinline.xml

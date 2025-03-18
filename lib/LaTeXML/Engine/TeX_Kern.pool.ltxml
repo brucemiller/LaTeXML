@@ -30,7 +30,7 @@ use LaTeXML::Package;
 # Completely HACK version for the moment
 # Note that \kern should add vertical spacing in vertical modes!
 DefConstructor('\kern Dimension', sub {
-    my ($document, $length) = @_;
+    my ($document, $length, %props) = @_;
     my $parent = $document->getNode;
     if ($document->getNodeQName($parent) eq 'svg:g') {
       if (my $x = $length->pxValue) {
@@ -40,9 +40,38 @@ DefConstructor('\kern Dimension', sub {
     } }
     elsif (inSVG()) {
       Warn('unexpected', 'kern', $_[0], "Lost kern in SVG " . ToString($length)); }
-});
-DefPrimitiveI('\unkern', undef, undef);
-DefRegister('\lastkern' => Dimension(0), readonly => 1);
+    elsif ($props{isMath}) {
+      $document->insertElement('ltx:XMHint', undef, width => $length); }
+    else {
+      # Add space to document?
+      $document->absorb(DimensionToSpaces($length)); }
+  },
+  properties => sub {
+    my ($stomach, $length) = @_;
+    (width => $length, isSpace => 1, isKern => 1); });
+
+# Remove kern, if last on LIST
+DefPrimitiveI('\unkern', undef, sub {
+    my ($stomach) = @_;
+    my @c = ();
+    my $box;
+    # Scan past any Comment boxes
+    while (($box = $LaTeXML::LIST[-1]) && (ref $box eq 'LaTeXML::Core::Comment')) {
+      push(@c, pop(@LaTeXML::LIST)); }
+    if ($box && $box->getProperty('isKern')) {
+      pop(@LaTeXML::LIST); }
+    push(@LaTeXML::LIST, @c);
+    return; });
+
+# Get kern, if last on LIST
+DefRegister('\lastkern' => Dimension(0), readonly => 1, getter => sub {
+    for (my $i = $#LaTeXML::LIST ; $i > 0 ; $i--) {
+      my $box = $LaTeXML::LIST[$i];
+      last if !$box;
+      next if ref $box eq 'LaTeXML::Core::Comment';
+      last if !$box->getProperty('isKern');
+      return $box->getProperty('width'); }
+    return Dimension(0); });
 
 #======================================================================
 # Moving Vertically

@@ -70,6 +70,28 @@ DefPrimitive('\muskipdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
 DefPrimitive('\toksdef SkipSpaces Token SkipSpaces SkipMatch:=', sub {
     shorthandDef($_[0], $_[1], '\toks', Tokens()); });
 
+# Candidate for use defining plain's \alloc@ and latex's \e@alloc
+our %stored_registers = (
+  '\countdef' => 1, '\dimendef' => 1, '\skipdef' => 1, '\muskipdef' => 1, '\toksdef' => 1);
+DefMacro('\lx@alloc@ DefToken {} {} DefToken', sub {
+    my ($gullet, $type, $tracker, $allocator, $cs) = @_;
+    $type    = ToString($type);
+    $tracker = ToString($tracker);
+    my $next;
+    if ($stored_registers{ ToString($allocator) }) {
+      $next = LaTeXML::Package::allocateRegister($type, $cs);
+      $next =~ s/^\Q$type\E//; }
+    else {
+      my $xnext = $STATE->lookupValue($tracker) || Number(0);
+      $next = $xnext->valueOf + 1; }
+    $STATE->assignValue($tracker => Number($next), 'global');
+    return Tokens(T_CS('\allocationnumber'), Explode($next), T_CS('\relax'),
+      T_CS('\global'), $allocator, $cs, T_OTHER('='), T_CS('\allocationnumber')); });
+
+# Out of place, but utility for LaTeX-style \the<ctr>; used by Package's NewCounter
+DefMacro('\lx@counter@arabic{}', sub {
+    ExplodeText(CounterValue(ToString(Expand($_[1])))->valueOf); });
+
 #======================================================================
 # Numeric Registers
 #----------------------------------------------------------------------

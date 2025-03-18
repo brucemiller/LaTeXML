@@ -420,7 +420,9 @@ sub domToXPath {
   return ($xpath, $nnodes, @wilds); }
 
 # May need some work here;
-my %EXCLUDED_MATCH_ATTRIBUTES = (scriptpos => 1, 'xml:id' => 1, fontsize => 1);    # [CONSTANT]
+my %EXCLUDED_MATCH_ATTRIBUTES = (
+    scriptpos => 1, mathstyle => 1,
+    'xml:id' => 1, fontsize => 1);    # [CONSTANT]
 
 sub domToXPath_rec {
   my ($document, $node, $axis, $pos) = @_;
