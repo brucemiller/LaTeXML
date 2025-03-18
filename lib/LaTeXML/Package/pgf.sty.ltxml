@@ -37,11 +37,6 @@ DefMacro('\pgfsetcolor{}', '\pgfsetcolor@orig{#1}\lxSVG@set@color');
 DefPrimitive('\lxSVG@set@color', sub {
     MergeFont(color => LookupValue('color_pgfstrokecolor')); });
 
-# This makes this conditional always true;  Why???
-# DefConditionalI('\ifpgf@relevantforpicturesize', undef, sub { 1; });
-# DefMacroI('\pgf@relevantforpicturesizefalse', undef, '');
-# DefMacroI('\pgf@relevantforpicturesizetrue',  undef, '');
-
 # These wrap pgfpicture with lxSVG@picture (but wait till everything loaded!)
 AtBeginDocument(
   '\expandafter\def\expandafter\pgfpicture\expandafter{\expandafter\lxSVG@picture\pgfpicture}'
