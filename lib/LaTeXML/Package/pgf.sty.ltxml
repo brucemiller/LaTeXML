@@ -42,11 +42,6 @@ if (XEquals(T_CS('\XC@mcolor'), T_CS('\relax'))) {
   Let('\XC@mcolor', '\@empty'); }
 AddToMacro('\XC@mcolor', '\pgfsetcolor{.}');
 
-# This makes this conditional always true;  Why???
-DefConditionalI('\ifpgf@relevantforpicturesize', undef, sub { 1; });
-DefMacroI('\pgf@relevantforpicturesizefalse', undef, '');
-DefMacroI('\pgf@relevantforpicturesizetrue',  undef, '');
-
 # These wrap pgfpicture with lxSVG@picture (but wait till everything loaded!)
 AtBeginDocument(
   '\expandafter\def\expandafter\pgfpicture\expandafter{\expandafter\lxSVG@picture\pgfpicture}'
