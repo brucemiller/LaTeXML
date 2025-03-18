@@ -340,7 +340,7 @@ DefConstructor('\lxSVG@drawpath@clipped{}{}',
     . '<svg:path id="pgfpath#obj" d="#1" />'
     . '</svg:clipPath>'
     . '<svg:use xlink:href="##pgfpath#obj" style="#2" />'
-    . '<svg:g clip-path="url(##pgfcp#obj)">',
+    . '<svg:g clip-path="url(##pgfcp#obj)" _autoclose="1">',
   reversion  => '', sizer => 0,
   properties => { obj => sub { SVGNextObject(); } });
 
@@ -363,7 +363,7 @@ DefConstructor('\lxSVG@discardpath@clipped{}',
   '<svg:clipPath id="pgfcp#obj">'
     . '<svg:path d="#1" />'
     . '</svg:clipPath>'
-    . '<svg:g clip-path="url(##pgfcp#obj)">',
+    . '<svg:g clip-path="url(##pgfcp#obj)" _autoclose="1">',
   reversion  => '', sizer => 0,
   properties => { obj => sub { SVGNextObject(); } });
 
@@ -387,8 +387,8 @@ DefConstructor('\lxSVG@begingroup@ RequiredKeyVals', sub {
     # Special case check: if we are in a latexml context, move up to parent svg:g
     if ($doc->getNodeQName($this) =~ /^ltx:/
       && (my $g = $doc->findnode("ancestor::svg:g[position()=1]", $this))) {
-      $doc->openElement('svg:svg', _autoopened => 1); }
-    $doc->openElement('svg:g', $kv->getHash); },
+      $doc->openElement('svg:svg', _autoopened => 1, _autoclose => 1); }
+    $doc->openElement('svg:g', $kv->getHash, _autoclose => 1); },
   reversion => '', sizer => 0);
 
 #=====================================================================
@@ -534,7 +534,7 @@ DefConstructor('\lxSVG@setpatternuncolored@{}{}{}{}',
     . '<svg:use xlink:href="##pgfsym#1"/>'
     . '</svg:g>'
     . '</svg:pattern></svg:defs>'
-    . '<svg:g fill="url(##pgfupat#obj)">',
+    . '<svg:g fill="url(##pgfupat#obj)" _autoclose="1">',
   properties => {
     obj   => sub { SVGNextObject(); },
     color => sub { Color('rgb', $_[2], $_[3], $_[4]); } },

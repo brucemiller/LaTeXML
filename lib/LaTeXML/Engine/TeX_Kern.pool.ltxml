@@ -27,17 +27,18 @@ use LaTeXML::Package;
 # \lastkern         iq is 0.0 pt or the last kern on the current list.
 
 # \kern is heavily used by xy.
-# Completely HACK version for the moment
 # Note that \kern should add vertical spacing in vertical modes!
 DefConstructor('\kern Dimension', sub {
     my ($document, $length, %props) = @_;
     my $parent = $document->getNode;
     if ($document->getNodeQName($parent) eq 'svg:g') {
       if (my $x = $length->pxValue) {
-        # HACK HACK HACK
-        my $transform = $parent->getAttribute('transform');
-        $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
-    } }
+        my $shift = "translate($x,0)";
+        if($parent->childNodes){ # If already have positioned children, new svg:g
+          $document->openElement('svg:g', _autoclose=>1, transform => $shift); }
+        else {
+          my $prev = $parent->getAttribute('transform');
+          $parent->setAttribute(transform => ($prev ? "$prev $shift" : $shift)); } } }
     elsif (inSVG()) {
       Warn('unexpected', 'kern', $_[0], "Lost kern in SVG " . ToString($length)); }
     elsif ($props{isMath}) {
