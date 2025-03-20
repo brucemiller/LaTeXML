@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage{xcolor}
-\usepackage[arrow,curve,matrix]{xy}
+\usepackage[arrow,curve,matrix,knot]{xy}
 \begin{document}
 
 \xy (3,0)*{A} ; (20,6)*+{B}*\cir{} **\dir{-} \endxy
@@ -11,4 +11,9 @@
   & X \ar[d]_f \\
   & Y \ar[r]^g & Z }
 
+Before equation
+\[ x = \xymatrix{A \ar[r] \ar[d] \ar[rd] & B \\ C & D} \]
+And after it.
+
+\[ [\raise5pt\xybox{0;/r1pc/:\htwist}] \]
 \end{document}

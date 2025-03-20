@@ -89,17 +89,21 @@
   <!-- Top level generated svg:svg element gets id & class from ltx:picture
        If ltx:picture/svg:svg had any of those, they got lost! -->
   <xsl:template match="ltx:picture" mode="as-svg">
-    <xsl:element name="svg" namespace="{$svg_ns}">
-      <!-- copy id, class from parent ltx:picture, but do NOT derive css style from size -->
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_classes"/>
-      <xsl:call-template name="copy_foreign_attributes"/>
-      <xsl:apply-templates select="." mode="add_RDFa"/>
-      <!-- but copy other svg:svg attributes -->
-      <xsl:for-each select="svg:svg/@*">
-        <xsl:apply-templates select="." mode="copy-attribute"/>
-      </xsl:for-each>
-      <xsl:apply-templates select="svg:svg/*"/>
+    <!-- Wrap in inline-block, to ensure CSS works (eg, mtext in Firefox) -->
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_inline-block</xsl:attribute>
+      <xsl:element name="svg" namespace="{$svg_ns}">
+        <!-- copy id, class from parent ltx:picture, but do NOT derive css style from size -->
+        <xsl:call-template name="add_id"/>
+        <xsl:call-template name="add_classes"/>
+        <xsl:call-template name="copy_foreign_attributes"/>
+        <xsl:apply-templates select="." mode="add_RDFa"/>
+        <!-- but copy other svg:svg attributes -->
+        <xsl:for-each select="svg:svg/@*">
+          <xsl:apply-templates select="." mode="copy-attribute"/>
+        </xsl:for-each>
+        <xsl:apply-templates select="svg:svg/*"/>
+      </xsl:element>
     </xsl:element>
   </xsl:template>
 
