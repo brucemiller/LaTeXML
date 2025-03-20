@@ -77,13 +77,15 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     if ($document->getNodeQName($current) =~ /^svg:/) {    # Already in svg:svg ?
           # Seemingly this positioning is correct; otherwise inherit from context
       my ($x, $y) = (-$props{minx}, -$props{miny});
+      $y -= $props{depth}->pxValue if $props{depth}->pxValue;
       my $gnode = $document->openElement('svg:g',
         transform   => "matrix(1 0 0 1 $x $y)",
         _scopebegin => 1, class => 'ltx_nestedsvg');
       $document->absorb($content);
       $document->closeElement('svg:g'); }
     else {
-      $document->openElement('ltx:picture');
+      my $picture = $document->openElement('ltx:picture');
+      $document->setAttribute($picture, 'imagedepth', $props{depth}->pxValue) if $props{depth}->pxValue;
       $document->openElement('svg:svg',
         version  => "1.1",
         width    => $props{pxwidth}, height => $props{pxheight},
@@ -114,12 +116,13 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     my $miny    = LookupRegister('\pgf@picminy');
     my $width   = LookupRegister('\pgf@picmaxx');
     my $height  = LookupRegister('\pgf@picmaxy');
+    my $depth   = Dimension(Expand(T_CS('\pgf@shift@baseline')));
     my $w       = max($width->pxValue,  1);
     my $h       = max($height->pxValue, 1);
     my $content = $whatsit->getArg(1);
     my ($cwidth, $cheight, $cdepth) = $content->getSize;
-    Debug("TIKZ size: " . ToString($width) . " x " . ToString($height)) if $LaTeXML::DEBUG{pgf};
-    Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny))     if $LaTeXML::DEBUG{pgf};
+    Debug("TIKZ size: " . ToString($width) . " x " . ToString($height) . " + " . ToString($depth)) if $LaTeXML::DEBUG{pgf};
+    Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny)) if $LaTeXML::DEBUG{pgf};
     Debug("TIKZ BODY: " . ToString($cwidth) . " x " . ToString($cheight)
         . " + " . ToString($cdepth)) if $LaTeXML::DEBUG{pgf};
     Debug("BODY is " . ToString($content)) if $LaTeXML::DEBUG{pgf};
@@ -130,7 +133,7 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     $whatsit->setProperty(miny     => 0);
     $whatsit->setProperty(width    => $width);
     $whatsit->setProperty(height   => $height);
-    $whatsit->setProperty(depth    => Dimension(0));
+    $whatsit->setProperty(depth    => $depth->add($miny->negate));
     $whatsit->setProperty(pxwidth  => $w);
     $whatsit->setProperty(pxheight => $h);
     # or tikz macro (see corescopes)
@@ -754,6 +757,7 @@ DefMacro('\pgfsys@shadingoutsidepgfpicture{}', <<'EoTeX');
     \pgf@picminy=0pt%
     \pgf@picmaxx=\pgf@x%
     \pgf@picmaxy=\pgf@y%
+    \def\pgf@shift@baseline{0pt}%
     \pgfsys@typesetpicturebox{\pgfpic}%
   \endgroup
 EoTeX
