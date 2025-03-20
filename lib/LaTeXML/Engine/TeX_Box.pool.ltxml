@@ -270,8 +270,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     no warnings 'recursion';
     my ($document, $spec, $contents, %props) = @_;
     my $model   = $document->getModel;
-    my $context = $document->getElement;
-    my $current = $context;
+    my $current = $document->getElement;
 
     # What is the CORRECT (& general) way to ask whether we're in "vertical mode"??
     #  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
@@ -281,13 +280,10 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $newtag = ($issvg ? 'svg:g' : ($vmode ? ($inline ? 'ltx:inline-block' : 'ltx:p') : 'ltx:text'));
     my $node   = $document->openElement($newtag, _noautoclose => 1, width => $props{width});
     $document->absorb($contents);
-    if (!$issvg) {
+    if (!$issvg) {              # If not directly svg, but nested within closeable (???)
       while (!$document->getElement()->hasAttribute('_beginscope') && $document->maybeCloseElement('svg:g')) { }
       $document->maybeCloseElement('svg:svg'); }
-    if ($issvg) {    # ODDLY, svg:g isnt necessarily balanced in tikz?
-      $document->maybeCloseElement('svg:g'); }
-    else {
-      $document->maybeCloseNode($node); }
+    $document->maybeCloseNode($node);
   },
   mode  => 'text', bounded => 1,
   sizer => '#2',

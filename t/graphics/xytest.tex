@@ -1,0 +1,14 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage[arrow,curve,matrix]{xy}
+\begin{document}
+
+\xy (3,0)*{A} ; (20,6)*+{B}*\cir{} **\dir{-} \endxy
+
+\xymatrix{
+  U \ar@/_/[ddr]_y \ar[dr] \ar@/^/[drr]^x\\
+  & X \times_Z Y \ar[d]^q \ar[r]_p
+  & X \ar[d]_f \\
+  & Y \ar[r]^g & Z }
+
+\end{document}
