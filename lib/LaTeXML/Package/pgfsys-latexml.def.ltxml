@@ -86,7 +86,7 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
       $document->openElement('ltx:picture');
       $document->openElement('svg:svg',
         version  => "1.1",
-        width    => $props{pxwidth}, height => $props{pxheight},
+        width    => $props{pxwidth}, height => $props{pxheight}, style => $props{style},
         viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
         overflow => "visible");
       my $x0 = -(0 + $props{minx});
@@ -117,6 +117,7 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     my $w       = max($width->pxValue,  1);
     my $h       = max($height->pxValue, 1);
     my $content = $whatsit->getArg(1);
+    my $base    = Dimension(ToString(Expand(T_CS('\pgf@shift@baseline'))))->pxValue;
     my ($cwidth, $cheight, $cdepth) = $content->getSize;
     Debug("TIKZ size: " . ToString($width) . " x " . ToString($height)) if $LaTeXML::DEBUG{pgf};
     Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny))     if $LaTeXML::DEBUG{pgf};
@@ -133,6 +134,7 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     $whatsit->setProperty(depth    => Dimension(0));
     $whatsit->setProperty(pxwidth  => $w);
     $whatsit->setProperty(pxheight => $h);
+    $whatsit->setProperty(style    => "vertical-align:".$base."px") if $base;
     # or tikz macro (see corescopes)
     return; },
   # \pgfpicture seems to make a 0 sized box, which throws off our postprocessor
@@ -754,6 +756,7 @@ DefMacro('\pgfsys@shadingoutsidepgfpicture{}', <<'EoTeX');
     \pgf@picminy=0pt%
     \pgf@picmaxx=\pgf@x%
     \pgf@picmaxy=\pgf@y%
+    \def\pgf@shift@baseline{0pt}%
     \pgfsys@typesetpicturebox{\pgfpic}%
   \endgroup
 EoTeX
