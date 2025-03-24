@@ -14,171 +14,62 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-use Unicode::Normalize;
 use LaTeXML::Util::Pathname;
-use charnames ':full';
-use List::Util qw(min max);
-
-###$LaTeXML::DEBUG{compiled} = 1 unless $LaTeXML::DEBUG{compiling} || $LaTeXML::DEBUG{nocompiled};
 
 #**********************************************************************
-# CORE TeX; Built-in commands.
+# Core TeX; Built-in commands.  And plain.tex
 #**********************************************************************
-#LaTeXML::Package::LoadPoolX('foo');
-LoadPool('Base_Schema');
-LoadPool('Base_ParameterTypes');
-LoadPool('Base_Utility');
-LoadPool('Base_XMath');
-LoadPool('TeX_Box');
-LoadPool('TeX_Character');
-LoadPool('TeX_Debugging');
-LoadPool('TeX_FileIO');
-LoadPool('TeX_Fonts');
-LoadPool('TeX_Glue');
-LoadPool('TeX_Hyphenation');
-LoadPool('TeX_Inserts');
-LoadPool('TeX_Job');
-LoadPool('TeX_Kern');
-LoadPool('TeX_Logic');
-LoadPool('TeX_Macro');
-LoadPool('TeX_Marks');
-LoadPool('TeX_Math');
-LoadPool('TeX_Page');
-LoadPool('TeX_Paragraph');
-LoadPool('TeX_Penalties');
-LoadPool('TeX_Registers');
-LoadPool('TeX_Tables');
-LoadPool('eTeX');      # unless.... ?
-LoadPool('pdfTeX');    # unless.... ?
+LoadPool('Base');
 
-LoadPool('Base_Deprecated');
-
-##if ($LaTeXML::DEBUG{compiled}) {
-##    loadDump('plain.tex'); }
-##elsif (!$LaTeXML::DEBUG{compiling}) {
-LoadPool('plain');
-##}
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Orphans?
-#======================================================================
-
-# This is LaTeX, but used a little in the Primitives?
-# define it here (only approxmiately), since it's already useful.
-Let('\protect', '\relax');
-
-# Is this real, or an accident/typo ? If real, Where does it come from?
-DefRegister('\everyhelp', Tokens());
-
-# Cleanup the pre & post tokens for halign columns in math mode.
-# If a pair of $..$ enclose stuff that is "OK" in math mode, we don't need the $.
-# Note that the 1st $ is switching OUT of math mode!
-# BUT: This is never used???
-sub stripDupMath {
-  my (@tokens) = @_;
-  my @poss = grep { $tokens[$_]->defined_as(T_MATH) } 0 .. $#tokens;
-  shift(@poss) if scalar(@poss) % 2;    # Get pairs!
-  while (@poss) {
-    my ($p2, $p1) = (pop(@poss), pop(@poss));
-    splice(@tokens, $p1, 2) if $p2 == $p1 + 1; }
-  return @tokens; }
-
-DefMacro('\hiderel{}', "#1");           # Just ignore, for now...
+LoadPool('plain_bootstrap');
+if ($ENV{LATEXML_USEDUMP}) {
+  LoadPool('/tmp/plain_dump'); }
+else {
+  LoadPool('plain_base'); }
+LoadPool('plain_constructs');
 
 #======================================================================
-# LaTeX Trigger Hook
+# AutoLoad Trigger Hooks for LaTeX, AmSTeX,...
 # Auto-load the format according to the initial control-sequences seen
 #======================================================================
 # No, \documentclass isn't really a primitive -- It's not even TeX!
 # But we define a number of stubs here that will automatically load
 # the LaTeX pool (or AmSTeX.pool) (which will presumably redefine them), and then
 # stuff the token back to be reexecuted.
-if (!$LaTeXML::DEBUG{compiling}) {
-  foreach my $ltxtrigger (qw(documentclass
-    newcommand renewcommand newenvironment renewenvironment
-    NeedsTeXFormat ProvidesFile
-    ProvidesPackage RequirePackage PassOptionsToPackage
-    makeatletter makeatother
-    typeout begin listfiles nofiles)) {
-    DefAutoload($ltxtrigger, 'LaTeX.pool.ltxml'); }
-}
-if (!($LaTeXML::DEBUG{compiling} || $LaTeXML::DEBUG{compiled})) {
-  foreach my $ltx3trigger (qw(ExplSyntaxOn
-    ProvidesExplClass ProvidesExplPackage)) {
-    # DG: note that these auto-loads are not perfect --
-    #     if they are triggered with a raw .sty file for example,
-    #     the expl3 support will "expire" at the end of the current scope,
-    #     and e.g. \ExplSyntaxOn will once again be undefined.
-    DefAutoload($ltx3trigger, 'expl3.pool.ltxml'); }
-}
-if (!$LaTeXML::DEBUG{compiling}) {
-  # Seemingly good candidates to trigger AmSTeX ??
-  foreach my $amstrigger (qw(BlackBoxes NoBlackBoxes
-    TagsAsMath TagsAsText TagsOnLeft TagsOnRight CenteredTagsOnSplits TopOrBottomTagsOnSplits
-    LimitsOnInts NoLimitsOnInts LimitsOnNames NoLimitsOnNames LimitsOnSums NoLimitsOnSums
-    loadbold loadeufb loadeufm loadeurb loadeurm loadeusb
-    loadeusm loadmathfont loadmsam loadmsbm)) {
-    DefAutoload($amstrigger, 'AmSTeX.pool.ltxml'); }
+foreach my $ltxtrigger (qw(documentclass
+  newcommand renewcommand newenvironment renewenvironment
+  NeedsTeXFormat ProvidesFile
+  ProvidesPackage RequirePackage PassOptionsToPackage
+  makeatletter makeatother
+  typeout begin listfiles nofiles)) {
+  DefAutoload($ltxtrigger, 'LaTeX.pool.ltxml'); }
 
-  # Darn; we need to be even more clever, since we need to simulate an amstex command, as well.
+# Questionable...
+foreach my $ltx3trigger (qw(ExplSyntaxOn
+  ProvidesExplClass ProvidesExplPackage)) {
+  # DG: note that these auto-loads are not perfect --
+  #     if they are triggered with a raw .sty file for example,
+  #     the expl3 support will "expire" at the end of the current scope,
+  #     and e.g. \ExplSyntaxOn will once again be undefined.
+  DefAutoload($ltx3trigger, 'expl3.sty.ltxml'); }
+
+# Seemingly good candidates to trigger AmSTeX ??
+foreach my $amstrigger (qw(BlackBoxes NoBlackBoxes
+  TagsAsMath TagsAsText TagsOnLeft TagsOnRight CenteredTagsOnSplits TopOrBottomTagsOnSplits
+  LimitsOnInts NoLimitsOnInts LimitsOnNames NoLimitsOnNames LimitsOnSums NoLimitsOnSums
+  loadbold loadeufb loadeufm loadeurb loadeurm loadeusb
+  loadeusm loadmathfont loadmsam loadmsbm)) {
+  DefAutoload($amstrigger, 'AmSTeX.pool.ltxml'); }
+
+# Darn; we need to be even more clever, since we need to simulate an amstex command, as well.
   # For example \documentstyle[...]{amsppt} must switch to AMSTeX mode, _NOT_ LaTeX mode!!!!
-  DefMacro('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim', sub {
-      my ($gullet, $options, $class) = @_;
-      LoadPool((ToString($class) =~ /^amsppt$/ ? "AmSTeX" : "LaTeX"));
-      (T_CS('\\documentstyle'),
-        ($options ? (T_OTHER('['), $options->unlist, T_OTHER(']')) : ()),
-        T_BEGIN, $class->unlist, T_END); });
-}
-# Technically should be in LaTeX.pool, but we try to maintain the bookkeeping from the very start,
-# in order to avoid partially defined behavior when --preload directives are mixed with \usepackage{} loads
-if (!($LaTeXML::DEBUG{compiled} || $LaTeXML::DEBUG{compiling})) {
-  DefMacro('\@pushfilename',
-    '\xdef\@currnamestack{{\@currname}{\@currext}{\the\catcode`\@}\@currnamestack}');
-  DefMacro('\@popfilename', '\expandafter\@p@pfilename\@currnamestack\@nil');
-  DefMacro('\@p@pfilename {}{}{} Until:\@nil',
-    '\gdef\@currname{#1}%
-    \gdef\@currext{#2}%
-    \catcode`\@#3\relax
-    \gdef\@currnamestack{#4}');
-}
-DefMacroI(T_CS('\@currnamestack'), undef, Tokens());
-Let('\@currname', '\lx@empty');
-Let('\@currext',  '\lx@empty');
+DefMacro('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim', sub {
+  my ($gullet, $options, $class) = @_;
+  LoadPool((ToString($class) =~ /^amsppt$/ ? "AmSTeX" : "LaTeX"));
+  (T_CS('\\documentstyle'),
+    ($options ? (T_OTHER('['), $options->unlist, T_OTHER(']')) : ()),
+    T_BEGIN, $class->unlist, T_END); });
 
 #======================================================================
-# After all other rewrites have acted, a little cleanup
-# [This suggests that it should be (one of) the LAST (math) rewrite applied?
-# Do we need to define it last?]
-DefRewrite(xpath => 'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
-  replace => sub { my ($document, $wrap) = @_;
-    if (my $node = $document->getFirstChildElement($wrap)) {
-      # Copy attributes but NOT internal ones,
-      # NOR xml:id, else we get clashes
-      foreach my $attribute ($wrap->attributes) {
-        if ($attribute->nodeType == XML_ATTRIBUTE_NODE) {
-          my $attr = $document->getNodeQName($attribute);
-          $document->setAttribute($node, $attr => $attribute->getValue)
-            unless ($attr eq 'xml:id') || $attr =~ /^_/;
-          if    ($attr =~ /^_/) { }
-          elsif ($attr eq 'xml:id') {
-            my $id = $attribute->getValue;
-            if (my $previd = $node->getAttribute('xml:id')) {    # Keep original id
-                  # but swap any references to the one on the wrapper!
-              foreach my $ref ($document->findnodes("//*[\@idref='$id']")) {
-                $ref->setAttribute(idref => $previd); }
-              $wrap->removeAttribute('xml"id');
-              $document->unRecordID($id); }
-            else {
-              $wrap->removeAttribute('xml:id');
-              $document->unRecordID($id);
-              $document->setAttribute($node, 'xml:id' => $id); } }
-          else {
-            $document->setAttribute($node, $attr => $attribute->getValue); } } }
-      # But keep $node's font from being overwritten.
-      $document->setNodeFont($wrap, $document->getNodeFont($node));
-      ## WHY THIS????
-      $document->getNode->appendChild($node);
-} });
-
-#**********************************************************************
 
 1;

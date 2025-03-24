@@ -2542,9 +2542,11 @@ sub InputDefinitions {
       # These arguments mysteriously appear in \@onefilewith@ptions, MUCH later than \@pushfilename
       # We place the neaded data after \@pushfilename, but since we're Digesting in isolation,
       # they'll disappear if they aren't consumed by expl3.  Whew!
-      Digest(Tokens(T_CS('\@pushfilename'),
-          T_BEGIN, T_END, T_BEGIN, T_END, T_BEGIN, Explode($name), T_END))
-        if $pushpop;
+      if($pushpop){
+        Digest(Tokens(T_CS('\@pushfilename'),
+	  T_BEGIN, T_END, T_BEGIN, T_END, T_BEGIN, Explode($name), T_END)); }
+      else {
+        Digest(T_CS('\lx@pushfilename')); }
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
       if (my $passoptions = $options{withoptions} && $prevname
         && LookupValue('opt@' . $prevname . "." . $prevext)) {
@@ -2590,7 +2592,7 @@ sub InputDefinitions {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
       DefMacroI('\@currname', undef, Tokens(Explode($prevname))) if $prevname;
       DefMacroI('\@currext',  undef, Tokens(Explode($prevext)))  if $prevext;
-      Digest(T_CS('\@popfilename')) if $pushpop;
+      Digest(($pushpop ? T_CS('\@popfilename') : T_CS('\lx@popfilename')));
       resetOptions(); }    # And reset options afterwards, too.
     return $file; }
   elsif (!$options{noerror}) {

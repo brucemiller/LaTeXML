@@ -192,7 +192,7 @@ our @CATCODE_EXECUTABLE = (    # [CONSTANT]
 our @CATCODE_STANDARDCHAR = (    # [CONSTANT]
   "\\",  '{',   '}',   q{$},
   q{&},  "\n",  q{#},  q{^},
-  q{_},  undef, undef, undef,
+  q{_},  undef, ' ', undef,
   undef, undef, q{%},  undef,
   undef, undef, undef, undef);
 
