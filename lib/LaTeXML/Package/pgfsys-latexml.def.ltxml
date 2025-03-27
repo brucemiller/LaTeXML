@@ -117,10 +117,11 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     my $w       = max($width->pxValue,  1);
     my $h       = max($height->pxValue, 1);
     my $content = $whatsit->getArg(1);
-    my $base    = Dimension(ToString(Expand(T_CS('\pgf@shift@baseline'))))->pxValue;
+    my $shift   = ToString(Expand(T_CS('\pgf@shift@baseline')));
+    my $base    = ($shift ? $miny->subtract(Dimension($shift))->pxValue : 0);
     my ($cwidth, $cheight, $cdepth) = $content->getSize;
     Debug("TIKZ size: " . ToString($width) . " x " . ToString($height)) if $LaTeXML::DEBUG{pgf};
-    Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny))     if $LaTeXML::DEBUG{pgf};
+    Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny) . " [offset $base]")     if $LaTeXML::DEBUG{pgf};
     Debug("TIKZ BODY: " . ToString($cwidth) . " x " . ToString($cheight)
         . " + " . ToString($cdepth)) if $LaTeXML::DEBUG{pgf};
     Debug("BODY is " . ToString($content)) if $LaTeXML::DEBUG{pgf};
@@ -943,11 +944,10 @@ sub openTikzAlignment {
   my $h          = ($props{cheight} && $props{cheight}->pxValue) || 0;
   my $d          = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
   my @rowheights = ($props{rowheights}   ? @{ $props{rowheights} }   : (Dimension(0)));
+  my @rowdepths  = ($props{rowdepths}    ? @{ $props{rowdepths} }    : (Dimension(0)));
   my @colwidths  = ($props{columnwidths} ? @{ $props{columnwidths} } : (Dimension(0)));
   my $x          = 0;
-  # This SHOULD be just $h+$d, but the shift is necessary to align
-  # w/additional material outside the \halign ( arrows & such)
-  my $y = ($h + $d) - $rowheights[-1]->pxValue / 2;    # HEURISTIC adjustment! half of LAST row!?
+  my $y          = ($h + $d) - $rowdepths[-1]->pxValue; # Baseline of LAST row
   Debug("TIKZ Alignment size $w x $h + $d"
       . "  rows: " . join(',', map { $_->pxValue; } @rowheights)
       . "  cols: " . join(',', map { $_->pxValue; } @colwidths)
