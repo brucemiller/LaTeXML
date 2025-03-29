@@ -145,8 +145,15 @@
       <xsl:choose>
         <!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
         <xsl:when test="local-name()='foreignObject'
-                        and not(namespace-uri(child::*) = $SVG_NAMESPACE)">
-          <xsl:apply-templates mode='copy-foreign'/>
+                        and (child::*[namespace-uri() != $SVG_NAMESPACE] or child::text()[normalize-space()!=''])">
+          <!-- center the content within foreignObject -->
+          <xsl:element name="div" namespace="{$html_ns}">
+            <xsl:attribute name="class">ltx_foreignobject_container</xsl:attribute>
+            <xsl:element name="div" namespace="{$html_ns}">
+              <xsl:attribute name="class">ltx_foreignobject_content</xsl:attribute>
+              <xsl:apply-templates mode='copy-foreign'/>
+            </xsl:element>
+          </xsl:element>
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates/>

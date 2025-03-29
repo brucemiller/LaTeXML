@@ -934,7 +934,7 @@ sub tikzAlignmentBindings {
 
 # Note that pgf *seems* to have set the coordinate system to the center(?) (w/ \pgfsys@transformcm)
 # Additionally, there's a svg:g outside the alignment (w/ ltx_svg_fog)
-# The following tweaks (heuristically) the transform to position the alignment object
+# The following tweaks the transform to position the alignment object
 #
 # Coordinates are currently pgf: y moves UP
 # Coordinates of alignment are : y moves DOWN
@@ -949,8 +949,9 @@ sub openTikzAlignment {
   my $x          = 0;
   my $y          = ($h + $d) - $rowdepths[-1]->pxValue; # Baseline of LAST row
   Debug("TIKZ Alignment size $w x $h + $d"
-      . "  rows: " . join(',', map { $_->pxValue; } @rowheights)
-      . "  cols: " . join(',', map { $_->pxValue; } @colwidths)
+      . "    rows: " . join(',', map { $_->pxValue; } @rowheights)
+      . "    cols: " . join(',', map { $_->pxValue; } @colwidths)
+      . "  depths: " . join(',', map { $_->pxValue; } @rowdepths)
       . " => alignment adjustment = $x, $y") if $LaTeXML::DEBUG{pgf};
   my $array = $doc->openElement($tag, class => 'ltx_tikzmatrix',
     _scopebegin => 1,
