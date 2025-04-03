@@ -14,9 +14,10 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-#use Unicode::Normalize;
-#use LaTeXML::Util::Pathname;
-#use List::Util qw(min max);
+
+DebuggableFeature('svg', "Debug SVG generation");
+DebuggableFeature('svg_verbose', "Debug SVG generation, verbosely");
+$LaTeXML::DEBUG{svg}=1 if $$LaTeXML::DEBUG{svg_verbose};
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Box Family of primitive control sequences
@@ -265,6 +266,33 @@ sub collapseSVGGroup {
       $document->unwrapNodes($c); } }
   return; }
 
+# Add a box showing where something "should" be, for debugging purposes
+# Typically will be within an svg:g which establishes position & scale.
+# in which case (see below), it will be moved to be the last child so it overlays
+sub addSVGDebuggingBox {
+  my($document,$x,$y,$w,$h,$color)=@_;
+  ($x, $y, $w, $h) = map { (ref $_ ? $_->pxValue : $_); } ($x, $y, $w, $h);
+  my $x1 = $x + $w;
+  my $y1 = $y + $h;
+  $color = $color || '#FF0000';
+  $document->openElement('svg:g',
+    _svg_debug_box => 1, stroke => $color, 'stroke-width' => 0.4, fill => 'none');
+  $document->insertElement('svg:rect', undef,
+    x => $x, y => $y, width => $w, height => $h);
+  $document->insertElement('svg:path', undef, d => "M $x 0 L $x1 0") if $x;
+  $document->insertElement('svg:path', undef, d => "M 0 $y L 0 $y1") if $y;
+  $document->closeElement('svg:g');
+  return; }
+
+# Move any debugging boxes to the end of their svg:g, so they overlay the content
+Tag('svg:g', afterClose => sub {
+  my ($document, $node) = @_;
+  my ($first,@more) = element_nodes($node);
+  if($first && $first->getAttribute('_svg_debug_box') && @more) {
+    $node->removeChild($first);
+    $node->appendChild($first); }
+  return; });
+
 DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     # "<ltx:text width='#width' _noautoclose='1'>#2</ltx:text>",
     no warnings 'recursion';
@@ -280,6 +308,9 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $newtag = ($issvg ? 'svg:g' : ($vmode ? ($inline ? 'ltx:inline-block' : 'ltx:p') : 'ltx:text'));
     my $node   = $document->openElement($newtag, _noautoclose => 1, width => $props{width});
     $document->absorb($contents);
+    if($issvg && $LaTeXML::DEBUG{svg} && $document->findnodes('svg:foreignObject',$node)){
+      my ($w, $h, $d) = map { $_->pxValue; } $_[2]->getSize;
+      addSVGDebuggingBox($document,0,-$d,$w,$h+$d,'#00FFFF'); }
     if (!$issvg) {              # If not directly svg, but nested within closeable (???)
       while (!$document->getElement()->hasAttribute('_beginscope') && $document->maybeCloseElement('svg:g')) { }
       $document->maybeCloseElement('svg:svg'); }
@@ -333,11 +364,17 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
     # Make sure we get a size, in case autoOpen'd
     if ($whatsit) {
       my ($w, $h, $d) = $whatsit->getSize;
-      my $y  = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->pxValue;
-      my $ht = $h->add($d);
-      $node->setAttribute(width     => $w->pxValue)  unless $node->hasAttribute('width');
-      $node->setAttribute(height    => $ht->pxValue) unless $node->hasAttribute('height');
-      $node->setAttribute(transform => "matrix(1 0 0 -1 0 $y)");
+      my $lineheight  = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf;
+      my $linesep     = $STATE->lookupDefinition(T_CS('\lineskip'))->valueOf;
+      my $ht = $h->larger($lineheight); # Max of lineheight, since FO is block-like
+      my $y  = $ht->subtract($linesep);   # Draw DOWN from the top
+      my $H  = $ht->add($d);
+      Debug("SVG:foreignObject ".$w->pxValue.' x '.$h->pxValue.' x '.$d->pxValue."; "
+        . " => H=".$H->pxValue." @ y=".$y->pxValue
+        . " for Whatsit=".ToString($whatsit)) if $LaTeXML::DEBUG{svg_verbose};
+      $node->setAttribute(width     => $w->pxValue) unless $node->hasAttribute('width');
+      $node->setAttribute(height    => $H->pxValue) unless $node->hasAttribute('height');
+      $node->setAttribute(transform => "matrix(1 0 0 -1 0 ".$y->pxValue.")");
       $node->setAttribute(overflow  => 'visible'); } });
 
 # This attempts to be a generalize vbox construction;
