@@ -97,8 +97,6 @@ DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileNa
       $props{skewchar}   = LookupRegister('\defaultskewchar');
       $props{hyphenchar} = LookupRegister('\defaulthyphenchar');
       $fontinfo          = \%props;
-      # These really should be read from a tfm file!
-      $$fontinfo{data} = [map { $_->multiply($scale)->valueOf; }
       my $rel = $size->multiply($scale);
       $$fontinfo{data} = [map { $rel->multiply($_)->valueOf; } @$nominal_fontinfo];
       # Store the font info & metrics
