@@ -15,6 +15,9 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+# Obsolete debugging flag
+$LaTeXML::DEBUG{svg} = $LaTeXML::DEBUG{svg_verbose} = 1 if $LaTeXML::DEBUG{xy};
+
 # Load the raw TeX implementation
 # But IMPORTANTLY: do NOT reassign the catcode of @,
 # as it fouls up all xy's catcode management!
@@ -79,7 +82,7 @@ DefConstructor('\lx@xy@svgnested Digested',
     my ($x0, $y0, $x1, $y1) = @{ LookupValue('saved_xy_range')
         || [Dimension(0), Dimension(0), Dimension(0), Dimension(0)] };
     Debug("Nested XY: " . ToString($x0) . ' ' . ToString($y0) . ' ' . ToString($x1) . ' ' . ToString($y1))
-      if $LaTeXML::DEBUG{xy};
+      if $LaTeXML::DEBUG{svg_verbose};
     my $w = $x1->subtract($x0);
     my $h = $y1->subtract($y0);
     my $x = $x0->larger(Dimension(0));    # negate here, not below!
@@ -89,31 +92,51 @@ DefConstructor('\lx@xy@svgnested Digested',
     my $transform = "matrix(1 0 0 1 " . $x->pxValue . ' ' . $y->pxValue . ')';
     return (width => $w, height => $y1, depth => $y0->negate, transform => $transform); });
 
-DefConstructor('\lx@xy@svg Digested',
-  "<ltx:picture>"
-    . "<svg:svg overflow='visible' version='1.1' width='#pxwidth' height='#pxheight'"
-    . " viewBox='#minx #miny #pxwidth #pxheight' style='#style'>"
-    . "<svg:g transform='#transform'>#1</svg:g>"
-    . "</svg:svg></ltx:picture>",
+DefConstructor('\lx@xy@svg Digested', sub {
+#  "<ltx:picture>"
+#    . "<svg:svg overflow='visible' version='1.1' width='#pxwidth' height='#pxheight'"
+#    . " viewBox='#minx #miny #pxwidth #pxheight' style='#style'>"
+#    . "<svg:g transform='#transform'>#1</svg:g>"
+#    . "</svg:svg></ltx:picture>",
+    my ($document,$content,%props) = @_;
+    $document->openElement('ltx:picture');
+    $document->openElement('svg:svg',
+      version  => "1.1", overflow => "visible",
+      width    => $props{pxwidth}, height => $props{pxheight}, style => $props{style},
+      viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}");
+    $document->openElement('svg:g',transform => $props{transform}, _scopebegin => 1);
+    addSVGDebuggingBox($document,
+      $props{x},$props{y},$props{width},$props{height},'#FF00FF')
+      if $LaTeXML::DEBUG{svg};
+    $document->absorb($content);
+    $document->closeElement('svg:g');
+    $document->closeElement('svg:svg');
+    $document->closeElement('ltx:picture');
+    return; },
   properties => sub {
     my ($x0, $y0, $x1, $y1) = @{ LookupValue('saved_xy_range')
         || [Dimension(0), Dimension(0), Dimension(0), Dimension(0)] };
-
     Debug("XY: " . ToString($x0) . ' ' . ToString($y0) . ' ' . ToString($x1) . ' ' . ToString($y1))
-      if $LaTeXML::DEBUG{xy};
+      if $LaTeXML::DEBUG{svg_verbose};
     my $w         = $x1->subtract($x0);
     my $h         = $y1->subtract($y0);
+    if($w->valueOf < 0){        # Rarely, the range hasn't actually been set?!?
+        $x0 = $x1 = Dimension(0); }
+    if($h->valueOf < 0){
+        $y0 = $y1 = Dimension(0); }
     my $x         = $x0->negate;
-    my $yma       = Dimension(LookupValue('IN_MATH') ? '-2.5pt' : 0); # - math-axis; fontdimen 22
-    my $y         = $y1->add($yma->subtract($y0));
+    my $y         = $y1->subtract($y0);
     my $minx      = $x->pxValue;
-    my $miny      = $yma->subtract($y0)->pxValue;
+    my $miny      = $y0->negate->pxValue;
     my $transform = "matrix(1 0 0 -1 " . $x->pxValue . ' ' . $y->pxValue . ')';
     my $style     = ($miny ? "vertical-align:".(-$miny)."px" : undef);
+    my $pxwidth   = max($w->pxValue,1);
+    my $pxheight  = max($h->pxValue,1);
     Debug("XY size: " . ToString($w) . ' x ' . ToString($h) . ' + ' . 0 . ' @ ' . ToString($x) . ' x ' . ToString($y))
 
-      if $LaTeXML::DEBUG{xy};
-    return (width => $w, height => $h, pxwidth => $w->pxValue, pxheight => $h->pxValue,
+      if $LaTeXML::DEBUG{svg_verbose};
+    return (x => $x0, y => $y0, width => $w, height => $h,
+      pxwidth => $pxwidth, pxheight => $pxheight,
       minx => $minx, miny => $miny, style => $style,
       transform => $transform); });
 
