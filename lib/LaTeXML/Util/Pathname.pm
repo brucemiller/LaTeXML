@@ -32,6 +32,8 @@ use File::Spec;
 use File::Copy;
 use File::Which;
 use Cwd;
+use Encode;
+use Encode::Locale;
 use base qw(Exporter);
 our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_make &pathname_canonical
@@ -51,6 +53,12 @@ my $ISWINDOWS;
 BEGIN {
   $ISWINDOWS = $^O =~ /^(MSWin|NetWare|cygwin)/i;
   require Win32::ShellQuote if $ISWINDOWS;
+
+  # configure perl to call I/O APIs using the current codepage rather than utf-8
+  # NOTE: this is only a stopgap measure; creating a file with a name that does
+  # not fit the codepage may create a file with a similar looking but different name
+  require POSIX;
+  POSIX::setlocale(&POSIX::LC_ALL, '.ACP') if $ISWINDOWS;
 }
 
 # NOTE: For absolute pathnames, the directory component starts with
@@ -220,16 +228,27 @@ sub pathname_to_url {
   return $relative_pathname; }
 
 #======================================================================
-# Actual file system operations.
-sub pathname_timestamp {
+# Locale encoding operations, to be used in file system operations.
+sub pathname_decode {
   my ($pathname) = @_;
+  return $ISWINDOWS ? $pathname : decode('locale_fs', $pathname, Encode::FB_CROAK); }
+
+sub pathname_encode {
+  my ($pathname) = @_;
+  return $ISWINDOWS ? $pathname : encode('locale_fs', $pathname, Encode::FB_CROAK); }
+
+#======================================================================
+# Actual file system operations.
+
+sub pathname_timestamp {
+  my $pathname = pathname_encode($_[0]);
   return -f $pathname ? (stat($pathname))[9] : 0; }
 
 our $CWD = undef;
 # DO NOT use pathname_cwd, unless you also use pathname_chdir to change dirs!!!
 sub pathname_cwd {
   if (!defined $CWD) {
-    if (my $cwd = cwd()) {
+    if (my $cwd = pathname_decode(cwd())) {
       $CWD = pathname_canonical($cwd); }
     else {
       # Fatal not imported
@@ -238,7 +257,7 @@ sub pathname_cwd {
   return $CWD; }
 
 sub pathname_chdir {
-  my ($directory) = @_;
+  my $directory = pathname_encode($_[0]);
   chdir($directory);
   pathname_cwd();    # RE-cache $CWD!
   return; }
@@ -250,7 +269,7 @@ sub pathname_mkdir {
   my ($volume, $dirs, $last) = File::Spec->splitpath($directory);
   my (@dirs) = (File::Spec->splitdir($dirs), $last);
   for (my $i = 0 ; $i <= $#dirs ; $i++) {
-    my $dir = File::Spec->catpath($volume, File::Spec->catdir(@dirs[0 .. $i]), '');
+    my $dir = pathname_encode(File::Spec->catpath($volume, File::Spec->catdir(@dirs[0 .. $i]), ''));
     if (!-d $dir) {
       mkdir($dir) or return; } }
   return $directory; }
@@ -262,7 +281,8 @@ sub pathname_copy {
   # If it _needs_ to be copied:
   $source      = pathname_canonical($source);
   $destination = pathname_canonical($destination);
-  if ((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))) {
+  my ($enc_source, $enc_destination) = (pathname_encode($source), pathname_encode($destination));
+  if ((!-f $enc_destination) || (pathname_timestamp($source) > pathname_timestamp($destination))) {
     if (my $destdir = pathname_directory($destination)) {
       pathname_mkdir($destdir) or return; }
 ###    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
@@ -271,9 +291,9 @@ sub pathname_copy {
 ###    else {               # Unix
 ###      system("cp --preserve=timestamps $source $destination")==0 or return; }
     # Hopefully this portably copies, preserving timestamp.
-    copy($source, $destination) or return;
-    my ($atime, $mtime) = (stat($source))[8, 9];
-    utime $atime, $mtime, $destination;    # And set the modification time
+    copy($enc_source, $enc_destination) or return;
+    my ($atime, $mtime) = (stat($enc_source))[8, 9];
+    utime $atime, $mtime, $enc_destination;    # And set the modification time
   }
   return $destination; }
 
@@ -373,10 +393,11 @@ sub candidate_pathnames {
           qr/^\Q$name\E\Q$ext\E$/]); } }
   # Now, combine; precedence to leading directories.
   foreach my $dir (@dirs) {
-    opendir(DIR, $dir) or next;
+    opendir(DIR, pathname_encode($dir)) or next;
     my @dir_files = readdir(DIR);
     closedir(DIR);
     for my $local_file (@dir_files) {
+      $local_file = pathname_decode($local_file);
       for my $regex_pair (@regexes) {
         my ($i_regex, $regex) = @$regex_pair;
         if ($local_file =~ m/$i_regex/) {
@@ -429,11 +450,11 @@ sub build_kpse_cache {
   # texpaths: the directories which contain the TeX related files we're interested in
   #. (but they're typically below where the ls-R indexes are!)
   my ($texmf,$texpaths) = split("\n",
-      `"$kpsewhich" --expand-var \'\\\$TEXMF\' --show-path tex $kpse_toolchain`); 
+      `"$kpsewhich" --expand-var \'\\\$TEXMF\' --show-path tex $kpse_toolchain`);
   my @filters  = ();    # Really shouldn't end up empty.
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
-    push(@filters, $path) if -d $path; }
+    push(@filters, $path) if -d pathname_encode($path); }
   my $filterre = scalar(@filters) && '(?:' . join('|', map { "\Q$_\E"; } @filters) . ')';
   $texmf =~ s/^["']//; $texmf =~ s/["']$//;
   $texmf =~ s/^\s*\\\{(.+?)}\s*$/$1/s;
@@ -441,12 +462,13 @@ sub build_kpse_cache {
   my @dirs = split(/,/, $texmf);
   foreach my $dir (@dirs) {
     $dir =~ s/^!!//;
+    my $enc_dir = pathname_encode($dir);
     # Presumably if no ls-R, we can ignore the directory?
-    if (-f "$dir/ls-R") {
+    if (-f "$enc_dir/ls-R") {
       my $LSR;
       my $subdir;
       my $skip = 0;    # whether to skip entries in the current subdirectory.
-      open($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
+      open($LSR, '<', "$enc_dir/ls-R") or die "Cannot read $dir/ls-R: $!";
       while (<$LSR>) {
         chop;
         next if !$_ || (substr($_, 0, 1) eq '%');
