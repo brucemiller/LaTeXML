@@ -439,18 +439,16 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
  SVG (pgf/tikz & xy) basics
  Layout depends heavily on TeX's fonts which are more compact than typical browser's fonts
  */
+/* Use flex to center the FO's content (horizontally & vertically) over the FO's size */
+svg foreignObject > .ltx_foreignObject_wrapper {
+    display:flex;
+    flex-wrap:wrap;
+    align-content:center;
+    justify-content:center;
+    width:100%;
+    height:100%;
+}
 
-svg text,
-svg foreignObject {
-    letter-spacing: -1px;
-}
-svg foreignObject span{
-    line-height: 0.9;
-}
-/*
-svg foreignObject {
-    border: 1px solid red; }
-*/
 /* Stuff appearing in svg:foreignObject */
 .ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
 .ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }

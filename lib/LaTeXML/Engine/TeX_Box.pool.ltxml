@@ -362,20 +362,32 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
             return; } } } }
     # Otherwise, we've still got an svg:foreignObject;
     # Make sure we get a size, in case autoOpen'd
-    if ($whatsit) {
+    # Reminder: TeX/LaTeXML think origin is left & baseline
+    # svg foreignObject content will draw down from the top
+    if ($whatsit && !$node->getAttribute('_wrapped')) {
       my ($w, $h, $d) = $whatsit->getSize;
-      my $lineheight  = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf;
-      my $linesep     = $STATE->lookupDefinition(T_CS('\lineskip'))->valueOf;
-      my $ht = $h->larger($lineheight); # Max of lineheight, since FO is block-like
-      my $y  = $ht->subtract($linesep);   # Draw DOWN from the top
-      my $H  = $ht->add($d);
+      my $H = $h->add($d);
+      my $W = $w;
+      my $x = Dimension(0);
+      my $y = $h;
       Debug("SVG:foreignObject ".$w->pxValue.' x '.$h->pxValue.' x '.$d->pxValue."; "
         . " => H=".$H->pxValue." @ y=".$y->pxValue
         . " for Whatsit=".ToString($whatsit)) if $LaTeXML::DEBUG{svg_verbose};
-      $node->setAttribute(width     => $w->pxValue) unless $node->hasAttribute('width');
+      # Size of FO is width and total height (+ depth)
+      $node->setAttribute(width     => $W->pxValue) unless $node->hasAttribute('width');
       $node->setAttribute(height    => $H->pxValue) unless $node->hasAttribute('height');
-      $node->setAttribute(transform => "matrix(1 0 0 -1 0 ".$y->pxValue.")");
-      $node->setAttribute(overflow  => 'visible'); } });
+      # Set top of FO height above current, as if baseline will line up w/outside
+      $node->setAttribute(transform => 'matrix(1 0 0 -1 '.$x->pxValue.' '.$y->pxValue.')');
+      $node->setAttribute(overflow  => 'visible');
+      $node->setAttribute('_wrapped'=>1);
+      # Add a wrapper, so that CSS has a chance of tweaking/centering
+      my $wrapper = $document->wrapNodes('ltx:text',$node->childNodes);
+      $document->addClass($wrapper, 'ltx_foreignObject_wrapper');
+      # Store expected size for experimentation Temporary?
+      $document->setAttribute($wrapper,'data:width' =>$w);
+      $document->setAttribute($wrapper,'data:height'=>$h);
+      $document->setAttribute($wrapper,'data:depth' =>$d);
+ } });
 
 # This attempts to be a generalize vbox construction;
 # The idea is to receeive block-like material, possibly wrapped in appropriate
