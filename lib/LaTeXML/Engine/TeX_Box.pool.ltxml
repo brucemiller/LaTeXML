@@ -364,7 +364,7 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
     # Make sure we get a size, in case autoOpen'd
     # Reminder: TeX/LaTeXML think origin is left & baseline
     # svg foreignObject content will draw down from the top
-    if ($whatsit && !$node->getAttribute('_wrapped')) {
+    if ($whatsit) {
       my ($w, $h, $d) = $whatsit->getSize;
       my $H = $h->add($d);
       my $W = $w;
@@ -379,14 +379,10 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       # Set top of FO height above current, as if baseline will line up w/outside
       $node->setAttribute(transform => 'matrix(1 0 0 -1 '.$x->pxValue.' '.$y->pxValue.')');
       $node->setAttribute(overflow  => 'visible');
-      $node->setAttribute('_wrapped'=>1);
-      # Add a wrapper, so that CSS has a chance of tweaking/centering
-      my $wrapper = $document->wrapNodes('ltx:text',$node->childNodes);
-      $document->addClass($wrapper, 'ltx_foreignObject_wrapper');
       # Store expected size for experimentation Temporary?
-      $document->setAttribute($wrapper,'data:width' =>$w);
-      $document->setAttribute($wrapper,'data:height'=>$h);
-      $document->setAttribute($wrapper,'data:depth' =>$d);
+      $document->setAttribute($node, 'data:width' =>$w);
+      $document->setAttribute($node, 'data:height'=>$h);
+      $document->setAttribute($node, 'data:depth' =>$d);
  } });
 
 # This attempts to be a generalize vbox construction;
