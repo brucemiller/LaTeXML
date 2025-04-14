@@ -147,7 +147,7 @@
       <xsl:choose>
         <!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
         <xsl:when test="local-name()='foreignObject'
-                        and not(namespace-uri(child::*) = $SVG_NAMESPACE)">
+                        and child::node()[namespace-uri() != $SVG_NAMESPACE]">
           <xsl:variable name="height" select="@*[name()='data:height']"/>
           <xsl:variable name="depth" select="@*[name()='data:depth']"/>
           <xsl:if test="$height or $depth or @style">
