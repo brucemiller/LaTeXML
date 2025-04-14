@@ -450,6 +450,9 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 .ltx_foreignobject_content {
     display:block;
 }
+/* move center of TeX box (height + depth tall) to center of CSS line (ascent + descent tall)
+   0.306em is the harcoded value of (ascent - descent)/2 for Computer Modern */
+foreignObject { translate: 0 calc(0.306em + (var(--lx-depth) - var(--lx-height)) / 2); }
 /* Stuff appearing in svg:foreignObject */
 .ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
 .ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }

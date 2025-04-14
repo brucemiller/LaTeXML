@@ -132,6 +132,8 @@
             </xsl:attribute>
           </xsl:when>
           -->
+          <!-- @style requires special handling for foreignObject -->
+          <xsl:when test="name() = 'style'"/>
           <xsl:when test="namespace-uri() = $SVG_NAMESPACE">
             <xsl:attribute name="{local-name()}" namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
               <xsl:value-of select="."/>
@@ -146,17 +148,30 @@
         <!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
         <xsl:when test="local-name()='foreignObject'
                         and not(namespace-uri(child::*) = $SVG_NAMESPACE)">
+          <xsl:variable name="height" select="@*[name()='data:height']"/>
+          <xsl:variable name="depth" select="@*[name()='data:depth']"/>
+          <xsl:if test="$height or $depth or @style">
+            <xsl:attribute name="style">
+              <xsl:if test="$height">--lx-height:<xsl:value-of select="$height"/></xsl:if>
+              <xsl:if test="$height and $depth">;</xsl:if>
+              <xsl:if test="$depth">--lx-depth:<xsl:value-of select="$depth"/></xsl:if>
+              <xsl:if test="($height or $depth) and @style">;</xsl:if>
+              <xsl:value-of select="@style"/>
+            </xsl:attribute>
+          </xsl:if>
           <!-- Wrap contents (twice) to support more CSS layout options -->
           <xsl:element name="span" namespace="{$html_ns}">
             <xsl:attribute name="class">ltx_foreignobject_container</xsl:attribute>
             <xsl:element name="span" namespace="{$html_ns}">
               <xsl:attribute name="class">ltx_foreignobject_content</xsl:attribute>
-
               <xsl:apply-templates mode='copy-foreign'/>
             </xsl:element>
           </xsl:element>
         </xsl:when>
         <xsl:otherwise>
+          <xsl:if test="@style">
+            <xsl:apply-templates select="@style" mode="copy-attribute"/>
+          </xsl:if>
           <xsl:apply-templates/>
         </xsl:otherwise>
       </xsl:choose>
