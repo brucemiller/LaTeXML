@@ -453,6 +453,15 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 /* move center of TeX box (height + depth tall) to center of CSS line (ascent + descent tall)
    0.306em is the harcoded value of (ascent - descent)/2 for Computer Modern */
 foreignObject { translate: 0 calc(0.306em + (var(--lx-depth) - var(--lx-height)) / 2); }
+/* if text-box is supported, move baseline of CSS line to baseline of TeX box */
+@supports (text-box: trim-both cap alphabetic) {
+  foreignObject { translate: 0 var(--lx-depth); }
+  .ltx_foreignobject_container { align-items:end; }
+  @layer lx-foreignobject {
+    .ltx_foreignobject_content { text-box: trim-both cap alphabetic; }
+    .ltx_foreignobject_content .ltx_inline-block { text-box: revert-layer; }
+  }
+}
 /* Stuff appearing in svg:foreignObject */
 .ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
 .ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }
