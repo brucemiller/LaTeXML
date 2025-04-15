@@ -440,17 +440,31 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
  Layout depends heavily on TeX's fonts which are more compact than typical browser's fonts
  */
 /* Use flex to center the FO's content (horizontally & vertically) over the FO's size */
+
+/* Use width 110% in a couple of places to inhibit unexpected line breaks
+  due to TeX/browser font differences */
 .ltx_foreignobject_container {
     display:flex;
-    flex-wrap:wrap;
-    align-content:center;
+    align-items:center;
     justify-content:center;
-    width:100%;
     height:100%;
+    width:110%;
+    position:relative; left:-5%;
 }
+/* line height 0 just for this layer, to keep the line-box compact */
 .ltx_foreignobject_content {
-    display:contents;
+    display:block;
+    line-height:0;
 }
+/*    line-height:revert;  Why doesn't this work? */
+.ltx_foreignobject_content * {
+    line-height:normal;
+}
+/* will have been sized by FO, so override the explicit size; AND shift back to right */
+.ltx_foreignobject_content .ltx_minipage {
+    width:110% !important;
+    position:relative; left:5%}
+
 /* Stuff appearing in svg:foreignObject */
 .ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
 .ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }
