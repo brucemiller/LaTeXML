@@ -437,38 +437,34 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 .ltx_nodisplay    { display:none; }
 /*======================================================================
  SVG (pgf/tikz & xy) basics
- Layout depends heavily on TeX's fonts which are more compact than typical browser's fonts
  */
-/* Use flex to center the FO's content (horizontally & vertically) over the FO's size */
-
-/* Use width 110% in a couple of places to inhibit unexpected line breaks
-  due to TeX/browser font differences */
+/* Heuristically adjust for content uncentered within line-box */
+foreignObject {
+    translate: 0 0.2em; }
+/* Use flex to vertically center foreignObject,
+   to accommodate potentially tall line-box */
 .ltx_foreignobject_container {
     display:flex;
     align-items:center;
-    justify-content:center;
     height:100%;
-    width:110%;
-    position:relative; left:-5%;
+    width:100%;
+}
+/* Also horizontally for single math, since Chrome adds a lot of left/right spacing. */
+.ltx_foreignobject_container:has( > .ltx_foreignobject_content > math:only-child) {
+    justify-content:center;
+}
+/* If multiple children, give more space to avoid unexpected line breaks
+   due to font differences. */
+.ltx_foreignobject_container:has( > .ltx_foreignobject_content > :not(:only-child)) {
+    width:105%;
 }
 /* line height 0 just for this layer, to keep the line-box compact */
 .ltx_foreignobject_content {
     display:block;
-    line-height:0;
 }
-/*    line-height:revert;  Why doesn't this work? */
-.ltx_foreignobject_content * {
-    line-height:normal;
-}
-/* will have been sized by FO, so override the explicit size; AND shift back to right */
-.ltx_foreignobject_content .ltx_minipage {
-    width:110% !important;
-    position:relative; left:5%}
-
 /* Stuff appearing in svg:foreignObject */
 .ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
 .ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }
-/*.ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; white-space:nowrap; }*/
 
 /*======================================================================
  Low-level Basics */
