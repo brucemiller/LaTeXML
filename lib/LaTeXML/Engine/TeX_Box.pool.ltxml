@@ -370,12 +370,13 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       my $W = $w;
       my $x = Dimension(0);
       my $y = $h;
+      my $f = $whatsit->getFont;
       Debug("SVG:foreignObject ".$w->pxValue.' x '.$h->pxValue.' x '.$d->pxValue."; "
         . " => H=".$H->pxValue." @ y=".$y->pxValue
         . " for Whatsit=".ToString($whatsit)) if $LaTeXML::DEBUG{svg_verbose};
       # Size of FO is width and total height (+ depth)
-      $node->setAttribute(width     => $W->pxValue) unless $node->hasAttribute('width');
-      $node->setAttribute(height    => $H->pxValue) unless $node->hasAttribute('height');
+      $node->setAttribute(width     => $W->emValue(undef,$f).'em') unless $node->hasAttribute('width');
+      $node->setAttribute(height    => $H->emValue(undef,$f).'em') unless $node->hasAttribute('height');
       # Set top of FO height above current, as if baseline will line up w/outside
       $node->setAttribute(transform => 'matrix(1 0 0 -1 '.$x->pxValue.' '.$y->pxValue.')');
       $node->setAttribute(overflow  => 'visible');
@@ -406,6 +407,8 @@ sub insertBlock {
   if (($context_tag =~ /^ltx:XM/) && ($context_tag ne 'ltx:XMText')) {    # but math always needs this
     $context     = $document->openElement('ltx:XMText');
     $context_tag = $document->getNodeQName($context); }
+  if(my $w = $is_svg && $blockattr{width}) {
+    $blockattr{width} = $w->emValue(undef, $contents->getFont) . "em" if ref $w; }
   my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
   my $container = $document->openElement('ltx:_CaptureBlock_', '_vertical_mode_' => 1, %blockattr);
   $document->absorb($contents);
