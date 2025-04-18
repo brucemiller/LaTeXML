@@ -15,8 +15,9 @@ use warnings;
 
 use LaTeXML::Util::Pathname;
 use File::Spec::Functions qw(catfile);
-use File::Path qw(rmtree);
+use File::Path            qw(rmtree);
 use IO::String;
+use JSON::XS     qw(decode_json);
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 
 use base qw(Exporter);
@@ -43,7 +44,23 @@ sub unpack_source {
   # I. Detect and return the main TeX file in that directory (or .txt, for old arXiv bundles)
 
   # I.1. arXiv has a special metadata file identifying the primary source, and ignoring assets
-  if (my $readme_member = $zip_handle->memberNamed('00README.XXX')) {
+  # I.1.1. 2025 arXiv refresh of 00README
+  if (my $json_member = $zip_handle->memberNamed('00README.json')) {
+    my $readme_file = catfile($sandbox_directory, $json_member->fileName());
+    my $json_str    = do {
+      local $/ = undef;
+      open(my $README_FH, '<', $readme_file) or
+        (print STDERR "failed to open '$readme_file' for use as ZIP readme: $!. Continuing.\n");
+      <$README_FH>;
+    } || '';
+    my $json_data = eval { decode_json($json_str); } || {};
+    my ($name) = map { $$_{filename} } grep { $$_{usage} eq 'toplevel' } @{ $$json_data{sources} || [] };
+    if ($name) {
+      my $toplevelfile = catfile($sandbox_directory, $name);
+      return $toplevelfile;
+  } }
+  # I.1.2. Legacy arXiv 00README.XXX
+  elsif (my $readme_member = $zip_handle->memberNamed('00README.XXX')) {
     my $readme_file = catfile($sandbox_directory, $readme_member->fileName());
     open(my $README_FH, '<', $readme_file) or
       (print STDERR "failed to open '$readme_file' for use as ZIP readme: $!. Continuing.\n");
