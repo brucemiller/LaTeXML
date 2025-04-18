@@ -375,15 +375,16 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
         . " => H=".$H->pxValue." @ y=".$y->pxValue
         . " for Whatsit=".ToString($whatsit)) if $LaTeXML::DEBUG{svg_verbose};
       # Size of FO is width and total height (+ depth)
-      $node->setAttribute(width     => $W->emValue(undef,$f).'em') unless $node->hasAttribute('width');
-      $node->setAttribute(height    => $H->emValue(undef,$f).'em') unless $node->hasAttribute('height');
+      $node->setAttribute(width     => $W->pxValue) unless $node->hasAttribute('width');
+      $node->setAttribute(height    => $H->pxValue) unless $node->hasAttribute('height');
       # Set top of FO height above current, as if baseline will line up w/outside
       $node->setAttribute(transform => 'matrix(1 0 0 -1 '.$x->pxValue.' '.$y->pxValue.')');
       $node->setAttribute(overflow  => 'visible');
       # Store expected size for experimentation Temporary?
-      $document->setAttribute($node, 'data:width' =>$w);
-      $document->setAttribute($node, 'data:height'=>$h);
-      $document->setAttribute($node, 'data:depth' =>$d);
+      $document->setAttribute($node,
+        style=>'--fo_width :' . $w->emValue(undef,$f).'em;'
+              .'--fo_height:' . $h->emValue(undef,$f).'em;'
+              .'--fo_depth :' . $d->emValue(undef,$f).'em;');
  } });
 
 # This attempts to be a generalize vbox construction;

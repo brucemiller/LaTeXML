@@ -440,14 +440,15 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
  */
 /* Heuristically adjust for content uncentered within line-box */
 foreignObject {
-    translate: 0 0.2em; }
+    translate: 0 0.1em;
+    --fo_width: 100%; }
 /* Use flex to vertically center foreignObject,
    to accommodate potentially tall line-box */
 .ltx_foreignobject_container {
     display:flex;
     align-items:center;
     height:100%;
-    width:100%;
+    width:var(--fo_width);
 }
 /* Also horizontally for single math, since Chrome adds a lot of left/right spacing. */
 .ltx_foreignobject_container:has( > .ltx_foreignobject_content > math:only-child) {
@@ -456,7 +457,7 @@ foreignObject {
 /* If multiple children, give more space to avoid unexpected line breaks
    due to font differences. */
 .ltx_foreignobject_container:has( > .ltx_foreignobject_content > :not(:only-child)) {
-    width:105%;
+    width:calc(1.1 * var(--fo_width));
 }
 /* line height 0 just for this layer, to keep the line-box compact */
 .ltx_foreignobject_content {
