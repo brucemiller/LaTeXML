@@ -23,7 +23,8 @@ use LaTeXML::Package;
 use LaTeXML::Util::Image;
 use List::Util qw(min max);
 
-DebuggableFeature('pgf', "Debug pgf processing");
+# Obsolete debugging flag
+$LaTeXML::DEBUG{svg} = $LaTeXML::DEBUG{svg_verbose} = 1 if $LaTeXML::DEBUG{pgf};
 
 DefMacroI('\pgfsys@imagesuffixlist', undef,
   join('', map { '.' . $_ . ':' }
@@ -94,14 +95,11 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
       $document->openElement('svg:g',
         transform   => "translate($x0,$y0) matrix(1 0 0 -1 0 0)",
         _scopebegin => 1);
-      $document->insertElement('svg:rect', undef,
-        x     => $props{minx} - 6,            y      => $props{miny} - 6,
-        width => $props{width}->pxValue + 12, height => $props{height}->pxValue + 12,
-        fill  => 'none',                      stroke => '#FF00FF') if $LaTeXML::DEBUG{pgf};
+      addSVGDebuggingBox($document,
+        $props{minx},$props{miny},$props{width},$props{height},'#FF00FF')
+        if $LaTeXML::DEBUG{svg};
       $document->absorb($content);
-### Handled by \lxSVG@closegroups ???
       while ($document->maybeCloseElement('svg:g')) { }
-      #                 $document->closeElement('svg:g');
       $document->closeElement('svg:svg');
       $document->closeElement('ltx:picture'); }
     return; },
@@ -120,11 +118,11 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     my $shift   = ToString(Expand(T_CS('\pgf@shift@baseline')));
     my $base    = ($shift ? $miny->subtract(Dimension($shift))->pxValue : 0);
     my ($cwidth, $cheight, $cdepth) = $content->getSize;
-    Debug("TIKZ size: " . ToString($width) . " x " . ToString($height)) if $LaTeXML::DEBUG{pgf};
-    Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny) . " [offset $base]")     if $LaTeXML::DEBUG{pgf};
+    Debug("TIKZ size: " . ToString($width) . " x " . ToString($height)) if $LaTeXML::DEBUG{svg_verbose};
+    Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny) . " [offset $base]")     if $LaTeXML::DEBUG{svg_verbose};
     Debug("TIKZ BODY: " . ToString($cwidth) . " x " . ToString($cheight)
-        . " + " . ToString($cdepth)) if $LaTeXML::DEBUG{pgf};
-    Debug("BODY is " . ToString($content)) if $LaTeXML::DEBUG{pgf};
+        . " + " . ToString($cdepth)) if $LaTeXML::DEBUG{svg_verbose};
+    Debug("BODY is " . ToString($content)) if $LaTeXML::DEBUG{svg_verbose};
     # Note viewbox is minx, miny, width, height (NOT maxx,maxy!)
 ##    $whatsit->setProperty(minx     => $minx->pxValue);
 ##    $whatsit->setProperty(miny     => $miny->pxValue);
@@ -176,9 +174,12 @@ DefMacroI('\pgf@shift@baseline@smuggle', undef, '0pt');
 #=====================================================================#
 # 1. Beginning and ending a stream ===================================#
 #=====================================================================#
+# Adapted from pgf/systemlayer/pgfsys.code.tex
 DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
-% \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
-\advance\pgf@picmaxy by-\pgf@picminy\relax%
+   \pgf@ya=\pgf@shift@baseline\relax%
+   \advance\pgf@ya by-\pgf@picminy\relax%
+   % \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
+   \advance\pgf@picmaxy by-\pgf@picminy\relax%
    \advance\pgf@picmaxx by-\pgf@picminx\relax%
    \setbox#1=\hbox{\hskip-\pgf@picminx\lower\pgf@picminy\box#1}
    \ht#1=\pgf@picmaxy%
@@ -186,8 +187,6 @@ DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
    \dp#1=0pt%
    \leavevmode%\message{width: \the\pgf@picmaxx, height:\the\pgf@picmaxy}%%
 %%%   \lxSVG@insertpicture{\box#1\lxSVG@closescope}%
-  \pgf@ya=\pgf@shift@baseline\relax%
-  \advance\pgf@ya by-\pgf@picminy\relax%
 %%%   \lxSVG@insertpicture{\raise-\pgf@ya\box#1\lxSVG@closescope}%
    \lxSVG@insertpicture{\box#1\lxSVG@closescope}%
 EoTeX
@@ -948,27 +947,22 @@ sub openTikzAlignment {
   my @colwidths  = ($props{columnwidths} ? @{ $props{columnwidths} } : (Dimension(0)));
   my $x          = 0;
   my $y          = ($h + $d) - $rowdepths[-1]->pxValue; # Baseline of LAST row
+#  my $y          = ($h + $d);
   Debug("TIKZ Alignment size $w x $h + $d"
       . "  rows: " . join(',', map { $_->pxValue; } @rowheights)
+      . "     +: " . join(',', map { $_->pxValue; } @rowdepths)
       . "  cols: " . join(',', map { $_->pxValue; } @colwidths)
-      . " => alignment adjustment = $x, $y") if $LaTeXML::DEBUG{pgf};
+      . " => alignment adjustment = $x, $y") if $LaTeXML::DEBUG{svg_verbose};
   my $array = $doc->openElement($tag, class => 'ltx_tikzmatrix',
     _scopebegin => 1,
     transform   => "matrix(1 0 0 -1 $x $y)",
     %props);
-  $doc->insertElement('svg:rect', undef, class => 'ltx_debug',
-    x => -4, y => -4, width => $w + 8, height => $h + $d + 8, stroke => '#FF0000', fill => 'none')
-    if $LaTeXML::DEBUG{pgf};
+  addSVGDebuggingBox($doc,0,0,$w,$h+$d,"#FF0000") if  $LaTeXML::DEBUG{svg};
   return $array; }
 
 sub closeTikzAlignmentElement {
   my ($tag, $document) = @_;
-  my $node = $document->closeElement($tag);
-  if ($LaTeXML::DEBUG{pgf} && $node && (($node->getAttribute('class') || '') eq 'ltx_debug')) {
-    my $rect = $node->firstChild;    # Move the rectangle to the end, so it overlays
-    $node->removeChild($rect);
-    $node->appendChild($rect); }
-  return $node; }
+  return $document->closeElement($tag); }
 
 sub openTikzAlignmentRow {
   my ($tag, $doc, %props) = @_;
@@ -978,14 +972,12 @@ sub openTikzAlignmentRow {
   my $h     = ($props{cheight} && $props{cheight}->pxValue) || 0;
   my $d     = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
   my $yy    = $y + $h;
-  Debug("TIKZ alignment Row ($w x $h + $d); y=$yy; ") if $LaTeXML::DEBUG{pgf};
+  Debug("TIKZ alignment Row ($w x $h + $d); y=$yy; ") if $LaTeXML::DEBUG{svg_verbose};
   my $row = $doc->openElement($tag, class => $class,
     _scopebegin => 1,
     transform   => "matrix(1 0 0 1 0 $yy)",
   );
-  $doc->insertElement('svg:rect', undef,
-    x => -2, y => -$h - 2, width => $w + 4, height => $h + $d + 4, stroke => '#00FF00', fill => 'none')
-    if $LaTeXML::DEBUG{pgf};
+  addSVGDebuggingBox($doc,0,0,$w,$h+$d,"#00FF00") if  $LaTeXML::DEBUG{svg};
   return $row; }
 
 sub openTikzAlignmentCol {
@@ -1000,14 +992,12 @@ sub openTikzAlignmentCol {
   my $x = ($props{x}       && $props{x}->pxValue)       || 0;
   my $y = 0;
   Debug("TIKZ alignment Cell ($w x $h + $d); x=$x; "
-      . join(',', map { $_ . "=" . ToString($props{$_}); } sort keys %props)) if $LaTeXML::DEBUG{pgf};
+      . join(',', map { $_ . "=" . ToString($props{$_}); } sort keys %props)) if $LaTeXML::DEBUG{svg_verbose};
   my $col = $doc->openElement($tag, class => $class,
     _scopebegin => 1,
     transform   => "matrix(1 0 0 -1 $x $y)",    # NOTE: Flip!!!
   );
-  $doc->insertElement('svg:rect', undef,
-    x => -1, y => -$h - 1, width => $w + 2, height => $h + $d + 2, stroke => '#0000FF', fill => 'none')
-    if $LaTeXML::DEBUG{pgf};
+  addSVGDebuggingBox($doc,0,0,$w,$h+$d,"#0000FF") if  $LaTeXML::DEBUG{svg};
   return $col; }
 
 #=====================================================================

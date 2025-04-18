@@ -45,6 +45,32 @@ DefParameterType('FontDef', sub {
       return $defn->isFontDef; }
     return; });
 
+# Nominal font parameters; A mashup of text/math parameters.
+# We'll want to get proper ones from font files!
+my $nominal_fontinfo = [
+  0.25,        # Slant
+  0.5,         # Space
+  0.0,         # Stretch
+  0.0,         # Shrink
+  0.430555,    # x-height
+  1.000003,    # quad
+  0.0,         # extra space
+  0.676508,    # numerator 1
+  0.393732,    # numerator 2
+  0.443731,    # numerator 3
+  0.685951,    # denominator 1
+  0.344841,    # denominator 2
+  0.412892,    # superscript 1
+  0.362892,    # superscript 2
+  0.288889,    # superscript 3
+  0.15,        # subscript 1
+  0.247217,    # subscript 2
+  0.386108,    # superscript drop
+  0.05,        # subscript drop
+  2.389999,    # delimiter 1
+  1.01,        # delimiter 2
+  0.25,        # math axis height
+];
 # This should eventually actually load the font metrics,
 # and tie-in to LaTeXML::Common::Font, as well as any FontMetrics data used by Font.
 DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileName', sub {
@@ -73,10 +99,8 @@ DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileNa
       $props{skewchar}   = LookupRegister('\defaultskewchar');
       $props{hyphenchar} = LookupRegister('\defaulthyphenchar');
       $fontinfo          = \%props;
-      # These really should be read from a tfm file!
-      $$fontinfo{data} = [map { $_->multiply($scale)->valueOf; }
-          Dimension(0), Dimension('0.5em'), Dimension(0),
-        Dimension(0), Dimension('1ex'), Dimension('1em')];
+      my $rel = $size->multiply($scale);
+      $$fontinfo{data} = [map { $rel->multiply($_)->valueOf; } @$nominal_fontinfo];
       # Store the font info & metrics
       AssignValue($key => $fontinfo); }
     # The font $cs should select the font

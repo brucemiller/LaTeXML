@@ -105,6 +105,11 @@ sub spValue {
   my ($self, $prec) = @_;
   return kround($$self[0]); }
 
+sub emValue {
+    my($self, $prec, $font)=@_;
+    $font = $STATE->lookupValue('font') unless $font;
+    return roundto($$self[0] / $font->getEMWidth, $prec); }
+
 #======================================================================
 1;
 

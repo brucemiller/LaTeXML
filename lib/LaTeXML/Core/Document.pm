@@ -1166,9 +1166,10 @@ sub appendTextBox {
     my $p = $node;
     # AND, propogate change to autoOpen'd ancestors based on same initial box
     while (($p = $p->parentNode) && ($p->nodeType == XML_ELEMENT_NODE)
-      && $p->getAttribute('_autoopened')
-      && ((getNodeBox($self, $p) || '') eq $origbox)) {
-      setNodeBox($self, $p, $newbox); } }
+      && $p->getAttribute('_autoopened')) {
+        my $obox = getNodeBox($self,$p);
+        last if $obox && (($box eq $obox) || ($box eq ($obox->unlist)[-1]));
+        setNodeBox($self,$p, ($p ? List($obox,$box) : $box)); } }
   return; }
 
 # Question: Why do I have math ligatures handled within openMathText_internal,
@@ -1842,9 +1843,11 @@ sub appendElementBox {
     setNodeBox($self, $p, $newbox);
     # AND, propogate to autoOpen'd ancestors due to same initial box (See appendTextBox)
     while (($p = $p->parentNode) && ($p->nodeType == XML_ELEMENT_NODE)
-      && $p->getAttribute('_autoopened')
-      && ((getNodeBox($self, $p) || '') eq $origbox)) {
-      setNodeBox($self, $p, $newbox); } }
+      && $p->getAttribute('_autoopened')) {
+        my $obox = getNodeBox($self,$p);
+        last if $obox && (($box eq $obox) || ($box eq ($obox->unlist)[-1]));
+        setNodeBox($self,$p, ($p ? List($obox,$box) : $box)); } }
+
   return; }
 
 sub openElement_internal {
