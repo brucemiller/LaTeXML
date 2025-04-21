@@ -436,12 +436,36 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 .ltx_nounicode    { color:red; }
 .ltx_nodisplay    { display:none; }
 /*======================================================================
- SVG (pgf/tikz ?) basics */
-
+ SVG (pgf/tikz & xy) basics
+ */
+/* Heuristically adjust for content uncentered within line-box */
+foreignObject {
+    translate: 0 0.1em;
+    --fo_width: 100%; }
+/* Use flex to vertically center foreignObject,
+   to accommodate potentially tall line-box */
+.ltx_foreignobject_container {
+    display:flex;
+    align-items:center;
+    height:100%;
+    width:var(--fo_width);
+}
+/* Also horizontally for single math, since Chrome adds a lot of left/right spacing. */
+.ltx_foreignobject_container:has( > .ltx_foreignobject_content > math:only-child) {
+    justify-content:center;
+}
+/* If multiple children, give more space to avoid unexpected line breaks
+   due to font differences. */
+.ltx_foreignobject_container:has( > .ltx_foreignobject_content > :not(:only-child)) {
+    width:calc(1.1 * var(--fo_width));
+}
+/* line height 0 just for this layer, to keep the line-box compact */
+.ltx_foreignobject_content {
+    display:block;
+}
 /* Stuff appearing in svg:foreignObject */
 .ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
 .ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }
-/*.ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; white-space:nowrap; }*/
 
 /*======================================================================
  Low-level Basics */

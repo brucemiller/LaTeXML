@@ -144,9 +144,16 @@
       </xsl:for-each>
       <xsl:choose>
         <!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
-        <xsl:when test="local-name()='foreignObject'
-                        and not(namespace-uri(child::*) = $SVG_NAMESPACE)">
-          <xsl:apply-templates mode='copy-foreign'/>
+        <xsl:when test="local-name()='foreignObject'">
+          <!-- Wrap contents (twice) to support more CSS layout options -->
+          <xsl:element name="span" namespace="{$html_ns}">
+            <xsl:attribute name="class">ltx_foreignobject_container</xsl:attribute>
+            <xsl:element name="span" namespace="{$html_ns}">
+              <xsl:attribute name="class">ltx_foreignobject_content</xsl:attribute>
+
+              <xsl:apply-templates mode='copy-foreign'/>
+            </xsl:element>
+          </xsl:element>
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates/>

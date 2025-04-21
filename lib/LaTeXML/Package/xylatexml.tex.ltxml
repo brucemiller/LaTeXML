@@ -237,7 +237,7 @@ DefConstructor('\lx@xy@move@to{Dimension}{Dimension}{}',
   "^<svg:g transform='translate(#x,#y)'>#3</svg:g>",
   properties => sub {
     my ($stomach, $x, $y) = @_;
-    Debug("MOVE " . ToString($x) . ',' . ToString($y)) if $LaTeXML::DEBUG{xy};
+    Debug("MOVE " . ToString($x) . ',' . ToString($y)) if $LaTeXML::DEBUG{svg_verbose};
     (x => $x->pxValue, y => $y->pxValue);
   });
 
@@ -263,7 +263,7 @@ DefConstructor('\zerodot',
   "^<svg:path d='M -2 -1 l 1 1' stroke='#stroke' fill='#fill'/>",    # left half a \jot (??)
   beforeConstruct => \&xy_FillStroke,
   properties      => sub {
-    Debug("DOT") if $LaTeXML::DEBUG{xy};
+    Debug("DOT") if $LaTeXML::DEBUG{svg_verbose};
     (do_stroke => LookupValue('xy_stroke'), do_fill => 0,
       width => Dimension(0), height => Dimension(0), depth => Dimension(0),
     ); });
@@ -286,7 +286,7 @@ DefConstructor('\lx@xy@droprule',
     my $y = $Yp;
     #    $Yp = $Yc = Dimension(0);
     # Y position is off here???
-    Debug("DROPRULE FRAGMENT") if $LaTeXML::DEBUG{xy};
+    Debug("DROPRULE FRAGMENT") if $LaTeXML::DEBUG{svg_verbose};
     #    (path => xy_packpath('M', $Xc, $y, 'L', $Xp, $y),
     (path => xy_packpath('M', $Xc, $Yc, 'L', $Xp, $Yp),
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
@@ -301,7 +301,7 @@ DefConstructor('\line@@',
     my $l = LookupRegister('\xydashl@');
     my $x = $l->multiply($c);
     my $y = $l->multiply($s);
-    Debug("LINE FRAGMENT") if $LaTeXML::DEBUG{xy};
+    Debug("LINE FRAGMENT") if $LaTeXML::DEBUG{svg_verbose};
     (path => xy_packpath('M', 0, 0, 'L', $x, $y),
       width => $x, height => $y, depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
@@ -315,7 +315,7 @@ DefConstructor('\squiggle@@',
     my $r = $l->multiply(0.66);
     my $w = $l->multiply($c);
     my $h = $l->multiply($s);
-    Debug("SQUIGGLE FRAGMENT") if $LaTeXML::DEBUG{xy};
+    Debug("SQUIGGLE FRAGMENT") if $LaTeXML::DEBUG{svg_verbose};
     (path => xy_packpath('M', $w->negate, $h->negate,    # Yes, cancel the \kern!
         'a', $r, $r, 60, 0, 0, $w, $h,
         'a', $r, $r, 60, 0, 1, $w, $h),
@@ -338,7 +338,7 @@ DefConstructor('\lx@xy@drawline@',
   beforeConstruct => \&xy_FillStroke,
   properties      => sub {
     my ($x0, $y0, $x1, $y1) = map { LookupRegister($_); } '\X@p', '\Y@p', '\X@c', '\Y@c';
-    Debug("LINE " . ToString($x0) . ',' . ToString($y0) . ' to ' . ToString($x1) . ',' . ToString($y1)) if $LaTeXML::DEBUG{xy};
+    Debug("LINE " . ToString($x0) . ',' . ToString($y0) . ' to ' . ToString($x1) . ',' . ToString($y1)) if $LaTeXML::DEBUG{svg_verbose};
     (path => xy_packpath('M', $x0, $y0, 'L', $x1, $y1),
       width     => $x1->subtract($x0),       height  => $y1->subtract($y0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => 0, dashes => LookupValue('xy_linepattern')); });
@@ -373,7 +373,7 @@ DefConstructor('\lx@xy@drawsquiggles@',
       push(@path, 'a', $r, $r, 60, 0, 0, $dx, $dy);
       push(@path, 'a', $r, $r, 60, 0, 1, $dx, $dy);
       $x = $x->add($xstep); $y = $y->add($ystep); }
-    #    Debug("SQUIGGLE $x0, $y0 to $x1, $y1 in $n parts: " . join(' ', @path)) if $LaTeXML::DEBUG{xy};
+    #    Debug("SQUIGGLE $x0, $y0 to $x1, $y1 in $n parts: " . join(' ', @path)) if $LaTeXML::DEBUG{svg_verbose};
     (path => xy_packpath(@path),
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
@@ -432,7 +432,7 @@ DefConstructor('\lx@xy@tip{}',
     my ($stomach, $stretch) = @_;
     $stretch = ToString($stretch);
     my $style   = LookupValue('xy_tips_style') || 'xy';
-    my $factors = $xy_tips_factors{$style}     || $xy_tips_factors{xy};
+    my $factors = $xy_tips_factors{$style}     || $xy_tips_factors{svg_verbose};
     my ($lf, $wf) = @$factors;
     my ($c, $s)   = xy_getOrientation();
     my $l  = LookupRegister('\xydashl@')->multiply($lf);
@@ -440,7 +440,7 @@ DefConstructor('\lx@xy@tip{}',
     my $r  = $l->multiply(2);
     my $dx = $l->negate->multiply($c)->subtract($w->multiply($s));
     my $dy = $l->negate->multiply($s)->add($w->multiply($c));
-    Debug("TIP") if $LaTeXML::DEBUG{xy};
+    Debug("TIP") if $LaTeXML::DEBUG{svg_verbose};
     (path => xy_packpath('M', 0, 0, 'A', $r, $r, 45, 0, ($stretch < 0 ? 1 : 0), $dx, $dy),
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
@@ -454,7 +454,7 @@ DefConstructor('\lx@xy@stopper',
     my $l  = LookupRegister('\xydashl@');
     my $dx = $l->multiply($s)->negate;
     my $dy = $l->multiply($c);
-    Debug("STOPPER") if $LaTeXML::DEBUG{xy};
+    Debug("STOPPER") if $LaTeXML::DEBUG{svg_verbose};
     (path => xy_packpath('M', $dx, $dy, 'L', $dx->negate, $dy->negate),
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
@@ -465,12 +465,12 @@ DefConstructor('\lx@xy@hook{Number}',
   properties      => sub {
     my ($stomach, $offset) = @_;
     my ($c,       $s)      = xy_getOrientation();
-    my $l = LookupRegister('\xybsqll@');
+    my $l = LookupRegister('\xybsqll@')->multiply(0.707107);
     $offset = $offset->valueOf;
     my $x0 = ($offset ? Dimension(0) : $l);
     my $y0 = $l->multiply($offset + 1);
     my $y1 = $y0->subtract($l->multiply(2));
-    Debug("HOOK") if $LaTeXML::DEBUG{xy};
+    Debug("HOOK") if $LaTeXML::DEBUG{svg_verbose};
     (path => xy_packpath('M', $x0->multiply($c)->subtract($y0->multiply($s)),
         $x0->multiply($s)->add($y0->multiply($c)),
         'A', $l, $l, 180, 0, 1,
@@ -484,9 +484,9 @@ DefConstructor('\lx@xy@turn{Number}',
   properties      => sub {
     my ($stomach, $offset) = @_;
     my ($c,       $s)      = xy_getOrientation();
-    my $l = LookupRegister('\xybsqll@');
+    my $l = LookupRegister('\xybsqll@')->multiply(0.707107);
     $offset = $offset->valueOf;
-    Debug("TURN") if $LaTeXML::DEBUG{xy};
+    Debug("TURN") if $LaTeXML::DEBUG{svg_verbose};
     (path => xy_packpath('M', 0, 0,
         'A', $l, $l, 90, 0, ($offset > 0 ? 0 : 1),
         $l->multiply(-($c + $offset * $s)),
@@ -499,7 +499,7 @@ DefConstructor('\lx@xy@point',
   beforeConstruct => \&xy_FillStroke,
   properties      => sub {
     my $l = LookupRegister('\xybsqll@');
-    Debug("POINT") if $LaTeXML::DEBUG{xy};
+    Debug("POINT") if $LaTeXML::DEBUG{svg_verbose};
     (radius => $l->multiply(0.5)->pxValue,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill')); });
@@ -531,7 +531,7 @@ DefConstructor('\cirbuild@',
     my $cd = LookupValue('xy_circle_dir');    # 0 full; +1 ccw; -1 cw;
     my $path;
     if (!$cd) {                               # Full circle
-      Debug("CIRCLE full") if $LaTeXML::DEBUG{xy};
+      Debug("CIRCLE full") if $LaTeXML::DEBUG{svg_verbose};
     }
     else {
       my ($d1, $d2) = map { LookupRegister($_)->valueOf; } '\count@@', '\count@';
@@ -548,7 +548,7 @@ DefConstructor('\cirbuild@',
       my $y0     = $yc->add($r->multiply(sin($theta1)));
       my $x1     = $xc->add($r->multiply(cos($theta2)));
       my $y1     = $yc->add($r->multiply(sin($theta2)));
-      Debug("CIRCLE " . ($cd > 0 ? 'ccw' : 'cw') . ", d1=$d1,d2=$d2 =>  $a1 to $a2") if $LaTeXML::DEBUG{xy};
+      Debug("CIRCLE " . ($cd > 0 ? 'ccw' : 'cw') . ", d1=$d1,d2=$d2 =>  $a1 to $a2") if $LaTeXML::DEBUG{svg_verbose};
       my $a = $a2 - $a1;
       $path = xy_packpath('M', $x1, $y1, 'A', $r, $r, $a, ($a > 180 ? 1 : 0), 0, $x0, $y0); }
     (full => !$cd, path => $path,
@@ -659,7 +659,7 @@ DefConstructor('\lx@xy@spline@',
   properties      => sub {
     my ($x0, $y0, $x1, $y1, $L, $U, $R, $D, $A, $B) = map { LookupRegister($_); }
       '\X@p', '\Y@p', '\X@c', '\Y@c', '\L@c', '\U@c', '\R@c', '\D@c', '\A@', '\B@';
-    Debug("SPLINE") if $LaTeXML::DEBUG{xy};
+    Debug("SPLINE") if $LaTeXML::DEBUG{svg_verbose};
     my $mult = LookupValue('xy_multiplicity') || 1;
     my @path = ();
     if ($mult % 2 == 1) {
@@ -733,7 +733,7 @@ DefConstructor('\lx@xy@buildcircle@',
     my $yc = $ry->add(LookupRegister('\xydashl@'));    # Apparent Weird offset???
     Debug("ELLIPSE " . ToString($rx) . ' x ' . ToString($ry) . ' @ ' . ToString($xc) . ',' . ToString($yc))
 
-      if $LaTeXML::DEBUG{xy};
+      if $LaTeXML::DEBUG{svg_verbose};
     (x => $xc->pxValue, y => $yc->pxValue,
       rx        => $rx->pxValue, ry     => $ry->pxValue,
       width     => Dimension(0), height => Dimension(0), depth => Dimension(0),
@@ -801,7 +801,7 @@ DefConstructor('\framed@@{Dimension}',
         ($hm > 0 ? ('L', $x1, $y0->add($r)) : ()),
         'A', $r, $r, 90, 0, 0, $x1->subtract($r), $y0,
         'Z'); }
-    Debug("FRAMED") if $LaTeXML::DEBUG{xy};
+    Debug("FRAMED") if $LaTeXML::DEBUG{svg_verbose};
     (path => $path,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
@@ -821,7 +821,7 @@ DefConstructor('\circled@ {Dimension}',
       $r = $w->larger($h)->multiply(0.5); }
     my $x0 = $X;
     my $y0 = $Y;
-    Debug("CIRCLED " . ToString($r) . ' at ' . ToString($x0) . ',' . ToString($y0)) if $LaTeXML::DEBUG{xy};
+    Debug("CIRCLED " . ToString($r) . ' at ' . ToString($x0) . ',' . ToString($y0)) if $LaTeXML::DEBUG{svg_verbose};
     (x => $x0->pxValue, y => $y0->pxValue, radius => $r->pxValue,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
@@ -839,7 +839,7 @@ DefConstructor('\ellipsed@ {Dimension}{Dimension}',
     my $h  = $U->add($D);
     my $x0 = $X;
     my $y0 = $Y;
-    Debug("ELLIPSED " . ToString($rx) . ' x ' . ToString($ry)) if $LaTeXML::DEBUG{xy};
+    Debug("ELLIPSED " . ToString($rx) . ' x ' . ToString($ry)) if $LaTeXML::DEBUG{svg_verbose};
     (x => $x0->pxValue, y => $y0->pxValue,
       rx        => $rx->pxValue,             ry      => $ry->pxValue,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
@@ -862,7 +862,7 @@ DefConstructor('\shaded@@{Dimension}',
     my $y1 = $y0->add($h);
     $r = $r->smaller($w->multiply(0.5))->smaller($h->multiply(0.5));
     my $path = xy_packpath('M', $x0, $y0, 'L', $x1, $y0, 'L', $x1, $y1);
-    Debug("SHADED") if $LaTeXML::DEBUG{xy};
+    Debug("SHADED") if $LaTeXML::DEBUG{svg_verbose};
     (path => $path,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
@@ -909,7 +909,7 @@ DefConstructor('\lx@xy@bracketed{}{}',
       $x     = $w->subtract($ht0)->multiply(0.5)->pxValue;
       $y     = $h->negate->subtract($w0)->pxValue;
       $angle = 90; $yscale = $w->valueOf / $ht0->valueOf; }
-    Debug("BRACKETED " . ToString($char)) if $LaTeXML::DEBUG{xy};
+    Debug("BRACKETED " . ToString($char)) if $LaTeXML::DEBUG{svg_verbose};
     (x => $x, y => $y, angle => $angle, xscale => $xscale, yscale => $yscale,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
@@ -923,7 +923,7 @@ DefConstructor('\blacked@@',
     my $d  = $b->negate;
     my $y  = $b;
     my $ht = $h->add($d);
-    Debug("BLACKED") if $LaTeXML::DEBUG{xy};
+    Debug("BLACKED") if $LaTeXML::DEBUG{svg_verbose};
     (x => 0, y => $y->pxValue, w => $w->pxValue, h => $ht->pxValue,
       width => $w, height => $h, depth => $d,
       do_stroke => LookupValue('xy_stroke'), do_fill => 1); });
@@ -974,7 +974,7 @@ DefConstructor('\lx@xy@poly{}',
       push(@path, 'L', shift(@points), shift(@points)); }
     my $th = LookupRegister('\xylinethick@');
     my ($cap, $join, $miter) = map { ToString(Digest($_)); } '\xylinecap@', '\xylinejoin@', '\xylinemiter@';
-    Debug("POLYLINE; Thickness " . ToString($th)) if $LaTeXML::DEBUG{xy};
+    Debug("POLYLINE; Thickness " . ToString($th)) if $LaTeXML::DEBUG{svg_verbose};
     (path => xy_packpath(@path),
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
@@ -997,7 +997,7 @@ DefConstructor('\xyscale@@{}{}',
       'translate(' . $Lc->subtract($Rp)->pxValue . ',' . $Up->negate->pxValue . ')'
       . ' scale(' . ToString($xscale) . ',' . ToString($yscale) . ')'
       . ' translate(' . $Rp->subtract($Lc)->pxValue . ',' . $Up->pxValue . ')';
-    Debug("SCALE by $transform") if $LaTeXML::DEBUG{xy};
+    Debug("SCALE by $transform") if $LaTeXML::DEBUG{svg_verbose};
     return (transform => $transform, box => $box); });
 
 DefConstructor('\xyRotate@@{}',
@@ -1008,7 +1008,7 @@ DefConstructor('\xyRotate@@{}',
     AssignValue(box0 => undef);
     # BAD approximation!
     my $angle = ToString($kangle) * 45 / 1024 - 135;
-    Debug("ROTATE by $angle") if $LaTeXML::DEBUG{xy};
+    Debug("ROTATE by $angle") if $LaTeXML::DEBUG{svg_verbose};
     return (angle => $angle, box => $box); });
 
 DefConstructor('\xyRotate@@{}',
@@ -1025,7 +1025,7 @@ DefConstructor('\xyRotate@@{}',
       'translate(' . $Lc->subtract($Rp)->pxValue . ',' . $Up->negate->pxValue . ')'
       . ' rotate(' . $angle . ')'
       . ' translate(' . $Rp->subtract($Lc)->pxValue . ',' . $Up->pxValue . ')';
-    Debug("ROTATE by $transform") if $LaTeXML::DEBUG{xy};
+    Debug("ROTATE by $transform") if $LaTeXML::DEBUG{svg_verbose};
     return (transform => $transform, box => $box); });
 
 # Align with current direction? But what is the argument?
@@ -1043,7 +1043,7 @@ DefConstructor('\doSpecialRotate@@ Until:@@',
       'translate(' . $Lc->subtract($Rp)->pxValue . ',' . $Up->negate->pxValue . ')'
       . ' rotate(' . $angle . ')'
       . ' translate(' . $Rp->subtract($Lc)->pxValue . ',' . $Up->pxValue . ')';
-    Debug("ROTATE by $transform SPECIAL for " . ToString($arg)) if $LaTeXML::DEBUG{xy};
+    Debug("ROTATE by $transform SPECIAL for " . ToString($arg)) if $LaTeXML::DEBUG{svg_verbose};
     return (transform => $transform, box => $box); });
 
 #======================================================================
