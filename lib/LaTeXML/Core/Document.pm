@@ -1134,7 +1134,7 @@ sub openText_internal {
     Debug("Appending text \"$text\" to " . Stringify($$self{node})) if $LaTeXML::DEBUG{document};
     my $parent = $$self{node}->parentNode;
     if ($LaTeXML::BOX && $parent->getAttribute('_autoopened')) {
-      appendTextBox($self, $parent, $LaTeXML::BOX); }
+      appendNodeBox($self, $parent, $LaTeXML::BOX); }
     $$self{node}->appendData($text); }
   elsif (($p = $$self{node}->lastChild) && ($p->nodeType == XML_COMMENT_NODE)
     && ($pp = $p->previousSibling) && ($pp->nodeType == XML_TEXT_NODE)) {
@@ -1147,30 +1147,12 @@ sub openText_internal {
     my $point = find_insertion_point($self, '#PCDATA');
     my $node  = $$self{document}->createTextNode($text);
     if ($point->getAttribute('_autoopened')) {
-      appendTextBox($self, $point, $LaTeXML::BOX); }
+      appendNodeBox($self, $point, $LaTeXML::BOX); }
     Debug("Inserting text node for \"$text\" into " . Stringify($point))
       if $LaTeXML::DEBUG{document};
     $point->appendChild($node);
     setNode($self, $node); }
   return $$self{node}; }    # return the text node (current)
-
-# Since xml text nodes don't have attributes to record the origining box,
-# we need to manage the accumulation of autoOpen'ed boxes
-# Indeed, propogate it to ancestors if they were autoOpened for same cause (box)
-sub appendTextBox {
-  my ($self, $node, $box) = @_;
-  my $origbox = getNodeBox($self, $node);
-  if ($origbox && ($box ne $origbox)) {    # if not already the same box
-    my $newbox = List($origbox, $box);
-    setNodeBox($self, $node, $newbox);
-    my $p = $node;
-    # AND, propogate change to autoOpen'd ancestors based on same initial box
-    while (($p = $p->parentNode) && ($p->nodeType == XML_ELEMENT_NODE)
-      && $p->getAttribute('_autoopened')) {
-        my $obox = getNodeBox($self,$p);
-        last if $obox && (($box eq $obox) || ($box eq ($obox->unlist)[-1]));
-        setNodeBox($self,$p, ($p ? List($obox,$box) : $box)); } }
-  return; }
 
 # Question: Why do I have math ligatures handled within openMathText_internal,
 # but text ligatures handled within closeText_internal ???
@@ -1689,6 +1671,47 @@ sub getNodeBox {
   if (my $boxid = $node->getAttribute('_box')) {
     return $$self{node_boxes}{$boxid}; } }
 
+# When material is added to an element, especially an autoopened one,
+# we need to adjust the record of boxes that created the node.
+# (while attempting to avoid duplication)
+sub appendNodeBox {
+  my ($self, $node, $box) = @_;
+  return unless $box;
+  $box = $$self{node_boxes}{$box} unless ref $box;
+  do {
+    my $origbox = getNodeBox($self, $node);
+    if(! $origbox){
+      setNodeBox($self, $node, $box); }
+    elsif (($box eq $origbox) || ($box eq ($origbox->unlist)[-1])) {
+      }                         # Already there
+    else {
+      setNodeBox($self, $node, List($origbox, $box)); }
+    $node = $node->parentNode;
+  } while($node && ($node->nodeType == XML_ELEMENT_NODE)
+        && $node->getAttribute('_autoopened'));
+  return; }
+
+# Similarly when you remove an node, fixup the parent's nodeBox
+sub removeNodeBox {
+  my ($self, $node, $box) = @_;
+  return unless $box;
+  $box = $$self{node_boxes}{$box} unless ref $box;
+  do {
+    my $origbox = getNodeBox($self, $node);
+#    Debug("Remove $box (".ToString($box).") from $origbox (".ToString($origbox).")?");
+    if(!$origbox){}
+    elsif($origbox eq $box){
+      $node->removeAttribute('_box'); }
+    else {
+      my @b = $origbox->unlist;
+      # Note that this does NOT see (or remove) boxes embedded within a parent's Whatsit
+      if (grep { $_ eq $box; } @b) {
+        setNodeBox($self,$node, List(grep { $_ ne $box; } @b)); } }
+    $node = $node->parentNode;
+  } while($node && ($node->nodeType == XML_ELEMENT_NODE)
+        && $node->getAttribute('_autoopened'));
+  return; }
+
 # Record the font used on this node.
 # $font should be a Font object; else a previously recorded string
 sub setNodeFont {
@@ -1747,11 +1770,13 @@ sub removeNode {
   my ($self, $node) = @_;
   if ($node) {
     my $chopped = $$self{node}->isSameNode($node);    # Note if we're removing insertion point
+    my $parent = $node->parentNode;
     if ($node->nodeType == XML_ELEMENT_NODE) {        # If an element, do ID bookkeeping.
       if (my $id = $node->getAttribute('xml:id')) {
         unRecordID($self, $id); }
+      if (my $box = getNodeBox($self,$node)) {
+        removeNodeBox($self,$parent, $box); }
       $chopped ||= grep { removeNode_aux($self, $_) } $node->childNodes; }
-    my $parent = $node->parentNode;
     if ($chopped) {                                   # Don't remove insertion point!
       setNode($self, $parent); }
     $parent->removeChild($node);
@@ -1796,9 +1821,7 @@ sub openElementAt {
   my ($ns, $tag) = $$self{model}->decodeQName($qname);
   my $newnode;
   my $font = $attributes{_font} || $attributes{font};
-  my $box  = $attributes{_box};
-  $box = $$self{node_boxes}{$box} if $box && !ref $box;    # may already be the string key
-      # If this will be the document root node, things are slightly more involved.
+  # If this will be the document root node, things are slightly more involved.
   if ($point->nodeType == XML_DOCUMENT_NODE) {    # First node! (?)
     $$self{model}->addSchemaDeclaration($self, $tag);
     map { $$self{document}->appendChild($_) } @{ $$self{pending} };    # Add saved comments, PI's
@@ -1806,10 +1829,10 @@ sub openElementAt {
     recordConstructedNode($self, $newnode);
     $$self{document}->setDocumentElement($newnode);
     if ($ns) {
-  # Here, we're creating the initial, document element, which will hold ALL of the namespace declarations.
-  # If there is a default namespace (no prefix), that will also be declared, and applied here.
-  # However, if there is ALSO a prefix associated with that namespace, we have to declare it FIRST
-  # due to the (apparently) buggy way that XML::LibXML works with namespaces in setAttributeNS.
+      # Here, we're creating the initial, document element, which will hold ALL of the namespace declarations.
+      # If there is a default namespace (no prefix), that will also be declared, and applied here.
+      # However, if there is ALSO a prefix associated with that namespace, we have to declare it FIRST
+      # due to the (apparently) buggy way that XML::LibXML works with namespaces in setAttributeNS.
       my $prefix    = $$self{model}->getDocumentNamespacePrefix($ns);
       my $attprefix = $$self{model}->getDocumentNamespacePrefix($ns, 1, 1);
       if (!$prefix && $attprefix) {
@@ -1817,7 +1840,6 @@ sub openElementAt {
       $newnode->setNamespace($ns, $prefix, 1); } }
   else {
     $font    = getNodeFont($self, $point) unless $font;
-    $box     = getNodeBox($self, $point)  unless $box;
     $newnode = openElement_internal($self, $point, $ns, $tag); }
 
   foreach my $key (sort keys %attributes) {
@@ -1825,30 +1847,12 @@ sub openElementAt {
     next if $key eq 'locator';    # !!!
     setAttribute($self, $newnode, $key, $attributes{$key}); }
   setNodeFont($self, $newnode, $font)                                      if $font;
-  setNodeBox($self, $newnode, $box)                                        if $box;
-  appendElementBox($self, $newnode, $box)                                  if $box;
+  if (my $box = $attributes{_box} || getNodeBox($self,$point) || $LaTeXML::BOX) {
+    appendNodeBox($self,$newnode,$box); }
   Debug("Inserting " . Stringify($newnode) . " into " . Stringify($point)) if $LaTeXML::DEBUG{document};
   # Run afterOpen operations
   afterOpen($self, $newnode);
   return $newnode; }
-
-# When appending nodes to an autoOpen'd node, we'll need to record the new boxes there, too.
-sub appendElementBox {
-  my ($self, $node, $box) = @_;
-  my ($p, $origbox);
-  if (($p = $node->parentNode) && ($p->nodeType == XML_ELEMENT_NODE)
-    && $p->getAttribute('_autoopened')
-    && ($origbox = getNodeBox($self, $p)) && ($origbox ne $box)) {
-    my $newbox = List($origbox, $box);
-    setNodeBox($self, $p, $newbox);
-    # AND, propogate to autoOpen'd ancestors due to same initial box (See appendTextBox)
-    while (($p = $p->parentNode) && ($p->nodeType == XML_ELEMENT_NODE)
-      && $p->getAttribute('_autoopened')) {
-        my $obox = getNodeBox($self,$p);
-        last if $obox && (($box eq $obox) || ($box eq ($obox->unlist)[-1]));
-        setNodeBox($self,$p, ($p ? List($obox,$box) : $box)); } }
-
-  return; }
 
 sub openElement_internal {
   my ($self, $point, $ns, $tag) = @_;
@@ -2006,6 +2010,7 @@ sub replaceNode {
     else     { $parent->replaceChild($c1, $node); }
     $c0 = $c1; }
   removeNode($self, $node);
+  map { appendNodeBox($self,$parent, getNodeBox($self,$_)); } @nodes;
   return $node; }
 
 # initially since $node->setNodeName was broken in XML::LibXML 1.58
