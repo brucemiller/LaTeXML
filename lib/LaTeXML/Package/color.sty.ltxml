@@ -32,7 +32,7 @@ foreach my $option (qw(dvips xdvi oztex dvipsnames)) {
 sub ParseColor {
   my ($model, $spec) = @_;
   $model = ToString($model) if ref $model; $model = lc($model) if $model;
-  $spec = ToString($spec) if ref $spec;
+  $spec  = ToString($spec)  if ref $spec;
   $spec =~ s/^\s+//;
   $spec =~ s/\s+$//;
   if ($spec =~ /^\{\s*(.*?)\s*\}$/) {    # Trim
@@ -41,7 +41,8 @@ sub ParseColor {
   if ($model && $model eq 'named') {
     $spec = 'named_' . $spec; $model = undef; }
   if ($model) {
-    $color = Color($model, ($spec =~ /,/ ? split(/\s*,\s*/, $spec) : split(/\s+/, $spec)))->toCore;
+    $color = Color($model, (map { split(/\s+/, $_) }
+          ($spec =~ /,/ ? split(/\s*,\s*/, $spec) : ($spec))))->toCore;
     Error('unexpected', $spec, $STATE->getStomach,
       "Don't understand '$spec' as a color") unless $color; }
   else {
@@ -107,7 +108,7 @@ DefMacro('\colorbox[]{}{}', '\hbox{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}
 DefConstructor('\fcolorbox[]{}{} Undigested',
   "<ltx:text framed='rectangle' framecolor='#framecolor'"
     . " _noautoclose='1'>#text</ltx:text>",
-  bounded => 1, mode => 'text',
+  bounded     => 1, mode => 'text',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;
