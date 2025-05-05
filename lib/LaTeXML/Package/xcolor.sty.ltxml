@@ -243,7 +243,8 @@ sub ParseXColor {
     if ($model eq 'named') {
       $color = LookupColor($spec); }
     else {
-      $color = Color($model, ($spec =~ /,/ ? split(/\s*,\s*/, $spec) : split(/\s+/, $spec)))->toCore; } }
+      $color = Color($model, (map { split(/\s+/, $_) }
+            ($spec =~ /,/ ? split(/\s*,\s*/, $spec) : ($spec))))->toCore; } }
   else {
     $color = DecodeColor($specs); }
   # And finally convert to the target model, if requested.
