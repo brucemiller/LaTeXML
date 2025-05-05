@@ -40,7 +40,7 @@ DefMacro('\@todo[]{}',         '');
 DefMacro('\setuptodonotes{}',  '');
 
 DeclareOption('disable', sub {
-    DefMacro('\todo{}', '', locked => 1);
+    DefMacro('\todo[]{}', '', locked => 1);
 });
 
 ProcessOptions();
