@@ -452,19 +452,20 @@ sub revertScript {
 # can we do this before parsing? we can do the advance or something.... Hmmmm.
 # * Need to know scriptpos (mid or post) to determine position.
 # * need to know sub/super
+# NOTE the following flaws:
+#  * we haven't detected cramped
+#  * subscript needs to shift down if superscript (rule 18e)
+#  * should italic correction be omitted in deep subscripts?
 sub scriptSizer {
   my ($script, $base, $prev, $op, $pos) = @_;
-
-  # NOTE: Currently, the mathstyle is NOT reflected in the font of the script!!!!
-  # Or is it now ?????
-  # [unless it's different from the 'expected' style!!!]
+  my $bfont = $base   && $base->getFont;
+  my $style  = $base   && $bfont->getMathstyle || 'text';
+  my $syfont = 'cmsy'.($bfont && $bfont->getSize || 10);
   my ($ws, $hs, $ds) = map { $_->valueOf } $script->getSize;
-  $ws *= 0.8; $hs *= 0.8; $ds *= 0.8;    # HACK!@!!
   my ($wb, $hb, $db) = map { $_->valueOf } ($base ? $base->getSize
     : LookupValue('font')->getNominalSize);
   my ($w, $h, $d) = (0, 0, 0);
   # Fishing for the scriptpos on the base (if any)
-  my $attr;
   $pos = $base->getProperty('scriptpos') if !defined $pos && defined $base;
   $pos = 'post'                          if !defined $pos;
   if ($pos eq 'mid') {
@@ -475,11 +476,17 @@ sub scriptSizer {
       $d = $db + $hs + $ds; } }
   else {
     my $wp = ($prev && $prev->getWidth) || 0;    # as if max of width & prev script's width
+    my $xheight  = getFontDimen($syfont, 5);
+    my $space    = LookupRegister('\scriptspace')->valueOf;
+    $ws += $space;
     $w = max(0, $ws - $wp);
     if ($op eq 'SUPERSCRIPT') {
-      $h = $hb + $hs / 2; }
+      my $supshift = getFontDimen($syfont, # displaystyle:13, cramped:15, else 14;
+        ($style eq 'display' ? 13 : ($style eq 'scriptscript' ? 15 : 14)));
+      $h = max($hb, $hs + max($ds + $xheight/4, $supshift)); }
     else {
-      $d = $hs / 2 + $ds; } }
+      my $subshift = getFontDimen($syfont, 16);
+      $d = max($db, $ds + max($hs - $xheight*0.8, $subshift)); } }
   $w = Dimension($w); $h = Dimension($h); $d = Dimension($d);
   return ($w, $h, $d); }
 
