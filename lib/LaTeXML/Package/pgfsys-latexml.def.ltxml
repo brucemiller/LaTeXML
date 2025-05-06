@@ -904,6 +904,7 @@ DefConstructor('\lxSVG@halign BoxSpecification',
     tikzAlignmentBindings($template, undef,
       #    alignmentBindings($template, undef,
       attributes => {
+        vattach => 'bottom',
         width => orNull(GetKeyVal($spec, 'to')) });
     digestAlignmentBody($stomach, $whatsit);
     $stomach->egroup;

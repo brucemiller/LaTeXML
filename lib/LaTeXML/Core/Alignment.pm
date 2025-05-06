@@ -586,9 +586,21 @@ sub normalize_sum_sizes {
     $colpos[$j] = Dimension($x);
     $x += $colwidths[$j];
     $x += $colrights[$j]; }
-  $$self{cwidth}       = Dimension($x);
-  $$self{cheight}      = Dimension($y);    # or account for vertical position of array as a whole?
-  $$self{cdepth}       = Dimension(0);
+  my $vattach = $$self{properties}{attributes}{vattach} || 'middle';
+  $$self{cwidth} = Dimension($x);
+  if($vattach eq 'top'){
+    my $h = $rowheights[0] || 0;
+    $$self{cheight} = Dimension($h);
+    $$self{cdepth}  = Dimension($y - $h); }
+  elsif($vattach eq 'bottom'){
+    my $d = $rowdepths[-1] || 0;
+    $$self{cheight} = Dimension($y - $d);
+    $$self{cdepth}  = Dimension($d); }
+  else {                        # middle
+    my $font = $STATE->lookupValue('font');
+    my $c = $font && $font->getEXHeight || Dimension('1ex');
+    $$self{cheight} = Dimension(($y+$c)/2);
+    $$self{cdepth}  = Dimension(($y-$c)/2);  }
   @colwidths           = map { Dimension($_); } @colwidths;
   @rowheights          = map { Dimension($_); } @rowheights;
   @rowdepths           = map { Dimension($_); } @rowdepths;
