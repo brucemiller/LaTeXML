@@ -24,7 +24,7 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, $encoding, $file, %options) = @_;
   my $self = bless { encoding => $encoding, file => $file,
-    sizes => {}, kerns => {}, ligatures => {}, %options }, $class;
+    sizes => {}, kerns => {}, ligatures => {}, parameters => [], %options }, $class;
   $self->read_tfm();
   return $self; }
 
@@ -119,6 +119,7 @@ sub read_tfm {
         $self->process_lig_kern($char, \@lig_kern, $remainder, $fontmap, \@kern); }
   } }
   # And install interesting parameters (offset by 1)
+  $$self{parameters}   = [@param];
   $$self{slant}        = $param[0];
   $$self{space}        = $param[1];
   $$self{spacestretch} = $param[2];
