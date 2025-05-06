@@ -458,7 +458,7 @@ sub revertScript {
 #  * should italic correction be omitted in deep subscripts?
 sub scriptSizer {
   my ($script, $base, $prev, $op, $pos) = @_;
-  my $bfont = $base   && $base->getFont;
+  my $bfont  = $base   && $base->getFont;
   my $style  = $base   && $bfont->getMathstyle || 'text';
   my $syfont = 'cmsy'.($bfont && $bfont->getSize || 10);
   my ($ws, $hs, $ds) = map { $_->valueOf } $script->getSize;
