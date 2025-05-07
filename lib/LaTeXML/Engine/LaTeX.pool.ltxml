@@ -2292,8 +2292,8 @@ DefConstructor('\lx@equationgroup@subnumbering@begin',
     AssignValue(SAVED_EQUATION_NUMBER => LookupRegister('\c@equation'));
     $whatsit->setProperties(%eqn);
     ResetCounter('equation');
-    DefMacroI('\theequation',    undef, UnTeX($eqnum) . '\alph{equation}');
-    DefMacroI('\theequation@ID', undef, UnTeX($eqn{id}) . '.\@equation@ID'); });
+    DefMacroI('\theequation',    undef, UnTeX($eqnum, 1) . '\alph{equation}');
+    DefMacroI('\theequation@ID', undef, UnTeX($eqn{id}, 1) . '.\@equation@ID'); });
 Tag('ltx:equationgroup', autoClose => 1);
 DefConstructor('\lx@equationgroup@subnumbering@end', sub {
     $_[0]->maybeCloseElement('ltx:equationgroup'); },
@@ -3122,7 +3122,7 @@ sub defineNewTheorem {
     afterDigestBegin => sub {
       my $name = $_[1]->getArg(1);
       Digest('\the\thm@bodyfont\the\thm@styling'
-          . '\def\lx@thistheorem{' . ($name ? UnTeX($name) : '') . '}'); },
+          . '\def\lx@thistheorem{' . ($name ? UnTeX($name, 1) : '') . '}'); },
     beforeDigestEnd => sub { Digest('\thm@doendmark\the\thm@postwork'); },
     properties      => sub {
       my %ctr = ();
@@ -4549,7 +4549,7 @@ DefParameterType('SanitizedVerbatim', sub {
     # the strangeness comes from the original TeX workflow requiring multiple conversion calls,
     # alongside a call to the `makeidx` binary, which we don't do in latexml. This parameter type
     # emulates one important aspect implied by those steps.
-    $arg = TokenizeInternal(UnTeX($arg));
+    $arg = TokenizeInternal(UnTeX($arg, 1));
     return $arg; },
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
@@ -6481,7 +6481,7 @@ DefPrimitive('\protected@write Number {}{}', sub {
     if (my $filename = LookupValue('output_file:' . $port)) {
       my $handle   = $filename . '_contents';
       my $contents = LookupValue($handle);
-      AssignValue($handle => $contents . UnTeX($tokens) . "\n", 'global'); }
+      AssignValue($handle => $contents . UnTeX($tokens, 1) . "\n", 'global'); }
     else {
       Note(UnTeX($tokens)); }
     $stomach->egroup;

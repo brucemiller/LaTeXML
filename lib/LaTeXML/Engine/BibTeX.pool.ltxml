@@ -274,7 +274,7 @@ DefMacro('\bib@@names{}{}', sub {
     (T_CS('\bib@@@names'), T_BEGIN,
       (map { Invocation(T_CS('\bib@@@name'), $field, $_) }
 ##          processBibNameList(currentBibEntryField(ToString($field)))),
-          processBibNameList(UnTeX($names))),
+          processBibNameList(UnTeX($names, 1))),
       T_END); });
 
 # Now, we define

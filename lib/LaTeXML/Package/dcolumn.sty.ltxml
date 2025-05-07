@@ -36,7 +36,7 @@ DefMacro('\DC@{}{}{}', sub {
     $delim = ToString($delim);
     if ($delim ne ToString($todelim)) {
       $STATE->assignMathcode($delim => 0x8000);
-      DefMacroI(T_CS($delim), undef, '\lx@hidden@bgroup\lx@unactivate{' . $delim . '}\lx@wrap[role=PERIOD]{' . UnTeX($todelim) . '}\lx@hidden@egroup');
+      DefMacroI(T_CS($delim), undef, '\lx@hidden@bgroup\lx@unactivate{' . $delim . '}\lx@wrap[role=PERIOD]{' . UnTeX($todelim, 1) . '}\lx@hidden@egroup');
     }
     # We need to temporarily deactivate '$'
     Let(T_CS('\DC@saved@dollar'), T_MATH);
