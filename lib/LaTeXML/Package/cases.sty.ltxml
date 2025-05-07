@@ -59,8 +59,8 @@ DefPrimitive('\lx@numcases@subnumbering@begin', sub {
     my $eqnum = Expand(T_CS('\theequation'));
     AssignValue(SAVED_EQUATION_NUMBER => LookupRegister('\c@equation'));
     ResetCounter('equation');
-    DefMacro('\theequation',    UnTeX($eqnum) . '\alph{equation}');
-    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID'); });
+    DefMacro('\theequation',    UnTeX($eqnum, 1) . '\alph{equation}');
+    DefMacro('\theequation@ID', UnTeX($eqn{id}, 1) . '.\@equation@ID'); });
 DefPrimitive('\lx@numcases@subnumbering@end', sub {
     AssignRegister('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
 

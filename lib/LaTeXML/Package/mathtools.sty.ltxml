@@ -819,8 +819,8 @@ DefMacro('\newgathered{}{}{}{}', sub {
     # Really should be making the pre/post_line into separate columns!!!
     DefMacroI('\\' . $name, undef,
       '\@ams@multirow@bindings{name=' . $name . '}['
-        . 'before_row=\lx@hidden@noalign{' . UnTeX($pre_line) . '},'
-        . 'after_row=\lx@hidden@noalign{' . UnTeX($post_line) . '}'
+        . 'before_row=\lx@hidden@noalign{' . UnTeX($pre_line, 1) . '},'
+        . 'after_row=\lx@hidden@noalign{' . UnTeX($post_line, 1) . '}'
         . ']\@@newgathered@dummy\lx@begin@alignment');
     DefMacroI('\end' . $name, undef,
       Tokens(T_CS('\lx@end@alignment'), T_CS('\@end@gathered'), $after)); });
