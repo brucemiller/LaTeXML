@@ -42,27 +42,57 @@ $latexml->withState(sub {
     LoadPool('LaTeX');
     my $metrics = {
       # Core TeX font/encodings
-      cmr  => read_tfm('OT1', "$FONTDIR/cm/cmr$SIZE.tfm"),
-      cmm  => read_tfm('OML', "$FONTDIR/cm/cmmi$SIZE.tfm"),
-      cmsy => read_tfm('OMS', "$FONTDIR/cm/cmsy$SIZE.tfm"),
-      cmex => read_tfm('OMX', "$FONTDIR/cm/cmex$SIZE.tfm"),
+      # serif_medium_upright
+      read_tfms('OT1', "$FONTDIR/cm", 'cmr', qw(5 6 7 8 9 10 12 17)), # roman text
+      # math_medium_italic
+      read_tfms('OML', "$FONTDIR/cm",'cmmi', qw(5 6 7 8 9 10 12)), # math italic
+      read_tfms('OMS', "$FONTDIR/cm",'cmsy', qw(5 6 7 8 9 10)),    # math symbols
+      read_tfms('OMX', "$FONTDIR/cm",'cmex', qw(10)),              # math extension
+      # sansserif_medium_upright
+      read_tfms('OT1', "$FONTDIR/cm",'cmss', qw(8 9 10 12 17)), # sans serif
+      # sansserif_medium_italic
+      read_tfms('OT1', "$FONTDIR/cm",'cmssi', qw(8 9 10 12 17)), # sans serif italic
+      # serif_bold_upright
+      read_tfms('OT1', "$FONTDIR/cm",'cmbx', qw(5 6 7 8 9 10 12)),  # boldface extended
+      # typewriter_medium_upright
+      read_tfms('OT1', "$FONTDIR/cm",'cmtt', qw(8 9 10 12)), # typewriter
+      # typewriter_medium_slanted
+      read_tfms('OT1', "$FONTDIR/cm",'cmsltt', qw(10)), # slanted typewriter
+      # serif_medium_slanted
+      read_tfms('OT1', "$FONTDIR/cm",'cmsl', qw(8 9 10 12)),   # slanted roman
+      # serif_medium_italic
+      read_tfms('OT1', "$FONTDIR/cm",'cmti', qw(7 8 9 10 12)),   # text italic
+      # serif_medium_uprightitalic
+      read_tfms('OT1', "$FONTDIR/cm",'cmu', qw(10)),    # unslanted text italic
+      # math_bold_italic
+      read_tfms('OML', "$FONTDIR/cm",'cmmib', qw(10)), # bold math italic
+      read_tfms('OMS', "$FONTDIR/cm",'cmbsy', qw(10)),  # bold math symbols
+      read_tfms('OMS', "$FONTDIR/amsfonts/cmextra",'cmbsy', qw(5 6 7 8 9)),  # bold math symbols
+      # smallcaps_medium_upright
+      read_tfms('OT1', "$FONTDIR/cm",'cmcsc', qw(10)), # caps and small caps
+      # sansserif_bold_upright
+      read_tfms('OT1', "$FONTDIR/cm",'cmssbx', qw(10)), # sans serif bold extended
       # AMS fonts
-      amsa => read_tfm('AMSa', "$FONTDIR/amsfonts/symbols/msam$SIZE.tfm"),
-      amsb => read_tfm('AMSb', "$FONTDIR/amsfonts/symbols/msbm$SIZE.tfm"),
+      read_tfms('AMSa', "$FONTDIR/amsfonts/symbols",'msam', qw(5 6 7 8 9 10)),
+      read_tfms('AMSb', "$FONTDIR/amsfonts/symbols",'msbm', qw(5 6 7 8 9 10)),
       # Could include others; italic, bold,... How to access them?
     };
-    my $dumper = Data::Dumper->new([$metrics], [qw(STDMETRICS)]);
 
+    my $dumper = Data::Dumper->new([$metrics], [qw(STDMETRICS)]);
     $dumper->Indent(0);
     $dumper->Sortkeys(1);
     my $FH;
     open($FH, ">", $MODULEPATH);
     print $FH $HEADER;
-    print $FH "our " . $dumper->Dump();
+    print $FH "our " . $dumper->Dump()."\n";
     print $FH "1;\n";
     close($FH);
     print STDERR "Wrote Standard font metrics to $MODULEPATH\n";
     return; });
+
+sub read_tfms {
+  my($encoding, $dir, $name, @sizes)=@_;
+    return map { $name.$_ => read_tfm($encoding,$dir.'/'.$name.$_.'.tfm'); } @sizes; }
 
 sub read_tfm {
   my ($encoding, $file) = @_;

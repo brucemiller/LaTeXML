@@ -54,7 +54,7 @@
 \testdimen{-0.5\twopt}
 \testdimen{0.5\twopt}
 
-\testdimen{1.2}
+%\testdimen{1.2}
 
 \section{Glue}
 \testskip{1em plus 1fil minus 2fill}
@@ -87,10 +87,13 @@
 \testtext{\,}
 
 \section{Vertical}
-\testtext{\vbox{\hbox{abc}}}
-\testtext{\vbox{\hbox{abc}\hbox{abc}\hbox{abc}}}
-\testtext{\vtop{\hbox{abc}\hbox{abc}\hbox{abc}}}
-\testtext{\shortstack{abc\\abc\\abc}}
+\testtext{\vbox{\hbox{hop}}}
+\testtext{\vbox{\hbox{hop}\hbox{hop}\hbox{hop}}}
+\testtext{\vtop{\hbox{hop}\hbox{hop}\hbox{hop}}}
+\testtext{\shortstack{hop\\hop\\hop}}
+\testtext{\begin{minipage}{2em}hop\\hop\\hop\end{minipage}}
+\testtext{\begin{minipage}[t]{2em}hop\\hop\\hop\end{minipage}}
+\testtext{\begin{minipage}[b]{2em}hop\\hop\\hop\end{minipage}}
 %\end{document}
 %% NOT TESTED YET!
 \section{Math}
@@ -113,9 +116,18 @@
 \testtext{g(x)}
 \testmath{g(x)}
 \testmath{\phantom{g(x)}}
-
+\testmath{A^B}
+\testmath{A_C}
+\testmath{A^B_C}
 %\testmath{\char 103}
 %\testmath{\mathchar 103}
+
+\section{Tables}
+\testtext{\vbox{\halign{[#]&[#]\cr A & g\cr B & p\cr}}}
+\testtext{\vtop{\halign{[#]&[#]\cr A & g\cr B & p\cr}}}
+\testtext{\begin{tabular}{cc} A & g\\B & p\end{tabular}}
+\testtext{\begin{tabular}[t]{cc} A & g\\B & p\end{tabular}}
+\testtext{\begin{tabular}[b]{cc} A & g\\B & p\end{tabular}}
 
 \section{Unskip}
 []

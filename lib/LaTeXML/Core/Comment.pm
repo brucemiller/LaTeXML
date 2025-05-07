@@ -30,6 +30,10 @@ sub getTotalHeight { return Dimension(0); }
 sub getDepth       { return Dimension(0); }
 sub getSize { return (Dimension(0), Dimension(0), Dimension(0), Dimension(0), Dimension(0), Dimension(0)); }
 
+sub getProperty {
+  my ($self, $key) = @_;
+  return ($key eq 'isEmpty' ? 1 : undef); }
+
 #======================================================================
 1;
 

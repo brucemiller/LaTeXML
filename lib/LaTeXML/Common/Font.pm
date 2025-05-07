@@ -501,24 +501,59 @@ sub font_match_xpaths {
     return join(' and ', '@_font',
       map { "contains(\@_font,'$_')" } @frags); } }
 
-# # Presumably a text font is "sticky", if used in math?
-# sub isSticky { return 1; }
+# Map Font family_series_shape to a TeX fontname (tfm)
+# Leave off the size, so we can punt to a loaded size in a pinch
+my %metric_map = (
+    serif_medium_upright       => 'cmr',
+    serif_medium_slanted       => 'cmsl',
+    serif_medium_italic        => 'cmti',
+    serif_medium_uprightitalic => 'cmu',
+    serif_bold_upright         => 'cmbx',
+    serif_medum_smallcaps      => 'cmcsc',
+    sansserif_medium_upright   => 'cmss',
+    sansserif_medium_italic    => 'cmssi',
+    sansserif_bold_upright     => 'cmssbx',
+    typewriter_medium_upright  => 'cmtt',
+    typewriter_medium_slanted  => 'cmsltt',
+    math_medium_italic         => 'cmmi',
+    math_medium_upright        => 'cmr',
+    math_bold_italic           => 'cmiib',
+    );
+# Fallback fontnames for looking up random Unicode,
+# when they're not in the indicated FontMap
+my @metric_fallbacks = (qw(cmr cmmi cmsy cmex msam msbm));
 
-# Probably needs to account for what unicode char we're looking for;
-# and whether we are in math mode, along with whatever other font properties we want
-my @textfonts = (qw(cmr cmm cmsy cmex amsa amsb));
-my @mathfonts = (qw(cmm cmsy cmex amsa amsb cmr));
-
+# Find a Font Metric corresponding to this font's family_series_shape_size
+# that contains the given $char, if given.
+# Try to find a fallback metric if $char is not in the current Font
 sub getMetric {
   my ($self, $char) = @_;
-  if (defined $char) {
-    my @fonts = ($self->getFamily eq 'math' ? @mathfonts : @textfonts);
-    foreach my $name (@fonts) {
-      my $m = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{$name};
-      return $m if $$m{sizes}{$char}; } }
-  return $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmr}; }
+  my $key = join('_', $$self[0]||'serif', $$self[1]||'medium', $$self[2]||'upright');
+  my $size = int($$self[3] || 10);
+  if (my $name = $metric_map{$key}){
+    if (my $metric = getMetricForName($name.$size)){
+      if ((! defined $char) || $$metric{sizes}{$char}) {
+        return $metric; } } }
+  if(defined $char){            # Look for a fallback metric
+    foreach my $name (@metric_fallbacks) {
+      if (my $metric = getMetricForName($name.$size)){
+        if ($$metric{sizes}{$char}) {
+          return $metric; } } } }
+  return getMetricForName('cmr10'); }
 
-## get sizes, get kerns....
+# Find a Font Metric for a given fontname, fallback to 10pt or cmr as needed.
+sub getMetricForName {
+  my($name)=@_;
+  my ($base,$size) = ($name,10);
+  if($name =~ /^(.*?)(\d+)$/){
+      $base = $1; $size = $2; }
+  if(my $metric = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{$name}
+     || $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{$base.10}
+     || $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{'cmr'.$size}) {
+    return $metric; }
+  else {
+    Error('unexpected','font',undef,"Couldn't find a font for $name");
+    return $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmr10}; } }
 
 #======================================================================
 our %mathstylesize = (display => 1, text => 1,
@@ -527,21 +562,19 @@ our %mathstylesize = (display => 1, text => 1,
 sub getEMWidth {
   my ($self) = @_;
   my $size = ($self->getSize || DEFSIZE() || 10);
-  # Could (should) look for metric w/appropriate slant, weight, etc
-  my $m = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmr};
+  my $m = getMetric($self,undef);
   return int($size * $$m{emwidth}); }
 
 sub getEXHeight {
   my ($self) = @_;
   my $size = ($self->getSize || DEFSIZE() || 10);
-  # Could (should) look for metric w/appropriate slant, weight, etc
-  my $m = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmr};
+  my $m = getMetric($self,undef);
   return int($size * $$m{exheight}); }
 
 sub getMUWidth {
   my ($self) = @_;
   my $size   = ($self->getSize || DEFSIZE() || 10);
-  my $m      = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmm};
+  my $m = getMetric($self,undef);
   return int($size * $$m{emwidth} / 18); }
 
 # NOTE: that we assume the size has already been adjusted for mathstyle, if necessary.
@@ -578,37 +611,34 @@ sub getNominalSize {
   my $u    = $size * $UNITY;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
+# Nominal baseline size for a given font size
+# This really should be tracked within the TeX
+my %baseline_map = (
+    5 => 6, 6 => 7, 7 => 8, 8 => 9.5, 9 => 10, 10 => 12,
+    11 => 13.6, 12 => 14, 14.4 => 18, 17 => 22, 20 => 25, 25 => 30);
+
 # Here's where I avoid trying to emulate Knuth's line-breaking...
 # Mostly for List & Whatsit: compute the size of a list of boxes.
 # Options _SHOULD_ include:
 #   width:  if given, pretend to simulate line breaking to that width
-#   height,depth : ?
-#   vattach : top, bottom, center, baseline (...?) affects how the height & depth are
+#   height,depth : ? ignored?
+#   vattach : top, bottom, middle (...?) affects how the height & depth are
 #      allocated when there are multiple lines.
 #   layout : horizontal or vertical !!!
 # Boxes that arent a Core Box, List, Whatsit or a string are IGNORED
-#
-# The big problem with width is to have it propogate down from where
-# it may have been specified to the actual nested box that will get wrapped!
-# Try to mask this (temporarily) by unlisting, and (pretending to ) breaking up too wide items
-#
-# Another issue; SVG needs (sometimes) real sizes, even if the programmer
-# set some dimensions to 0 (eg.)   We may need to distinguish & store
-# requested vs real sizes?
 sub computeBoxesSize {
   my ($self, $boxes, %options) = @_;
   my $font      = (ref $self ? $self : $STATE->lookupValue('font'));
+  my $size      = int($font->getSize || DEFSIZE() || 10);
   my $fillwidth = $options{width};
   if ((!defined $fillwidth) && ($fillwidth = $STATE->lookupDefinition(T_CS('\textwidth')))) {
     $fillwidth = $fillwidth->valueOf; }    # get register
   my $maxwidth = $fillwidth && $fillwidth->valueOf;
-  # baselineskip, lineskip ??
-  my $baseline = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->valueOf;
-  my $lineskip = $STATE->lookupDefinition(T_CS('\lineskip'))->valueOf->valueOf;
+  my $layout   = $options{layout} || 'paragraph'; # or horizontal?
+  my $vattach  = $options{vattach} || 'baseline';
+  my @words    = ();
   my @lines    = ();
   my ($wd, $ht, $dp)          = (0, 0, 0);
-  my ($minwd, $minht, $mindp) = (0, 0, 0);
-  my $vattach = $options{vattach} || 'baseline';
   no warnings 'recursion';
   # Flatten top-level Lists (orrr pass-thru $fillwidth ???)
   #  my @boxes = map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); } @$boxes;
@@ -616,78 +646,113 @@ sub computeBoxesSize {
     map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); }
     grep { !(ref $_) || $_->can('getSize'); } @$boxes;
   my $prevbox;
-  #  foreach my $box (@boxes) {
+  my $prevspace = 0;
+  # ----------------------------------------------------------------------
+  # Scan all boxes, collecting into "words"
   while (@boxes) {
     my $box = shift(@boxes);
     next unless defined $box;
     next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
                                                   #    next if ref $box && $box->getProperty('isEmpty');
+
     ## Should any %options be inherited by the contained boxes?
     my ($w, $h, $d) = (ref $box ? $box->getSize() : $font->computeStringSize($box));
     if ((ref $w) && $w->can('_unit')) {
-      $wd += ($w->_unit eq 'mu' ? $w->spValue : $w->valueOf); }
+      $w = ($w->_unit eq 'mu' ? $w->spValue : $w->valueOf); }
     else {
       Warn('expected', 'Dimension', undef,
         "Width of " . Stringify($box) . " yielded a non-dimension: " . Stringify($w)); }
     if ((ref $h) && $h->can('_unit')) {
-      $ht = max($ht, ($h->_unit eq 'mu' ? $h->spValue : $h->valueOf)); }
+      $h = ($h->_unit eq 'mu' ? $h->spValue : $h->valueOf); }
     else {
       Warn('expected', 'Dimension', undef,
         "Height of " . Stringify($box) . " yielded a non-dimension: " . Stringify($h)); }
     if ((ref $d) && $d->can('_unit')) {
-      $dp = max($dp, ($d->_unit eq 'mu' ? $d->spValue : $d->valueOf)); }
+      $d = ($d->_unit eq 'mu' ? $d->spValue : $d->valueOf); }
     else {
       Warn('expected', 'Dimension', undef,
         "Depth of " . Stringify($box) . " yielded a non-dimension: " . Stringify($d)); }
-    # Kern HACK for lists of individual Box's
-    if ($prevbox && (ref $prevbox eq 'LaTeXML::Core::Box') && (ref $box eq 'LaTeXML::Core::Box')) {
-      my $prevchar = substr($prevbox->getString || '', -1, 1);
-      my $curchar  = substr($box->getString     || '', 0,  1);
-      my $metric   = $self->getMetric($curchar);
-      if ($prevbox && ($self->getFamily eq 'math')) {
-        $wd += $self->math_bearing($box, $prevbox); }
-      if (my $kern = $$metric{kerns}{ $prevchar . $curchar }) {
-        my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
-        $wd += $size * $kern; } }
-
-    my $newline = (($options{layout} || '') eq 'vertical')        # EVERY box is a row?
-      || ((ref $box) && $box->getProperty('isBreak'))             # || $box is a linebreak
-      || ((defined $maxwidth) && ($wd >= $maxwidth));             # or we've reached the requested width
-    if ($newline) {
-      if (@boxes) {
-        if ($baseline > $ht + $dp) {
-          $dp = $baseline - $ht; }
-        else {
-          $dp += $lineskip; } }
-      push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0; }
+    if($layout eq 'vertical'){  # For vertical, ALL boxes are lines
+      push(@lines,[$w,$h,$d]); }
+    # Check for possible line-break points
+    elsif((ref $box) && $box->getProperty('isBreak')) {
+      if($wd || $ht || $dp || ($prevspace > 0)){
+        push(@words, [$prevspace,$wd,$ht,$dp]);
+        $wd = $ht = $dp = 0; $prevspace = -1; }
+      else {
+        $prevspace = -1; } }
+    # Pernaps not "isSpace", but excluding struts, neg space, etc ???
+    elsif((ref $box) && $box->getProperty('isSpace') && !$box->getProperty('isVerticalSpace')){
+      if($wd || $ht || $dp || ($prevspace < 0)){
+        push(@words, [$prevspace,$wd,$ht,$dp]);
+        $wd = $ht = $dp = 0; $prevspace = $w; }
+      else {
+        $prevspace += $w; } }
+    else {                      # Else accumulate into "word"
+      $wd += $w;
+      $ht = max($ht, $h);
+      $dp = max($dp, $d);
+      # Kern HACK for lists of individual Box's
+      if ($prevbox && (ref $prevbox eq 'LaTeXML::Core::Box') && (ref $box eq 'LaTeXML::Core::Box')) {
+        my $prevchar = substr($prevbox->getString || '', -1, 1);
+        my $curchar  = substr($box->getString     || '', 0,  1);
+        my $metric   = $self->getMetric($curchar);
+        if ($prevbox && ($self->getFamily eq 'math')) {
+          $wd += $self->math_bearing($box, $prevbox); }
+        if (my $kern = $$metric{kerns}{ $prevchar . $curchar }) {
+          $wd += $size * $kern; } }
+    }
     $prevbox = $box; }
-  if ($wd || $ht || $dp) {    # be sure to get last line
-    push(@lines, [$wd, $ht, $dp]); }
-  # Deal with multiple lines
-  my $nlines = scalar(@lines);
-  if ($nlines == 0) {
+  if ($wd || $ht || $dp || $prevspace) {    # be sure to get last bit
+    push(@words, [$prevspace,$wd, $ht, $dp]); }
+  # ----------------------------------------------------------------------
+  # Break up the words into lines
+  if($layout ne 'vertical'){
+    $wd = $ht = $dp = 0;
+    foreach my $item (@words){
+      my($space,$w,$h,$d)=@$item;
+      if($space == -1){
+        push(@lines,[$wd,$ht,$dp]);
+        $wd = $w; $ht = $h; $dp = $d; }
+      elsif(($layout eq 'paragraph') && ($wd + $space + $w > $maxwidth)) {
+        push(@lines,[$wd,$ht,$dp]);
+        $wd = $w; $ht = $h; $dp = $d; }
+      else {
+        $wd += $space + $w;
+        $ht = max($ht,$h);
+        $dp = max($dp,$d); } }
+    push(@lines,[$wd,$ht,$dp]) if $wd || $ht || $dp; }
+  # ----------------------------------------------------------------------
+  # Now, stack up the multiple lines
+  if (scalar(@lines) == 0) {
     $wd = $ht = $dp = 0; }
   else {
+    # baseline adjustment
+    my $baseline = fixpoint($baseline_map{$size} || $size*1.2);
+    my $lineskip = $STATE->lookupDefinition(T_CS('\lineskip'))->valueOf->valueOf;
+    my @l=@lines;
+    while(@l){
+      my $r = shift(@l);
+      if(@l){
+        if($$r[2]+$l[0][1] < $baseline){
+          $$r[2] = $baseline - $l[0][1]; }
+        else {
+          $$r[2] += $lineskip; } } }
     $wd = max(map { $$_[0] } @lines);
     $ht = sum(map { $$_[1] } @lines);
     $dp = sum(map { $$_[2] } @lines);
-    if ($vattach eq 'top') {    # Top of box is aligned with top(?) of current text
-      my ($w, $h, $d) = $font->getNominalSize;
-      $h  = $h->valueOf;
-      $dp = $ht + $dp - $h; $ht = $h; }
-    elsif ($vattach eq 'bottom') {    # Bottom of box is aligned with bottom (?) of current text
-      $ht = $ht + $dp; $dp = 0; }
-    elsif ($vattach eq 'middle') {
-      my ($w, $h, $d) = $font->getNominalSize;
-      $h = $h->valueOf;
-      my $c = ($ht + $dp) / 2;
-      $ht = $c + $h / 2; $dp = $c - $h / 2; }
-    else {                            # default is baseline (of the 1st line)
-      my $h = $lines[0][1];
-      $dp = $ht + $dp - $h; $ht = $h; } }
-###  $wd = max($minwd, $wd); $ht = max($minht, $ht); $dp = max($mindp, $dp);
+    if ($vattach eq 'middle') {
+      my $hh = ($ht + $dp) / 2;   # half height
+      my $c = $size * $UNITY / 4; # aiming for math axis size/4
+      $ht = $hh + $c; $dp = $hh - $c; }
+    elsif ($vattach eq 'bottom') { # align to baseline of Bottom row
+      $ht = $ht + $dp; $dp = $lines[-1][2]; $ht -= $dp; }
+    else {                      # else align to baseline of top row
+      $dp = $ht + $dp; $ht = $lines[0][1]; $dp -= $ht; } }
+
   Debug("Size boxes " . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "\n"
       . "  Boxes: " . join(',',  map { '[[' . ToString($_) . ']]'; } @$boxes) . "\n"
+      . "  Boxes: " . join(',',  map { '[[' . Stringify($_) . ']]'; } @$boxes) . "\n"
       . "  Sizes: " . join("\n", map { _showsize(@$_); } @lines) . "\n"
       . "  => " . _showsize($wd, $ht, $dp)) if $LaTeXML::DEBUG{'size-detailed'};
   return (Dimension($wd), Dimension($ht), Dimension($dp)); }

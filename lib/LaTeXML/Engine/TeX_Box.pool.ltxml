@@ -136,18 +136,23 @@ sub readBoxContents {
     $gullet->unread($token); }
   # AND, insert any extra tokens passed in, due to everyhbox or everyvbox
   $gullet->unread($everybox->unlist) if $everybox;
-  my ($contents, @stuff) = $STATE->getStomach->invokeToken(T_BEGIN);
-  return $contents; }
+  my ($contents, @leftover) = $STATE->getStomach->invokeToken(T_BEGIN);
+  my @stuff = $contents->unlist;
+  shift(@stuff); pop(@stuff);   # strip outer braces
+  return List(@stuff); }
 
 DefRegister('\everyhbox', Tokens());
 DefRegister('\everyvbox', Tokens());
 
 DefParameterType('HBoxContents', sub {
     readBoxContents($_[0], LookupValue('\everyhbox')); },
-  undigested => 1);    # Cause it already is digested!
+  undigested => 1,    # Cause it already is digested!
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
 DefParameterType('VBoxContents', sub {
     readBoxContents($_[0], LookupValue('\everyvbox')); },
-  undigested => 1);    # Cause it already is digested!
+  undigested => 1,    # Cause it already is digested!
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # This re-binds a number of important control sequences to their default text binding.
 # This is useful within common boxing or footnote macros that can appear within

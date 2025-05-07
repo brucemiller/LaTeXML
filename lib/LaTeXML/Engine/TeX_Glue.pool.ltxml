@@ -96,7 +96,9 @@ DefConstructor('\vskip Glue', sub {
       elsif ($document->isOpenable('ltx:break')) {
         $document->insertElement('ltx:break'); } }
     return; },
-  properties => sub { (height => $_[1], isSpace => 1, isSkip => 1, isVerticalSpace => 1, isBreak => 1); });
+  properties => sub { (height => $_[1], isSpace => 1, isSkip => 1, isVerticalSpace => 1
+####                                    , isBreak => 1
+); });
 
 # Remove skip, if last on LIST
 DefPrimitiveI('\unskip', undef, sub {

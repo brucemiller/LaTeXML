@@ -49,7 +49,7 @@ DefParameterType('FontDef', sub {
 # We'll want to get proper ones from font files!
 my $nominal_fontinfo = [
   0.25,        # Slant
-  0.5,         # Space
+  0.333333,    # Space
   0.0,         # Stretch
   0.0,         # Shrink
   0.430555,    # x-height
@@ -100,7 +100,12 @@ DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileNa
       $props{hyphenchar} = LookupRegister('\defaulthyphenchar');
       $fontinfo          = \%props;
       my $rel = $size->multiply($scale);
-      $$fontinfo{data} = [map { $rel->multiply($_)->valueOf; } @$nominal_fontinfo];
+      if(my $metric = LaTeXML::Common::Font::getMetricForName($name,$size->ptValue)) {
+          my $rel = $size->ptValue * $scale;
+          $$fontinfo{data} = [map { Dimension($rel*$_)->valueOf; }
+             @{ $$metric{parameters} }]; }
+      else {
+          $$fontinfo{data} = [map { $rel->multiply($_)->valueOf; } @$nominal_fontinfo]; }
       # Store the font info & metrics
       AssignValue($key => $fontinfo); }
     # The font $cs should select the font
@@ -130,6 +135,12 @@ DefRegister('\fontdimen Number FontDef' => Dimension(0),
 ####      $$data[$p - 1] = $value; } }
       $$data[$p - 1] = $value->valueOf; } }
 );
+
+# Get a Font Parameter, returning a fixpoint value, NOT a Dimension!
+sub getFontDimen {
+  my($fontname, $param) = @_;
+  my $info = $STATE->lookupValue('fontinfo_'.$fontname);
+  return $$info{data}[$param - 1]; }
 
 # Not sure what this should be...
 DefPrimitiveI('\nullfont', undef, undef, font => { family => 'nullfont' });
