@@ -116,9 +116,8 @@ sub lookup_category {
     #   then replace Content with the Unicode character "U+0320
     #   plus the index of Content in Operators_2_ascii_chars"
     #   and move to step 3.
-    elsif (my ($p) = grep { $$Operators_2_ascii_chars[$_] eq $content ? ($_) : (); } 0 .. $#$Operators_2_ascii_chars) {
-      $code1   = 0x320 + $p;
-      $content = chr($code1); }
+    elsif (my $p = $$Operators_2_ascii_chars{$content}) {
+      $content = chr($p); }
     # Otherwise exit with category Default.
     else {
       return 'Default'; } }
@@ -158,8 +157,11 @@ BEGIN {
   #   Total size: 82 entries, 90 bytes
   #   (assuming characters are UTF-16 and 1-byte range lengths).
   # Operators_2_ascii_chars 18 entries (2-characters ASCII strings):
-  $Operators_2_ascii_chars = [
-'!!', '!=', '&&', '**', '*=', '++', '+=', '--', '-=', '->', '//', '/=', ':=', '<=', '<>', '==', '>=', '||'];
+  {
+    my @ops = ('!!', '!=', '&&', '**', '*=', '++', '+=', '--', '-=', '->', '//', '/=', ':=', '<=', '<>', '==', '>=', '||');
+    # precompute 'U+0320 + index' from 'Step 2'
+    foreach (0 .. $#ops) { $$Operators_2_ascii_chars{ $ops[$_] } = 0x320 + $_; }
+  }
   # Note that fence & separator properties have no visible effect, but are for semantics
   # Operators_fence 61 entries (16 Unicode ranges):
   $Operators_fence = { decode_ranges(
