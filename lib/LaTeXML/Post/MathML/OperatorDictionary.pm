@@ -102,7 +102,7 @@ sub lookup_category {
   # Otherwise, if it has two characters:
   if ($len == 2) {
     my $code2 = ord(substr($content, 1, 1));
-    # [NOT YET HANDLED] If Content is the surrogate pairs corresponding to
+    # [ADDED TO $Content_form] If Content is the surrogate pairs corresponding to
     #   U+1EEF0 ARABIC MATHEMATICAL OPERATOR MEEM WITH HAH WITH TATWEEL
     #   or U+1EEF1 ARABIC MATHEMATICAL OPERATOR HAH WITH DAL and Form is postfix,
     #   exit with category I.
@@ -214,6 +214,8 @@ BEGIN {
       # 22 entries (13 Unicode ranges) in postfix form:
       decode_ranges(
 "[U+005E-U+005F], {U+007E}, {U+00AF}, [U+02C6-U+02C7], {U+02C9}, {U+02CD}, {U+02DC}, {U+02F7}, {U+0302}, {U+203E}, [U+2322-U+2323], [U+23B4-U+23B5], [U+23DC-U+23E1]", 'I'),
+      # additional range that the MathML Core spec handles in 'Step 2'
+      decode_ranges("[U+1EEF0-U+1EEF1]", 'I'),
     },
   };
 
