@@ -116,8 +116,8 @@ sub lookup_category {
     #   then replace Content with the Unicode character "U+0320
     #   plus the index of Content in Operators_2_ascii_chars"
     #   and move to step 3.
-    elsif (my ($p) = grep { $$Operators_2_ascii_chars[$_] ? ($_) : (); } 0 .. $#$Operators_2_ascii_chars) {
-      $code1 += $p;
+    elsif (my ($p) = grep { $$Operators_2_ascii_chars[$_] eq $content ? ($_) : (); } 0 .. $#$Operators_2_ascii_chars) {
+      $code1   = 0x320 + $p;
       $content = chr($code1); }
     # Otherwise exit with category Default.
     else {
