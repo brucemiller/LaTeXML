@@ -126,6 +126,38 @@
         </XMath>
         <m:math alttext="\hat{f}a" display="block"><m:mrow><m:mover accent="true"><m:mi>f</m:mi><m:mo>^</m:mo></m:mover><m:mo>⁢</m:mo><m:mi>a</m:mi></m:mrow></m:math></Math>
     </equation>
+    <equation xml:id="S0.Ex6">
+      <Math mode="display" tex="a\mathbin{F}b" text="F@(a, b)" xml:id="S0.Ex6.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="BINOP">F</XMTok>
+            <XMTok font="italic" role="ID">a</XMTok>
+            <XMTok font="italic" role="ID">b</XMTok>
+          </XMApp>
+        </XMath>
+        <m:math alttext="a\mathbin{F}b" display="block"><m:mrow><m:mi>a</m:mi><m:mo lspace="0.222em" rspace="0.222em">F</m:mo><m:mi>b</m:mi></m:mrow></m:math></Math>
+    </equation>
+    <equation xml:id="S0.Ex7">
+      <Math mode="display" tex="a\mathbin{&amp;&amp;}b" text="&amp;&amp;@(a, b)" xml:id="S0.Ex7.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="BINOP">&amp;&amp;</XMTok>
+            <XMTok font="italic" role="ID">a</XMTok>
+            <XMTok font="italic" role="ID">b</XMTok>
+          </XMApp>
+        </XMath>
+        <m:math alttext="a\mathbin{&amp;&amp;}b" display="block"><m:mrow><m:mi>a</m:mi><m:mo>&amp;&amp;</m:mo><m:mi>b</m:mi></m:mrow></m:math></Math>
+    </equation>
+    <equation xml:id="S0.Ex8">
+      <Math mode="display" tex="a!!" text="adouble-factorial" xml:id="S0.Ex8.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="double-factorial" role="POSTFIX">!!</XMTok>
+            <XMTok font="italic" role="ID">a</XMTok>
+          </XMApp>
+        </XMath>
+        <m:math alttext="a!!" display="block"><m:mrow><m:mi>a</m:mi><m:mo>!!</m:mo></m:mrow></m:math></Math>
+    </equation>
   </para>
   <section labels="LABEL:sec:restricted" xml:id="S1">
     <tags>
