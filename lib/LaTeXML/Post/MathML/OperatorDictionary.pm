@@ -102,7 +102,7 @@ sub lookup_category {
   # Otherwise, if it has two characters:
   if ($len == 2) {
     my $code2 = ord(substr($content, 1, 1));
-    # [NOT YET HANDLED] If Content is the surrogate pairs corresponding to
+    # [ADDED TO $Content_form] If Content is the surrogate pairs corresponding to
     #   U+1EEF0 ARABIC MATHEMATICAL OPERATOR MEEM WITH HAH WITH TATWEEL
     #   or U+1EEF1 ARABIC MATHEMATICAL OPERATOR HAH WITH DAL and Form is postfix,
     #   exit with category I.
@@ -116,9 +116,8 @@ sub lookup_category {
     #   then replace Content with the Unicode character "U+0320
     #   plus the index of Content in Operators_2_ascii_chars"
     #   and move to step 3.
-    elsif (my ($p) = grep { $$Operators_2_ascii_chars[$_] ? ($_) : (); } 0 .. $#$Operators_2_ascii_chars) {
-      $code1 += $p;
-      $content = chr($code1); }
+    elsif (my $p = $$Operators_2_ascii_chars{$content}) {
+      $content = chr($p); }
     # Otherwise exit with category Default.
     else {
       return 'Default'; } }
@@ -158,8 +157,11 @@ BEGIN {
   #   Total size: 82 entries, 90 bytes
   #   (assuming characters are UTF-16 and 1-byte range lengths).
   # Operators_2_ascii_chars 18 entries (2-characters ASCII strings):
-  $Operators_2_ascii_chars = [
-'!!', '!=', '&&', '**', '*=', '++', '+=', '--', '-=', '->', '//', '/=', ':=', '<=', '<>', '==', '>=', '||'];
+  {
+    my @ops = ('!!', '!=', '&&', '**', '*=', '++', '+=', '--', '-=', '->', '//', '/=', ':=', '<=', '<>', '==', '>=', '||');
+    # precompute 'U+0320 + index' from 'Step 2'
+    foreach (0 .. $#ops) { $$Operators_2_ascii_chars{ $ops[$_] } = 0x320 + $_; }
+  }
   # Note that fence & separator properties have no visible effect, but are for semantics
   # Operators_fence 61 entries (16 Unicode ranges):
   $Operators_fence = { decode_ranges(
@@ -214,6 +216,8 @@ BEGIN {
       # 22 entries (13 Unicode ranges) in postfix form:
       decode_ranges(
 "[U+005E-U+005F], {U+007E}, {U+00AF}, [U+02C6-U+02C7], {U+02C9}, {U+02CD}, {U+02DC}, {U+02F7}, {U+0302}, {U+203E}, [U+2322-U+2323], [U+23B4-U+23B5], [U+23DC-U+23E1]", 'I'),
+      # additional range that the MathML Core spec handles in 'Step 2'
+      decode_ranges("[U+1EEF0-U+1EEF1]", 'I'),
     },
   };
 

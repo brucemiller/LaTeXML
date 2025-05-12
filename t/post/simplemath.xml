@@ -128,6 +128,38 @@
         </XMath>
       </Math>
     </equation>
+    <equation xml:id="S0.Ex6">
+      <Math mode="display" tex="a\mathbin{F}b" text="F@(a, b)" xml:id="S0.Ex6.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="BINOP">F</XMTok>
+            <XMTok font="italic" role="ID">a</XMTok>
+            <XMTok font="italic" role="ID">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex7">
+      <Math mode="display" tex="a\mathbin{&amp;&amp;}b" text="&amp;&amp;@(a, b)" xml:id="S0.Ex7.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="BINOP">&amp;&amp;</XMTok>
+            <XMTok font="italic" role="ID">a</XMTok>
+            <XMTok font="italic" role="ID">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex8">
+      <Math mode="display" tex="a!!" text="adouble-factorial" xml:id="S0.Ex8.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="double-factorial" role="POSTFIX">!!</XMTok>
+            <XMTok font="italic" role="ID">a</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
   </para>
   <section labels="LABEL:sec:restricted" xml:id="S1">
     <tags>
