@@ -383,6 +383,10 @@ sub Warn {
   my $formatted = generateMessage("Warning:" . $category . ":" . ToString($object),
     $where, $message, 0, @details);
   _printline($formatted);
+  # Optional: practical guards for max warnings, (e.g. to avoid infinite loops overflowings disks)
+  if (my $maxwarnings = ($state && $state->lookupValue('MAX_WARNINGS'))) {
+    if (($state->getStatus('warning') || 0) > $maxwarnings) {
+      Fatal('too_many_warnings', $maxwarnings, $where, "Too many warnings (> $maxwarnings)!"); } }
   return; }
 
 # Informational message; results likely unaffected
