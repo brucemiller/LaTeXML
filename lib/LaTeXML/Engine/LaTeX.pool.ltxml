@@ -3467,9 +3467,11 @@ sub arrange_panels_and_breaks {
         push(@all_contents, $break);
         $current_width = 0;
         @row_contents  = (); }
-      my $child_box = $document->getNodeBox($child);
-      my $child_width = $child_box && $child_box->getWidth->valueOf() || 0;
-      if (@row_contents && ($current_width + $child_width > $float_width)) {
+      # How do we handle notes and other zero-width content?
+      my $child_width = $child_name eq 'ltx:note' ? 0 :
+        $document->getNodeBox($child)->getWidth->valueOf();
+
+      if (@row_contents && $child_width && ($current_width + $child_width > $float_width)) {
         # break when we exceed the line width, to keep close with the PDF arrangement
         my $break = $document->insertElementBefore($child, 'break', 'class' => 'ltx_break');
         push(@all_contents, map { $$_[0] } @row_contents);
@@ -3487,8 +3489,7 @@ sub arrange_panels_and_breaks {
           # Do the widths indicate a large(8x) size discrepancy? Or a very small joint size?
           # If so, contain the two pieces in a single panel.
           my $prev_name = $$prev_panel[1] || $document->getNodeQName($prev_node);
-          if (($prev_width > 0 && $child_width > 0 &&
-              (max($prev_width, $child_width) / min($prev_width, $child_width) > 8)) ||
+          if (((max($prev_width, $child_width) / (min($prev_width, $child_width) + $LaTeXML::Common::Number::EPSILON) > 8)) ||
             ($prev_width + $child_width < $min_panel_width)) {
             # avoid markup complexity - any time we do a merge, require a ltx:block marked as a panel.
             # if one exists, reuse, otherwise create a wrapping one.
@@ -3514,16 +3515,7 @@ sub arrange_panels_and_breaks {
             push(@all_panels,   $child); } }
         else {    # no last panel? just add the child
           push(@row_contents, [$child, $child_name, $child_width]);
-          push(@all_panels,   $child);
-          # yet if standalone, finalize current row content, and add a break
-          if ($is_standalone && @row_contents) {
-            push(@all_contents, map { $$_[0] } @row_contents);
-            if (my $trailer = $child->nextSibling) {
-              if (!$$panel_break_names{ $document->getNodeQName($trailer) }) {
-                my $break = $document->insertElementBefore($trailer, 'break', 'class' => 'ltx_break');
-                push(@all_contents, $break); } }
-            @row_contents  = ();
-            $current_width = 0; } }
+          push(@all_panels,   $child); }
         $current_width += $child_width; } } }
   push(@all_contents, map { $$_[0] } @row_contents);
   # simplify: if we only ever added 1 panel, remove its class (so that we only mark complex figures)
