@@ -19,14 +19,16 @@ use File::Path            qw(rmtree);
 use IO::String;
 use JSON::XS     qw(decode_json);
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
+use File::Find;
 
 use base qw(Exporter);
-our @EXPORT                       = qw(&unpack_source &pack_collection);
+our @EXPORT                       = qw(&detect_source &unpack_source &pack_collection);
 our $archive_file_exclusion_regex = qr/(?:^\.)|(?:\.(?:zip|gz|epub|tex|bib|mobi|cache)$)|(?:~$)/;
+
+our %DIR_CACHE = ();
 
 sub unpack_source {
   my ($source, $sandbox_directory) = @_;
-  my $main_source;
   my $zip_handle = Archive::Zip->new();
   if (pathname_is_literaldata($source)) {
     # If literal, just use the data
@@ -40,17 +42,31 @@ sub unpack_source {
   # Extract the Perl zip datastructure to the temporary directory
   foreach my $member ($zip_handle->memberNames()) {
     $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
+  return detect_source($source, $sandbox_directory, $zip_handle);
+}
 
+sub findMemberNamed {
+  my ($source, $zip_handle, $name) = @_;
+  if ($zip_handle) {
+    my $member = $zip_handle->memberNamed($name);
+    return $member && $member->fileName();
+  } else {
+    my $filename = "$source/$name";
+    my $found    = -e $filename;
+    return $found && $filename; } }
+
+sub detect_source {
+  my ($source, $sandbox_directory, $zip_handle) = @_;
   # I. Detect and return the main TeX file in that directory (or .txt, for old arXiv bundles)
 
   # I.1. arXiv has a special metadata file identifying the primary source, and ignoring assets
   # I.1.1. 2025 arXiv refresh of 00README
-  if (my $json_member = $zip_handle->memberNamed('00README.json')) {
-    my $readme_file = catfile($sandbox_directory, $json_member->fileName());
+  if (my $json_filename = findMemberNamed($source, $zip_handle, '00README.json')) {
+    my $readme_file = $sandbox_directory ? catfile($sandbox_directory, $json_filename) : $json_filename;
     my $json_str    = do {
       local $/ = undef;
       open(my $README_FH, '<', $readme_file) or
-        (print STDERR "failed to open '$readme_file' for use as ZIP readme: $!. Continuing.\n");
+        (print STDERR "failed to open '$readme_file' for use as input directives: $!. Continuing.\n");
       <$README_FH>;
     } || '';
     my $json_data = eval { decode_json($json_str); } || {};
@@ -60,10 +76,10 @@ sub unpack_source {
       return $toplevelfile;
   } }
   # I.1.2. Legacy arXiv 00README.XXX
-  elsif (my $readme_member = $zip_handle->memberNamed('00README.XXX')) {
+  elsif (my $readme_member = findMemberNamed($source, $zip_handle, '00README.XXX')) {
     my $readme_file = catfile($sandbox_directory, $readme_member->fileName());
     open(my $README_FH, '<', $readme_file) or
-      (print STDERR "failed to open '$readme_file' for use as ZIP readme: $!. Continuing.\n");
+      (print STDERR "failed to open '$readme_file' for use as input directives: $!. Continuing.\n");
     local $/ = "\n";
     my $toplevelfile;
     while (<$README_FH>) {
@@ -80,11 +96,18 @@ sub unpack_source {
 
   # I.2. Without an explicit directive,
   #      heuristically determine the input (borrowed from arXiv::FileGuess)
-  my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.(?:[tT](:?[eE][xX]|[xX][tT])|ltx|LTX)$');
-  if (!@TeX_file_members) {    # No .tex file? Try files with no, or unusually long, extensions
-    @TeX_file_members = grep { !/\./ || /\.[^.]{4,}$/ } map { $_->fileName() } $zip_handle->members();
-  }
+  my @TeX_file_members;
+  if ($zip_handle) {
+    @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.(?:[tT](:?[eE][xX]|[xX][tT])|ltx|LTX)$');
+    if (!@TeX_file_members) {    # No .tex file? Try files with no, or unusually long, extensions
+      @TeX_file_members = grep { !/\./ || /\.[^.]{4,}$/ } map { $_->fileName() } $zip_handle->members();
+  } }
+  else {
+    # We were called without a ZIP parent, on the file system, search the actual directory
+    print STDERR "TODO: Search dir for TeX_file_members\n\n";
+    exit(1); }
 
+  my $main_source;
   my (%Main_TeX_likelihood, %Main_TeX_level);
   my @vetoed = ();
   foreach my $tex_file (@TeX_file_members) {
@@ -200,7 +223,7 @@ sub unpack_source {
     $main_source = shift @files_by_likelihood; }
 
   # If failed, clean up sandbox directory.
-  rmtree($sandbox_directory) unless $main_source;
+  rmtree($sandbox_directory) if ($sandbox_directory && !$main_source);
   # Return the main source from the unpacked files in the sandbox directory (or undef if failed)
   return $main_source; }
 

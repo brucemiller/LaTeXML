@@ -187,7 +187,17 @@ sub convert {
     if (($$opts{whatsout} =~ /^archive/) && (!$$opts{destination})) {
       $$opts{placeholder_destination} = 1;
       $$opts{destination}             = pathname_name($source) . ".zip"; } }
-
+  # 1.3.4 If we are dealing with a directory, we need to detect the source file
+  elsif ($$opts{whatsin} eq 'directory') {
+    # Directories are half of the archive case - no need to unpack and sandbox,
+    # but we need to find the top-level file.
+    $$opts{sourcedirectory} = $source;
+    $source = detect_source($source);
+    if (!defined $source) {    # Detection failed to find a source
+      my $log = $self->flush_log;
+      $log .= "\nFatal:invalid:Directory Can't detect a source TeX file!\nStatus:conversion:3\n";
+      return { result => undef, log => $log,
+        status => "Fatal:invalid:Directory Can't detect a source TeX file!", status_code => 3 }; } }
   # 1.4 Prepare for What's OUT (if we need a sandbox)
   if ($$opts{whatsout} =~ /^archive/) {
     $$opts{archive_sitedirectory} = $$opts{sitedirectory};
