@@ -23,7 +23,9 @@ use List::Util qw(max);
 use LaTeXML::Common::Config;
 use LaTeXML::Common::Error;
 use LaTeXML::Core;
-use LaTeXML::Util::Pack;
+use LaTeXML::Util::Pack qw(pack_collection);
+use LaTeXML::Util::Pack::Zip;
+use LaTeXML::Util::Pack::Dir;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
 use LaTeXML::Util::ObjectDB;
@@ -176,7 +178,9 @@ sub convert {
     my $sandbox_directory = File::Temp->newdir(TMPDIR => 1);
     $$opts{sourcedirectory} = $sandbox_directory;
     # Extract the archive in the sandbox
-    $source = unpack_source($source, $sandbox_directory);
+    my $packer = LaTeXML::Util::Pack->new(
+      source => $source, sandbox_directory => $sandbox_directory, type => 'zip');
+    $source = $packer->unpack_source();
     if (!defined $source) {    # Unpacking failed to find a source
       $$opts{sourcedirectory} = $$opts{archive_sourcedirectory};
       my $log = $self->flush_log;
@@ -192,7 +196,8 @@ sub convert {
     # Directories are half of the archive case - no need to unpack and sandbox,
     # but we need to find the top-level file.
     $$opts{sourcedirectory} = $source;
-    $source = detect_source($source);
+    my $packer = LaTeXML::Util::Pack->new(directory => $source, type => 'directory');
+    $source = $packer->unpack_source();
     if (!defined $source) {    # Detection failed to find a source
       my $log = $self->flush_log;
       $log .= "\nFatal:invalid:Directory Can't detect a source TeX file!\nStatus:conversion:3\n";

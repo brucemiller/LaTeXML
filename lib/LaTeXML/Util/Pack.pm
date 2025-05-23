@@ -13,57 +13,54 @@ package LaTeXML::Util::Pack;
 use strict;
 use warnings;
 
-use LaTeXML::Util::Pathname;
-use File::Spec::Functions qw(catfile);
-use File::Path            qw(rmtree);
 use IO::String;
-use JSON::XS     qw(decode_json);
-use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
+use JSON::XS qw(decode_json);
 use File::Find;
 
 use base qw(Exporter);
-our @EXPORT                       = qw(&detect_source &unpack_source &pack_collection);
-our $archive_file_exclusion_regex = qr/(?:^\.)|(?:\.(?:zip|gz|epub|tex|bib|mobi|cache)$)|(?:~$)/;
+our @EXPORT = qw(&pack_collection);
+require LaTeXML::Util::Pack::Zip;
 
-our %DIR_CACHE = ();
+our $ARCHIVE_EXT_EXCLUDE = qr/(?:^\.)|(?:\.(?:zip|gz|epub|tex|bib|mobi|cache)$)|(?:~$)/;
+our $TEX_EXT             = qr/\.(?:[tT](:?[eE][xX]|[xX][tT])|ltx|LTX)$/;
+
+sub new {
+  my ($class, %opts) = @_;
+  my $type = (delete $opts{type}) || 'zip';
+  if ($type eq 'zip') {
+    return bless \%opts, 'LaTeXML::Util::Pack::Zip'; }
+  elsif ($type eq 'directory') {
+    return bless \%opts, 'LaTeXML::Util::Pack::Dir'; }
+  else {
+    print STDERR "Fatal:Pack:new unsupported archive type $type.\n";
+    return; } }
+
+sub find_file {
+  print STDERR "Fatal:Pack:find_file abstract class should never be called (arg: $_)\n";
+  return; }
+
+sub find_tex_files {
+  print STDERR "Fatal:Pack:find_tex_files abstract class should never be called\n";
+  return; }
 
 sub unpack_source {
-  my ($source, $sandbox_directory) = @_;
-  my $zip_handle = Archive::Zip->new();
-  if (pathname_is_literaldata($source)) {
-    # If literal, just use the data
-    $source =~ s/^literal\://;
-    my $content_handle = IO::String->new($source);
-    unless ($zip_handle->readFromFileHandle($content_handle) == AZ_OK) {
-      print STDERR "Fatal:I/O:Archive Can't read in literal archive:\n $source\n"; } }
-  else {    # Otherwise, read in from file
-    unless ($zip_handle->read($source) == AZ_OK) {
-      print STDERR "Fatal:I/O:Archive Can't read in source archive: $source\n"; } }
-  # Extract the Perl zip datastructure to the temporary directory
-  foreach my $member ($zip_handle->memberNames()) {
-    $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
-  return detect_source($source, $sandbox_directory, $zip_handle);
-}
+  print STDERR "Fatal:Pack:unpack_source abstract class should never be called\n";
+  return; }
 
-sub findMemberNamed {
-  my ($source, $zip_handle, $name) = @_;
-  if ($zip_handle) {
-    my $member = $zip_handle->memberNamed($name);
-    return $member && $member->fileName();
-  } else {
-    my $filename = "$source/$name";
-    my $found    = -e $filename;
-    return $found && $filename; } }
+sub cleanup {
+  print STDERR "Fatal:Pack:cleanup abstract class should never be called\n";
+  return; }
 
+# Assume a self with the abstrat methods above implemented.
+# Each processor is able to unpack to a directory - and we can search inside it.
 sub detect_source {
-  my ($source, $sandbox_directory, $zip_handle) = @_;
+  my ($self) = @_;
   # I. Detect and return the main TeX file in that directory (or .txt, for old arXiv bundles)
-
   # I.1. arXiv has a special metadata file identifying the primary source, and ignoring assets
   # I.1.1. 2025 arXiv refresh of 00README
-  if (my $json_filename = findMemberNamed($source, $zip_handle, '00README.json')) {
-    my $readme_file = $sandbox_directory ? catfile($sandbox_directory, $json_filename) : $json_filename;
-    my $json_str    = do {
+  my $readme_file;
+  if ($readme_file = $self->find_file('00README.json')) {
+    my $json_str = do {
       local $/ = undef;
       open(my $README_FH, '<', $readme_file) or
         (print STDERR "failed to open '$readme_file' for use as input directives: $!. Continuing.\n");
@@ -72,12 +69,11 @@ sub detect_source {
     my $json_data = eval { decode_json($json_str); } || {};
     my ($name) = map { $$_{filename} } grep { $$_{usage} eq 'toplevel' } @{ $$json_data{sources} || [] };
     if ($name) {
-      my $toplevelfile = catfile($sandbox_directory, $name);
+      my $toplevelfile = $self->full_filename($name);
       return $toplevelfile;
   } }
   # I.1.2. Legacy arXiv 00README.XXX
-  elsif (my $readme_member = findMemberNamed($source, $zip_handle, '00README.XXX')) {
-    my $readme_file = catfile($sandbox_directory, $readme_member->fileName());
+  elsif ($readme_file = $self->find_file('00README.XXX')) {
     open(my $README_FH, '<', $readme_file) or
       (print STDERR "failed to open '$readme_file' for use as input directives: $!. Continuing.\n");
     local $/ = "\n";
@@ -88,31 +84,21 @@ sub detect_source {
       if ($directive) {
         if ($directive eq 'toplevelfile') {
           # shortcut guessing the top file, the user has provided it explicitly.
-          $toplevelfile = catfile($sandbox_directory, $name);
+          $toplevelfile = $self->full_filename($name);
         } elsif ($directive eq 'ignore') {
-          my $ignored_filepath = catfile($sandbox_directory, $name);
+          my $ignored_filepath = $self->full_filename($name);
           unlink($ignored_filepath) if -e $ignored_filepath; } } }
     return $toplevelfile if $toplevelfile; }
 
   # I.2. Without an explicit directive,
   #      heuristically determine the input (borrowed from arXiv::FileGuess)
-  my @TeX_file_members;
-  if ($zip_handle) {
-    @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.(?:[tT](:?[eE][xX]|[xX][tT])|ltx|LTX)$');
-    if (!@TeX_file_members) {    # No .tex file? Try files with no, or unusually long, extensions
-      @TeX_file_members = grep { !/\./ || /\.[^.]{4,}$/ } map { $_->fileName() } $zip_handle->members();
-  } }
-  else {
-    # We were called without a ZIP parent, on the file system, search the actual directory
-    print STDERR "TODO: Search dir for TeX_file_members\n\n";
-    exit(1); }
-
+  my @TeX_file_members = $self->find_tex_files();
   my $main_source;
   my (%Main_TeX_likelihood, %Main_TeX_level);
   my @vetoed = ();
   foreach my $tex_file (@TeX_file_members) {
     # Read in the content
-    $tex_file = catfile($sandbox_directory, $tex_file);
+    $tex_file = $self->full_filename($tex_file);
     # Open file and read first few bytes to do magic sequence identification
     # note that file will be auto-closed when $FILE_TO_GUESS goes out of scope
     next unless -e $tex_file;    # skip deleted "ignored" files.
@@ -223,7 +209,7 @@ sub detect_source {
     $main_source = shift @files_by_likelihood; }
 
   # If failed, clean up sandbox directory.
-  rmtree($sandbox_directory) if ($sandbox_directory && !$main_source);
+  $self->cleanup() unless $main_source;
   # Return the main source from the unpacked files in the sandbox directory (or undef if failed)
   return $main_source; }
 
@@ -247,89 +233,6 @@ sub heuristic_check_for_pdftex {
       $pdfoutput_checks-- if $pdfoutput_checks; }
     close $TEX_FH or (print STDERR "couldn't close file: $!"); }
   return @pdf_includes; }
-
-# Options:
-#   whatsout: determine what shape and size we want to pack into
-#             admissible: document (default), fragment, math, archive
-#   siteDirectory: the directory to compress into a ZIP archive
-#   collection: the collection of documents to be packed
-sub pack_collection {
-  my (%options) = @_;
-  my @packed_docs;
-  my $whatsout = $options{whatsout};
-  my @docs     = @{ $options{collection} };
-  # Archive once if requested
-  if ($whatsout =~ /^archive/) {
-    my $archive = get_archive($options{siteDirectory}, $whatsout);
-  # TODO: Error API should be integrated once generalized to Util::
-  #Fatal("I/O", $self, $docs[0], "Writing archive to IO::String handle failed") unless defined $archive;
-    print STDERR "Fatal:I/O:Archive Writing archive to IO::String handle failed" unless defined $archive;
-    return ($archive); }
-  # Otherwise pack each document passed
-  foreach my $doc (@docs) {
-    next unless defined $doc;
-    if ((!$whatsout) || ($whatsout eq 'document')) {
-      push @packed_docs, $doc; }    # Document is no-op
-    elsif ($whatsout eq 'fragment') {
-      # If we want an embedable snippet, unwrap to body's "main" div
-      push @packed_docs, get_embeddable($doc); }
-    elsif ($whatsout eq 'math') {
-      # Math output - least common ancestor of all math in the document
-      push @packed_docs, get_math($doc);
-      unlink('LaTeXML.cache'); }
-    else { push @packed_docs, $doc; } }
-  return @packed_docs; }
-
-## Helpers for pack_collection:
-sub get_archive {
-  my ($directory, $whatsout) = @_;
-  # Zip and send back
-  my $archive = Archive::Zip->new();
-  opendir(my $dirhandle, $directory)
-    # TODO: Switch to Error API
-    # or Fatal('expected', 'directory', undef,
-    # "Expected a directory to archive '$directory':", $@);
-    or (print STDERR 'Fatal:expected:directory Failed to compress directory \'$directory\': $@');
-  my @entries = grep { /^[^.]/ } readdir($dirhandle);
-  closedir $dirhandle;
-  my @files = grep { !/$archive_file_exclusion_regex/ && -f pathname_concat($directory, $_) } @entries;
-  my @subdirs = grep { -d File::Spec->catdir($directory, $_) } @entries;
- # We want to first add the files instead of simply invoking ->addTree on the top level
- # without ANY file attributes at all,
- # since EPUB is VERY picky about the first entry in the archive starting at byte 38 (file 'mimetype')
-  @files = sort @files;
-  my @nomime_files = grep { !/^mimetype$/ } @files;
-  if (scalar(@nomime_files) != scalar(@files)) {
-    @files = ('mimetype', @nomime_files); }
-  foreach my $file (@files) {
-    local $/ = undef;
-    my $FH;
-    my $pathname = pathname_concat($directory, $file);
-    open $FH, "<", $pathname
-      # TODO: Switch to Error API
-      #or Fatal('I/O', $pathname, undef, "File $pathname is not readable.");
-      or (print STDERR "Fatal:I/O:$pathname File $pathname is not readable.");
-    my $file_contents = <$FH>;
-    close($FH);
-    # Compress all files except mimetype
-    my $compression = ($file eq 'mimetype' ? COMPRESSION_STORED : COMPRESSION_DEFLATED);
-    $archive->addString($file_contents, $file,)->desiredCompressionMethod($compression); }
-
-  foreach my $subdir (sort @subdirs) {
-    my $current_dir = File::Spec->catdir($directory, $subdir);
-    $archive->addTree($current_dir, $subdir, sub { !/$archive_file_exclusion_regex/ }, COMPRESSION_DEFLATED); }
-
-  if (defined $ENV{SOURCE_DATE_EPOCH}) {
-    for my $member ($archive->members()) {
-      $member->setLastModFileDateTimeFromUnix($ENV{SOURCE_DATE_EPOCH}); } }
-
-  my $payload;
-  if ($whatsout =~ /^archive(::zip)?$/) {
-    my $content_handle = IO::String->new($payload);
-    undef $payload unless ($archive->writeToFileHandle($content_handle) == AZ_OK); }
-  elsif ($whatsout eq 'archive::zip::perl') {
-    $payload = $archive; }
-  return $payload; }
 
 sub get_math {
   my ($doc) = @_;
@@ -399,6 +302,38 @@ sub get_embeddable {
   }
   return $embeddable || $doc; }
 
+# Options:
+#   whatsout: determine what shape and size we want to pack into
+#             admissible: document (default), fragment, math, archive
+#   siteDirectory: the directory to compress into a ZIP archive
+#   collection: the collection of documents to be packed
+sub pack_collection {
+  my (%options) = @_;
+  my @packed_docs;
+  my $whatsout = $options{whatsout};
+  my @docs     = @{ $options{collection} };
+  # Archive once if requested
+  if ($whatsout =~ /^archive/) {
+    my $archive = LaTeXML::Util::Pack::Zip::get_archive($options{siteDirectory}, $whatsout);
+  # TODO: Error API should be integrated once generalized to Util::
+  #Fatal("I/O", $self, $docs[0], "Writing archive to IO::String handle failed") unless defined $archive;
+    print STDERR "Fatal:I/O:Archive Writing archive to IO::String handle failed" unless defined $archive;
+    return ($archive); }
+  # Otherwise pack each document passed
+  foreach my $doc (@docs) {
+    next unless defined $doc;
+    if ((!$whatsout) || ($whatsout eq 'document')) {
+      push @packed_docs, $doc; }    # Document is no-op
+    elsif ($whatsout eq 'fragment') {
+      # If we want an embedable snippet, unwrap to body's "main" div
+      push @packed_docs, get_embeddable($doc); }
+    elsif ($whatsout eq 'math') {
+      # Math output - least common ancestor of all math in the document
+      push @packed_docs, get_math($doc);
+      unlink('LaTeXML.cache'); }
+    else { push @packed_docs, $doc; } }
+  return @packed_docs; }
+
 1;
 
 __END__
@@ -407,7 +342,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Util::Pack> - smart packing and unpacking of TeX archives
+C<LaTeXML::Util::Pack> - smart packing and unpacking of TeX input bundles
 
 =head1 DESCRIPTION
 
