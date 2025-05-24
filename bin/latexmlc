@@ -170,7 +170,7 @@ my $destination = $opts->get('destination');
 my $whatsout   = $opts->get('whatsout');
 my $is_archive = $whatsout && ($whatsout =~ /^archive/);
 
-if ($log) {
+if ($log && !$is_archive) {
   chomp($log);
   # If we get a log payload in the response, likely from a latexmls call
   # we need to write it to file from within latexmlc itself:
