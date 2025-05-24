@@ -216,7 +216,10 @@ sub read {
   if (!$$opts{type} || ($$opts{type} eq 'auto')) {
     $$opts{type} = 'BibTeX' if ($$opts{source} && ($$opts{source} =~ /$is_bibtex/)); }
   if (!$$opts{whatsin}) {
-    $$opts{whatsin} = 'archive' if ($$opts{source} && ($$opts{source} =~ /$is_archive/)); }
+    if ($$opts{source} && ($$opts{source} =~ /$is_archive/)) {
+      $$opts{whatsin} = 'archive'; }
+    elsif ($$opts{source} && ($$opts{source} =~ /\/$/)) {
+      $$opts{whatsin} = 'directory'; } }
   return $getOptions_success;
 }
 

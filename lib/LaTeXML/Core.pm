@@ -121,16 +121,21 @@ sub digestFile {
     $name = $request;
   }
   else {
-    $request =~ s/\.\Q$MODE_EXTENSION{$mode}\E$//;
+    $request =~ s/\.\Q$MODE_EXTENSION{$mode}\E$// if $request;
     if (my $pathname = pathname_find($request, types => [$MODE_EXTENSION{$mode}, ''],
         paths => $$self{state}->lookupValue('SEARCHPATHS'))) {
       $request = $pathname;
       ($dir, $name, $ext) = pathname_split($request); }
     else {
       $self->withState(sub {
-          Fatal('missing_file', $request, undef, "Can't find $mode file $request",
-            LaTeXML::Package::maybeReportSearchPaths()
-          ); }); } }
+          if ($request) {
+            Fatal('missing_file', $request, undef, "Can't find $mode file $request",
+              LaTeXML::Package::maybeReportSearchPaths()
+            ); }
+          else {
+            Fatal('invalid', 'empty_input', undef, "No TeX input file was specified.",
+              LaTeXML::Package::maybeReportSearchPaths()
+            ); } }); } }
   return
     $self->withState(sub {
       my ($state) = @_;
