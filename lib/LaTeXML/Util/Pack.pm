@@ -35,11 +35,16 @@ sub new {
     print STDERR "Fatal:Pack:new unsupported archive type $type.\n";
     return; } }
 
+# Abstract interface methods, to be implemented by each concrete processor:
 sub find_file {
   print STDERR "Fatal:Pack:find_file abstract class should never be called (arg: $_)\n";
   return; }
 
 sub find_tex_files {
+  print STDERR "Fatal:Pack:find_tex_files abstract class should never be called\n";
+  return; }
+
+sub full_filename {
   print STDERR "Fatal:Pack:find_tex_files abstract class should never be called\n";
   return; }
 
@@ -52,7 +57,8 @@ sub cleanup {
   return; }
 
 # Assume a self with the abstrat methods above implemented.
-# Each processor is able to unpack to a directory - and we can search inside it.
+# Each processor is able to unpack to a directory, in which we can identically
+# try to detect the top-level TeX file(s).
 sub detect_source {
   my ($self) = @_;
   # I. Detect and return the main TeX file in that directory (or .txt, for old arXiv bundles)
@@ -234,6 +240,10 @@ sub heuristic_check_for_pdftex {
     close $TEX_FH or (print STDERR "couldn't close file: $!"); }
   return @pdf_includes; }
 
+# Output utilitities
+
+### Utility methods for --whatsout variants
+
 sub get_math {
   my ($doc) = @_;
   my $math_xpath = '//*[local-name()="math" or local-name()="Math"]';
@@ -357,14 +367,21 @@ All user-level methods are unconditionally exported by default.
 
 =over 4
 
-=item C<< $main_tex_source = unpack_source($archive,$extraction_directory); >>
+=item C<< my $self = LaTeXML::Util::Pack->new(source => $source, type => $type, %opts); >>
 
-Unpacks a given $archive into the $extraction_directory. Next, perform a
+Creates a new Pack processor, for the appropriate archive type. Currently defaults to 'zip',
+with 'directory' (i.e. already unpacked) as the only alternative option.
+
+To specify where to unpack, set the C<sandbox_directory> option.
+
+=item C<< $main_tex_source = $self->unpack_source(); >>
+
+Unpacks a given archive into the C<$sandbox_directory>, when needed. Next, perform a
     heuristic analysis to determine, and return, the main file of the TeX manuscript.
-    If the main file cannot be determined, the $extraction_directory is removed and undef is returned.
+    If the main file cannot be determined, the C<$sandbox_directory> is removed and undef is returned.
 
 In this regard, we implement a simplified form of the logic in
-    TeX::AutoTeX and particularly arXiv::FileGuess
+    C<TeX::AutoTeX> and particularly C<arXiv::FileGuess>
 
 =item C<< @packed_documents = pack_collection(collection=>\@documents, whatsout=>'math|fragment|archive', siteDirectory=>$path); >>
 
@@ -372,15 +389,15 @@ Packs a collection of documents using the packing method specified via the 'what
     If 'fragment' or 'math' are chosen, each input document is transformed into
     an embeddable fragment or a single formula, respectively.
     If 'archive' is chose, all input documents are written into an archive in the specified 'siteDirectory'.
-    The name of the archive is provided by the 'destination' property of the first provided $document object.
-    Each document is expected to be a LaTeXML::Post::Document object.
+    The name of the archive is provided by the 'destination' property of the first provided document object.
+    Each document is expected to be a C<LaTeXML::Post::Document> object.
 
 =back
 
 =head1 AUTHOR
 
 Bruce Miller <bruce.miller@nist.gov>,
-Deyan Ginev <deyan.ginev@nist.gov>
+Deyan Ginev <deyan.ginev@gmail.com>
 
 =head1 COPYRIGHT
 

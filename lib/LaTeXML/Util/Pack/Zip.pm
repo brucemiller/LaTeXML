@@ -21,6 +21,8 @@ use LaTeXML::Util::Pathname;
 
 use base qw(LaTeXML::Util::Pack);
 
+# LaTeXML::Util::Pack methods, ZIP implementation
+
 sub unpack_source {
   my ($self)     = @_;
   my $zip_handle = $$self{zip_handle} = Archive::Zip->new();
@@ -67,7 +69,8 @@ sub cleanup {
     rmtree($sandbox_directory);
     return; } }
 
-## Helpers for pack_collection:
+### Helpers for pack_collection, currently ZIP-only:
+
 sub get_archive {
   my ($directory, $whatsout) = @_;
   # Zip and send back

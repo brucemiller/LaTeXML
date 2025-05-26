@@ -18,9 +18,11 @@ use File::Spec::Functions qw(catfile);
 
 use base qw(LaTeXML::Util::Pack);
 
+# LaTeXML::Util::Pack methods, pre-unpacked directory implementation
+
 sub unpack_source {
   my ($self) = @_;
-  # already unpacked, skip through
+  # already unpacked, skip to detection
   return $self->detect_source();
 }
 
@@ -46,6 +48,7 @@ sub find_tex_files {
   }
   return @TeX_file_members; }
 
+# directory is handled externally, nothing to clean up
 sub cleanup { return; }
 
 1;

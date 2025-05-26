@@ -843,7 +843,7 @@ Flushes out the accumulated conversion log into $log,
 =head1 AUTHOR
 
 Bruce Miller <bruce.miller@nist.gov>
-Deyan Ginev <deyan.ginev@nist.gov>
+Deyan Ginev <deyan.ginev@gmail.com>
 
 =head1 COPYRIGHT
 
