@@ -23,7 +23,9 @@ use List::Util qw(max);
 use LaTeXML::Common::Config;
 use LaTeXML::Common::Error;
 use LaTeXML::Core;
-use LaTeXML::Util::Pack;
+use LaTeXML::Util::Pack qw(pack_collection);
+use LaTeXML::Util::Pack::Zip;
+use LaTeXML::Util::Pack::Dir;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
 use LaTeXML::Util::ObjectDB;
@@ -176,18 +178,22 @@ sub convert {
     my $sandbox_directory = File::Temp->newdir(TMPDIR => 1);
     $$opts{sourcedirectory} = $sandbox_directory;
     # Extract the archive in the sandbox
-    $source = unpack_source($source, $sandbox_directory);
-    if (!defined $source) {    # Unpacking failed to find a source
-      $$opts{sourcedirectory} = $$opts{archive_sourcedirectory};
-      my $log = $self->flush_log;
-      $log .= "\nFatal:invalid:Archive Can't detect a source TeX file!\nStatus:conversion:3\n";
-      return { result => undef, log => $log, status => "Fatal:invalid:Archive Can't detect a source TeX file!", status_code => 3 }; }
+    my $packer = LaTeXML::Util::Pack->new(
+      source => $source, sandbox_directory => $sandbox_directory, type => 'zip');
+    $source = $packer->unpack_source(); }
 # Destination magic: If we expect an archive on output, we need to invent the appropriate destination ourselves when not given.
 # Since the LaTeXML API never writes the final archive file to disk, we just use a pretend sourcename.zip:
-    if (($$opts{whatsout} =~ /^archive/) && (!$$opts{destination})) {
-      $$opts{placeholder_destination} = 1;
-      $$opts{destination}             = pathname_name($source) . ".zip"; } }
-
+  if (($$opts{whatsout} =~ /^archive|directory/) && $source && (!$$opts{destination})) {
+    $$opts{placeholder_destination} = 1;
+    $$opts{destination}             = pathname_name($source) . ".zip"; }
+  # 1.3.4 If we are dealing with a directory, we need to detect the source file
+  elsif ($$opts{whatsin} eq 'directory') {
+    # Directories are half of the archive case - no need to unpack and sandbox,
+    # but we need to find the top-level file.
+    $$opts{sourcedirectory} = $source;
+    my $packer = LaTeXML::Util::Pack->new(directory => $source, type => 'directory');
+    $source = $packer->unpack_source();
+  }
   # 1.4 Prepare for What's OUT (if we need a sandbox)
   if ($$opts{whatsout} =~ /^archive/) {
     $$opts{archive_sitedirectory} = $$opts{sitedirectory};
@@ -243,7 +249,7 @@ sub convert {
       noinitialize => 1);
     $$runtime{TTL} = alarm(0); };
   my $eval_report = $@;
-  if (!$digested && $eval_report) {
+  if ($source && !$digested && $eval_report) {
     # We can retry finishing digestion if hit a Fatal,
     # sometimes there are leftover boxes we can accept.
     eval {
@@ -270,7 +276,7 @@ sub convert {
       $$runtime{TTL} = alarm(0); };
     $eval_report .= $@ if $@;
     # Try to rescue the document if e.g. math parsing hit a Fatal error
-    if (!$dom && $@ && $core_target eq 'xml') {
+    if (!$dom && $@ && ($core_target eq 'xml')) {
       $dom = $latexml->withState(sub {
           my ($state) = @_;
           my $rescued = $$state{rescued_document};
@@ -321,14 +327,15 @@ sub convert {
 
   # 3 If desired, post-process
   my $result = $dom;
-  if ($$opts{post} && $dom) {
-    if (!$dom->documentElement) {
-      # Make a completely empty document have at least one element for post-processing
-      # important for utility features such as packing .zip archives for output
-      $$dom{document}->setDocumentElement($$dom{document}->createElement("document"));
+  if ($$opts{post}) {
+    if ($dom) {
+      if (!$dom->documentElement) {
+        # Make a completely empty document have at least one element for post-processing
+        # important for utility features such as packing .zip archives for output
+        $$dom{document}->setDocumentElement($$dom{document}->createElement("document"));
+      }
     }
-    $result = $self->convert_post($dom);
-  }
+    $result = $self->convert_post($dom); }
   # 4 Clean-up: undo everything we sandboxed
   if ($$opts{whatsin} =~ /^archive/) {
     rmtree($$opts{sourcedirectory});
@@ -436,7 +443,7 @@ sub convert_post {
   #Postprocess
   $parallel = $parallel || 0;
 
-  my $DOCUMENT = LaTeXML::Post::Document->new($dom, %PostOPS);
+  my $DOCUMENT = $dom && LaTeXML::Post::Document->new($dom, %PostOPS);
   my @procs    = ();
   #TODO: Add support for the following:
   my $dbfile = $$opts{dbfile};
@@ -445,9 +452,9 @@ sub convert_post {
       pathname_mkdir($dbdir); } }
   my $DB = LaTeXML::Util::ObjectDB->new(dbfile => $dbfile, %PostOPS);
   if ($format eq 'epub') {    # epub requires a TOC
-    $self->check_TOC($DOCUMENT); }
+    $self->check_TOC($DOCUMENT) if $DOCUMENT; }
   ### Advanced Processors:
-  if ($$opts{split}) {
+  if ($$opts{split} && $DOCUMENT) {
     require LaTeXML::Post::Split;
     push(@procs, LaTeXML::Post::Split->new(split_xpath => $$opts{splitpath}, splitnaming => $$opts{splitnaming},
         db => $DB, %PostOPS)); }
@@ -456,7 +463,7 @@ sub convert_post {
       labelids => ($$opts{splitnaming} && ($$opts{splitnaming} =~ /^label/) ? 1 : 0),
       %PostOPS));
   push(@procs, $scanner) if $$opts{scan};
-  if (!($$opts{prescan})) {
+  if (!($$opts{prescan}) && $DOCUMENT) {
     if ($$opts{index}) {
       require LaTeXML::Post::MakeIndex;
       push(@procs, LaTeXML::Post::MakeIndex->new(db => $DB, permuted => $$opts{permutedindex},
@@ -598,7 +605,7 @@ sub convert_post {
   my $latexmlpost = LaTeXML::Post->new();
   eval {
     alarm($$runtime{TTL});
-    @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
+    @postdocs = $DOCUMENT && $latexmlpost->ProcessChain($DOCUMENT, @procs);
     $$runtime{TTL} = alarm(0);
     1; };
   # 3.1 Bookkeeping if a post-processing Fatal error occurred
@@ -836,7 +843,7 @@ Flushes out the accumulated conversion log into $log,
 =head1 AUTHOR
 
 Bruce Miller <bruce.miller@nist.gov>
-Deyan Ginev <deyan.ginev@nist.gov>
+Deyan Ginev <deyan.ginev@gmail.com>
 
 =head1 COPYRIGHT
 
