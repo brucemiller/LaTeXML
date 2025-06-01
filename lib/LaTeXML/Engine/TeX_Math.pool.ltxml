@@ -458,9 +458,9 @@ sub revertScript {
 #  * should italic correction be omitted in deep subscripts?
 sub scriptSizer {
   my ($script, $base, $prev, $op, $pos) = @_;
-  my $bfont  = $base   && $base->getFont;
-  my $style  = $base   && $bfont->getMathstyle || 'text';
-  my $syfont = 'cmsy'.($bfont && $bfont->getSize || 10);
+  my $bfont  = $base && $base->getFont;
+  my $style  = $base && $bfont->getMathstyle || 'text';
+  my $syfont = 'cmsy' . ($bfont && $bfont->getSize || 10);
   my ($ws, $hs, $ds) = map { $_->valueOf } $script->getSize;
   my ($wb, $hb, $db) = map { $_->valueOf } ($base ? $base->getSize
     : LookupValue('font')->getNominalSize);
@@ -475,18 +475,18 @@ sub scriptSizer {
     else {
       $d = $db + $hs + $ds; } }
   else {
-    my $wp = ($prev && $prev->getWidth) || 0;    # as if max of width & prev script's width
-    my $xheight  = getFontDimen($syfont, 5);
-    my $space    = LookupRegister('\scriptspace')->valueOf;
+    my $wp      = ($prev && $prev->getWidth) || 0;           # as if max of width & prev script's width
+    my $xheight = getFontDimen($syfont, 5);
+    my $space   = LookupRegister('\scriptspace')->valueOf;
     $ws += $space;
     $w = max(0, $ws - $wp);
     if ($op eq 'SUPERSCRIPT') {
-      my $supshift = getFontDimen($syfont, # displaystyle:13, cramped:15, else 14;
+      my $supshift = getFontDimen($syfont,                   # displaystyle:13, cramped:15, else 14;
         ($style eq 'display' ? 13 : ($style eq 'scriptscript' ? 15 : 14)));
-      $h = max($hb, $hs + max($ds + $xheight/4, $supshift)); }
+      $h = max($hb, $hs + max($ds + $xheight / 4, $supshift)); }
     else {
       my $subshift = getFontDimen($syfont, 16);
-      $d = max($db, $ds + max($hs - $xheight*0.8, $subshift)); } }
+      $d = max($db, $ds + max($hs - $xheight * 0.8, $subshift)); } }
   $w = Dimension($w); $h = Dimension($h); $d = Dimension($d);
   return ($w, $h, $d); }
 
@@ -732,20 +732,21 @@ our %DELIMITER_MAP =
   "\x{21D5}" => { lrole => 'OPEN',    rrole => 'CLOSE', name => 'Updownarrow' },    # ??
   );
 
+sub checkDelimiterHints {
+  my ($stomach, $whatsit) = @_;
+  $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
+  return; }
+
 # The \lx@left, \lx@right versions are like \left,\right but without any extra grouping
 DefConstructor('\lx@left TeXDelimiter',
   "?#hint(<ltx:XMHint/>)(#1)",
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
-    return; },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN'); },
   alias          => '\left');
 
 DefConstructor('\lx@right TeXDelimiter',
   "?#hint(<ltx:XMHint/>)(#1)",
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
-    return; },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'CLOSE'); },
   alias          => '\right');
 
@@ -755,7 +756,7 @@ DefConstructor('\lx@right TeXDelimiter',
 DefConstructor('\left TeXDelimiter',
   "?#hint(<ltx:XMHint/>)(#1)",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
+    checkDelimiterHints($stomach, $whatsit);
     $stomach->getGullet->unread(T_CS('\lx@hidden@bgroup'));
     return; },
   afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN'); });
