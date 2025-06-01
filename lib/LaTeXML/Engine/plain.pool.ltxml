@@ -1272,10 +1272,14 @@ DefMathI('\bracevert', undef, "|", font => { series => 'bold' }, role => 'VERTBA
 
 # These originally had Token as parameter, rather than {}..... Why?
 # Note that in TeX, \big{((} will only enlarge the 1st paren!!!
-DefConstructor('\big {}',  '#1', bounded => 1, font => { size => 'big' });
-DefConstructor('\Big {}',  '#1', bounded => 1, font => { size => 'Big' });
-DefConstructor('\bigg {}', '#1', bounded => 1, font => { size => 'bigg' });
-DefConstructor('\Bigg {}', '#1', bounded => 1, font => { size => 'Bigg' });
+DefConstructor('\big TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'big' },
+  afterDigest => \&checkDelimiterHints);
+DefConstructor('\Big TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'Big' },
+  afterDigest => \&checkDelimiterHints);
+DefConstructor('\bigg TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'bigg' },
+  afterDigest => \&checkDelimiterHints);
+DefConstructor('\Bigg TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'Bigg' },
+  afterDigest => \&checkDelimiterHints);
 
 sub addDelimiterRole {
   my ($document, $role) = @_;
@@ -1291,32 +1295,44 @@ sub addDelimiterRole {
   return; }
 
 # The "m" versions are defined in e-Tex and other places.
-DefConstructor('\bigl {}', '#1', bounded => 1, font => { size => 'big' },
+DefConstructor('\bigl TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'big' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
-DefConstructor('\bigm {}', '#1', bounded => 1, font => { size => 'big' },
+DefConstructor('\bigm TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'big' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
-DefConstructor('\bigr {}', '#1', bounded => 1, font => { size => 'big' },
+DefConstructor('\bigr TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'big' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
 
-DefConstructor('\Bigl {}', '#1', bounded => 1, font => { size => 'Big' },
+DefConstructor('\Bigl TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'Big' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
-DefConstructor('\Bigm {}', '#1', bounded => 1, font => { size => 'Big' },
+DefConstructor('\Bigm TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'Big' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
-DefConstructor('\Bigr {}', '#1', bounded => 1, font => { size => 'Big' },
+DefConstructor('\Bigr TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'Big' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
 
-DefConstructor('\biggl {}', '#1', bounded => 1, font => { size => 'bigg' },
+DefConstructor('\biggl TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'bigg' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
-DefConstructor('\biggm {}', '#1', bounded => 1, font => { size => 'bigg' },
+DefConstructor('\biggm TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'bigg' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
-DefConstructor('\biggr {}', '#1', bounded => 1, font => { size => 'bigg' },
+DefConstructor('\biggr TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'bigg' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
 
-DefConstructor('\Biggl {}', '#1', bounded => 1, font => { size => 'Bigg' },
+DefConstructor('\Biggl TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'Bigg' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
-DefConstructor('\Biggm {}', '#1', bounded => 1, font => { size => 'Bigg' },
+DefConstructor('\Biggm TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'Bigg' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
-DefConstructor('\Biggr {}', '#1', bounded => 1, font => { size => 'Bigg' },
+DefConstructor('\Biggr TeXDelimiter', '?#hint(<ltx:XMHint/>)(#1)', bounded => 1, font => { size => 'Bigg' },
+  afterDigest    => \&checkDelimiterHints,
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
 
 Let('\vert', T_OTHER('|'));
