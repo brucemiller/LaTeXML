@@ -96,7 +96,7 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
         transform   => "translate($x0,$y0) matrix(1 0 0 -1 0 0)",
         _scopebegin => 1);
       addSVGDebuggingBox($document,
-        $props{minx},$props{miny},$props{width},$props{height},'#FF00FF')
+        $props{minx}, $props{miny}, $props{width}, $props{height}, '#FF00FF')
         if $LaTeXML::DEBUG{svg};
       $document->absorb($content);
       while ($document->maybeCloseElement('svg:g')) { }
@@ -119,7 +119,7 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     my $base    = ($shift ? $miny->subtract(Dimension($shift))->pxValue : 0);
     my ($cwidth, $cheight, $cdepth) = $content->getSize;
     Debug("TIKZ size: " . ToString($width) . " x " . ToString($height)) if $LaTeXML::DEBUG{svg_verbose};
-    Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny) . " [offset $base]")     if $LaTeXML::DEBUG{svg_verbose};
+    Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny) . " [offset $base]") if $LaTeXML::DEBUG{svg_verbose};
     Debug("TIKZ BODY: " . ToString($cwidth) . " x " . ToString($cheight)
         . " + " . ToString($cdepth)) if $LaTeXML::DEBUG{svg_verbose};
     Debug("BODY is " . ToString($content)) if $LaTeXML::DEBUG{svg_verbose};
@@ -133,7 +133,7 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     $whatsit->setProperty(depth    => Dimension(0));
     $whatsit->setProperty(pxwidth  => $w);
     $whatsit->setProperty(pxheight => $h);
-    $whatsit->setProperty(style    => "vertical-align:".$base."px") if $base;
+    $whatsit->setProperty(style    => "vertical-align:" . $base . "px") if $base;
     # or tikz macro (see corescopes)
     return; },
   # \pgfpicture seems to make a 0 sized box, which throws off our postprocessor
@@ -205,8 +205,13 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
     return ($box ? $box->revert : ()); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(thebox => LookupValue('box' . $whatsit->getArg(1)->valueOf)); }
-);
+    my $boxid = "box" . $whatsit->getArg(1)->valueOf;
+    if (my $thebox = LookupValue($boxid)) {
+      $whatsit->setProperty(thebox => $thebox); }
+    else {
+      Info('missing', 'box', $stomach, "\\pgfsys\@hbox expected assigned value for '$boxid'");
+      $whatsit->setProperty(thebox => Box()); }
+    return; });
 
 #====================================================================#
 #= 2. Path construction =============================================#
@@ -905,7 +910,7 @@ DefConstructor('\lxSVG@halign BoxSpecification',
       #    alignmentBindings($template, undef,
       attributes => {
         vattach => 'bottom',
-        width => orNull(GetKeyVal($spec, 'to')) });
+        width   => orNull(GetKeyVal($spec, 'to')) });
     digestAlignmentBody($stomach, $whatsit);
     $stomach->egroup;
     $LaTeXML::ALIGN_STATE--;    # Balance the opening { OUTSIDE of the masking of ALIGN_STATE
@@ -947,8 +952,8 @@ sub openTikzAlignment {
   my @rowdepths  = ($props{rowdepths}    ? @{ $props{rowdepths} }    : (Dimension(0)));
   my @colwidths  = ($props{columnwidths} ? @{ $props{columnwidths} } : (Dimension(0)));
   my $x          = 0;
-  my $y          = ($h + $d) - $rowdepths[-1]->pxValue; # Baseline of LAST row
-#  my $y          = ($h + $d);
+  my $y          = ($h + $d) - $rowdepths[-1]->pxValue;    # Baseline of LAST row
+                                                           #  my $y          = ($h + $d);
   Debug("TIKZ Alignment size $w x $h + $d"
       . "  rows: " . join(',', map { $_->pxValue; } @rowheights)
       . "     +: " . join(',', map { $_->pxValue; } @rowdepths)
@@ -958,7 +963,7 @@ sub openTikzAlignment {
     _scopebegin => 1,
     transform   => "matrix(1 0 0 -1 $x $y)",
     %props);
-  addSVGDebuggingBox($doc,0,0,$w,$h+$d,"#FF0000") if  $LaTeXML::DEBUG{svg};
+  addSVGDebuggingBox($doc, 0, 0, $w, $h + $d, "#FF0000") if $LaTeXML::DEBUG{svg};
   return $array; }
 
 sub closeTikzAlignmentElement {
@@ -978,7 +983,7 @@ sub openTikzAlignmentRow {
     _scopebegin => 1,
     transform   => "matrix(1 0 0 1 0 $yy)",
   );
-  addSVGDebuggingBox($doc,0,0,$w,$h+$d,"#00FF00") if  $LaTeXML::DEBUG{svg};
+  addSVGDebuggingBox($doc, 0, 0, $w, $h + $d, "#00FF00") if $LaTeXML::DEBUG{svg};
   return $row; }
 
 sub openTikzAlignmentCol {
@@ -998,7 +1003,7 @@ sub openTikzAlignmentCol {
     _scopebegin => 1,
     transform   => "matrix(1 0 0 -1 $x $y)",    # NOTE: Flip!!!
   );
-  addSVGDebuggingBox($doc,0,0,$w,$h+$d,"#0000FF") if  $LaTeXML::DEBUG{svg};
+  addSVGDebuggingBox($doc, 0, 0, $w, $h + $d, "#0000FF") if $LaTeXML::DEBUG{svg};
   return $col; }
 
 #=====================================================================
