@@ -333,7 +333,9 @@ sub validate_args {
     $dographics = 1 unless defined $dographics;
     $picimages  = 1 unless defined $picimages;
     $is_html    = 0;
-    $stylesheet = "LaTeXML-jats.xsl" if !defined $stylesheet; }
+    # JATS is the only format that does not use default resources.
+    $defaultresources = 0                  if !defined $defaultresources;
+    $stylesheet       = "LaTeXML-jats.xsl" if !defined $stylesheet; }
   elsif ($format eq 'tei') {
     $extension = 'xml' unless defined $extension;
     # Add pMML FIRST, unless already there, or was disabled.

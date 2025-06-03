@@ -546,6 +546,9 @@ sub _prepare_options {
       elsif ($$opts{format} eq "xml")         { delete $$opts{stylesheet}; }
       else                                    { croak("Unrecognized target format: " . $$opts{format}); }
     }
+    if (!defined $$opts{defaultresources}) {
+      # JATS is the only format that does not use default resources.
+      $$opts{defaultresources} = 0 if $$opts{format} eq 'jats'; }
     # Check format and complete math and image options
     if ($$opts{format} eq 'html4') {
       $$opts{svg} = 0 unless defined $$opts{svg};    # No SVG by default in HTML.
@@ -564,6 +567,7 @@ sub _prepare_options {
     }
     # use parallel markup if there are multiple formats requested.
     $$opts{parallelmath} = 1 if ($$opts{math_formats} && (@{ $$opts{math_formats} } > 1));
+
   }
   # If really nothing hints to define format, then default it to XML
   $$opts{format} = 'xml' unless defined $$opts{format};
