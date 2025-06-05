@@ -162,6 +162,14 @@ AssignValue(frontmatter => {}, 'global');
 
 DefConditionalI('\if@in@preamble', undef, sub { LookupValue('inPreamble'); });
 
+# Some frontmatter tags are replaceable by default, only one per document.
+our %ReplaceableFrontmatterTags = (
+  'ltx:title'    => 1,
+  'ltx:toctitle' => 1,
+  'ltx:subtitle' => 1,
+  'ltx:date'     => 1,
+  'ltx:abstract' => 1,
+  'ltx:keywords' => 1);
 # Add a new frontmatter item that will be enclosed in <$tag %attr>...</$tag>
 # The content is the result of digesting $tokens.
 # \@add@frontmatter[keys]{tag}[attributes]{content}
@@ -169,6 +177,12 @@ DefConditionalI('\if@in@preamble', undef, sub { LookupValue('inPreamble'); });
 #   replace (to replace the current entry, if any)
 #   ifnew   (only add if no previous entry)
 DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
+    my ($stomach, $keys, $tag, $attr, $tokens) = @_;
+    AssignValue('@at@begin@maketitle', [], 'global') unless LookupValue('@at@begin@maketitle');
+    PushValue('@at@begin@maketitle',
+      Invocation(T_CS('\@add@frontmatter@now'), $keys, $tag, $attr, $tokens)->unlist);
+    return; });
+DefPrimitive('\@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals {}', sub {
     my ($stomach, $keys, $tag, $attr, $tokens) = @_;
     # Digest this as if we're already in the document body!
     my $frontmatter = LookupValue('frontmatter');
@@ -178,10 +192,11 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
     # (which should be inside or after this one!)
     # So, we append this entry before digesting
     $tag = ToString($tag);
-    if ($keys && $keys->hasKey('replace') && $$frontmatter{$tag}) {    # if replace and previous entries
-      $$frontmatter{$tag} = []; }                                      # Remove previous entries
-    if ($keys && $keys->hasKey('ifnew') && $$frontmatter{$tag}) {      # if ifnew and previous entries
-      return; }                                                        # Skip this one.
+    my $replaceable = $ReplaceableFrontmatterTags{$tag} || ($keys && $keys->hasKey('replace'));
+    if ($replaceable && exists $$frontmatter{$tag}) {    # if replace and previous entries
+      $$frontmatter{$tag} = []; }                        # Remove previous entries
+    if ($keys && $keys->hasKey('ifnew') && exists $$frontmatter{$tag}) { # if ifnew and previous entries
+      return; }                                                          # Skip this one.
     my $entry = [$tag, undef, 'to-be-filled-in'];
     push(@{ $$frontmatter{$tag} }, $entry);
     if ($attr) {
@@ -197,6 +212,12 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
 
 # \@add@to@frontmatter{tag}[label]{content}
 DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
+    my ($stomach, $tag, $label, $tokens) = @_;
+    AssignValue('@at@begin@maketitle', [], 'global') unless LookupValue('@at@begin@maketitle');
+    PushValue('@at@begin@maketitle',
+      Invocation(T_CS('\@add@to@frontmatter@now'), $tag, $label, $tokens)->unlist);
+    return; });
+DefPrimitive('\@add@to@frontmatter@now {} [] {}', sub {
     my ($stomach, $tag, $label, $tokens) = @_;
     $tag   = ToString($tag);
     $label = ToString($label) if $label;
@@ -274,7 +295,21 @@ Tag('ltx:document', 'afterOpen:late' => sub {
 # Request Frontmatter to appear HERE (if not already done),
 # deferring it from document begin.
 DefConstructor('\lx@frontmatterhere', sub { insertFrontMatter($_[0]); },
-  afterDigest => sub { AssignValue(frontmatter_deferred => 1, 'global'); });
+  afterDigest => sub {
+    my ($stomach) = @_;
+    my @boxes = ();
+    if (my $frontmatter_tks = LookupValue('@at@begin@maketitle')) {
+      push(@boxes, $stomach->digest(Tokens(@$frontmatter_tks)));
+      AssignValue('@at@begin@maketitle', undef, 'global'); }
+    AssignValue(frontmatter_deferred => 1, 'global');
+    return @boxes; });
+DefPrimitiveI('\lx@frontmatter@fallback', undef, sub {
+    my ($stomach) = @_;
+    my @boxes = ();
+    if (my $frontmatter_tks = LookupValue('@at@begin@maketitle')) {
+      push(@boxes, $stomach->digest(Tokens(@$frontmatter_tks)));
+      AssignValue('@at@begin@maketitle', undef, 'global'); }
+    return @boxes; });
 
 # Maintain a list of classes that apply to the document root.
 # This might involve global style options, like leqno.

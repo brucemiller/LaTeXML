@@ -1227,10 +1227,14 @@ DefPrimitive('\ltx@authors@multiline', sub {
 
 DefMacro('\@add@conversion@date', '\@add@frontmatter{ltx:date}[role=creation]{\today}');
 
+# In case \@maketitle defines these - we can't yet emulate that - so we can map them to \and:
+Let('\And', '\and');
+Let('\AND', '\and');
 # Doesn't produce anything (we're already inserting frontmatter),
 # But, it does make the various frontmatter macros into no-ops.
 DefMacroI('\maketitle', undef,
   '\lx@frontmatterhere'
+    . '\let\lx@frontmatter@fallback\relax'
     . '\@startsection@hook'
     . '\global\let\thanks\relax'
     . '\global\let\maketitle\relax'
@@ -1243,6 +1247,10 @@ DefMacroI('\maketitle', undef,
     . '\global\let\author\relax'
     . '\global\let\date\relax'
     . '\global\let\and\relax', locked => 1);
+# In case \maketitle isn't used in the document, let's check for it.
+AddToMacro(T_CS('\@startsection@hook'), T_CS('\lx@frontmatter@fallback'));
+# in cases such as titlepage, the document end is the last fallback.
+AtEndDocument(T_CS('\lx@frontmatter@fallback'));
 
 DefMacro('\@thanks', '\@empty');
 # make a throwaway optional argument available for OmniBus use
@@ -2291,7 +2299,7 @@ DefConstructor('\lx@equationgroup@subnumbering@begin',
     AssignValue(SAVED_EQUATION_NUMBER => LookupRegister('\c@equation'));
     $whatsit->setProperties(%eqn);
     ResetCounter('equation');
-    DefMacroI('\theequation',    undef, UnTeX($eqnum, 1) . '\alph{equation}');
+    DefMacroI('\theequation',    undef, UnTeX($eqnum,   1) . '\alph{equation}');
     DefMacroI('\theequation@ID', undef, UnTeX($eqn{id}, 1) . '.\@equation@ID'); });
 Tag('ltx:equationgroup', autoClose => 1);
 DefConstructor('\lx@equationgroup@subnumbering@end', sub {
