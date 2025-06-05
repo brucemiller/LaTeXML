@@ -13,7 +13,6 @@
 package LaTeXML::Package::Pool;
 use strict;
 use warnings;
-use Config;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 #======================================================================
@@ -35,12 +34,11 @@ DefPrimitive('\lx@append@path OptionalMatch:* {}', sub {
     return unless $path;
     if (my @paths = @{ LookupValue('SEARCHPATHS') }) {
       my $lead_path = shift(@paths);
-      $lead_path =~ s/\/+$//;
-      my $newpath = join($Config::Config{'path_sep'}, ($lead_path, $path));
+      my $newpath   = pathname_concat($lead_path, $path);
       if ($star) {    # * omits TEXINPUTS!
-        AssignValue(SEARCHPATHS => [pathname_canonical($newpath)]); }
+        AssignValue(SEARCHPATHS => [$newpath]); }
       else {
-        AssignValue(SEARCHPATHS => [pathname_canonical($newpath), @paths]); } }
+        AssignValue(SEARCHPATHS => [$newpath, @paths]); } }
     return; });
 
 DefMacro('\import OptionalMatch:* {}{}',       '{\lx@set@path #1{#2} \input{#3}}');
