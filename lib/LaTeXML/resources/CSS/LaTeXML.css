@@ -534,3 +534,9 @@ cite                 { font-style: normal; }
 
 .ltx_overlay {position:relative; }
 .ltx_overlay > span:nth-child(2) {position:absolute; left:0; }
+
+/* \llap, \rlap */
+.ltx__lap_container {
+  display:inline-block; vertical-align:bottom;  width:0pt; white-space:nowrap; /* width 0pt causes extreme wrapping otherwise */ }
+.ltx__lap_container>.ltx_llap { float:right; }
+.ltx__lap_container>.ltx_rlap { float:left; }
