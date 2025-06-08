@@ -53,7 +53,7 @@ sub new {
   $$self{trivial_scaling} = $options{trivial_scaling} || 1;
   $$self{graphics_types}  = $options{graphics_types}
     || [qw(svg png gif jpg jpeg
-      eps ps postscript ai pdf)];
+    eps ps postscript ai pdf)];
   $$self{type_properties} = $options{type_properties}
     || {
     ai => { destination_type => 'png',
@@ -120,11 +120,7 @@ sub getParameter {
 # to a list of search paths.
 sub findGraphicsPaths {
   my ($self, $doc) = @_;
-  my @paths = ();
-  foreach my $pi ($doc->findnodes('.//processing-instruction("latexml")')) {
-    if ($pi->textContent =~ /^\s*graphicspath\s*=\s*([\"\'])(.*?)\1\s*$/) {
-      push(@paths, $2); } }
-  return @paths; }
+  return $doc->findGraphicsPaths; }
 
 sub getGraphicsSourceTypes {
   my ($self) = @_;
