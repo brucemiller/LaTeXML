@@ -21,6 +21,10 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+# TODO: What do we need to do to get the native emulation working?
+DefMacro('\pgfmathresult',   '0.0');
+DefMacro('\tikz@align@temp', '\pgfmathresult');
+
 InputDefinitions('tikz', type => 'sty', noltxml => 1);
 
 # Not absolutely necessary to redefine this, but it makes sure
@@ -46,9 +50,6 @@ DefPrimitive('\use@@tikzlibrary{}', sub {
         AssignCatcode('|', $barcc);
     } }
     return; });
-
-# TODO: What do we need to do to get the native emulation working?
-DefMacro('\tikz@align@temp', '\pgfmathresult');
 
 # TODO: Why is this macro failing to get picked up?
 DefMacro('\tikzcdset', '\pgfqkeys{/tikz/commutative diagrams}');
