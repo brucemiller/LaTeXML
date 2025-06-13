@@ -347,7 +347,7 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
       $document->openElement('ltx:document', 'xml:id' => $id); } },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $stomach->beginMode('text');
+    $stomach->beginMode('internal_vertical');
     DefMacroI('\@currenvir', undef, 'document');
     AssignValue(current_environment => 'document');
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
@@ -406,7 +406,8 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
       Warn('unexpected', '\end{document}', $stomach,
         "Attempt to end document with open groups, environments or conditionals", @lines);
     }
-    $stomach->endMode('text');
+    $stomach->leaveHorizontal;
+    $stomach->endMode('internal_vertical');
     # ???? don't push? or what
     #    if (my $ops = LookupValue('@after@end@document')) {
     #      push(@boxes, Digest(Tokens(@$ops))); }
@@ -3802,7 +3803,8 @@ sub tabularBindings {
     if ($str != 1) {
       $properties{attributes}{rowsep} = Dimension(($str - 1) . 'em'); } }
   if (!defined $properties{strut}) {
-    $properties{strut} = LookupRegister('\baselineskip')->multiply(1.5); }    # Account for html space
+    $properties{isLaTeX}=1;
+    $properties{strut} = LookupRegister('\baselineskip'); }    # Account for html space
   alignmentBindings($template, 'text', %properties);
   Let("\\\\",            '\@tabularcr');
   Let('\lx@intercol',    '\lx@text@intercol');
@@ -3973,9 +3975,9 @@ DefConstructor('\label Semiverbatim', sub {
     if (my $ctr = LookupValue('current_counter')) {
       unshift(@{ LookupValue('scopes_for_counter:' . $ctr) }, $scope);
       $STATE->activateScope($scope);
-      $_[0]->beginMode('text');
+      $_[0]->beginMode('restricted_horizontal');
       AssignValue('LABEL@' . $label, Digest(T_CS('\@currentlabel')), 'global');
-      $_[0]->endMode('text'); }
+      $_[0]->endMode('restricted_horizontal'); }
     return; });
 
 # If a node has been labeled, but still  hasn't yet got an id by afterClose:late,
@@ -4853,7 +4855,8 @@ DefConstructor('\@framebox[Dimension][]{}',
   beforeDigest => sub {
     my ($stomach) = @_;
     my $wasmath = LookupValue('IN_MATH');
-    $stomach->beginMode('text');
+#    $stomach->beginMode('text');
+    $stomach->beginMode('restricted_horizontal');
     AssignValue(FRAME_IN_MATH => $wasmath); },
   properties => sub {
     my $sep = LookupRegister('\fboxsep')->toAttribute;
@@ -4865,7 +4868,8 @@ DefConstructor('\@framebox[Dimension][]{}',
     my ($stomach, $whatsit) = @_;
     my $wasmath = LookupValue('FRAME_IN_MATH');
     my $arg     = $whatsit->getArg(3);
-    $stomach->endMode('text');
+#    $stomach->endMode('text');
+    $stomach->endMode('restricted_horizontal');
     if ($wasmath && $arg->isMath) {
       $whatsit->setProperties(mathframe => 1, inner => $arg->getBody); }
     return; },
@@ -4928,7 +4932,10 @@ EOL
 Let('\lx@parboxnewline', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring inner-pos, for now, though.
-DefConstructor('\parbox[] [Dimension] OptionalUndigested {Dimension} VBoxContents', sub {
+DefMacro('\parbox[] [] [] {Dimension}{}',
+  '\bgroup\hsize=#4\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\egroup');
+
+DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
     insertBlock($document, $body,
       width   => $width,
@@ -4944,7 +4951,6 @@ DefConstructor('\parbox[] [Dimension] OptionalUndigested {Dimension} VBoxContent
   robust       => 1,
   beforeDigest => sub {
     reenterTextMode(1);    # actually vertical mode!
-    AssignRegister('\hsize' => $_[4]);
     Let('\\\\', '\lx@newline'); });
 DefMacroI('\@parboxrestore', undef, Tokens());
 
