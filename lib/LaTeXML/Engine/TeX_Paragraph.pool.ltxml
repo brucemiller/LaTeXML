@@ -55,7 +55,9 @@ DefConstructorI('\indent', undef, sub {
       my $noindent = $prev && ($document->getNodeQName($prev) =~ /^ltx:(?:toc)?title$/);
       $document->openElement("ltx:para", ($noindent ? () : (class => "ltx_indent"))); }
     # Otherwise ignore.
-    return; });
+    return; },
+    properties => { isSpace => 1},
+    enterHorizontal => 1);
 DefConstructorI('\noindent', undef, sub {
     my ($document) = @_;
     my $node = $document->getElement;
@@ -66,7 +68,9 @@ DefConstructorI('\noindent', undef, sub {
       # Used in a position where a paragraph can be started, start
       $document->openElement("ltx:para", class => "ltx_noindent"); }
     # Otherwise ignore.
-    return; });
+    return; },
+    properties => { isSpace => 1},
+    enterHorizontal => 1);
 
 sub alignLine {
   my ($document, $line, $alignment) = @_;
@@ -100,8 +104,24 @@ DefConstructorI('\lx@normal@par', undef, sub {
         if (my $c = $props{class}) {
           $document->setAttribute($node, class => $c); } }
       $document->maybeCloseElement('ltx:para'); } },
+  beforeDigest => sub {
+    my ($stomach) = @_;
+    my $mode  = $STATE->lookupValue('MODE');
+    my $bound = $STATE->lookupValue('BOUND_MODE');
+    # combine any digested horizontal material into a horizontal List
+    if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
+      my @para = ();
+      while(@LaTeXML::LIST
+         && (($LaTeXML::LIST[-1]->getProperty('mode')||'horizontal')
+             =~ /^(?:horizontal|restricted_horizontal|inline_math)$/)) {
+        unshift(@para,pop(@LaTeXML::LIST)); }
+      my $keep = grep { !$_->getProperty('isSpace'); } @para;
+      push(@LaTeXML::LIST, List(@para, mode=>'horizontal')) if $keep;
+      $STATE->assignValue(MODE => $bound, 'inplace'); }
+  return; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(mode=>$STATE->lookupValue('MODE'));
     if (LookupValue('inPreamble')) {
       $whatsit->setProperty(inPreamble => 1); }
     else {

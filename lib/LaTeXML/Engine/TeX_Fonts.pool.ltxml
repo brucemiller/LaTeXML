@@ -140,7 +140,7 @@ DefRegister('\fontdimen Number FontDef' => Dimension(0),
 sub getFontDimen {
   my($fontname, $param) = @_;
   my $info = $STATE->lookupValue('fontinfo_'.$fontname);
-  return $$info{data}[$param - 1]; }
+  return $$info{data}[$param - 1] || 0; }
 
 # Not sure what this should be...
 DefPrimitiveI('\nullfont', undef, undef, font => { family => 'nullfont' });

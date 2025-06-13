@@ -76,8 +76,8 @@ sub getBody {
 sub setBody {
   my ($self, @body) = @_;
   my $trailer = pop(@body);
-  $$self{properties}{body} = List(@body);
-  $$self{properties}{body}->setProperty(mode => 'math') if $self->isMath;
+  my $mode = $$self{properties}{mode};
+  $$self{properties}{body} = List(@body, ($mode ? (mode => $mode) : ()));
   $$self{properties}{trailer} = $trailer;
   # And copy any otherwise undefined properties from the trailer
   if ($trailer) {
@@ -128,7 +128,6 @@ sub revert {
         if (my $parameters = $defn->getParameters) {
           push(@tokens, $parameters->revertArguments($self->getArgs)); } }
       if (defined(my $body = $self->getBody)) {
-###      if (defined(my $body = $self->getBody || $self->getProperty('alignment'))) {
         push(@tokens, Revert($body));
         if (defined(my $trailer = $self->getTrailer)) {
           push(@tokens, Revert($trailer)); } } }
@@ -174,12 +173,12 @@ sub stringify {
   no warnings 'recursion';
   my ($self) = @_;
   my $hasbody = defined $$self{properties}{body};
-  return "Whatsit[" . join(',', $self->getDefinition->getCS->getCSName,
-    map { Stringify($_) }
-      $self->getArgs,
-    (defined $$self{properties}{body}
-      ? ($$self{properties}{body}, $$self{properties}{trailer})
-      : ()))
+  return $self->_stringify . $self->getDefinition->getCS->getCSName
+      . "[" . join(',', map { Stringify($_) }
+         $self->getArgs,
+        (defined $$self{properties}{body}
+         ? ($$self{properties}{body}, $$self{properties}{trailer})
+         : ()))
     . "]"; }
 
 sub equals {
@@ -258,15 +257,12 @@ sub computeSize {
     elsif ($sizer =~ /^(#\w+)*$/) {                 # Else if of form '#digit' or '#prop', combine sizes
       while ($sizer =~ s/^#(\w+)//) {
         my $arg = $1;
-        push(@boxes, ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg})); }
-      # Special case: If only a single object to be sized and it is a List, unlist it.
-      # This is so that whatsit's layout properties will be applied to the sequence
-      if ((scalar(@boxes) == 1) && ((ref $boxes[0]) eq 'LaTeXML::Core::List')) {
-        @boxes = $boxes[0]->unlist; } }
+        push(@boxes, ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg})); } }
     else {
       push(@boxes, $sizer); }
     no warnings 'recursion';
-    return $$props{font}->computeBoxesSize([@boxes], %options); } }
+    return $$props{font}->computeBoxesSize(
+      (scalar(@boxes)==1 ? $boxes[0] : List(@boxes, mode=>$$props{mode})), %options); } }
 
 #======================================================================
 1;
