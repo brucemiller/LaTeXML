@@ -54,13 +54,14 @@ sub invoke {
   # but if defined in the document source, better to use \char ###\relax, so it still "works"
   my $src   = $$self{locator} && $$self{locator}->toString;
   my $local = $src && $src !~ /\.(?:sty|ltxml|ltxmlc)/;    # Dumps currently have undefined src!
-  if ($$self{mode} eq 'text') {    # text; but note defered font/encoding till digestion!
+  if ($$self{mode} !~ /math$/) {    # non-math; but note defered font/encoding till digestion!
     ## Decode the codepoint using requested encoding ELSE current font & encoding
     my ($glyph, $adjfont) = LaTeXML::Package::FontDecode($nvalue, $$self{encoding});
     my %props = ();
     if ($STATE->lookupValue('IN_MATH')) {    # Add math properties if IN math (even for text \chardef)
       my $charinfo = unicode_math_properties($glyph);
       %props = %$charinfo if $charinfo; }
+    $stomach->enterHorizontal;
     return Box($glyph, $adjfont, undef,
       ($local ? Tokens(T_CS('\char'), $value->revert, T_CS('\relax')) : $$self{cs}), %props); }
   else {                                     # Else math mode, mathDecode!
