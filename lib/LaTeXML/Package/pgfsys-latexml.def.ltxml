@@ -897,7 +897,9 @@ DefConstructor('\lxSVG@halign BoxSpecification',
   sizer       => sub { $_[0]->getProperty('alignment')->getSize; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $stomach->bgroup;    # This will be closed by the \halign's closing }  (or will it?)
+    $stomach->leaveHorizontal;
+    $whatsit->setProperty(mode => 'internal_vertical');
+    $stomach->beginMode('restricted_horizontal');
     my $template = parseHAlignTemplate($stomach->getGullet, $whatsit);
     my $spec     = $whatsit->getArg(1);
     # Parse the template and initialize the Alignment object.
@@ -907,8 +909,8 @@ DefConstructor('\lxSVG@halign BoxSpecification',
         vattach => 'bottom',
         width => orNull(GetKeyVal($spec, 'to')) });
     digestAlignmentBody($stomach, $whatsit);
-    $stomach->egroup;
-    $LaTeXML::ALIGN_STATE--;    # Balance the opening { OUTSIDE of the masking of ALIGN_STATE
+    $stomach->endMode('restricted_horizontal');
+   $LaTeXML::ALIGN_STATE--;    # Balance the opening { OUTSIDE of the masking of ALIGN_STATE
     return; });
 
 sub tikzAlignmentBindings {
