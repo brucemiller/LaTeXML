@@ -120,10 +120,10 @@ DefConstructorI('\lx@begin@inmath@text', undef,
     . "#body"
     . "</ltx:XMText>",
   alias        => T_MATH,
-  beforeDigest => sub { $_[0]->beginMode('text'); }, captureBody => 1);
+  beforeDigest => sub { $_[0]->beginMode('restricted_horizontal'); }, captureBody => 1);
 DefConstructorI('\lx@end@inmath@text', undef, "",
   alias        => T_MATH,
-  beforeDigest => sub { $_[0]->endMode('text'); });
+  beforeDigest => sub { $_[0]->endMode('restricted_horizontal'); });
 
 #======================================================================
 # Effectively these are the math hooks, redefine these to do what you want with math?
@@ -136,7 +136,10 @@ DefConstructorI('\lx@begin@display@math', undef,
     . "</ltx:Math>"
     . "</ltx:equation>",
   reversion    => Tokens(T_MATH, T_MATH),
-  beforeDigest => sub { $_[0]->beginMode('display_math'); },
+  beforeDigest => sub { 
+    $_[0]->enterHorizontal;
+    $_[0]->beginMode('display_math'); },
+  properties   => {mode=>'display_math'},
   captureBody  => 1);
 DefConstructorI('\lx@end@display@math', undef, "",
   reversion    => Tokens(T_MATH, T_MATH),
@@ -149,7 +152,10 @@ DefConstructorI('\lx@begin@inline@math', undef,
     . "</ltx:XMath>"
     . "</ltx:Math>",
   reversion    => Tokens(T_MATH),
-  beforeDigest => sub { $_[0]->beginMode('inline_math'); },
+  beforeDigest => sub {
+    $_[0]->enterHorizontal;
+    $_[0]->beginMode('inline_math'); },
+  properties   => {mode=>'inline_math'},
   captureBody  => 1);
 DefConstructorI('\\lx@end@inline@math', undef, "",
   reversion    => Tokens(T_MATH),

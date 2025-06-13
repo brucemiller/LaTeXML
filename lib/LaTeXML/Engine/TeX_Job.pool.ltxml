@@ -60,7 +60,11 @@ sub today {
 # \deadcycles       iq is the number of times \output was called since the last \shipout.
 # \maxdeadcycles    pi is the maximum allowed value of \deadcycles before an error is generated.
 
-DefPrimitiveI('\lx@end@document', undef, sub { $_[0]->getGullet->flush; return; });
+DefPrimitiveI('\lx@end@document', undef, sub {
+  my ($stomach) = @_;
+  $stomach->leaveHorizontal;
+  $stomach->getGullet->flush;
+  return; });
 Let('\end', '\lx@end@document');
 
 DefRegister('\everyjob'      => Tokens());
