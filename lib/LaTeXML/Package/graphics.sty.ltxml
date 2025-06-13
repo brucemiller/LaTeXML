@@ -62,10 +62,11 @@ DefParameterType('GraphixDimensions', sub {
 # Record the box in \@tempboxa ???
 sub graphics_scaledbox_props {
   my ($box, $xscale, $yscale) = @_;
-  #  my ($w,   $h,      $d)      = $box->getSize;
-  my ($rw, $rh, $rd, $w, $h, $d) = $box->getSize;
+  my ($w,   $h,      $d)      = $box->getSize;
   my ($sw, $sh, $sd) =
     ($w && $w->multiply($xscale), $h && $h->multiply($yscale), $d && $d->multiply($yscale));
+  my $H  = $h && ($d ? $h->add($d) : $h);
+  my $sH = $sh && ($sd ? $sh->add($sd) : $sh);
   return (
     box         => $box,
     xscale      => $xscale, yscale => $yscale,
@@ -77,8 +78,7 @@ sub graphics_scaledbox_props {
     depth       => $sd,
     totalheight => $h  && ($d ? $h->add($d) : $h)->multiply($yscale),
     xtranslate  => $sw && $w && $sw->subtract($w)->multiply(+0.5),
-    ytranslate  => $sh && $h && $sh->subtract($h)->multiply(-0.5),
-  ); }
+    ytranslate  => $sH && $H && $sH->subtract($H)->multiply(-0.5) ); }
 
 sub graphics_scaledbox_insert {
   my ($document, %props) = @_;
@@ -179,8 +179,8 @@ sub rotatedProperties {
     (+$h - $y0) * $c + (+0 - $x0) * $s + $y0);    # top left
   my $hp       = max(@cornerys);
   my $dp       = -min(@cornerys);
-  my $xsh      = Dimension(($wp - $w) / 2)->ptValue . 'pt';
-  my $ysh      = Dimension(($s < 0 ? -1 : +1) * ($h - $hp + $dp) / 2 + $d)->ptValue . 'pt';
+  my $xsh      = Dimension(($wp - $w) / 2);
+  my $ysh      = Dimension(($h + $d - $hp - $dp) / 2);
   my $cwidthp  = Dimension($wp);
   my $cheightp = Dimension($hp);
   my $cdepthp  = Dimension($dp);
