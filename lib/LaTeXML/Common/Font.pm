@@ -628,13 +628,16 @@ my %baseline_map = (
 # Boxes that arent a Core Box, List, Whatsit or a string are IGNORED
 sub computeBoxesSize {
   my ($self, $boxes, %options) = @_;
+  return computeStringSize($self,$boxes) unless ref $boxes;
   my $font      = (ref $self ? $self : $STATE->lookupValue('font'));
   my $size      = int($font->getSize || DEFSIZE() || 10);
-  my $fillwidth = $options{width};
-  if ((!defined $fillwidth) && ($fillwidth = $STATE->lookupDefinition(T_CS('\textwidth')))) {
+  my $fillwidth = $options{width} || $boxes->getProperty('width');
+  if ((!defined $fillwidth) && ($fillwidth = $STATE->lookupDefinition(T_CS('\hsize')))) {
     $fillwidth = $fillwidth->valueOf; }    # get register
   my $maxwidth = $fillwidth && $fillwidth->valueOf;
-  my $layout   = $options{layout} || 'paragraph'; # or horizontal?
+  my $mode     = $boxes->getProperty('mode') || 'restricted_horizontal';
+  my $layout   = $options{layout} || ($mode eq 'horizontal' ? 'paragraph'
+                : ($mode =~ /vertical$/ ? 'vertical' : 'restricted_horizontal'));
   my $vattach  = $options{vattach} || 'baseline';
   my @words    = ();
   my @lines    = ();
@@ -643,8 +646,7 @@ sub computeBoxesSize {
   # Flatten top-level Lists (orrr pass-thru $fillwidth ???)
   #  my @boxes = map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); } @$boxes;
   my @boxes = grep { !(ref $_) || !$_->getProperty('isEmpty') }
-    map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); }
-    grep { !(ref $_) || $_->can('getSize'); } @$boxes;
+    grep { !(ref $_) || $_->can('getSize'); } $boxes->unlist;
   my $prevbox;
   my $prevspace = 0;
   # ----------------------------------------------------------------------
@@ -673,7 +675,7 @@ sub computeBoxesSize {
       Warn('expected', 'Dimension', undef,
         "Depth of " . Stringify($box) . " yielded a non-dimension: " . Stringify($d)); }
     if($layout eq 'vertical'){  # For vertical, ALL boxes are lines
-      push(@lines,[$w,$h,$d]); }
+      push(@lines,[$w,$h,$d]) if $w || $h || $d; }
     # Check for possible line-break points
     elsif((ref $box) && $box->getProperty('isBreak')) {
       if($wd || $ht || $dp || ($prevspace > 0)){
@@ -714,7 +716,7 @@ sub computeBoxesSize {
       if($space == -1){
         push(@lines,[$wd,$ht,$dp]);
         $wd = $w; $ht = $h; $dp = $d; }
-      elsif(($layout eq 'paragraph') && ($wd + $space + $w > $maxwidth)) {
+      elsif(($layout eq 'paragraph') && ($wd + $space*0.5 + $w > $maxwidth)) {
         push(@lines,[$wd,$ht,$dp]);
         $wd = $w; $ht = $h; $dp = $d; }
       else {
@@ -751,8 +753,8 @@ sub computeBoxesSize {
       $dp = $ht + $dp; $ht = $lines[0][1]; $dp -= $ht; } }
 
   Debug("Size boxes " . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "\n"
-      . "  Boxes: " . join(',',  map { '[[' . ToString($_) . ']]'; } @$boxes) . "\n"
-      . "  Boxes: " . join(',',  map { '[[' . Stringify($_) . ']]'; } @$boxes) . "\n"
+      . "  Boxes: " . ToString($boxes) . "\n"
+      . "  Boxes: " . Stringify($boxes) . "\n"
       . "  Sizes: " . join("\n", map { _showsize(@$_); } @lines) . "\n"
       . "  => " . _showsize($wd, $ht, $dp)) if $LaTeXML::DEBUG{'size-detailed'};
   return (Dimension($wd), Dimension($ht), Dimension($dp)); }
