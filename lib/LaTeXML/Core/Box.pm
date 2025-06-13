@@ -38,13 +38,16 @@ sub Box {
     $properties{height} = Dimension(0) unless defined $properties{height};
     $properties{depth}  = Dimension(0) unless defined $properties{depth}; }
   my $state = $STATE;
+  my $mode = $state->lookupValue('MODE');
   if ($state->lookupValue('IN_MATH')) {
     my $attr      = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
     my $usestring = ($attr && $$attr{replace}) || $string;
     return LaTeXML::Core::Box->new($usestring, $font->specialize($string), $locator, $tokens,
-      mode => 'math', ($attr ? %$attr : ()), %properties); }
+##      mode => 'math', ($attr ? %$attr : ()), %properties); }
+      mode => $mode, ($attr ? %$attr : ()), %properties); }
   else {
-    return LaTeXML::Core::Box->new($string, $font, $locator, $tokens, %properties); } }
+    return LaTeXML::Core::Box->new($string, $font, $locator, $tokens,
+                                   mode => $mode, %properties); } }
 
 #======================================================================
 # Box Object
@@ -75,7 +78,7 @@ sub setFont {
 
 sub isMath {
   my ($self) = @_;
-  return ($$self{properties}{mode} || 'text') eq 'math'; }
+  return ($$self{properties}{mode} =~ /math$/); }
 
 sub getLocator {
   my ($self) = @_;
@@ -103,16 +106,26 @@ sub toString {
   return $$self{string} // ''; }
 
 # Methods for overloaded operators
-sub stringify {
+my %mode_abbrev = (
+  vertical    => 'V',  internal_vertical     => 'iV',
+  horizontal  => 'H',  restricted_horizontal => 'rH',
+  inline_math => 'iM', display_math          => 'dM');
+
+sub _stringify {
   my ($self) = @_;
   my $type = ref $self;
+  my $mode = $$self{properties}{mode};
   $type =~ s/^LaTeXML::Core:://;
+  $type .= '!'. ($mode_abbrev{$mode} || $mode) if $mode;
+  return $type; }
+
+sub stringify {
+  my ($self) = @_;
   my $font = (defined $$self{properties}{font}) && $$self{properties}{font}->stringify; # show font, too, if interesting
-  return $type . '['
+  return $self->_stringify . '['
     . (defined $$self{string} ? $$self{string}
     : (defined $$self{tokens} ? '[' . ToString($$self{tokens}) . ']' : ''))
-    . ($font && ($font ne 'Font[]') ? ' ' . $font : '')
-    . ']'; }
+    . ($font && ($font ne 'Font[]') ? ' ' . $font : '') . ']'; }
 
 # Should this compare fonts too?
 sub equals {
@@ -122,7 +135,7 @@ sub equals {
 sub beAbsorbed {
   my ($self, $document) = @_;
   my $string = $$self{string};
-  my $mode   = $$self{properties}{mode} || 'text';
+  my $ismath = $$self{properties}{mode} =~ /math$/;
 
   # Guard via the absorb limit to avoid infinite loops
   if ($LaTeXML::ABSORB_LIMIT) {
@@ -133,7 +146,7 @@ sub beAbsorbed {
         "Whatsit absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
 
   return (((defined $string) && ($string ne '')) || $$self{properties}{width}    # ?
-    ? ($mode eq 'math'
+    ? ($ismath
       ? $document->insertMathToken($string, %{ $$self{properties} })
       : $document->openText($string, $$self{properties}{font}))
     : undef); }

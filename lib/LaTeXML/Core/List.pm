@@ -30,17 +30,28 @@ our @EXPORT = (qw(&List));
 # Also, if there's only 1 box, we just return it!
 sub List {
   my (@boxes) = @_;
-  my $mode = 'text';
-  # Hacky special case!!!
-  if ((scalar(@boxes) >= 2) && ($boxes[-2] eq 'mode')
-    && (($boxes[-1] eq 'math') || ($boxes[-1] eq 'text'))) {
+  my $mode;
+  # Check for Hacky mode argument!!!
+  if ((scalar(@boxes) >= 2) && ($boxes[-2] eq 'mode')) {
     $mode = pop(@boxes); pop(@boxes); }
+  else {
+    $mode = $STATE->lookupValue('MODE'); } # HOPEFULLY, mode hasn't changed by now?
   @boxes = grep { defined $_ } @boxes;    # strip out undefs
-  if (scalar(@boxes) == 1) {
+  # Simplify single box, IFF NOT vertical list or box IS vertical
+  if ((scalar(@boxes) == 1)
+      && (!$mode || ($mode !~ /vertical$/)
+          || (($boxes[0]->getProperty('mode')||'') =~ /vertical$/))) {
     return $boxes[0]; }                   # Simplify!
   else {
+    # Flatten horizontal lists within horizontal lists
+    if($mode eq 'horizontal'){
+      @boxes = map { ((ref $_ eq 'LaTeXML::Core::List')
+                      && (($_->getProperty('mode')||'') eq 'horizontal')
+                      ? $_->unlist : $_); } @boxes; }
     my $list = LaTeXML::Core::List->new(@boxes);
-    $list->setProperty(mode => $mode) if $mode eq 'math';
+    $list->setProperty(mode => $mode);
+    $list->setProperty(width => LaTeXML::Package::LookupRegister('\hsize'))
+        if $mode eq 'horizontal';
     return $list; } }
 
 sub new {
@@ -79,9 +90,7 @@ sub toAttribute {
 sub stringify {
   no warnings 'recursion';
   my ($self) = @_;
-  my $type = ref $self;
-  $type =~ s/^LaTeXML:://;
-  return $type . '[' . join(',', map { Stringify($_) } $self->unlist) . ']'; }    # Not ideal, but....
+  return $self->_stringify . '[' . join(',', map { Stringify($_) } $self->unlist) . ']'; }
 
 sub equals {
   my ($a, $b) = @_;
@@ -102,8 +111,7 @@ sub computeSize {
   no warnings 'recursion';
   my ($self, %options) = @_;
   my $font = $self->getProperty('font') || LaTeXML::Common::Font->textDefault;
-  return $font->computeBoxesSize($$self{boxes}, %options); }
-
+  return $font->computeBoxesSize($self, %options); }
 #======================================================================
 1;
 
