@@ -631,16 +631,16 @@ sub computeBoxesSize {
   return computeStringSize($self,$boxes) unless ref $boxes;
   my $font      = (ref $self ? $self : $STATE->lookupValue('font'));
   my $size      = int($font->getSize || DEFSIZE() || 10);
-  my $fillwidth = $options{width} || $boxes->getProperty('width');
-  if ((!defined $fillwidth) && ($fillwidth = $STATE->lookupDefinition(T_CS('\hsize')))) {
-    $fillwidth = $fillwidth->valueOf; }    # get register
-  my $maxwidth = $fillwidth && $fillwidth->valueOf;
-  my $mode     = $boxes->getProperty('mode') || 'restricted_horizontal';
-  my $layout   = $options{layout} || ($mode eq 'horizontal' ? 'paragraph'
+  my $fillwidth = $options{width} || $boxes->getProperty('width')
+      ||  $STATE->lookupDefinition(T_CS('\hsize'));
+  $fillwidth    = $fillwidth->valueOf if ref $fillwidth;    # Register or Dimension
+  $fillwidth    = $fillwidth->valueOf if ref $fillwidth;    # still Dimension (Register)
+  my $mode      = $boxes->getProperty('mode') || 'restricted_horizontal';
+  my $layout    = $options{layout} || ($mode eq 'horizontal' ? 'paragraph'
                 : ($mode =~ /vertical$/ ? 'vertical' : 'restricted_horizontal'));
-  my $vattach  = $options{vattach} || 'baseline';
-  my @words    = ();
-  my @lines    = ();
+  my $vattach   = $options{vattach} || 'baseline';
+  my @words     = ();
+  my @lines     = ();
   my ($wd, $ht, $dp)          = (0, 0, 0);
   no warnings 'recursion';
   # Flatten top-level Lists (orrr pass-thru $fillwidth ???)
@@ -716,7 +716,7 @@ sub computeBoxesSize {
       if($space == -1){
         push(@lines,[$wd,$ht,$dp]);
         $wd = $w; $ht = $h; $dp = $d; }
-      elsif(($layout eq 'paragraph') && ($wd + $space*0.5 + $w > $maxwidth)) {
+      elsif(($layout eq 'paragraph') && (defined $fillwidth) && ($wd + $space*0.5 + $w > $fillwidth)) {
         push(@lines,[$wd,$ht,$dp]);
         $wd = $w; $ht = $h; $dp = $d; }
       else {

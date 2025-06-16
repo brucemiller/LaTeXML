@@ -38,7 +38,7 @@ sub Box {
     $properties{height} = Dimension(0) unless defined $properties{height};
     $properties{depth}  = Dimension(0) unless defined $properties{depth}; }
   my $state = $STATE;
-  my $mode = $state->lookupValue('MODE');
+  my $mode = $properties{mode} || $state->lookupValue('MODE') || 'restricted_horizontal';
   if ($state->lookupValue('IN_MATH')) {
     my $attr      = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
     my $usestring = ($attr && $$attr{replace}) || $string;
@@ -78,7 +78,7 @@ sub setFont {
 
 sub isMath {
   my ($self) = @_;
-  return ($$self{properties}{mode} =~ /math$/); }
+  return ($$self{properties}{mode} || 'restricted_horizontal') =~ /math$/; }
 
 sub getLocator {
   my ($self) = @_;
@@ -135,7 +135,7 @@ sub equals {
 sub beAbsorbed {
   my ($self, $document) = @_;
   my $string = $$self{string};
-  my $ismath = $$self{properties}{mode} =~ /math$/;
+  my $ismath = ($$self{properties}{mode} || 'restricted_horizontal') =~ /math$/;
 
   # Guard via the absorb limit to avoid infinite loops
   if ($LaTeXML::ABSORB_LIMIT) {

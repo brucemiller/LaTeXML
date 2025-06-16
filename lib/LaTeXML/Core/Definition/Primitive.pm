@@ -64,7 +64,7 @@ sub invoke {
   my $replacement = $$self{replacement};
 
   if (!ref $replacement) {
-    $stomach->enterHorizontal;
+    $stomach->enterHorizontal if defined $replacement;
     push(@result, Box($replacement, undef, undef,
         Tokens($self->getCSorAlias, ($parms ? $parms->revertArguments(@args) : ())),
         (defined $replacement ? () : (isEmpty => 1)))); }
