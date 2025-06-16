@@ -360,19 +360,23 @@ sub readDigested {
   no warnings 'recursion';
   my ($gullet) = @_;
   $gullet->skipSpaces;
-  my $ismath = $STATE->lookupValue('IN_MATH');
-  my @list   = ();
+  my $ismath  = $STATE->lookupValue('IN_MATH');
+  my @list    = ();
+  my $grouped = 0;
   my $token;
   do { $token = $gullet->readXToken(0);
   } while (defined $token && (($token->getCatcode == CC_SPACE) || $token->equals(T_CS('\relax'))));
   if    (!defined $token) { }
   elsif ($token->getCatcode == CC_BEGIN) {
+    $grouped = 1;
     Digest($token);
     push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }    # content w/o the braces
   else {
     push(@list, $STATE->getStomach->invokeToken($token)); }
   @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
-  return List(@list, mode => ($ismath ? 'math' : 'text')); }
+  my $list = List(@list, mode => ($ismath ? 'math' : 'text'));
+  $list->setProperty('grouped', $grouped) if $grouped;
+  return $list; }
 
 DefParameterType('Digested', \&readDigested,
   undigested => 1,                                           # since _already_ digested.
@@ -383,8 +387,11 @@ DefParameterType('Digested', \&readDigested,
 # but we don't actually restrict to those.
 # Here, we just read a single Digested thing, but reversion gets no braces
 DefParameterType('TeXDelimiter', \&readDigested,
-  undigested => 1,                         # since _already_ digested.
-  reversion  => sub { Revert($_[0]); });
+  undigested => 1,      # since _already_ digested.
+  reversion  => sub {
+    return $_[0]->getProperty('grouped') ?
+      (T_BEGIN, Revert($_[0]), T_END) :
+      Revert($_[0]); });
 
 # A variation: Digest until we encounter a given token!
 DefParameterType('DigestUntil', sub {
