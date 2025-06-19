@@ -591,7 +591,7 @@ DefConstructor('\@proclaim{}{}',
 DefPrimitiveI('\raggedright',   undef, undef);
 DefPrimitiveI('\raggedleft',    undef, undef);    # this is actually LaTeX
 DefPrimitiveI('\ttraggedright', undef, undef);
-DefPrimitiveI('\leavevmode',    undef, undef);
+DefPrimitiveI('\leavevmode',    undef, sub { $_[0]->enterHorizontal; });
 DefMacro('\mathhexbox{}{}{}', '\leavevmode\hbox{$\m@th \mathchar"#1#2#3$}');
 
 #======================================================================
@@ -1467,20 +1467,21 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
     $document->absorb($matrix);
     my $marray = $document->getNode->lastChild;
     my @rows   = $document->findnodes('ltx:XMRow', $marray);
-    my ($h, $d) = (10.0 * $UNITY, 0);    # 10pts.
-                                         # Contrived, since $matrix may be a List or...
+    ## Contrived, since $matrix may be a List or...
     my ($alignment) = grep { $_ } map { $_->getProperty('alignment') } $matrix->unlist;
+    my $pfont = $STATE->lookupValue('font')->specialize('(');
+    my $em    = $pfont->getEMWidth;
+    my ($h0,$h1, $half, $shift) = ($em, $em, $em, $em);
     if ($alignment) {
-      my $arrayh = $alignment->getHeight->ptValue;
-      my ($row0, $row1) = $alignment->rows;    # What's row 0 ?
-      $h = $$row1{y}->valueOf;
-      $d = $h - $arrayh; }
-    my $md = Dimension(-$d);
-    $h = Dimension($h); $d = Dimension($d);
-
+      my $arrayh     = $alignment->getTotalHeight;
+      my @rowheights = @{$$alignment{rowheights}};
+      $h0    = $rowheights[0];
+      $h1    = $rowheights[1];
+      $half  = $arrayh->subtract($h0)->divide(2);
+      $shift = $rowheights[0]->subtract($half); }
     foreach my $row (@rows) {                  # Add empty cells for 2nd & last colum
-      $document->openElementAt($row, 'ltx:XMCell');
-      $document->openElementAt($row, 'ltx:XMCell');
+      $document->openElementAt($row, 'ltx:XMCell', class => 'ltx_nopad');
+      $document->openElementAt($row, 'ltx:XMCell', class => 'ltx_nopad');
       $row->insertAfter($row->lastChild, $row->firstChild);    # Move to 2nd pos!
     }
     my @cols = element_nodes($rows[1]);
@@ -1489,15 +1490,17 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
     my $n    = scalar(@rows) - 1;
     $col1->setAttribute(rowspan => $n);
     $coln->setAttribute(rowspan => $n);
-    my $pfont = $STATE->lookupValue('font')->specialize('(');
+    # Pretend ('s row has height of row 1, to avoid shifting baseline.
+    # but shift the centerline to the middle of rows 2--n
+    # Set the (,) in mpadded stretchy w/ space as strut.
     $document->appendTree($col1,
-      ['ltx:XMWrap', { depth => $d },
-        ['ltx:XMTok', { role   => 'OPEN', height  => 0, depth => $d, yoffset => $md, font => $pfont }, '('],
-        ['ltx:XMTok', { height => $h,     yoffset => $md, font => $pfont }, ' ']]);   # Effectively, a strut
+      ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
+        ['ltx:XMTok', { role   => 'OPEN', stretchy => 'true', font => $pfont }, '('],
+        ['ltx:XMTok', { height => $half,  depth    => $half,  font => $pfont }, ' ']]);
     $document->appendTree($coln,
-      ['ltx:XMWrap', {},
-        ['ltx:XMTok', { role   => 'CLOSE', height => 0, depth => $d, yoffset => $md, font => $pfont }, ')'],
-        ['ltx:XMTok', { height => $h, yoffset => $md, font => $pfont }, ' ']]);
+      ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
+        ['ltx:XMTok', { role   => 'CLOSE', stretchy => 'true', font => $pfont }, ')'],
+        ['ltx:XMTok', { height => $half,   depth    => $half,  font => $pfont }, ' ']]);
     return; },
   reversion => '#1');
 

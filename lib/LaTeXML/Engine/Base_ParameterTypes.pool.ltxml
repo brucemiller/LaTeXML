@@ -361,6 +361,7 @@ sub readDigested {
   my ($gullet) = @_;
   $gullet->skipSpaces;
   my $ismath = $STATE->lookupValue('IN_MATH');
+  my $mode   = $STATE->lookupValue('MODE');
   my @list   = ();
   my $token;
   do { $token = $gullet->readXToken(0);
@@ -372,7 +373,7 @@ sub readDigested {
   else {
     push(@list, $STATE->getStomach->invokeToken($token)); }
   @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
-  return List(@list, mode => ($ismath ? 'math' : 'text')); }
+  return List(@list, mode => $mode); }
 
 DefParameterType('Digested', \&readDigested,
   undigested => 1,                                           # since _already_ digested.
@@ -392,9 +393,10 @@ DefParameterType('DigestUntil', sub {
     ($until) = $until->unlist;    # Make sure it's a single token!!!
     $gullet->skipSpaces;
     my $ismath = $STATE->lookupValue('IN_MATH');
+    my $mode   = $STATE->lookupValue('MODE');
     my @list   = $STATE->getStomach->digestNextBody($until);
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
-    List(@list, mode => ($ismath ? 'math' : 'text')); },
+    List(@list, mode => $mode); },
   undigested => 1,                                           # since _already_ digested.
   reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
@@ -406,10 +408,11 @@ DefParameterType('DigestUntil', sub {
 DefParameterType('DigestedBody', sub {
     my ($gullet) = @_;
     my $ismath   = $STATE->lookupValue('IN_MATH');
+    my $mode     = $STATE->lookupValue('MODE');
     my @list     = $STATE->getStomach->digestNextBody();
     # In most (all?) cases, we're really looking for a single Whatsit here...
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
-    List(@list, mode => ($ismath ? 'math' : 'text')); },
+    List(@list, mode => $mode); },
   undigested => 1);
 
 # In addition to the standard TeX Dimension, there are various LaTeX constructs

@@ -192,6 +192,7 @@ DefMathI('\lx@InvisiblePlus', undef, "\x{2064}", reversion => '', name => '', me
 
 DefConstructor('\lx@kludged{}',
   "?#isMath(<ltx:XMWrap rule='kludge'>#1</ltx:XMWrap>)(#1)",
+  beforeDigest => sub { $_[0]->enterHorizontal; },
   reversion => '#1');
 DefConstructor('\lx@padded[MuDimension]{MuDimension}{}',
   '#3',
@@ -651,18 +652,16 @@ DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
 
 DefConstructorI('\lx@cases@condition', undef,
   "<ltx:XMText>#body</ltx:XMText>",
-  alias => '', beforeDigest => sub { $_[0]->beginMode('text'); }, captureBody => 1);
+  alias => '', beforeDigest => sub { $_[0]->beginMode('restricted_horizontal'); }, captureBody => 1);
 DefConstructorI('\lx@cases@end@condition', undef, "", alias => '',
-  beforeDigest => sub { $_[0]->endMode('text'); });
+  beforeDigest => sub { $_[0]->endMode('restricted_horizontal'); });
 
 DefPrimitive('\lx@gen@cases@bindings RequiredKeyVals:lx@GEN', sub {
     my ($stomach, $kv) = @_;
     $stomach->bgroup;
     my $style = $kv->getValue('style') || T_CS('\textstyle');
     $style = T_CS($style) unless ref $style;
-    my @mode = (ToString($kv->getValue('conditionmode')) eq 'text'
-      ? (T_MATH) : ());
-    my $condtext = ToString($kv->getValue('conditionmode')) eq 'text';
+    my $condtext = (ToString($kv->getValue('conditionmode')) || 'math') !~ /math$/;
     alignmentBindings(LaTeXML::Core::Alignment::Template->new(
         columns => [
           { before => Tokens($style), after => Tokens(T_CS('\hfil')) },
