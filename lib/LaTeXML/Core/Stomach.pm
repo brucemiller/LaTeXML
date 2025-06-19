@@ -393,7 +393,6 @@ sub enterHorizontal {
   my($self) = @_;
   my $mode  = $STATE->lookupValue('MODE');
   if($mode =~ /vertical$/){
-##    $STATE->assignValue(MODE => 'horizontal', 'local'); }
     $STATE->assignValue(MODE => 'horizontal', 'inplace'); } # SAME frame as BOUND_MODE!
   elsif (($mode =~ /horizontal$/) || ($mode =~ /math$/)) { } # ignorable?
   else {
@@ -406,11 +405,11 @@ sub leaveHorizontal {
   my($self) = @_;
   my $mode  = $STATE->lookupValue('MODE');
   my $bound = $STATE->lookupValue('BOUND_MODE');
-  # This needs to be an invisible \par, but still allow user defined \par !
+  # This needs to be an invisible, and slightly gentler, \par (see \lx@normal@par)
+  # BUT still allow user defined \par !
   if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
-    my @par = $self->invokeToken(T_CS('\par'));
-    map { $_->setProperty(reversion=>Tokens()); } @par; # HACK to hide reversion!
-    push(@LaTeXML::LIST, @par); }
+    local $LaTeXML::INTERNAL_PAR = 1;
+    push(@LaTeXML::LIST, $self->invokeToken(T_CS('\par'))); }
   return; };
 
 sub beginMode {
