@@ -40,13 +40,15 @@ DefPrimitive('\lx@setup@algorithmic', sub {
 
 DefConstructor('\lx@algorithmic@beginlist{}{}', "<ltx:listing>",
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:p'); },
-  afterDigest     => sub { Let('\list', '\lx@algorithmic@beginlist@inner'); });    # NOT nested list!
+  afterDigest     => sub { Let('\list', '\lx@algorithmic@beginlist@inner');
+                       $_[0]->beginMode('internal_vertical'); });    # NOT nested list!
 
 DefConstructor('\lx@algorithmic@endlist', "</ltx:listing>",
+  beforeDigest=>sub { $_[0]->endMode('internal_vertical'); },
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
 
 DefConstructor('\lx@algorithmic@beginlist@inner{}{}', "",
-  afterDigest => sub { Let('\endlist', '\relax'); });                              # NOT nested list!
+  afterDigest => sub { Let('\endlist', '\relax'); });                # NOT nested list!
 
 DefMacro('\lx@algorithmic@item OptionalUndigested',
   '\lx@algorithmic@item@@ [#1]\hskip\ALC@tlm\relax');
