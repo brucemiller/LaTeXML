@@ -618,66 +618,94 @@ my %baseline_map = (
     11 => 13.6, 12 => 14, 14.4 => 18, 17 => 22, 20 => 25, 25 => 30);
 
 # Here's where I avoid trying to emulate Knuth's line-breaking...
-# Mostly for List & Whatsit: compute the size of a list of boxes.
+# Mostly for List & Whatsit: compute the size of a List of boxes.
+# the Boxes mode determines layout vertical, paragraph (horizontal) or simple horizontal
 # Options _SHOULD_ include:
 #   width:  if given, pretend to simulate line breaking to that width
 #   height,depth : ? ignored?
 #   vattach : top, bottom, middle (...?) affects how the height & depth are
 #      allocated when there are multiple lines.
-#   layout : horizontal or vertical !!!
 # Boxes that arent a Core Box, List, Whatsit or a string are IGNORED
 sub computeBoxesSize {
   my ($self, $boxes, %options) = @_;
   return computeStringSize($self,$boxes) unless ref $boxes;
-  my $font      = (ref $self ? $self : $STATE->lookupValue('font'));
-  my $size      = int($font->getSize || DEFSIZE() || 10);
-  my $fillwidth = $options{width} || $boxes->getProperty('width')
-      ||  $STATE->lookupDefinition(T_CS('\hsize'));
-  $fillwidth    = $fillwidth->valueOf if ref $fillwidth;    # Register or Dimension
-  $fillwidth    = $fillwidth->valueOf if ref $fillwidth;    # still Dimension (Register)
   my $mode      = $boxes->getProperty('mode') || 'restricted_horizontal';
-  my $layout    = $options{layout} || ($mode eq 'horizontal' ? 'paragraph'
+  my $layout    = ($mode eq 'horizontal' ? 'paragraph'
                 : ($mode =~ /vertical$/ ? 'vertical' : 'restricted_horizontal'));
-  my $vattach   = $options{vattach} || 'baseline';
-  my @words     = ();
-  my @lines     = ();
-  my ($wd, $ht, $dp)          = (0, 0, 0);
+  # $boxes's vattach & width override any passed as options
+  my $vattach   = $boxes->getProperty('vattach') || $options{vattach} || 'baseline';
+  my $wrapwidth = undef;
+  if ($layout eq 'paragraph') {
+    $wrapwidth = $boxes->getProperty('width') || $options{width}
+        ||  $STATE->lookupDefinition(T_CS('\hsize'));
+    $wrapwidth    = $wrapwidth->valueOf if ref $wrapwidth;    # Register or Dimension
+    $wrapwidth    = $wrapwidth->valueOf if ref $wrapwidth; }  # still Dimension (Register)
   no warnings 'recursion';
-  # Flatten top-level Lists (orrr pass-thru $fillwidth ???)
-  #  my @boxes = map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); } @$boxes;
   my @boxes = grep { !(ref $_) || !$_->getProperty('isEmpty') }
     grep { !(ref $_) || $_->can('getSize'); } $boxes->unlist;
+  # ----------------------------------------------------------------------
+  my @lines     = ();
+  if($layout eq 'vertical'){  # For vertical, ALL boxes are lines
+    foreach my $box (@boxes){
+      # In TeX, a horizontal (paragraph) list would have already been typeset into
+      # an internal_vertical list; inside a vertical list it should be subject to vattach
+      if((ref $box eq 'LaTeXML::Core::List')
+         && (($box->getProperty('mode')||'') eq 'horizontal')) {
+        my $width = $box->getProperty('width') || $wrapwidth;
+        $width = $width->valueOf if ref $width;
+        push(@lines, $self->computeBoxesSize_lines($width,
+          $self->computeBoxesSize_words($box->unlist))); }
+      else {
+        my ($w, $h, $d) = $self->computeBoxesSize_box($box);
+        push(@lines,[$w,$h,$d]) if $w || $h || $d; } } }
+  else {
+    # Scan all boxes, collecting into "words", then (possibly) break into lines.
+    my @words = $self->computeBoxesSize_words(@boxes);
+    @lines = $self->computeBoxesSize_lines($wrapwidth,@words); }
+  # ----------------------------------------------------------------------
+  # Now, stack up the multiple lines
+  my ($wd, $ht, $dp) = $self->computeBoxesSize_stack($vattach, @lines);
+
+  Debug("Size boxes " . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "\n"
+      . "  Boxes: " . ToString($boxes) . "\n"
+      . "  Boxes: " . Stringify($boxes) . "\n"
+      . "  Sizes: " . join("\n", map { _showsize(@$_); } @lines) . "\n"
+      . "  => " . _showsize($wd, $ht, $dp)) if $LaTeXML::DEBUG{'size-detailed'};
+  return (Dimension($wd), Dimension($ht), Dimension($dp)); }
+
+# Compute (w/guards) the size of a single box
+sub computeBoxesSize_box {
+  my ($self, $box)=@_;
+  my ($w, $h, $d) = (ref $box ? $box->getSize() : $self->computeStringSize($box));
+  if ((ref $w) && $w->can('_unit')) {
+    $w = ($w->_unit eq 'mu' ? $w->spValue : $w->valueOf); }
+  else {
+    Warn('expected', 'Dimension', undef,
+         "Width of " . Stringify($box) . " yielded a non-dimension: " . Stringify($w)); }
+  if ((ref $h) && $h->can('_unit')) {
+    $h = ($h->_unit eq 'mu' ? $h->spValue : $h->valueOf); }
+  else {
+    Warn('expected', 'Dimension', undef,
+         "Height of " . Stringify($box) . " yielded a non-dimension: " . Stringify($h)); }
+  if ((ref $d) && $d->can('_unit')) {
+    $d = ($d->_unit eq 'mu' ? $d->spValue : $d->valueOf); }
+  else {
+    Warn('expected', 'Dimension', undef,
+         "Depth of " . Stringify($box) . " yielded a non-dimension: " . Stringify($d)); }
+  return ($w, $h, $d); }
+
+# Compute a list of sizes of space-delimited "words" within a NON-vertical list.
+sub computeBoxesSize_words {
+  my ($self, @boxes)=@_;
+  my @words = ();
   my $prevbox;
   my $prevspace = 0;
-  # ----------------------------------------------------------------------
-  # Scan all boxes, collecting into "words"
-  while (@boxes) {
-    my $box = shift(@boxes);
-    next unless defined $box;
-    next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
-                                                  #    next if ref $box && $box->getProperty('isEmpty');
-
-    ## Should any %options be inherited by the contained boxes?
-    my ($w, $h, $d) = (ref $box ? $box->getSize() : $font->computeStringSize($box));
-    if ((ref $w) && $w->can('_unit')) {
-      $w = ($w->_unit eq 'mu' ? $w->spValue : $w->valueOf); }
-    else {
-      Warn('expected', 'Dimension', undef,
-        "Width of " . Stringify($box) . " yielded a non-dimension: " . Stringify($w)); }
-    if ((ref $h) && $h->can('_unit')) {
-      $h = ($h->_unit eq 'mu' ? $h->spValue : $h->valueOf); }
-    else {
-      Warn('expected', 'Dimension', undef,
-        "Height of " . Stringify($box) . " yielded a non-dimension: " . Stringify($h)); }
-    if ((ref $d) && $d->can('_unit')) {
-      $d = ($d->_unit eq 'mu' ? $d->spValue : $d->valueOf); }
-    else {
-      Warn('expected', 'Dimension', undef,
-        "Depth of " . Stringify($box) . " yielded a non-dimension: " . Stringify($d)); }
-    if($layout eq 'vertical'){  # For vertical, ALL boxes are lines
-      push(@lines,[$w,$h,$d]) if $w || $h || $d; }
+  my $size      = int($self->getSize || DEFSIZE() || 10);
+  my ($wd, $ht, $dp)          = (0, 0, 0);
+  foreach my $box (@boxes){
+    my ($w, $h, $d) = $self->computeBoxesSize_box($box);
     # Check for possible line-break points
-    elsif((ref $box) && $box->getProperty('isBreak')) {
+    if((ref $box) && $box->getProperty('isBreak')) {
       if($wd || $ht || $dp || ($prevspace > 0)){
         push(@words, [$prevspace,$wd,$ht,$dp]);
         $wd = $ht = $dp = 0; $prevspace = -1; }
@@ -707,29 +735,40 @@ sub computeBoxesSize {
     $prevbox = $box; }
   if ($wd || $ht || $dp || $prevspace) {    # be sure to get last bit
     push(@words, [$prevspace,$wd, $ht, $dp]); }
-  # ----------------------------------------------------------------------
-  # Break up the words into lines
-  if($layout ne 'vertical'){
-    $wd = $ht = $dp = 0;
-    foreach my $item (@words){
-      my($space,$w,$h,$d)=@$item;
-      if($space == -1){
-        push(@lines,[$wd,$ht,$dp]);
-        $wd = $w; $ht = $h; $dp = $d; }
-      elsif(($layout eq 'paragraph') && (defined $fillwidth) && ($wd + $space*0.5 + $w > $fillwidth)) {
-        push(@lines,[$wd,$ht,$dp]);
-        $wd = $w; $ht = $h; $dp = $d; }
-      else {
-        $wd += $space + $w;
-        $ht = max($ht,$h);
-        $dp = max($dp,$d); } }
-    push(@lines,[$wd,$ht,$dp]) if $wd || $ht || $dp; }
-  # ----------------------------------------------------------------------
-  # Now, stack up the multiple lines
-  if (scalar(@lines) == 0) {
+  return @words; }
+
+# do line breaking of words into lines, according to $wrapwidth (if), or explicit breaks.
+sub computeBoxesSize_lines {
+  my ($self, $wrapwidth, @words)=@_;
+  my @lines = ();
+  my ($wd, $ht, $dp) = (0, 0, 0);
+  foreach my $item (@words){
+    my($space, $w, $h, $d) = @$item;
+    if($space == -1){
+      push(@lines, [$wd, $ht, $dp]) if $wd;
+      $wd = $w; $ht = $h; $dp = $d; }
+    elsif((defined $wrapwidth) && ($wd + $space*0.5 + $w > $wrapwidth)) {
+      push(@lines, [$wrapwidth || $wd, $ht, $dp]) if $wd;
+      $wd = $w; $ht = $h; $dp = $d; }
+    else {
+      $wd += $space + $w;
+      $ht = max($ht,$h);
+      $dp = max($dp,$d); } }
+  push(@lines,[$wrapwidth || $wd,$ht,$dp]) if $wd || $ht || $dp;
+  return @lines; }
+
+# Sum up a stack of lines, determining w as max, and h & d according to $vattach.
+sub computeBoxesSize_stack {
+  my ($self, $vattach, @lines)=@_;
+  my ($wd, $ht, $dp) = (0, 0, 0);
+  my $nlines = scalar(@lines);
+  if ($nlines == 0) {
     $wd = $ht = $dp = 0; }
+  elsif($nlines == 1) {
+    ($wd, $ht, $dp) = @{$lines[0]}; }
   else {
     # baseline adjustment
+    my $size     = int($self->getSize || DEFSIZE() || 10);
     my $baseline = fixpoint($baseline_map{$size} || $size*1.2);
     my $lineskip = $STATE->lookupDefinition(T_CS('\lineskip'))->valueOf->valueOf;
     my @l=@lines;
@@ -751,14 +790,9 @@ sub computeBoxesSize {
       $ht = $ht + $dp; $dp = $lines[-1][2]; $ht -= $dp; }
     else {                      # else align to baseline of top row
       $dp = $ht + $dp; $ht = $lines[0][1]; $dp -= $ht; } }
+  return ($wd, $ht, $dp); }
 
-  Debug("Size boxes " . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "\n"
-      . "  Boxes: " . ToString($boxes) . "\n"
-      . "  Boxes: " . Stringify($boxes) . "\n"
-      . "  Sizes: " . join("\n", map { _showsize(@$_); } @lines) . "\n"
-      . "  => " . _showsize($wd, $ht, $dp)) if $LaTeXML::DEBUG{'size-detailed'};
-  return (Dimension($wd), Dimension($ht), Dimension($dp)); }
-
+#======================================================================
 # Probably a clumsy way of dealing with math spacing...
 # 0=Ord, 1=Op, 2=Bin, 3=Rel, 4=Open, 5=Close, 6=Punct, 7=Inner
 my %mathatomtype = (ID => 0,
