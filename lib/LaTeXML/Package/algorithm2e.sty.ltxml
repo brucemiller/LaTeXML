@@ -69,7 +69,7 @@ for my $env (qw(algorithm2e algorithm algorithm*)) {
       . "#body"
       . "</ltx:listingline>"
       . "</ltx:listing></ltx:float>",
-    properties   => { layout => 'vertical' },
+    mode         => 'internal_vertical',
     beforeDigest => sub {
       DigestIf(T_CS('\@ResetCounterIfNeeded'));
       DigestIf(T_CS('\algocf@linesnumbered'));

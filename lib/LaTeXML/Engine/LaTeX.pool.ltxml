@@ -1134,8 +1134,8 @@ DefMacro('\@startcolumn',  '');
 # Style parameters from Fig. C.3, p.182
 DefRegister('\paperheight'     => Dimension('11in'));
 DefRegister('\paperwidth'      => Dimension('8.5in'));
-DefRegister('\textheight'      => Dimension('7in'));
-DefRegister('\textwidth'       => Dimension('6in'));
+DefRegister('\textheight'      => Dimension('550pt'));
+DefRegister('\textwidth'       => Dimension('345pt'));
 DefRegister('\topmargin'       => Dimension(0));
 DefRegister('\headheight'      => Dimension(0));
 DefRegister('\headsep'         => Dimension(0));
@@ -3308,14 +3308,14 @@ DefEnvironmentI('@float', '[]{}',
   "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
     . "#body"
     . "</ltx:float>",
-  properties        => { layout => 'vertical' },
+  mode              => 'internal_vertical',
   beforeDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(2))); },
   afterDigest       => sub { afterFloat($_[1]); });
 DefEnvironmentI('@dblfloat', '[]{}',
   "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
     . "#body"
     . "</ltx:float>",
-  properties        => { layout => 'vertical' },
+  mode              => 'internal_vertical',
   beforeDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(2)), double => 1); },
   afterDigest       => sub { afterFloat($_[1]); });
 
@@ -3511,9 +3511,10 @@ Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
-DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>", sizer => 0);
+DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>",
+  sizer => 0, mode => 'restricted_horizontal', leaveHorizontal => 1);
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
-  sizer => 0);
+  sizer => 0, mode => 'restricted_horizontal', leaveHorizontal => 1);
 
 sub beforeFloat {
   my ($type, %options) = @_;
@@ -3541,7 +3542,7 @@ DefEnvironment('{figure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('figure'); },
   afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
@@ -3551,7 +3552,7 @@ DefEnvironment('{figure*}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('figure', double => 1); },
   afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
@@ -3560,7 +3561,7 @@ DefEnvironment('{table}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('table'); },
   afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
@@ -3569,7 +3570,7 @@ DefEnvironment('{table*}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('table', double => 1); },
   afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
@@ -3582,7 +3583,7 @@ DefEnvironment('{table*}[]',
 sub collapseFloat {
   my ($document, $float) = @_;
   my $qname  = $document->getNodeQName($float);
-  my @inners = $document->findnodes($qname, $float);
+  my @inners = $document->findnodes('ltx:float|ltx:figure|ltx:table', $float);
   if (scalar(@inners) == 1) {    # Only 1 inner float of same type
     my $inner    = $inners[0];
     my $ocaption = $document->findnodes('ltx:caption', $float);
@@ -4933,7 +4934,7 @@ Let('\lx@parboxnewline', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring inner-pos, for now, though.
 DefMacro('\parbox[] [] [] {Dimension}{}',
-  '\bgroup\hsize=#4\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\egroup');
+  '\bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\egroup');
 
 DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
@@ -4947,7 +4948,7 @@ DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxConte
     (width => $_[4],
       vattach => translateAttachment($_[1]),
       height  => $_[2]); },
-  mode         => 'text', bounded => 1,
+  mode         => 'internal_vertical',
   robust       => 1,
   beforeDigest => sub {
     reenterTextMode(1);    # actually vertical mode!
@@ -4965,16 +4966,23 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
       class   => 'ltx_minipage');
     return; },
   sizer      => '#body',
-  mode       => 'text',
-  properties => sub { (
-      width   => $_[4],
-      vattach => translateAttachment($_[1])); },
+  mode       => 'internal_vertical',
   beforeDigest => sub {
     reenterTextMode(1);    # actually vertical mode!
-    Digest(T_CS('\@minipagetrue'));
-    AssignRegister('\hsize' => $_[4]);
-    Let('\\\\', '\lx@newline');
-  });
+    Digest(T_CS('\@minipagetrue')); },
+  afterDigestBegin => sub {
+    my($stomach, $whatsit) = @_;
+    my $vattach = translateAttachment($whatsit->getArg(1));
+    my $width   = $whatsit->getArg(4);
+    AssignRegister('\hsize'       => $width);
+    AssignRegister('\textwidth'   => $width);
+    AssignRegister('\columnwidth' => $width);
+    $whatsit->setProperties(width => $width, vattach => $vattach);
+    Let('\\\\', '\lx@newline'); },
+  afterDigestBody => sub {
+    my($stomach,$whatsit)=@_;
+    $whatsit->getBody->setProperty(vattach=>$whatsit->getProperty('vattach')); },
+);
 
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}',
   "<ltx:rule ?#offset(yoffset='#offset') width='#width' height='#height'/>",
@@ -6121,7 +6129,8 @@ RawTeX(<<'EOTeX');
 \newif\if@reversemargin \@reversemarginfalse
 \newif\if@mparswitch    \@mparswitchfalse
 \newif\if@firstamp      \@firstampfalse
-\newcount\col@number    \@ne
+\newcount\col@number
+\col@number \@ne
 \newread\@inputcheck
 \newwrite\@unused
 \newwrite\@mainaux

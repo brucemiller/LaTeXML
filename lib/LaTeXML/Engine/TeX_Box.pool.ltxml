@@ -483,7 +483,8 @@ sub insertBlock {
   }
   return @nodes; }
 
-sub hackHAlignAttachment {
+# Make sure the vbox/vtop attachment propogates to arg, when \halign or paragraph.
+sub hackVBoxAttachment {
   my ($box, $valign) = @_;
   # APPARENTLY \halign in TeX is processed into a internal_vertical list
   # which can get the valign adjustment. So we need to copy it over to the Alignment
@@ -493,6 +494,8 @@ sub hackHAlignAttachment {
     if($def && ($def->getCSName eq '\halign')){
       if(my $attr = $alignment->getProperty('attributes')){
         $$attr{vattach} = $valign; } } }
+  else {
+    $box->setProperty(vattach => $valign); }
   return; }
 
 DefConstructor('\vbox BoxSpecification VBoxContents', sub {
@@ -502,13 +505,13 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
                  ? $document->absorb($contents)
                  : insertBlock($document, $contents, vattach => 'bottom')); },
   sizer       => '#2',
-  properties  => { layout => 'vertical', vattach => 'bottom' },
+  properties  => { vattach => 'bottom' },
   mode        => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
-    hackHAlignAttachment($box, 'bottom');
+    hackVBoxAttachment($box, 'bottom');
     if (my $h = GetKeyVal($spec, 'to')) {
       $whatsit->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
@@ -524,13 +527,13 @@ DefConstructor('\vtop BoxSpecification VBoxContents', sub {
                  ? $document->absorb($contents)
                  : insertBlock($document, $contents, vattach => 'top')); },
   sizer       => '#2',
-  properties  => { layout => 'vertical', vattach => 'top' },
+  properties  => { vattach => 'top' },
   mode        => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
-    hackHAlignAttachment($box, 'top');
+    hackVBoxAttachment($box, 'top');
     if (my $h = GetKeyVal($spec, 'to')) {
       $whatsit->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {

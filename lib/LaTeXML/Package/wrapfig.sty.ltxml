@@ -23,6 +23,7 @@ DefEnvironment('{wrapfigure} [Number] {} [Dimension] {Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
+  mode => 'internal_vertical',
   afterDigestBegin => sub {
     my $dir = ToString($_[1]->getArg(2));
     $_[1]->setProperty(float => ($dir eq 'r' ? 'right'
@@ -36,6 +37,7 @@ DefEnvironment('{wraptable} [Number] {} [Dimension] {Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:table>",
+  mode => 'internal_vertical',
   afterDigestBegin => sub {
     my $dir = ToString($_[1]->getArg(2));
     $_[1]->setProperty(float => ($dir eq 'r' ? 'right'
