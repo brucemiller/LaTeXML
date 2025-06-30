@@ -1685,7 +1685,8 @@ sub appendNodeBox {
     elsif (($box eq $origbox) || ($box eq ($origbox->unlist)[-1])) {
       }                         # Already there
     else {
-      setNodeBox($self, $node, List($origbox, $box)); }
+      setNodeBox($self, $node, List($origbox, $box,
+        mode => $origbox->getProperty('mode'))); }
     $node = $node->parentNode;
   } while($node && ($node->nodeType == XML_ELEMENT_NODE)
         && $node->getAttribute('_autoopened'));
@@ -1706,7 +1707,8 @@ sub removeNodeBox {
       my @b = $origbox->unlist;
       # Note that this does NOT see (or remove) boxes embedded within a parent's Whatsit
       if (grep { $_ eq $box; } @b) {
-        setNodeBox($self,$node, List(grep { $_ ne $box; } @b)); } }
+        setNodeBox($self,$node, List((grep { $_ ne $box; } @b),
+          mode => $origbox->getProperty('mode'))); } }
     $node = $node->parentNode;
   } while($node && ($node->nodeType == XML_ELEMENT_NODE)
         && $node->getAttribute('_autoopened'));
