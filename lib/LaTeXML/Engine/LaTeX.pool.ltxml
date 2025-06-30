@@ -3518,7 +3518,6 @@ DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
 
 sub beforeFloat {
   my ($type, %options) = @_;
-  #Debug("FLOAT begin $type". join(',',map { $_."=".ToString($options{$_}); } sort keys %options));
   DefMacroI('\@captype', undef, $type);
   AssignRegister('\hsize' => LookupDimension($options{double} ? '\textwidth' : '\columnwidth'));
   if (my $main = $options{preincrement}) {
@@ -4934,7 +4933,7 @@ Let('\lx@parboxnewline', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring inner-pos, for now, though.
 DefMacro('\parbox[] [] [] {Dimension}{}',
-  '\bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\egroup');
+  '\lx@hidden@bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\lx@hidden@egroup');
 
 DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
@@ -4943,6 +4942,7 @@ DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxConte
       vattach => $props{vattach},
       class   => 'ltx_parbox');
     return; },
+  alias      => '\parbox',
   sizer      => '#5',
   properties => sub {
     (width => $_[4],
