@@ -62,7 +62,8 @@ DefEnvironment('{subfigure}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => sub { (layout => 'vertical', width => $_[2]); },
+  mode         => 'internal_vertical',
+  properties   => sub { (width => $_[2]); },
   beforeDigest => sub { beforeFloat('subfigure', preincrement => 'figure'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -71,7 +72,8 @@ DefEnvironment('{subfigure*}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => sub { (layout => 'vertical', width => $_[2]); },
+  mode         => 'internal_vertical',
+  properties   => sub { (width => $_[2]); },
   beforeDigest => sub { beforeFloat('subfigure', double => 1, preincrement => 'figure'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -80,7 +82,8 @@ DefEnvironment('{subtable}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => sub { (layout => 'vertical', width => $_[2]); },
+  mode         => 'internal_vertical',
+  properties   => sub { (width => $_[2]); },
   beforeDigest => sub { beforeFloat('subtable', preincrement => 'table'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -89,7 +92,8 @@ DefEnvironment('{subtable*}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => sub { (layout => 'vertical', width => $_[2]); },
+  mode         => 'internal_vertical',
+  properties   => sub { (width => $_[2]); },
   beforeDigest => sub { beforeFloat('subtable', double => 1, preincrement => 'table'); },
   afterDigest  => sub { afterFloat($_[1]); });
 

@@ -153,7 +153,7 @@ DefEnvironment('{@subfigure}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  mode         => 'restricted_horizontal',
   beforeDigest => sub { beforeFloat('subfigure'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -174,7 +174,7 @@ DefEnvironment('{@subtable}',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  mode         => 'restricted_horizontal',
   beforeDigest => sub { beforeFloat('subtable'); },
   afterDigest  => sub { afterFloat($_[1]); });
 

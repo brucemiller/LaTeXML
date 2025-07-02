@@ -54,7 +54,7 @@ DefPrimitive('\newsubfloat[]{}', sub {
         . "#tags"
         . "#body"
         . "</$type>",
-      properties   => { layout => 'vertical' },
+      mode         => 'internal_vertical',
       beforeDigest => sub { beforeFloat('sub' . $name); },
       afterDigest  => sub {
         afterFloat($_[1]);

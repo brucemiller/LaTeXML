@@ -237,7 +237,7 @@ DefConstructor('\@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('lstlisting'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -248,15 +248,16 @@ DefConstructor('\@@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
+  mode           => 'internal_vertical',
   properties => sub {
     my %props = RefStepID('lstlisting');
-    $props{layout} = 'vertical';
     return %props; },
   beforeDigest => sub { beforeFloat('lstlisting'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
 DefConstructor('\@@listings@block {} {} {}',
 "<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding' dataname='#3'>#2</ltx:listing>",
+  mode        => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # Could have some options about encoding?
@@ -266,7 +267,7 @@ DefConstructor('\@@listings@block {} {} {}',
       $listings_data = encode('UTF-8', $listings_data);
     }
     my $data = encode_base64($listings_data, '');    # NO linebreaking!
-    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64', layout => 'vertical'); });
+    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64'); });
 
 DefMacro('\lst@HRefStepCounter{}', '');
 

@@ -115,12 +115,14 @@ DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox'; });
 # \ifmmode          c  is true if TeX is in math or display math mode.
 # \ifvmode          c  is true if TeX is in vertical or internal vertical mode.
 
-# NOTE: We don't KNOW if we're in vertical, horizontal or inner mode!!!!!!!
-DefConditionalI('\ifvmode', undef, sub { 0; });
-DefConditionalI('\ifhmode', undef, sub { 0; });
-DefConditionalI('\ifinner', undef, sub { 0; });
-
-DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
+DefConditionalI('\ifvmode', undef, sub {
+  LookupValue('MODE') =~ /vertical$/; });
+DefConditionalI('\ifhmode', undef, sub {
+  LookupValue('MODE') =~ /horizontal$/; });
+DefConditionalI('\ifinner', undef, sub {
+  LookupValue('MODE') =~ /^(?:restricted_horizontal|internal_vertical|inline_math)$/; });
+DefConditionalI('\ifmmode', undef, sub {
+  LookupValue('MODE') =~ /math$/; });
 
 #======================================================================
 # I/O testing

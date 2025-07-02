@@ -466,7 +466,7 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
         $document->insertElement('ltx:text', $description); }
       $document->closeElement('ltx:declare');
       $document->setNode($save); } },
-  mode         => 'text',
+  mode         => 'restricted_horizontal',
   beforeDigest => sub { reenterTextMode(); neutralizeFont(); },
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
     my ($star, $kv, $pattern) = $whatsit->getArgs;

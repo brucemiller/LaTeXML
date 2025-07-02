@@ -25,12 +25,15 @@ use LaTeXML::Util::Unicode;
 # \char           c  provides access to one of the 256 characters in a font.
 #----------------------------------------------------------------------
 DefPrimitiveI('\ ', undef, sub {
-    Box(UTF(0xA0), undef, undef, T_CS('\ '),
-      name => 'space', isSpace => 1, width => Dimension('0.5em')); });
+  $_[0]->enterHorizontal;
+  Box(UTF(0xA0), undef, undef, T_CS('\ '),
+    name => 'space', isSpace => 1, width => Dimension('0.5em')); });
 
 DefPrimitive('\char Number', sub {
-    my ($glyph, $adjfont) = FontDecode($_[1]->valueOf);
-    Box($glyph, $adjfont, undef, Tokens(T_CS('\char'), $_[1]->revert, T_CS('\relax'))); });
+  my ($stomach, $code) = @_;
+  my ($glyph, $adjfont) = FontDecode($code->valueOf);
+  $stomach->enterHorizontal;
+  Box($glyph, $adjfont, undef, Tokens(T_CS('\char'), $code->revert, T_CS('\relax'))); });
 
 #======================================================================
 # \accent         c  places an accent on a character.
@@ -128,6 +131,7 @@ DefPrimitive('\accent Number', sub {
     elsif ($token->equals(T_CS('\noboundary'))) { }    # Treat as empty
     else {
       $gullet->unread($token); }                       # No appropriate <character> ? Treat as empty
+    $stomach->enterHorizontal;
     my $result;
     if (my $entry = unicode_accent($glyph)) {
       $result = applyAccent($stomach, $letter, $$entry{combiner}, $$entry{standalone},
@@ -143,12 +147,12 @@ DefPrimitive('\accent Number', sub {
 # Almost like a register (and \countdef), but different...
 # (including the preassignment to \relax!)
 DefPrimitive('\chardef Token SkipSpaces SkipMatch:=', sub {
-    my ($stomach, $newcs) = @_;
-    $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
-    my $value = $stomach->getGullet->readNumber();
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, 'text', $value));
-    AfterAssignment();
-    return; });
+  my ($stomach, $newcs) = @_;
+  $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
+  my $value = $stomach->getGullet->readNumber();
+  $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, 'restricted_horizontal', $value));
+  AfterAssignment();
+  return; });
 
 #======================================================================
 # Upper/Lowercase
