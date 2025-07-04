@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{ntheorem}
+
+\renewtheoremstyle{break}%
+{\item[\hskip\labelsep ##1\ HELLO  ##2]\normalfont}%
+{\item[\hskip\labelsep ##1\ ##2]{(##3)}\newline\normalfont}
+
+\newtheoremstyle{plain1}%
+{\item[\hskip\labelsep ##1\ HELLO  ##2]\normalfont}%
+{\item[\hskip\labelsep ##1\ ##2]{(##3)}\newline\normalfont}
+
+\theoremstyle{break}
+\newtheorem{theorem}{Theorem}
+\theoremstyle{plain1}
+\newtheorem{remark}{Remark}
+
+\begin{document}
+\begin{theorem}
+  This is a theorem.
+\end{theorem}
+\begin{remark}
+  This is a theorem.
+\end{remark}
+\end{document}
