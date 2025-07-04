@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="ntheorem"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <theorem class="ltx_theorem_theorem" inlist="thm theorem:theorem" xml:id="Thmtheorem1">
+    <tags>
+      <tag>Theorem 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Theorem 1</tag>
+    </tags>
+    <title class="ltx_runin"><tag><text font="bold">Theorem 1</text></tag><text font="bold">.</text></title>
+    <para xml:id="Thmtheorem1.p1">
+      <p><text font="italic">This is a theorem.
+<text class="ltx_align_floatright"/></text></p>
+    </para>
+  </theorem>
+  <theorem class="ltx_theorem_remark" inlist="thm theorem:remark" xml:id="Thmremark1">
+    <tags>
+      <tag>Remark 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Remark 1</tag>
+    </tags>
+    <title class="ltx_runin"><tag><text font="bold">Remark 1</text></tag><text font="bold">.</text></title>
+    <para xml:id="Thmremark1.p1">
+      <p><text font="italic">This is a theorem.
+<text class="ltx_align_floatright"/></text></p>
+    </para>
+  </theorem>
+</document>
