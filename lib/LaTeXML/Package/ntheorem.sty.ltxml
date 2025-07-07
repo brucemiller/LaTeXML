@@ -168,6 +168,40 @@ DefMacro('\Theoremname', '\lx@thistheorem');
 Let('\renewtheorem', '\newtheorem');
 
 #======================================================================
+# Basic support for ntheorem's style commands.  These commands record
+# the current theorem layout parameters under the given style name so
+# that \theoremstyle{<name>} can restore them later.  The detailed
+# formatting of the arguments is not yet implemented, but documents can
+# freely define and use new styles without triggering errors.
+
+DefPrimitive('\newtheoremstyle{}{}{}', sub {
+    my ($stomach, $name, $noopt, $opt) = @_;
+    my $style = ToString($name);
+    my %savable = %{ LookupValue('SAVABLE_THEOREM_PARAMETERS') };
+    my %saved   = ();
+    foreach my $key (keys %savable) {
+      $saved{$key} = ($key =~ /^\\/
+        ? LookupRegister($key) : LookupValue($key)); }
+    saveTheoremStyle($style, %saved);
+    DefMacroI(T_CS('\th@' . $style), undef, sub { useTheoremStyle($style); });
+    return; });
+
+DefPrimitive('\renewtheoremstyle{}{}{}', sub {
+    my ($stomach, $name, $noopt, $opt) = @_;
+    my $style = ToString($name);
+    if (!LookupValue('THEOREM_' . $style . '_PARAMETERS')) {
+      Warn('unexpected', 'ntheorem', $stomach,
+        "Theorem style $style undefined; creating new style"); }
+    my %savable = %{ LookupValue('SAVABLE_THEOREM_PARAMETERS') };
+    my %saved   = ();
+    foreach my $key (keys %savable) {
+      $saved{$key} = ($key =~ /^\\/
+        ? LookupRegister($key) : LookupValue($key)); }
+    saveTheoremStyle($style, %saved);
+    DefMacroI(T_CS('\th@' . $style), undef, sub { useTheoremStyle($style); });
+    return; });
+
+#======================================================================
 # do something about recording & adding frame
 # This needs to tie into framed.sty!!!!
 # Really should execute \theoremframecommand in isolation,
