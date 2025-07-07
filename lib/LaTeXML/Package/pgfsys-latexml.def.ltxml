@@ -423,15 +423,15 @@ DefMacro('\pgfsys@eorulefalse',
   '\lxSVG@eorulefalse\lxSVG@begingroup{fill-rule=nonzero}');
 
 # Constructors just for reversion
-DefConstructor('\lxSVG@setlinewidth{}',  '', alias => '\pgfsys@setlinewidth',  sizer => 0);
+DefConstructor('\lxSVG@setlinewidth Undigested',  '', alias => '\pgfsys@setlinewidth',  sizer => 0);
 DefConstructor('\lxSVG@buttcap',         '', alias => '\pgfsys@buttcap',       sizer => 0);
 DefConstructor('\lxSVG@roundcap',        '', alias => '\pgfsys@roundcap',      sizer => 0);
 DefConstructor('\lxSVG@rectcap',         '', alias => '\pgfsys@rectcap',       sizer => 0);
 DefConstructor('\lxSVG@miterjoin',       '', alias => '\pgfsys@miterjoin',     sizer => 0);
-DefConstructor('\lxSVG@setmiterlimit{}', '', alias => '\pgfsys@setmiterlimit', sizer => 0);
+DefConstructor('\lxSVG@setmiterlimit Undigested', '', alias => '\pgfsys@setmiterlimit', sizer => 0);
 DefConstructor('\lxSVG@roundjoin',       '', alias => '\pgfsys@roundjoin',     sizer => 0);
 DefConstructor('\lxSVG@beveljoin',       '', alias => '\pgfsys@beveljoin',     sizer => 0);
-DefConstructor('\lxSVG@setdash{}{}',     '', alias => '\pgfsys@setdash',       sizer => 0);
+DefConstructor('\lxSVG@setdash Undigested Undigested',     '', alias => '\pgfsys@setdash',       sizer => 0);
 DefConstructor('\lxSVG@eoruletrue',      '', alias => '\pgfsys@eoruletrue',    sizer => 0);
 DefConstructor('\lxSVG@eorulefalse',     '', alias => '\pgfsys@eorulefalse',   sizer => 0);
 
@@ -469,14 +469,14 @@ DefMacro('\pgfsys@color@gray@stroke{}',
 DefMacro('\pgfsys@color@gray@fill{}',
   '\lxSVG@color@gray@fill{#1}\lxSVG@begingroup{fill=\lxSVG@GRAY{#1}}');
 
-DefConstructor('\lxSVG@color@rgb@stroke{}{}{}', '', alias => '\pgfsys@color@rgb@stroke', sizer => 0);
-DefConstructor('\lxSVG@color@rgb@fill{}{}{}',   '', alias => '\pgfsys@color@rgb@fill', sizer => 0);
-DefConstructor('\lxSVG@color@cmyk@stroke{}{}{}{}', '', alias => '\pgfsys@color@cmyk@stroke', sizer => 0);
-DefConstructor('\lxSVG@color@cmyk@fill{}{}{}{}', '', alias => '\pgfsys@color@cmyk@fill', sizer => 0);
-DefConstructor('\lxSVG@color@cmy@stroke{}{}{}', '', alias => '\pgfsys@color@cmy@stroke', sizer => 0);
-DefConstructor('\lxSVG@color@cmy@fill{}{}{}', '', alias => '\pgfsys@color@cmy@fill',    sizer => 0);
-DefConstructor('\lxSVG@color@gray@stroke{}',  '', alias => '\pgfsys@color@gray@stroke', sizer => 0);
-DefConstructor('\lxSVG@color@gray@fill{}',    '', alias => '\pgfsys@color@gray@fill',   sizer => 0);
+DefConstructor('\lxSVG@color@rgb@stroke Undigested Undigested Undigested', '', alias => '\pgfsys@color@rgb@stroke', sizer => 0);
+DefConstructor('\lxSVG@color@rgb@fill Undigested Undigested Undigested',   '', alias => '\pgfsys@color@rgb@fill', sizer => 0);
+DefConstructor('\lxSVG@color@cmyk@stroke Undigested Undigested Undigested Undigested', '', alias => '\pgfsys@color@cmyk@stroke', sizer => 0);
+DefConstructor('\lxSVG@color@cmyk@fill Undigested Undigested Undigested Undigested', '', alias => '\pgfsys@color@cmyk@fill', sizer => 0);
+DefConstructor('\lxSVG@color@cmy@stroke Undigested Undigested Undigested', '', alias => '\pgfsys@color@cmy@stroke', sizer => 0);
+DefConstructor('\lxSVG@color@cmy@fill Undigested Undigested Undigested', '', alias => '\pgfsys@color@cmy@fill',    sizer => 0);
+DefConstructor('\lxSVG@color@gray@stroke Undigested',  '', alias => '\pgfsys@color@gray@stroke', sizer => 0);
+DefConstructor('\lxSVG@color@gray@fill Undigested',    '', alias => '\pgfsys@color@gray@fill',   sizer => 0);
 
 #====================================================================#
 #= 7. Pattern =======================================================#
@@ -812,11 +812,11 @@ DefMacro('\pgfsys@definemask',
   '\lxSVG@definemask');                               # NOT IMPLEMENTED
 
 # For reversion
-DefConstructor('\lxSVG@stroke@opacity{}',        '', alias => '\pgfsys@stroke@opacity', sizer => 0);
-DefConstructor('\lxSVG@fill@opacity{}',          '', alias => '\pgfsys@fill@opacity',   sizer => 0);
-DefConstructor('\lxSVG@fadingfrombox{}{Number}', '', alias => '\pgfsys@fadingfrombox',  sizer => 0);
-DefConstructor('\lxSVG@usefading{}{}{}{}{}{}{}', '', alias => '\pgfsys@usefading',      sizer => 0);
-DefConstructor('\lxSVG@transparencygroupfrombox{Number}', '', alias => '\pgfsys@transparencygroupfrombox{}', sizer => 0);
+DefConstructor('\lxSVG@stroke@opacity Undigested',        '', alias => '\pgfsys@stroke@opacity', sizer => 0);
+DefConstructor('\lxSVG@fill@opacity Undigested',          '', alias => '\pgfsys@fill@opacity',   sizer => 0);
+DefConstructor('\lxSVG@fadingfrombox Undigested{Number}', '', alias => '\pgfsys@fadingfrombox',  sizer => 0);
+DefConstructor('\lxSVG@usefading Undigested Undigested Undigested Undigested Undigested Undigested Undigested', '', alias => '\pgfsys@usefading',      sizer => 0);
+DefConstructor('\lxSVG@transparencygroupfrombox{Number}', '', alias => '\pgfsys@transparencygroupfrombox Undigested', sizer => 0);
 DefConstructor('\lxSVG@definemask', '', alias => '\pgfsys@definemask', sizer => 0);
 
 #=====================================================================#
