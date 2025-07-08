@@ -391,7 +391,13 @@ sub Let {
 
 sub Digest {
   my (@stuff) = @_;
-  return $STATE->getStomach->digest(Tokens(map { (ref $_ ? $_ : TokenizeInternal($_)) } @stuff)); }
+  my $mode    = $STATE->lookupValue('MODE');
+  my $stomach = $STATE->getStomach;
+  my $value   = $stomach->digest(Tokens(map { (ref $_ ? $_ : TokenizeInternal($_)) } @stuff));
+
+  my $nmode   = $STATE->lookupValue('MODE');
+  $stomach->leaveHorizontal_internal if ($mode ne $nmode) && ($nmode eq 'horizontal');
+  return $value; }
 
 sub DigestText {
   my (@stuff) = @_;
@@ -966,6 +972,7 @@ sub RawTeX {
   # It could be as simple as this, except if catcodes get changed, it's too late!!!
   #  Digest(TokenizeInternal($text));
   my $stomach = $STATE->getStomach;
+  my $mode    = $STATE->lookupValue('MODE');
   my $savedcc = $STATE->lookupCatcode('@');
   $STATE->assignCatcode('@' => CC_LETTER);
 
@@ -978,6 +985,7 @@ sub RawTeX {
         $stomach->invokeToken($token); } });
 
   $STATE->assignCatcode('@' => $savedcc);
+  $stomach->leaveHorizontal_internal;
   return; }
 
 sub StartSemiverbatim {
@@ -2318,6 +2326,7 @@ my $loadtexdefinitions_options = { fordefinitions => 1, at_letter => 1, notes =>
 
 sub loadTeXDefinitions {
   my ($request, $pathname, %options) = @_;
+  $STATE->getStomach->leaveHorizontal_internal;
   # FILTER, not check options!
   my %mouth_options = map { ($_ => (exists $options{$_} ? $options{$_} : 1)) }
     keys %$loadtexdefinitions_options;
@@ -2531,6 +2540,7 @@ sub InputDefinitions {
   $name =~ s/^\s*//; $name =~ s/\s*$//;
   CheckOptions("InputDefinitions ($name)", $inputdefinitions_options, %options);
 
+  my $mode = $STATE->lookupValue('MODE');
   my $prevname = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Expand(T_CS('\@currname')));
   my $prevext = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currext')) && ToString(Expand(T_CS('\@currext')));
 
@@ -2619,6 +2629,8 @@ sub InputDefinitions {
       DefMacroI('\@currext',  undef, Tokens(Explode($prevext)))  if $prevext;
       Digest(T_CS('\@popfilename')) if $pushpop;
       resetOptions(); }    # And reset options afterwards, too.
+    # Should not end up in horizontal mode (unless initially were!)
+    $STATE->getStomach->leaveHorizontal_internal if $mode ne 'horizontal';
     return $file; }
   elsif (!$options{noerror}) {
     $STATE->noteStatus(missing => $name . ($options{type} ? '.' . $options{type} : ''));
