@@ -111,13 +111,7 @@ DefConstructorI('\lx@normal@par', undef, sub {
     my $bound = $STATE->lookupValue('BOUND_MODE');
     # combine any digested horizontal material into a horizontal List
     if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
-      my @para = ();
-      while(@LaTeXML::LIST
-         && (($LaTeXML::LIST[-1]->getProperty('mode')||'horizontal')
-             =~ /^(?:horizontal|restricted_horizontal|inline_math)$/)) {
-        unshift(@para,pop(@LaTeXML::LIST)); }
-      my $keep = grep { !$_->getProperty('isSpace'); } @para;
-      push(@LaTeXML::LIST, List(@para, mode=>'horizontal')) if $keep;
+      $stomach->repackHorizontal;
       $STATE->assignValue(MODE => $bound, 'inplace'); }
   return; },
   afterDigest => sub {

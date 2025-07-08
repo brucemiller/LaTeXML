@@ -400,7 +400,7 @@ sub enterHorizontal {
       "Cannot switch to horizontal mode from $mode"); }
   return; }
 
-# Resume vertical mode, if in horizontal mode, by executing \par
+# Resume vertical mode, if in horizontal mode, by executing \par, in TeX-like fashion.
 sub leaveHorizontal {
   my($self) = @_;
   my $mode  = $STATE->lookupValue('MODE');
@@ -410,7 +410,34 @@ sub leaveHorizontal {
   if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
     local $LaTeXML::INTERNAL_PAR = 1;
     push(@LaTeXML::LIST, $self->invokeToken(T_CS('\par'))); }
-  return; };
+  return; }
+
+# Repack recently digested horizontal items into single horizontal List.
+# Note that TeX would have done paragraph line-breaking, resulting in essentially
+# a vertical list.
+sub repackHorizontal {
+  my($self)=@_;
+  my @para = ();
+  while(@LaTeXML::LIST
+        && (($LaTeXML::LIST[-1]->getProperty('mode')||'horizontal')
+            =~ /^(?:horizontal|restricted_horizontal|inline_math)$/)) {
+    unshift(@para,pop(@LaTeXML::LIST)); }
+  my $keep = grep { !$_->getProperty('isSpace'); } @para;
+  push(@LaTeXML::LIST, List(@para, mode=>'horizontal')) if $keep;
+  return; }
+
+# Resume vertical mode, internal form: reset mode, and repacks recently
+# digested horizontal items. This is useful within argument digestion, eg.
+sub leaveHorizontal_internal {
+  my($self) = @_;
+  my $mode  = $STATE->lookupValue('MODE');
+  my $bound = $STATE->lookupValue('BOUND_MODE');
+  # This needs to be an invisible, and slightly gentler, \par (see \lx@normal@par)
+  # BUT still allow user defined \par !
+  if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
+    repackHorizontal($self);
+    $STATE->assignValue(MODE=>$bound); }
+ return; }
 
 sub beginMode {
   my ($self, $umode) = @_;
@@ -457,10 +484,11 @@ sub endMode {
   if (my $mode = $bindable_mode{$umode}) {
     if ((!$STATE->isValueBound('BOUND_MODE', 0))    # Last stack frame was NOT a mode switch!?!?!
       || ($STATE->lookupValue('BOUND_MODE') ne $mode)) {    # Or was a mode switch to a different mode
+      # Don't pop if there's an error; maybe we'll recover?
       Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self, "Attempt to end mode $mode",
         currentFrameMessage($self)); }
-    else {    # Don't pop if there's an error; maybe we'll recover?
-      leaveHorizontal($self) if $mode =~ /vertical$/;
+    else {
+      leaveHorizontal_internal($self) if $mode =~ /vertical$/; # nopar version!
       popStackFrame($self); } }    # Effectively egroup.
   else {
     Warn('unexpected',$mode,$self, "Cannot end $mode mode"); }
