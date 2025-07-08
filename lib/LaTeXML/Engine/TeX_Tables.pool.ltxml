@@ -164,15 +164,14 @@ DefConstructor('\halign BoxSpecification',
     my $alignment = $whatsit->getProperty('alignment');
     Tokens(T_CS('\halign'), Revert($spec), T_BEGIN, Revert($template), T_CS('\cr'),
       Revert($alignment), T_END); },
-  bounded => 1,
-  #  sizer       => '#1',
-  sizer       => sub { $_[0]->getProperty('alignment')->getSize; },
+  bounded         => 1,
+  leaveHorizontal => 1,
+  sizer           => sub { $_[0]->getProperty('alignment')->getSize; },
   beforeConstruct => sub {
     my ($document) = @_;
     $document->maybeCloseElement('ltx:p'); },
   afterDigest => sub {          # After spec, but before body!
     my ($stomach, $whatsit) = @_;
-    $stomach->leaveHorizontal;
     $whatsit->setProperty(mode => 'internal_vertical');
     $stomach->beginMode('restricted_horizontal');
     my $template = parseHAlignTemplate($stomach->getGullet, $whatsit);

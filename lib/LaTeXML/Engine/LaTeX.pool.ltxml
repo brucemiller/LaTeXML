@@ -65,6 +65,7 @@ DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
     LoadClass($class,
       options => $options,
       after   => Tokens(T_CS('\AtBeginDocument'), T_CS('\warn@unusedclassoptions')));
+    $stomach->leaveHorizontal_internal;
     return; });
 
 AssignValue('@unusedoptionlist', []);
@@ -107,6 +108,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
         handleoptions => 1, options => $options,
         after         => Tokens(T_CS('\compat@loadpackages')));
       RequirePackage($class, options => $options, as_class => 1); }
+    $stomach->leaveHorizontal_internal;
     return; });
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {
@@ -296,9 +298,10 @@ DefConstructor('\lx@newline OptionalMatch:* [Glue]', sub {
       $document->insertElement('ltx:XMHint', undef, name => 'newline'); }
     else {
       my $context = $document->getElement;
-      if    (!$context || $context->getAttribute('_vertical_mode_')) { }
-      elsif (($document->getNodeQName($context) eq 'ltx:p')
-        && $context->parentNode->getAttribute('_vertical_mode_')) {
+      my $tag     = $context && $document->getNodeQName($context);
+      if    (!$context || ($tag eq 'ltx:_CaptureBlock_')) { } # skip, if in insertBlock
+      elsif (($tag eq 'ltx:p')
+        && ($document->getNodeQName($context->parentNode) eq 'ltx:_CaptureBlock_')) {
         $document->maybeCloseElement('ltx:p'); }
       elsif ($document->canContain($context, 'ltx:break')) {
         $document->insertElement('ltx:break'); } } },
@@ -360,6 +363,7 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     if (my $ops = LookupValue('@document@preamble@afterend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
     $_[1]->setFont(LookupValue('font'));    # Start w/ whatever font was last selected.
+    $stomach->leaveHorizontal_internal;
     return @boxes; });
 
 # \document is used directly in e.g. expl3.sty
@@ -406,7 +410,6 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
       Warn('unexpected', '\end{document}', $stomach,
         "Attempt to end document with open groups, environments or conditionals", @lines);
     }
-    $stomach->leaveHorizontal;
     $stomach->endMode('internal_vertical');
     # ???? don't push? or what
     #    if (my $ops = LookupValue('@after@end@document')) {
@@ -531,7 +534,7 @@ DefConstructor('\lx@note[]{}[]{}',
     . "#tags"
     . "#4"
     . "</ltx:note>",
-  mode         => 'text', bounded => 1,
+  mode         => 'internal_vertical',#   enterHorizontal => 1,
   sizer        => '#mark',
   beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
   properties   => sub {
@@ -699,6 +702,7 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
       $document->absorb($tags); }
     $document->insertElement('ltx:title',    $props{title});
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
+  afterDigest => sub { $_[0]->leaveHorizontal_internal; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
     MaybePeekLabel();
@@ -735,6 +739,7 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
       (LookupValue('INDENT_FIRST') ? (class => 'ltx_indentfirst') : ()));
     $document->insertElement('ltx:title',    $props{title});
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
+  afterDigest => sub { $_[0]->leaveHorizontal_internal; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
     MaybePeekLabel();
@@ -883,6 +888,7 @@ DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
       $pkg =~ s/\s+//g;
       next if !$pkg || $pkg =~ /^%/;
       RequirePackage($pkg, options => $options); }
+    $stomach->leaveHorizontal_internal;
     return });
 
 DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
@@ -895,6 +901,7 @@ DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
       $pkg =~ s/\s+//g;
       next if !$pkg || $pkg =~ /^%/;
       RequirePackage($pkg, options => $options); }
+    $stomach->leaveHorizontal_internal;
     return });
 
 DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
@@ -905,6 +912,7 @@ DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
     my $class   = ToString($whatsit->getArg(2));
     $class =~ s/\s+//g;
     LoadClass($class, options => $options);
+    $stomach->leaveHorizontal_internal;
     return; });
 
 # Related internal macros for package definition
@@ -971,6 +979,7 @@ DefConstructor('\RequirePackageWithOptions Semiverbatim []',
     my $package = ToString($whatsit->getArg(1));
     $package =~ s/\s+//g;
     RequirePackage($package, withoptions => 1);
+    $stomach->leaveHorizontal_internal;
     return; });
 
 DefConstructor('\LoadClassWithOptions Semiverbatim []',
@@ -980,6 +989,7 @@ DefConstructor('\LoadClassWithOptions Semiverbatim []',
     my $class = ToString($whatsit->getArg(1));
     $class =~ s/\s+//g;
     LoadClass($class, withoptions => 1);
+    $stomach->leaveHorizontal_internal;
     return; });
 
 DefPrimitive('\@onefilewithoptions {} [][] {}', sub {

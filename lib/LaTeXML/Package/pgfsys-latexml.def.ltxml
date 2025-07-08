@@ -53,7 +53,7 @@ sub installPGFCommands {
   # Local definitions.
   Let(T_CS('\halign'), T_CS('\lxSVG@halign'));
   Let('\ignorespaces', '\lx@inpgf@ignorespaces');    # Use local defn
-  AssignValue(TEXT_MODE_BINDINGS => []);
+##  AssignValue(TEXT_MODE_BINDINGS => []);
   return; }
 
 DefPrimitive('\lxSVG@installcommands', sub { installPGFCommands(); });
@@ -199,7 +199,7 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
     $doc->absorb($prop{thebox}) if $prop{thebox}; },
   sizer => sub {
     my $box = $_[0]->getProperty('thebox');
-    return $box && $box->getSize; },
+    return ($box ? $box->getSize : (Dimension(0), Dimension(0), Dimension(0))); },
   reversion => sub {
     my $box = $_[0]->getProperty('thebox');
     return ($box ? $box->revert : ()); },
@@ -892,12 +892,11 @@ DefConstructor('\lxSVG@halign BoxSpecification',
     my $alignment = $whatsit->getProperty('alignment');
     Tokens(T_CS('\halign'), Revert($spec), T_BEGIN, Revert($template), T_CS('\cr'),
       Revert($alignment), T_END); },
-  bounded => 1,
-  #  sizer       => '#1',
-  sizer       => sub { $_[0]->getProperty('alignment')->getSize; },
-  afterDigest => sub {
+  bounded         => 1,
+  leaveHorizontal => 1,
+  sizer           => sub { $_[0]->getProperty('alignment')->getSize; },
+  afterDigest     => sub {
     my ($stomach, $whatsit) = @_;
-    $stomach->leaveHorizontal;
     $whatsit->setProperty(mode => 'internal_vertical');
     $stomach->beginMode('restricted_horizontal');
     my $template = parseHAlignTemplate($stomach->getGullet, $whatsit);
