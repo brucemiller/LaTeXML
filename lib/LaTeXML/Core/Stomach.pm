@@ -30,6 +30,8 @@ use LaTeXML::Core::Definition;
 use Scalar::Util qw(blessed);
 use base         qw(LaTeXML::Common::Object);
 
+DebuggableFeature('modes');
+
 #**********************************************************************
 sub new {
   my ($class, %options) = @_;
@@ -43,6 +45,7 @@ sub initialize {
   $$self{boxing}      = [];
   $$self{token_stack} = [];
   $$self{progress}    = 0;
+  $STATE->assignValue(BOUND_MODE        => 'vertical',       'global');
   $STATE->assignValue(MODE              => 'vertical',       'global');
   $STATE->assignValue(IN_MATH           => 0,                'global');
   $STATE->assignValue(PRESERVE_NEWLINES => 1,                'global');
@@ -393,6 +396,8 @@ sub enterHorizontal {
   my($self) = @_;
   my $mode  = $STATE->lookupValue('MODE');
   if($mode =~ /vertical$/){
+    Debug("MODE entering $mode => horizontal, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+        if $LaTeXML::DEBUG{modes};
     $STATE->assignValue(MODE => 'horizontal', 'inplace'); } # SAME frame as BOUND_MODE!
   elsif (($mode =~ /horizontal$/) || ($mode =~ /math$/)) { } # ignorable?
   else {
@@ -435,8 +440,10 @@ sub leaveHorizontal_internal {
   # This needs to be an invisible, and slightly gentler, \par (see \lx@normal@par)
   # BUT still allow user defined \par !
   if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
+    Debug("MODE leaving $mode => $bound, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+        if $LaTeXML::DEBUG{modes};
     repackHorizontal($self);
-    $STATE->assignValue(MODE=>$bound); }
+    $STATE->assignValue(MODE => $bound, 'inplace'); }
  return; }
 
 sub beginMode {
@@ -446,9 +453,11 @@ sub beginMode {
     my $ismath   = $mode =~ /math$/;
     my $wasmath  = $prevmode =~ /math$/;
     pushStackFrame($self);    # Effectively bgroup
-    $STATE->assignValue(BOUND_MODE => $mode,   'local');
+    $STATE->assignValue(BOUND_MODE => $mode,   'local'); # New value within this frame!
     $STATE->assignValue(MODE       => $mode,   'local');
     $STATE->assignValue(IN_MATH    => $ismath, 'local');
+    Debug("MODE binding $prevmode => $mode, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+        if $LaTeXML::DEBUG{modes};
     my $curfont = $STATE->lookupValue('font');
     if    ($mode eq $prevmode) { }
     elsif ($ismath) {
@@ -489,7 +498,10 @@ sub endMode {
         currentFrameMessage($self)); }
     else {
       leaveHorizontal_internal($self) if $mode =~ /vertical$/; # nopar version!
-      popStackFrame($self); } }    # Effectively egroup.
+      popStackFrame($self);        # Effectively egroup.
+      Debug("MODE unbinding $mode => ".$STATE->lookupValue('MODE').", due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+          if $LaTeXML::DEBUG{modes};
+    }}
   else {
     Warn('unexpected',$mode,$self, "Cannot end $mode mode"); }
   return; }
