@@ -264,7 +264,7 @@ sub alignmentBindings {
     properties     => {%properties});
   AssignValue(Alignment => $alignment);
   Debug("Halign $alignment: New " . $template->show) if $LaTeXML::DEBUG{halign};
-  Let(T_MATH, ($ismath ? '\lx@dollar@in@mathmode' : '\lx@dollar@in@textmode'));
+  Let(T_MATH, ($ismath ? '\lx@dollar@in@mathmode' : '\lx@dollar@default'));
   return; }
 
 DefMacroI('\lx@alignment@row@before',    undef, undef);

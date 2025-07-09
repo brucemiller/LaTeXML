@@ -111,6 +111,8 @@ DefConstructorI('\lx@normal@par', undef, sub {
     my $bound = $STATE->lookupValue('BOUND_MODE');
     # combine any digested horizontal material into a horizontal List
     if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
+      Debug("MODE leaving $mode => $bound, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+          if $LaTeXML::DEBUG{modes};
       $stomach->repackHorizontal;
       $STATE->assignValue(MODE => $bound, 'inplace'); }
   return; },

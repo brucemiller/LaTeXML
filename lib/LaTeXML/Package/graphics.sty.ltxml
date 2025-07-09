@@ -97,7 +97,7 @@ DefConstructor('\Gscale@box {Float} [Float] {}', sub {
   properties => sub {
     my ($stomach, $xscale, $yscale, $box) = @_;
     graphics_scaledbox_props($box, $xscale, $yscale || $xscale); },
-  mode => 'text');
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 Let('\scalebox', '\Gscale@box');
 
 DefConstructor('\Gscale@box@dd {Dimension}{Dimension} {}', sub {
@@ -107,7 +107,7 @@ DefConstructor('\Gscale@box@dd {Dimension}{Dimension} {}', sub {
     my ($stomach, $num, $denom, $box) = @_;
     my $scale = $num->valueOf / $denom->valueOf;
     graphics_scaledbox_props($box, $scale, $scale); },
-  mode => 'text');
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 
 DefConstructor('\Gscale@box@dddd {Dimension}{Dimension}{Dimension}{Dimension} {}', sub {
     my ($document, $xnum, $xdenom, $ynum, $ydenom, $box, %props) = @_;
@@ -115,7 +115,7 @@ DefConstructor('\Gscale@box@dddd {Dimension}{Dimension}{Dimension}{Dimension} {}
   properties => sub {
     my ($stomach, $xn, $xd, $yn, $yd, $box) = @_;
     graphics_scaledbox_props($box, $xn->valueOf / $xd->valueOf, $yn->valueOf / $yd->valueOf); },
-  mode => 'text');
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 
 # 1st arg: \totalheight or \height
 DefConstructor('\Gscale@@box {} {GraphixDimension}{GraphixDimension} {}', sub {
@@ -132,7 +132,8 @@ DefConstructor('\Gscale@@box {} {GraphixDimension}{GraphixDimension} {}', sub {
     if ($width && !$height) { $yscale = $xscale; }
     if ($height && !$width) { $xscale = $yscale; }
     graphics_scaledbox_props($box, $xscale, $yscale); },
-  mode => 'text');
+  mode => 'restricted_horizontal', enterHorizontal => 1);
+
 DefMacro('\resizebox', '\leavevmode\@ifstar{\Gscale@@box\totalheight}{\Gscale@@box\height}');
 
 # TeX wants to rotate CCW, by default, about the left baseline,
@@ -221,7 +222,8 @@ DefConstructor('\rotatebox OptionalKeyVals:Grot {Float} {}',
     my ($stomach, $whatsit) = @_;
     my ($kv, $angle, $box) = $whatsit->getArgs();
     $whatsit->setProperties(rotatedProperties($box, $angle, ($kv ? $kv->getHash : ()))); },
-  mode => 'text');
+  mode => 'restricted_horizontal', enterHorizontal => 1);
+
 # Backwards!
 DefMacro('\Grot@erotate', '\rotatebox[]');
 
@@ -241,7 +243,7 @@ DefConstructor('\reflectbox {}',
       depth  => $d,
       xscale => -1,
       yscale => 1); },
-  mode => 'text');
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 
 DefConstructor('\graphicspath DirectoryList', sub {
     my ($document, $paths, %props) = @_;

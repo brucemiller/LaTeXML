@@ -222,7 +222,7 @@ DefConstructor('\ltx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
         $options .= "," if $options;
         $options .= "trim=$left $bottom 0 0,clip=true"; } }
     (options => $options, path => $path, candidates => join(',', @candidates)); },
-  mode => 'text');
+  mode => 'restricted_horizontal');
 # Since these ultimately generate external resources, it can be useful to have a handle on them.
 Tag('ltx:graphics', afterOpen => sub { GenerateID(@_, 'g'); });
 

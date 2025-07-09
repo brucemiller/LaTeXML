@@ -112,7 +112,8 @@ DefMacro('\oalign{}',
   '\@@oalign{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@oalign{}',
   '#1',
-  reversion    => '\oalign{#1}', bounded => 1, mode => 'text',
+  reversion    => '\oalign{#1}',
+  mode         => 'internal_vertical',
   beforeDigest => sub { alignmentBindings('l'); });
 
 # This is actually different; the lines should lie ontop of each other.
@@ -121,7 +122,8 @@ DefMacro('\ooalign{}',
   '\@@ooalign{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@ooalign{}',
   '#1',
-  reversion    => '\ooalign{#1}', bounded => 1, mode => 'text',
+  reversion    => '\ooalign{#1}',
+  mode         => 'internal_vertical',
   beforeDigest => sub { alignmentBindings('l'); });
 
 DefConstructor('\buildrel Until:\over {}',
@@ -701,7 +703,8 @@ DefConstructor('\@math@daccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>\x{22c5}</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode        => 'text', alias => '\d',
+  mode  => 'restricted_horizontal',
+  alias => '\d',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -715,7 +718,8 @@ DefConstructor('\@math@baccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>" . UTF(0xAF) . "</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode        => 'text', alias => '\b',
+  mode  => 'restricted_horizontal',
+  alias => '\b',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -1560,8 +1564,8 @@ DefPrimitive('\normalbottom', undef);
 # otherwise, to the attribute.
 DefConstructor('\footnote{}{}',
   "^<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
-  mode         => 'text', bounded => 1,
-  beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
+  mode         => 'internal_vertical',
+  beforeDigest => sub { neutralizeFont(); },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     my $mark   = $whatsit->getArg(1);
