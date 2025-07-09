@@ -124,7 +124,7 @@ DefConstructor('\endnote[]{}',
     . "#2"
     . "</ltx:note>",
   mode         => 'internal_vertical',
-  beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
+  beforeDigest => sub { neutralizeFont(); },
   properties   => sub {
     ($_[1]
       ? (mark => $_[1])
@@ -134,7 +134,7 @@ DefConstructor('\endnotemark[]',
   "<ltx:note role='endnotemark' mark='#mark' xml:id='#id'>"
     . "#tags"
     . "</ltx:note>",
-  mode       => 'text',
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub {
     ($_[1]
       ? (mark => $_[1])
@@ -142,7 +142,7 @@ DefConstructor('\endnotemark[]',
         mark => DigestText(T_CS('\theendnote')))) });
 DefConstructor('\endnotetext[]{}',
   "<ltx:note role='endnotetext' mark='#mark' xml:id='#id'>#2</ltx:note>",
-  mode       => 'text',
+  mode       => 'internal_vertical',
   properties => sub {
     ($_[1]
       ? (mark => $_[1])
@@ -158,7 +158,8 @@ DefConstructor('\endnotetext[]{}',
 # Extra stuff
 Let('\case',      '\frac');
 Let('\slantfrac', '\frac');
-DefConstructor('\text{}', "<ltx:text _noautoclose='true'>#1</ltx:text>", mode => 'text', locked => 1);
+DefConstructor('\text{}', "<ltx:text _noautoclose='true'>#1</ltx:text>",
+  mode => 'restricted_horizontal', locked => 1);
 
 # RevTeX3 (obsolete in RevTeX4)
 DefConstructor('\bm{}',   '#1', bounded => 1, requireMath => 1, font => { forcebold => 1 });
