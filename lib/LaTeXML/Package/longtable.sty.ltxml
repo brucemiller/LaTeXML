@@ -62,7 +62,7 @@ DefConstructor('\@@longtable [] Undigested DigestedBody',
     if (my $foot = LookupValue('LONGTABLE_FOOT')) {
       $alignment->appendRows(@{$foot}); }
     return; },
-  mode => 'text');
+  mode => 'restricted_horizontal');
 
 DefPrimitive('\lx@longtable@bindings AlignmentTemplate', sub { longtableBindings($_[1]); });
 

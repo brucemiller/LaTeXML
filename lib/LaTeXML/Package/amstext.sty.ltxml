@@ -20,7 +20,8 @@ use LaTeXML::Package;
 #**********************************************************************
 RequirePackage('amsgen');
 
-DefConstructor('\text{}', "<ltx:text _noautoclose='true'>#1</ltx:text>", mode => 'text', locked => 1);
+DefConstructor('\text{}', "<ltx:text _noautoclose='true'>#1</ltx:text>",
+  mode => 'restricted_horizontal', locked => 1);
 
 # There's also redefinitions of \stepcounter & \addtocounter
 # that I can't quite seethe point of including here...

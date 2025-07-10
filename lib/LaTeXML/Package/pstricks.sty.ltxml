@@ -904,7 +904,7 @@ DefConstructor('\rput@start OptionalMatch:* [] BracketedPSAngle PSCoord',
   alias       => '\rput');
 
 DefConstructor('\put@end {}', "#1</ltx:g>",
-  alias => '', mode => 'text');
+  alias => '', mode => 'restricted_horizontal');
 
 DefMacro('\uput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoord', sub {
     (    ##T_BEGIN,

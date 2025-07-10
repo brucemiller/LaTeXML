@@ -76,7 +76,7 @@ DefConstructor('\turnbox{Float} {}',
   properties => sub {
     my ($stomach, $angle, $box) = @_;
     rotatedProperties($box, $angle); },
-  mode => 'text');
+  mode => 'internal_vertical');
 
 #======================================================================
 # These should produce a table or figure, but marked to rotate by 90degrees!

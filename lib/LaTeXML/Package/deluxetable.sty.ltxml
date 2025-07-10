@@ -50,7 +50,7 @@ DefConstructor('\@@deluxetabular DigestedBody',
   '#1',
   reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
   beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
+  mode         => 'restricted_horizontal');
 DefPrimitive('\@end@deluxetabular', sub { $_[0]->egroup; });
 
 #======================================================================
@@ -102,10 +102,10 @@ DefMacro('\tableline', '\hline');
 # A good article to test these macros on is arXiv:astro-ph/0001334
 DefConstructor('\tablenotemark{}',
   "<ltx:note role='footnotemark' mark='#1'></ltx:note>",
-  mode => 'text');
+  mode => 'restricted_horizontal');
 DefConstructor('\tablenotetext{}{}',
   "<ltx:note role='footnotetext' mark='#1'>#2</ltx:note>",
-  mode => 'text');
+  mode => 'internal_vertical');
 
 # hardcoding \textwidth instead of doing the \pt@width arithmetic, which would need more work.
 # the important bit is timing \spew@tblnotes correctly, so that the notes are

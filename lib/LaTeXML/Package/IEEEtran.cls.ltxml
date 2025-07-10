@@ -351,18 +351,18 @@ DefEnvironment('{IEEEitemize}[]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties      => sub { beginItemize('itemize', '@item'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1, mode => 'text');
+  locked          => 1, mode => 'internal_vertical');
 DefEnvironment('{IEEEenumerate}[]',
   "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
   properties      => sub { beginItemize('enumerate', 'enum'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1, mode => 'text');
+  locked          => 1, mode => 'internal_vertical');
 DefEnvironment('{IEEEdescription}[]',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
   beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
   properties      => sub { beginItemize('description', '@desc'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1, mode => 'text');
+  locked          => 1, mode => 'internal_vertical');
 
 # override LaTeX's default IED lists
 Let('\itemize',                  '\IEEEitemize');
