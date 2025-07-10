@@ -391,14 +391,20 @@ sub Let {
 
 sub Digest {
   my (@stuff) = @_;
-  return $STATE->getStomach->digest(Tokens(map { (ref $_ ? $_ : TokenizeInternal($_)) } @stuff)); }
+  my $mode    = $STATE->lookupValue('MODE');
+  my $stomach = $STATE->getStomach;
+  my $value   = $stomach->digest(Tokens(map { (ref $_ ? $_ : TokenizeInternal($_)) } @stuff));
+
+  my $nmode   = $STATE->lookupValue('MODE');
+  $stomach->leaveHorizontal_internal if ($mode ne $nmode) && ($nmode eq 'horizontal');
+  return $value; }
 
 sub DigestText {
   my (@stuff) = @_;
   my $stomach = $STATE->getStomach;
-  $stomach->beginMode('text');
+  $stomach->beginMode('restricted_horizontal');
   my $result = $stomach->digest(Tokens(map { (ref $_ ? $_ : TokenizeInternal($_)) } @stuff));
-  $stomach->endMode('text');
+  $stomach->endMode('restricted_horizontal');
   return $result; }
 
 # probably need to export this, as well?
@@ -406,12 +412,12 @@ sub DigestLiteral {
   my (@stuff) = @_;
 # Perhaps should do StartSemiverbatim, but is it safe to push a frame? (we might cover over valid changes of state!)
   my $stomach = $STATE->getStomach;
-  $stomach->beginMode('text');
+  $stomach->beginMode('restricted_horizontal');
   my $font = LookupValue('font');
   AssignValue(font => $font->merge(encoding => 'ASCII'), 'local');  # try to stay as ASCII as possible
   my $value = $STATE->getStomach->digest(Tokens(map { (ref $_ ? $_ : Tokenize($_)) } @stuff));
   AssignValue(font => $font);
-  $stomach->endMode('text');
+  $stomach->endMode('restricted_horizontal');
   return $value; }
 
 sub DigestIf {
@@ -966,6 +972,7 @@ sub RawTeX {
   # It could be as simple as this, except if catcodes get changed, it's too late!!!
   #  Digest(TokenizeInternal($text));
   my $stomach = $STATE->getStomach;
+  my $mode    = $STATE->lookupValue('MODE');
   my $savedcc = $STATE->lookupCatcode('@');
   $STATE->assignCatcode('@' => CC_LETTER);
 
@@ -978,6 +985,7 @@ sub RawTeX {
         $stomach->invokeToken($token); } });
 
   $STATE->assignCatcode('@' => $savedcc);
+  $stomach->leaveHorizontal_internal;
   return; }
 
 sub StartSemiverbatim {
@@ -1256,11 +1264,12 @@ sub SetCondition {
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
 my $primitive_options = {    # [CONSTANT]
-  isPrefix     => 1, scope       => 1, mode => 1, font => 1,
-  requireMath  => 1, forbidMath  => 1,
-  beforeDigest => 1, afterDigest => 1,
-  bounded      => 1, locked      => 1, alias => 1, robust => 1,
-  outer        => 1, long        => 1 };
+  isPrefix     => 1, scope           => 1, font => 1,
+  mode         => 1, enterHorizontal => 1, leaveHorizontal => 1,
+  requireMath  => 1, forbidMath      => 1,
+  beforeDigest => 1, afterDigest     => 1,
+  bounded      => 1, locked          => 1, alias => 1, robust => 1,
+  outer        => 1, long            => 1 };
 
 sub DefPrimitive {
   my ($proto, $replacement, %options) = @_;
@@ -1274,12 +1283,17 @@ sub DefPrimitiveI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
+  if ($mode && $mode eq 'text') {
+    $mode = 'restricted_horizontal';
+    $options{enterHorizontal} = 1; }
   # robust makes $cs a protected Macro, expanding to primtive with munged cs
   my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
       ->new($defcs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
+        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
+        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
         ($mode                ? (sub { $_[0]->beginMode($mode); })
           : ($bounded ? (sub { $_[0]->bgroup; }) : ())),
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1396,6 +1410,7 @@ sub flatten {
 #                     These properties can be used in the constructor.
 my $constructor_options = {    # [CONSTANT]
   mode         => 1, requireMath   => 1, forbidMath => 1, font       => 1,
+  enterHorizontal => 1, leaveHorizontal => 1,
   alias        => 1, reversion     => 1, sizer      => 1, properties => 1,
   nargs        => 1, attributeForm => 1,
   beforeDigest => 1, afterDigest   => 1, beforeConstruct => 1, afterConstruct => 1,
@@ -1420,12 +1435,17 @@ sub DefConstructorI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
+  if ($mode && $mode eq 'text') {
+    $mode = 'restricted_horizontal';
+    $options{enterHorizontal} = 1; }
   # robust makes $cs a protected Macro, expanding to primtive with munged cs
   my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new($defcs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
+        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
+        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
         ($mode                ? (sub { $_[0]->beginMode($mode); })
           : ($bounded ? (sub { $_[0]->bgroup; }) : ())),
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1782,7 +1802,8 @@ sub defmath_prim {
         my $locator    = $stomach->getGullet->getLocator;
         my %properties = %options;
         my $font       = LookupValue('font')->merge(%$reqfont)->specialize($string);
-        my $mode       = (LookupValue('IN_MATH')  ? 'math'                    : 'text');
+#        my $mode       = (LookupValue('IN_MATH')  ? 'math'                    : 'text');
+        my $mode       = LookupValue('MODE');
         my $alias      = (defined $options{alias} ? coerceCS($options{alias}) : undef);
         my $reversion =
           ((!defined $options{reversion}) && (($options{revert_as} || '') eq 'presentation')
@@ -1837,6 +1858,7 @@ sub defmath_cons {
 # Note that the body of the environment is treated is the 'body' parameter in the constructor.
 my $environment_options = {    # [CONSTANT]
   mode             => 1, requireMath     => 1, forbidMath => 1,
+  enterHorizontal  => 1, leaveHorizontal => 1,
   properties       => 1, nargs           => 1, font       => 1,
   beforeDigest     => 1, afterDigest     => 1,
   afterDigestBegin => 1, beforeDigestEnd => 1, afterDigestBody => 1,
@@ -1856,6 +1878,7 @@ sub DefEnvironment {
 sub DefEnvironmentI {
   my ($name, $paramlist, $replacement, %options) = @_;
   my $mode = $options{mode};
+  $mode    = 'restricted_horizontal' if !$mode || ($mode eq 'text');
   $name      = ToString($name)                    if ref $name;
   $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
   # Magic form: CS with name \begin{env} bypasses some LaTeX
@@ -1875,7 +1898,9 @@ sub DefEnvironmentI {
         sub { $_[0]->bgroup; },
         sub { my $b = LookupValue('@environment@' . $name . '@atbegin');
           ($b ? Digest(@$b) : ()); },
-        ($mode ? (sub { $_[0]->setMode($mode); }) : ()),
+        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
+        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
+        ($mode                ? (sub { $_[0]->beginMode($mode); }) : () ),
         sub { AssignValue(current_environment => $name);
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1911,6 +1936,7 @@ sub DefEnvironmentI {
             Error('unexpected', "\\end{$name}", $_[0],
               "Can't close environment $name;", "Current are:", @lines); }
           return; },
+        ($mode ? (sub { $_[0]->endMode($mode) }) : ()),
         sub { $_[0]->egroup; },
       ),
       ), $options{scope});
@@ -1919,6 +1945,8 @@ sub DefEnvironmentI {
       ->new(T_CS("\\$name"), $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($name); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($name); })              : ()),
+        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
+        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
         ($mode                ? (sub { $_[0]->beginMode($mode); })        : ()),
         ($options{font}       ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
@@ -2298,6 +2326,7 @@ my $loadtexdefinitions_options = { fordefinitions => 1, at_letter => 1, notes =>
 
 sub loadTeXDefinitions {
   my ($request, $pathname, %options) = @_;
+  $STATE->getStomach->leaveHorizontal_internal;
   # FILTER, not check options!
   my %mouth_options = map { ($_ => (exists $options{$_} ? $options{$_} : 1)) }
     keys %$loadtexdefinitions_options;
@@ -2511,6 +2540,7 @@ sub InputDefinitions {
   $name =~ s/^\s*//; $name =~ s/\s*$//;
   CheckOptions("InputDefinitions ($name)", $inputdefinitions_options, %options);
 
+  my $mode = $STATE->lookupValue('MODE');
   my $prevname = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Expand(T_CS('\@currname')));
   my $prevext = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currext')) && ToString(Expand(T_CS('\@currext')));
 
@@ -2599,6 +2629,8 @@ sub InputDefinitions {
       DefMacroI('\@currext',  undef, Tokens(Explode($prevext)))  if $prevext;
       Digest(T_CS('\@popfilename')) if $pushpop;
       resetOptions(); }    # And reset options afterwards, too.
+    # Should not end up in horizontal mode (unless initially were!)
+    $STATE->getStomach->leaveHorizontal_internal if $mode ne 'horizontal';
     return $file; }
   elsif (!$options{noerror}) {
     $STATE->noteStatus(missing => $name . ($options{type} ? '.' . $options{type} : ''));
@@ -3510,9 +3542,16 @@ DefPrimitive options are
 
 See L</"Common Options">.
 
-=item C<mode=E<gt> ('text' | 'display_math' | 'inline_math')>
+=item C<mode=E<gt> ('restricted_horizontal' | 'internal_vertical' | 'display_math' | 'inline_math')>
 
-Changes to this mode during digestion.
+Binds to this mode during digestion, with grouping.
+
+=item C<enterHorizontal=E<gt>1>,
+
+=item C<leaveHorizontal=E<gt>1>
+
+Enters or leaves C<horizontal> mode before executing the command (and before binding
+the mode if C<mode> was given).
 
 =item C<font=E<gt>{I<%fontspec>}>
 
@@ -3673,6 +3712,10 @@ DefConstructor options are
 See L</"Common Options">.
 
 =item C<mode=E<gt>I<mode>>,
+
+=item C<enterHorizontal=E<gt>1>,
+
+=item C<leaveHorizontal=E<gt>1>,
 
 =item C<font=E<gt>{I<%fontspec>}>,
 
@@ -3898,7 +3941,11 @@ See L</"Common Options">.
 
 =item C<mode=E<gt>I<mode>>,
 
-=item C<font=E<gt>{I<%fontspec>}>
+=item C<enterHorizontal=E<gt>1>,
+
+=item C<leaveHorizontal=E<gt>1>,
+
+=item C<font=E<gt>{I<%fontspec>}>,
 
 =item C<requireMath=E<gt>I<boolean>>,
 
@@ -3961,7 +4008,7 @@ stored as a properties.
 Example:
 
   DefConstructor('\emph{}',
-     "<ltx:emph>#1</ltx:emph", mode=>'text');
+     "<ltx:emph>#1</ltx:emph", mode=>'restricted_horizontal');
 
 =item C<DefEnvironmentI(I<name>, I<paramlist>, I<replacement>, I<%options>);>
 

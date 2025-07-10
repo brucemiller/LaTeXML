@@ -44,7 +44,8 @@ sub image_candidates {
   my ($path) = @_;
   $path =~ s/^\s+//; $path =~ s/\s+$//;
   $path =~ s/^("+)(.+)\g1$/$2/;    # unwrap if in quotes
-  my $searchpaths = $STATE->lookupValue('GRAPHICSPATHS');
+  my $searchpaths = [ @{ $STATE->lookupValue('GRAPHICSPATHS') || [] },
+                      @{ $STATE->lookupValue('SEARCHPATHS') || [] } ];
   my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
   if (!@candidates) {
     # if we have no candidates, also consult kpsewhich,

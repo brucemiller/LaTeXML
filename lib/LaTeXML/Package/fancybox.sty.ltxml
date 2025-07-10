@@ -24,16 +24,16 @@ our $fancybox_oval   = $fancybox_border . 'border-radius:5px;';
 our $fancybox_Oval   = 'border:2px solid black;' . 'border-radius:5px;';
 DefConstructor('\shadowbox MoveableBox',
   "<ltx:text cssstyle='$fancybox_shadow'>#1</ltx:text>",
-  mode => 'text');
+  mode => 'internal_vertical');
 DefConstructor('\doublebox MoveableBox',
   "<ltx:text cssstyle='$fancybox_double'>#1</ltx:text>",
-  mode => 'text');
+  mode => 'internal_vertical');
 DefConstructor('\ovalbox MoveableBox',
   "<ltx:text cssstyle='$fancybox_oval'>#1</ltx:text>",
-  mode => 'text');
+  mode => 'internal_vertical');
 DefConstructor('\Ovalbox MoveableBox',
   "<ltx:text cssstyle='$fancybox_Oval'>#1</ltx:text>",
-  mode => 'text');
+  mode => 'internal_vertical');
 
 DefEnvironment('{Sbox}', '',
   afterDigestBody => sub {

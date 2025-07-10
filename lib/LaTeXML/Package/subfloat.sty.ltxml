@@ -49,7 +49,7 @@ DefEnvironment('{subfigures}',
         . "#tags"
         . "#body"
         . "</ltx:figure>",
-      properties   => { layout => 'vertical' },
+      mode         => 'internal_vertical',
       beforeDigest => sub { beforeFloat('subfloatfigure'); },
       afterDigest  => sub { afterFloat($_[1]); });
     DefEnvironment('{figure*}[]',
@@ -57,7 +57,7 @@ DefEnvironment('{subfigures}',
         . "#tags"
         . "#body"
         . "</ltx:figure>",
-      properties   => { layout => 'vertical' },
+      mode         => 'internal_vertical',
       beforeDigest => sub { beforeFloat('subfloatfigure', double => 1); },
       afterDigest  => sub { afterFloat($_[1]); });
   },
@@ -79,7 +79,7 @@ DefEnvironment('{subtables}',
         . "#tags"
         . "#body"
         . "</ltx:table>",
-      properties   => { layout => 'vertical' },
+      mode         => 'internal_vertical',
       beforeDigest => sub { beforeFloat('subfloattable'); },
       afterDigest  => sub { afterFloat($_[1]); });
     DefEnvironment('{table*}[]',
@@ -87,7 +87,7 @@ DefEnvironment('{subtables}',
         . "#tags"
         . "#body"
         . "</ltx:table>",
-      properties   => { layout => 'vertical' },
+      mode         => 'internal_vertical',
       beforeDigest => sub { beforeFloat('subfloattable', double => 1); },
       afterDigest  => sub { afterFloat($_[1]); });
   },

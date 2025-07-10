@@ -36,7 +36,7 @@ DefMacro('\address[]{}', '\lx@contact{address}{#2}');
 # Redefine to account for the label, which we ignore for now!
 DefConstructor('\thanks[]{}', "<ltx:note role='thanks'>#2</ltx:note>");
 DefConstructor('\person@thanks[]{}', "^ <ltx:contact role='thanks'>#2</ltx:contact>",
-  alias => '\thanks', mode => 'text');
+  alias => '\thanks', mode => 'restricted_horizontal');
 DefMacro('\thanksref{}',  Tokens());
 DefMacro('\corauth[]{}',  '\lx@contact{correspondent}{#2}');
 DefMacro('\corref{}',     Tokens());

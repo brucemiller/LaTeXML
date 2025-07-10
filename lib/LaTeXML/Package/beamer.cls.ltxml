@@ -1161,7 +1161,7 @@ DefEnvironment('{itemize} [BeamerAngled]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties      => sub { beginBeamerItemize($_[1], 'itemize', '@item'); },
   beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
-  locked          => 1, mode => 'text');
+  locked          => 1, mode => 'internal_vertical');
 
 # from enumitem package, because of the second arg!
 DefEnvironment('{enumerate} [BeamerAngled] OptionalUndigested',
@@ -1176,7 +1176,7 @@ DefEnvironment('{description} [BeamerAngled]',
   beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
   properties      => sub { beginBeamerItemize($_[1], 'description', '@desc'); },
   beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
-  locked          => 1, mode => 'text');
+  locked          => 1, mode => 'internal_vertical');
 
 #**********************************************************************
 # beamerbasenavigation.sty

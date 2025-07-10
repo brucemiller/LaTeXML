@@ -27,7 +27,7 @@ DefConstructor('\@@tabularx{Dimension}[] Undigested DigestedBody',
   '#4',
   reversion    => '\begin{tabularx}{#1}[#2]{#3}#4\end{tabularx}',
   beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
+  mode         => 'restricted_horizontal');
 
 # Like p, but w/o explicit width...
 DefColumnType('X', sub {

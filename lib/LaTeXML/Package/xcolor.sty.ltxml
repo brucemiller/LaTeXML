@@ -874,7 +874,7 @@ DefPrimitive('\rrshift Variable', sub {
 DefConstructor('\fcolorbox[]{}{} Undigested',
   "<ltx:text framed='rectangle' framecolor='#framecolor'"
     . " _noautoclose='1'>#text</ltx:text>",
-  bounded     => 1, mode => 'text',
+  mode => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;

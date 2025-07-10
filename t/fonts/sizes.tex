@@ -87,10 +87,18 @@
 \testtext{\,}
 
 \section{Vertical}
+\testtext{\vbox{hop}}
 \testtext{\vbox{\hbox{hop}}}
 \testtext{\vbox{\hbox{hop}\hbox{hop}\hbox{hop}}}
 \testtext{\vtop{\hbox{hop}\hbox{hop}\hbox{hop}}}
+\testtext{\vtop{\vbox{\hbox{hop}\hbox{hop}\hbox{hop}}}}
+\testtext{\vbox{\vtop{\hbox{hop}\hbox{hop}\hbox{hop}}}}
+\testtext{\vtop{\vbox{\hbox{hop}\hbox{hop}\hbox{hop}}\vbox{\hbox{hop}\hbox{hop}\hbox{hop}}}}
+\testtext{\vbox{\vtop{\hbox{hop}\hbox{hop}\hbox{hop}}\vtop{\hbox{hop}\hbox{hop}\hbox{hop}}}}
 \testtext{\shortstack{hop\\hop\\hop}}
+\testtext{\begin{minipage}{2em}hop hop hop\end{minipage}}
+\testtext{\begin{minipage}[t]{2em}hop hop hop\end{minipage}}
+\testtext{\begin{minipage}[b]{2em}hop hop hop\end{minipage}}
 \testtext{\begin{minipage}{2em}hop\\hop\\hop\end{minipage}}
 \testtext{\begin{minipage}[t]{2em}hop\\hop\\hop\end{minipage}}
 \testtext{\begin{minipage}[b]{2em}hop\\hop\\hop\end{minipage}}
@@ -128,6 +136,7 @@
 \testtext{\begin{tabular}{cc} A & g\\B & p\end{tabular}}
 \testtext{\begin{tabular}[t]{cc} A & g\\B & p\end{tabular}}
 \testtext{\begin{tabular}[b]{cc} A & g\\B & p\end{tabular}}
+\testtext{\vtop{\begin{tabular}{cc} A & g\\B & p\end{tabular}}}
 
 \section{Unskip}
 []

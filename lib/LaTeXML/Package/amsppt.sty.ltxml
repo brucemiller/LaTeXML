@@ -56,7 +56,7 @@ DefMacro('\cvolyear{}', '');    # ?
 DefMacro('\title Until:\endtitle', '\@add@frontmatter{ltx:title}{#1}');
 
 DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
-  bounded => 1, mode => 'text');
+  bounded => 1, mode => 'restricted_horizontal');
 DefMacro('\author Until:\endauthor', '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
 DefConstructor('\@@@affil{}', "<ltx:contact role='affiliation'>#1</ltx:contact>");
 DefMacro('\affil Until:\endaffil', '\@add@to@frontmatter{ltx:creator}{\@@@affil{#1}}');
@@ -278,8 +278,8 @@ DefConstructor('\footnote[]{}',
     . "#tags"
     . "#2"
     . "</ltx:note>",
-  mode         => 'text', bounded => 1,
-  beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
+  mode         => 'internal_vertical',
+  beforeDigest => sub { neutralizeFont(); },
   properties   => sub {
     ($_[1]
       ? (mark => $_[1])
@@ -289,7 +289,7 @@ DefConstructor('\footnotemark[]',
   "<ltx:note role='footnotemark' mark='#mark' xml:id='#id'>"
     . "#tags"
     . "</ltx:note>",
-  mode       => 'text',
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub {
     ($_[1]
       ? (mark => $_[1])
@@ -297,7 +297,7 @@ DefConstructor('\footnotemark[]',
         mark => DigestText(T_CS('\thefootnote')))) });
 DefConstructor('\footnotetext[]{}',
   "<ltx:note role='footnotetext' mark='#mark' xml:id='#id'>#2</ltx:note>",
-  mode       => 'text',
+  mode       => 'internal_vertical',
   properties => sub {
     ($_[1]
       ? (mark => $_[1])

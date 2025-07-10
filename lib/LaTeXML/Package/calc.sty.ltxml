@@ -52,32 +52,28 @@ DefPrimitive('\addtolength{Variable}{}', sub {
     $defn->setValue($defn->valueOf(@args)->add(readExpression($stomach->getGullet, 'Glue', $arg)),
       undef, @args); });
 
-DefPrimitive('\settowidth{Variable}{}', sub {
-    my ($stomach, $var, $arg) = @_;
+DefPrimitive('\settowidth{Variable} HBoxContents', sub {
+    my ($stomach, $var, $box) = @_;
     my ($defn, @args) = @$var;
-    my $box = Digest($arg);
     return unless $defn && ($defn ne 'missing');
     $defn->setValue($box->getWidth, undef, @args); });
 
-DefPrimitive('\settoheight{Variable}{}', sub {
-    my ($stomach, $var, $arg) = @_;
+DefPrimitive('\settoheight{Variable} HBoxContents', sub {
+    my ($stomach, $var, $box) = @_;
     my ($defn, @args) = @$var;
     return unless $defn && ($defn ne 'missing');
-    my $box = Digest($arg);
     $defn->setValue($box->getHeight, undef, @args); });
 
-DefPrimitive('\settodepth{Variable}{}', sub {
-    my ($stomach, $var, $arg) = @_;
+DefPrimitive('\settodepth{Variable} HBoxContents', sub {
+    my ($stomach, $var, $box) = @_;
     my ($defn, @args) = @$var;
     return unless $defn && ($defn ne 'missing');
-    my $box = Digest($arg);
     $defn->setValue($box->getDepth, undef, @args); });
 
-DefPrimitive('\settototalheight{Variable}{}', sub {
-    my ($stomach, $var, $arg) = @_;
+DefPrimitive('\settototalheight{Variable} HBoxContents', sub {
+    my ($stomach, $var, $box) = @_;
     my ($defn, @args) = @$var;
     return unless $defn && ($defn ne 'missing');
-    my $box = Digest($arg);
     $defn->setValue($box->getHeight + $box->getDepth, undef, @args); });
 
 #======================================================================
@@ -143,23 +139,23 @@ sub readValue {
   my $peek = $gullet->readXToken();
   # Evaluate <Text Dimen Factors>
   if (Equals($peek, T_CS('\widthof'))) {
-    my $box = Digest($gullet->readArg);
+    my $box = readBoxContents($gullet, undef, 'restricted_horizontal');
     Error('unexpected', $peek, $gullet, "\\widthof not expected here (reading $type)")
       if $type eq 'Number';
     return $box->getWidth; }
   elsif (Equals($peek, T_CS('\heightof'))) {
-    my $box = Digest($gullet->readArg);
+    my $box = readBoxContents($gullet, undef, 'restricted_horizontal');
     Error('unexpected', $peek, $gullet, "\\heightof not expected here (reading $type)")
       if $type eq 'Number';
     return $box->getHeight; }
   elsif (Equals($peek, T_CS('\depthof'))) {
-    my $box = Digest($gullet->readArg);
+    my $box = readBoxContents($gullet, undef, 'restricted_horizontal');
     Error('unexpected', $peek, $gullet, "\\depthof not expected here (reading $type)")
       if $type eq 'Number';
     return $box->getDepth; }
   elsif (Equals($peek, T_CS('\totalheightof'))) {
-    my $box = Digest($gullet->readArg);
-    Error('unexpected', $peek, $gullet, "\\totalheightof not expected here (reading $type)")
+    my $box = readBoxContents($gullet, undef, 'restricted_horizontal');
+   Error('unexpected', $peek, $gullet, "\\totalheightof not expected here (reading $type)")
       if $type eq 'Number';
     return $box->getHeight->add($box->getDepth); }
   # Evaluate <Real> values

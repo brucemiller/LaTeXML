@@ -19,11 +19,27 @@ use LaTeXML::Package;
 # Redefine \documentclass to do nothing
 DefMacro('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []', undef);
 # And {document} environment likewise, but only after the main document starts.
+DefPrimitive('\lx@subfiles@fake@begindocument', sub {
+  my($stomach)=@_;
+  my $nesting = (LookupValue('subfiles_nesting')||0)+1;
+  AssignValue(subfiles_nesting => $nesting, 'global');
+  # Make \end{document} close this fake \begin{document}.
+  Let(T_CS('\end{document}'), T_CS('\lx@subfiles@fake@enddocument'), 'global');
+  $stomach->beginMode('internal_vertical'); });
+
+DefPrimitive('\lx@subfiles@fake@enddocument', sub {
+  my($stomach)=@_;
+  my $nesting = (LookupValue('subfiles_nesting')||0)-1;
+  AssignValue(subfiles_nesting => $nesting, 'global');
+  # Make sure the outermost \end{document} invokes our proper \end{document}!
+  Let(T_CS('\end{document}'), T_CS('\lx@subfiles@saved@enddocument'), 'global') unless $nesting;
+  $stomach->endMode('internal_vertical'); });
+
 AtBeginDocument(sub {
-    DefEnvironment('{document}', "#body", beforeDigest => sub {
-        AssignValue(inPreamble => 0);
-        return; });
-});
+  AssignValue(subfiles_nesting => 0, 'global');
+  Let(T_CS('\lx@subfiles@saved@enddocument'), T_CS('\end{document}'),         'global');
+  Let(T_CS('\begin{document}'),      T_CS('\lx@subfiles@fake@begindocument'), 'global'); });
+
 # Define \subfiles to be \input
 Let('\subfile', '\input');
 

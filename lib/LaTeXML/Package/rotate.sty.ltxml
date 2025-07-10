@@ -48,8 +48,7 @@ DefConstructor('\rotate Optional:l Digested',
         yscale => $yscale,
         #        xtranslate => $w->multiply((1 - $xscale) / 2),
         ytranslate => $h->add($d)->multiply(($yscale - 1) / 2)); } },
-
-  mode => 'text');
+  mode => 'internal_vertical');
 #======================================================================
 1;
 

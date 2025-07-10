@@ -154,7 +154,7 @@ DefEnvironment('{teaserfigure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('figure'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -163,7 +163,7 @@ DefEnvironment('{marginfigure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('figure'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -172,7 +172,7 @@ DefEnvironment('{margintable}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('table'); },
   afterDigest  => sub { afterFloat($_[1]); });
 

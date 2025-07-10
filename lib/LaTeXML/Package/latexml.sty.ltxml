@@ -378,7 +378,7 @@ DefConstructor('\@lxDefMathDeclare{} RequiredKeyVals:XMath', sub {
       $document->insertElement('ltx:text', $description); }
     $document->closeElement('ltx:declare');
     $document->setNode($save); },
-  mode        => 'text',
+  mode   => 'restricted_horizontal',
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my ($id, $kv) = $whatsit->getArgs;
     normalizeDeclareKeys($kv, $whatsit);
@@ -466,8 +466,8 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
         $document->insertElement('ltx:text', $description); }
       $document->closeElement('ltx:declare');
       $document->setNode($save); } },
-  mode         => 'text',
-  beforeDigest => sub { reenterTextMode(); neutralizeFont(); },
+  mode         => 'restricted_horizontal',
+  beforeDigest => sub { neutralizeFont(); },
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
     my ($star, $kv, $pattern) = $whatsit->getArgs;
     return unless $kv;

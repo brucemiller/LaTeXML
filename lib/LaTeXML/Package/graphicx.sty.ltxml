@@ -69,7 +69,7 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
       candidates => join(',', @candidates),
       (defined $alt ? (alt => $alt) : ()),
       options => $options); },
-  mode => 'text');    # Hopefully only to affect reading of arguments
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 
 #**********************************************************************
 1;
