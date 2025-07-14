@@ -128,6 +128,7 @@ sub reparse {
 sub digest {
   no warnings 'recursion';
   my ($self, $stomach, $value, $fordefn) = @_;
+  my $mode = $STATE->lookupValue('MODE');
   # If semiverbatim, Expand (before digest), so tokens can be neutralized; BLECH!!!!
   if ($$self{semiverbatim}) {
     $STATE->beginSemiverbatim(@{ $$self{semiverbatim} });
@@ -146,6 +147,9 @@ sub digest {
   if (my $post = $$self{afterDigest}) {    # Done for effect only.
     &$post($stomach); }                    # maybe pass extras?
   $STATE->endSemiverbatim() if $$self{semiverbatim};    # Corner case?
+  my $newmode = $STATE->lookupValue('MODE');
+  # Avoid changing of mode (but really only controllable if changed to horizontal)
+  $stomach->leaveHorizontal_internal if ($mode ne $newmode) && ($mode ne 'horizontal');
   return $value; }
 
 sub revert {
