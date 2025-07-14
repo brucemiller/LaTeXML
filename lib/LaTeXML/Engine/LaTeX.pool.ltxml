@@ -1903,6 +1903,7 @@ DefMacroI('\@verbatim', undef,
   '\par\aftergroup\lx@end@verbatim\lx@@verbatim');    # Close enough?
 DefConstructorI('\lx@@verbatim', undef,
   "<ltx:verbatim font='#font'>",
+  enterHorizontal => 1,
   beforeDigest => sub {
     my ($stomach) = @_;
     StartSemiverbatim('%', '\\', '{', '}');
@@ -2033,6 +2034,7 @@ DefConstructor('\@internal@math@verb{} Undigested {}',
 DefConstructor('\@internal@text@verb{} Undigested {}',
   "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
   font            => { family => 'typewriter', series => 'medium', shape => 'upright' },
+  enterHorizontal => 1,
   beforeConstruct => sub {
     my ($doc, $whatsit) = @_;
     $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); },
@@ -4268,6 +4270,7 @@ DefConstructor('\lx@bibitem[] Semiverbatim',
   "<ltx:bibitem key='#key' xml:id='#id'>"
     . "#tags"
     . "<ltx:bibblock>",
+  enterHorizontal => 1,
   afterDigest => sub {
     # check if the previous bibitem had an empty body,
     # in which case prune it and reuse its ID and counters.
@@ -4317,7 +4320,8 @@ DefConstructor('\lx@mung@bibliography@pre', sub {
       $document->maybeCloseElement($tag); }    # Or even remove (if empty)?
     return; });
 DefConstructorI('\lx@bibnewblock', undef, sub {
-    $_[0]->openElement('ltx:bibblock') if $_[0]->isOpenable('ltx:bibblock'); });
+  $_[0]->openElement('ltx:bibblock') if $_[0]->isOpenable('ltx:bibblock'); },
+  enterHorizontal => 1);
 Let('\newblock', '\lx@bibnewblock');
 Tag('ltx:bibitem',  autoOpen => 1, autoClose => 1);
 Tag('ltx:bibblock', autoOpen => 1, autoClose => 1);

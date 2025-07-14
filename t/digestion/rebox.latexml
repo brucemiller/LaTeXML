@@ -6,6 +6,7 @@ DefConstructor('\BoxDup{}',
 
 # Deferred reuse of Whatsit
 DefConstructor('\SaveBox{}', "#1",
+  enterHorizontal => 1,
   afterDigest => sub {
     AssignValue(SAVED_WHATSIT => $_[1]->getArg(1), 'global'); });
 DefConstructor('\UseBox', "#savedbox",

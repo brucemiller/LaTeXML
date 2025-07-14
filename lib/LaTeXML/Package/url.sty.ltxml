@@ -78,6 +78,7 @@ DefConstructor('\lx@url@url@nolink Undigested {}{} Semiverbatim {}',
   properties => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[4]),
       class => sub { my $c = ToString($_[1]); $c =~ s/^\\//; 'ltx_' . $c; }); },
   sizer     => '#5',
+  enterHorizontal => 1,
   reversion => '#1#2#4#3');
 
 # These are the expansions of \DeclareUrlCommand
