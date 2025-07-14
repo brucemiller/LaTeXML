@@ -423,11 +423,16 @@ sub leaveHorizontal {
 sub repackHorizontal {
   my($self)=@_;
   my @para = ();
+  my $item;
+  my $mode;
+  my $keep = 0;
   while(@LaTeXML::LIST
-        && (($LaTeXML::LIST[-1]->getProperty('mode')||'horizontal')
+        && ($item = $LaTeXML::LIST[-1])
+        && (($mode = ($item->getProperty('mode')||'horizontal'))
             =~ /^(?:horizontal|restricted_horizontal|inline_math)$/)) {
+    # if ONLY horizontal mode spaces, we can prune them; it just makes an empty ltx:p
+    $keep = 1 if ($mode ne 'horizontal') || ! $item->getProperty('isSpace');
     unshift(@para,pop(@LaTeXML::LIST)); }
-  my $keep = grep { !$_->getProperty('isSpace'); } @para;
   push(@LaTeXML::LIST, List(@para, mode=>'horizontal')) if $keep;
   return; }
 
