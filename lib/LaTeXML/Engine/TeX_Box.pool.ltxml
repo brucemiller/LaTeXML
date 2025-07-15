@@ -59,15 +59,18 @@ DefConstructor('\lx@hidden@egroup', '',
 
 DefConstructor('\lx@framed[]{}',
   "<ltx:text framed='#frame' _noautoclose='1'>#2</ltx:text>",
-  properties => { frame => sub { ToString($_[1] || 'rectangle'); } });
+  properties => { frame => sub { ToString($_[1] || 'rectangle'); } },
+  enterHorizontal => 1);
 
 DefConstructor('\lx@hflipped{}',
-  "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1);
 
 DefConstructor('\lx@overlay{}{}',
   "<ltx:text class='ltx_overlay'>"
     . "<ltx:text class='ltx_overlay_base' _noautoclose='1'>#1</ltx:text>"
-    . "<ltx:text class='ltx_overlay_over' _noautoclose='1'>#2</ltx:text></ltx:text>");
+    . "<ltx:text class='ltx_overlay_over' _noautoclose='1'>#2</ltx:text></ltx:text>",
+  enterHorizontal => 1);
 
 #======================================================================
 DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
@@ -89,6 +92,7 @@ DefPrimitive('\lx@math@nounicode DefToken', sub {
 
 DefConstructor('\lx@text@nounicode DefToken',
   "<ltx:text _noautoclose='true' class='ltx_nounicode'>#1</ltx:text>",
+  enterHorizontal => 1,
   afterDigest => sub {
     reportNoUnicode(ToString($_[1]->getArg(0))); });
 

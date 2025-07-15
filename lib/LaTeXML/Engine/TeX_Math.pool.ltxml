@@ -914,12 +914,14 @@ DefMath('\lx@math@overline{}', UTF(0xAF),
   operator_role => 'OVERACCENT', operator_stretchy => 'true',
   name          => 'overline',   alias             => '\overline');
 DefConstructor('\lx@text@overline{}',
-  "<ltx:text framed='overline' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text framed='overline' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1);
 DefMath('\lx@math@underline{}', UTF(0xAF),
   operator_role => 'UNDERACCENT', operator_stretchy => 'true',
   name          => 'underline',   alias             => '\underline');
 DefConstructor('\lx@text@underline{}',
-  "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1);
 DefMath('\lx@math@overrightarrow{}', "\x{2192}",
   operator_role => 'OVERACCENT',     operator_stretchy => 'true',
   name          => 'overrightarrow', alias             => '\overrightarrow');

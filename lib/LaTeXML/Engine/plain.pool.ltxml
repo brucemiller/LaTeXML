@@ -94,7 +94,8 @@ DefConstructor('\TeX',
     . "<ltx:text cssstyle='font-variant:small-caps;font-size:120%;' yoffset='-0.2ex'>e</ltx:text>"
     . "X"
     . "</ltx:text>",
-  sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); });
+  sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  enterHorizontal => 1);
 DefPrimitiveI('\i', undef, "\x{0131}", robust => 1);    # LATIN SMALL LETTER DOTLESS I
 DefPrimitiveI('\j', undef, "\x{0237}", robust => 1);
 
@@ -1173,6 +1174,7 @@ DefMacroI('\ldots', undef, '\lx@ldots');
 DefConstructorI('\vdots', undef,
   "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
   sizer      => "\x{22EE}",
+  enterHorizontal => 1,
   properties => sub {
     (LookupValue('IN_MATH')
       ? (font => LookupValue('font')->merge(family => 'serif',
@@ -1188,6 +1190,7 @@ DefMathI('\colon', undef, ':',        role => 'METARELOP');    # Seems like good
 DefConstructorI('\dots', undef,
   "?#isMath(<ltx:XMTok name='dots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
   sizer      => "\x{2026}",
+  enterHorizontal => 1,
   properties => sub {
     (LookupValue('IN_MATH')
       ? (font => LookupValue('font')->merge(family => 'serif',

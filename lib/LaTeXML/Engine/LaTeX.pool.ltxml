@@ -448,7 +448,8 @@ DefConstructor('\LaTeX',
     . "<ltx:text cssstyle='font-variant:small-caps;font-size:120%' yoffset='-0.2ex'>e</ltx:text>"
     . "X"
     . "</ltx:text>",
-  sizer => sub { (Dimension('2.6em'), Dimension('1.6ex'), Dimension('0.5ex')); });
+  sizer => sub { (Dimension('2.6em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  enterHorizontal => 1);
 DefConstructor('\LaTeXe',
   "<ltx:text class='ltx_LaTeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.1em'>"
     . "L"
@@ -458,7 +459,8 @@ DefConstructor('\LaTeXe',
     . "X"
     . "\x{2002}2<ltx:text cssstyle='font-style:italic' yoffset='-0.3ex'>\x{03B5}</ltx:text>"
     . "</ltx:text>",
-  sizer => sub { (Dimension('3.7em'), Dimension('1.6ex'), Dimension('0.5ex')); });
+  sizer => sub { (Dimension('3.7em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  enterHorizontal => 1);
 
 DefMacroI('\fmtname',    undef, 'LaTeX2e');
 DefMacroI('\fmtversion', undef, '2018/12/01');
@@ -2629,22 +2631,28 @@ DefConstructor('\lx@stackrel{}{}',
 
 DefConstructorI('\thinspace', undef,
   "?#isMath(<ltx:XMHint name='thinspace' width='#width'/>)(\x{2009})",
-  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip'); } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip'); } },
+  enterHorizontal => 1);
 DefConstructorI('\negthinspace', undef,
   "?#isMath(<ltx:XMHint name='negthinspace' width='#width'/>)()",
-  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip')->negate; } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip')->negate; } },
+  enterHorizontal => 1);
 DefConstructorI('\medspace', undef,
   "?#isMath(<ltx:XMHint name='medspace' width='#width'/>)()",
-  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip'); } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip'); } },
+  enterHorizontal => 1);
 DefConstructorI('\negmedspace', undef,
   "?#isMath(<ltx:XMHint name='negmedspace' width='#width'/>)()",
-  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip')->negate; } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip')->negate; } },
+  enterHorizontal => 1);
 DefConstructorI('\thickspace', undef,
   "?#isMath(<ltx:XMHint name='thickspace' width='#width'/>)(\x{2004})",
-  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip'); } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip'); } },
+  enterHorizontal => 1);
 DefConstructorI('\negthickspace', undef,
   "?#isMath(<ltx:XMHint name='negthickspace' width='#width'/>)(\x{2004})",
-  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip')->negate; } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip')->negate; } },
+  enterHorizontal => 1);
 
 #======================================================================
 # C.7.8 Changing Style
@@ -4014,7 +4022,8 @@ DefConstructor('\ref OptionalMatch:* Semiverbatim',
   "<ltx:ref ?#1(class='ltx_nolink')() labelref='#label' _force_font='true'/>",
   sizer      => '()',                                    # Don't actually know how big this will be!
   properties => sub { (label => CleanLabel($_[2])); },
-  robust     => 1);
+  robust     => 1,
+  enterHorizontal => 1);
 # "page" does not make sense in xml.  If the user really wants, they will need:
 # \usepackage{latexml} ... \iflatexml alternate\else page \pageref{label}\fi
 Let('\pageref', '\ref');
@@ -4379,6 +4388,7 @@ DefConstructor('\@@cite []{}', "<ltx:cite ?#1(class='ltx_citemacro_#1')>#2</ltx:
 DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
   "<ltx:bibref show='#1' bibrefs='#bibrefs' inlist='#bibunit'"
     . " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
+  enterHorizontal => 1,
   properties => sub { (bibrefs => CleanBibKey($_[2]),
       separator   => Digest(LookupValue('CITE_SEPARATOR')),
       yyseparator => Digest(LookupValue('CITE_YY_SEPARATOR')),
@@ -5479,7 +5489,7 @@ DefPrimitive('\DeclareTextFontCommand{}{}', sub {
     my ($stomach, $cmd, $font) = @_;
     DefConstructorI($cmd, "{}",
       "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)",
-       mode => 'restricted_horizontal',
+       mode => 'restricted_horizontal', enterHorizontal => 1,
       beforeDigest => sub { Digest($font); (); });
     return; });
 

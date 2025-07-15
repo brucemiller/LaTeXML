@@ -95,6 +95,7 @@ DefConstructor('\lower Dimension MoveableBox',
   "?&inSVG()(<svg:g transform='#transform' _noautoclose='1'>#2</svg:g>)"
     . "(<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>)",
   sizer       => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)->negate); },
+  enterHorizontal => 1,
   afterDigest => sub {
     my $y         = $_[1]->getArg(1)->multiply(-1);
     my $ypx       = $y->pxValue;
@@ -105,6 +106,7 @@ DefConstructor('\raise Dimension MoveableBox',
   "?&inSVG()(<svg:g transform='#transform' _noautoclose='1'>#2</svg:g>)"
     . "(<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>)",
   sizer       => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)); },
+  enterHorizontal => 1,
   afterDigest => sub {
     my $y         = $_[1]->getArg(1);
     my $ypx       = $y->pxValue;
@@ -119,10 +121,12 @@ DefConstructor('\raise Dimension MoveableBox',
 # \moveleft<dimen><box>, \moveright<dimen><box>
 DefConstructor('\moveleft Dimension MoveableBox',
   "<ltx:text xoffset='#x' _noautoclose='1'>#2</ltx:text>",
+  enterHorizontal => 1,
   afterDigest => sub {
     $_[1]->setProperty(x => $_[1]->getArg(1)->multiply(-1)); });
 DefConstructor('\moveright Dimension MoveableBox',
   "<ltx:text xoffset='#x' _noautoclose='1'>#2</ltx:text>",
+  enterHorizontal => 1,
   afterDigest => sub {
     $_[1]->setProperty(x => $_[1]->getArg(1)); });
 
