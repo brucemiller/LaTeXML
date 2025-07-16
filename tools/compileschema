@@ -77,6 +77,8 @@ echo "Precompiling $SCHEMA.rng schema to $SCHEMA.model"
               \$model->registerNamespace(svg=>'http://www.w3.org/2000/svg');  \
               \$model->registerNamespace(xhtml => 'http://www.w3.org/1999/xhtml'); \
               \$model->registerNamespace(xlink => 'http://www.w3.org/1999/xlink'); \
+              \$model->registerNamespace(aria => 'http://www.w3.org/ns/wai-aria'); \
+              \$model->registerNamespace(data => 'http://dlmf.nist.gov/LaTeXML/data'); \
               \$model->setRelaxNGSchema('$SCHEMA');         \
               \$model->compileSchema;                       \
               print STDERR \$state->getStatusMessage.\"\n\";});" \
