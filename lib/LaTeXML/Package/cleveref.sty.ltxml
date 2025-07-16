@@ -79,6 +79,7 @@ sub crefMulti {
 
 DefConstructor('\lx@cref OptionalMatch:* HyperVerbatim Semiverbatim',
   "<ltx:ref labelref='#label' show='#2' ?#1(class='ltx_nolink')() _force_font='true'/>",
+  enterHorizontal => 1,
   properties => sub { (label => CleanLabel($_[3])); });
 
 DefMacro('\cref OptionalMatch:* Semiverbatim', sub { crefMulti($_[1], $_[2], 1, 0); });

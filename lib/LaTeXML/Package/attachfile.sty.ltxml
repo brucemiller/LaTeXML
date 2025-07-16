@@ -50,15 +50,19 @@ sub attachfileAttributes {
 
 DefConstructor('\lx@noattachfile RequiredKeyVals',
   "<ltx:text color='#color'>#icon<ltx:text/>",
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub { attachfileAttributes(undef, $_[1]); });
 DefConstructor('\lx@notextattachfile RequiredKeyVals {}',
   "<ltx:text color='#color'>#2<ltx:text>",
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub { attachfileAttributes(undef, $_[1]); });
 DefConstructor('\lx@attachfile RequiredKeyVals {}',
   "<ltx:ref href='#file' color='#color'>#icon</ltx:ref>",
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub { attachfileAttributes($_[2], $_[1]); });
 DefConstructor('\lx@textattachfile RequiredKeyVals {}{}',
   "<ltx:ref href='#file' color='#color'>#3</ltx:ref>",
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub { attachfileAttributes($_[2], $_[1]); });
 #======================================================================
 1;

@@ -192,7 +192,8 @@ DefMacro('\tablename',                    'TABLE');
 DefMacro('\thetable',                     '\Roman{table}');
 
 DefConstructor('\IEEEQEDclosed',
-  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
+  enterHorizontal => 1);
 Let('\IEEEQEDopen', '\IEEEQEDclosed');
 Let('\IEEEQED',     '\IEEEQEDclosed');
 
@@ -427,6 +428,7 @@ Let('\QEDopen',   '\IEEEQEDopen');
 DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
+  enterHorizontal => 1,
   reversion => '\qed');
 Let('\proof',    '\IEEEproof');
 Let('\endproof', '\endIEEEproof');

@@ -35,6 +35,7 @@ DefKeyVal('epsGin', 'silent', '');
 DefConstructor('\psfig RequiredKeyVals:epsGin',
   "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",
   sizer      => \&image_graphicx_sizer,
+  enterHorizontal => 1,
   properties => sub {
     my ($stomach, $kv) = @_;
     my $file = $kv->getValue('file') || $kv->getValue('figure');

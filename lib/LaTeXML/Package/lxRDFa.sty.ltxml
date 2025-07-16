@@ -221,7 +221,8 @@ PushValue('@at@begin@document', (T_CS('\let'), T_CS('\lxRDF'), T_CS('\lxRDF@body
 # such as the current subject, chaining or whatever.
 # Thus, you may want to give an explicit about.
 DefConstructor('\lxRDFAnnotate RequiredKeyVals:RDFa {}',
-  "<ltx:text %&RDFAttributes(#1,#2)>#2</ltx:text>");
+  "<ltx:text %&RDFAttributes(#1,#2)>#2</ltx:text>",
+  enterHorizontal => 1);
 
 #======================================================================
 # Other shorthands might be useful, like
