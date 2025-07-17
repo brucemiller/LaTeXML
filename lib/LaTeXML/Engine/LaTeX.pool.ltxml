@@ -953,15 +953,13 @@ DefPrimitive('\PassOptionsToPackage{}{}', sub {
     my ($stomach, $options, $name) = @_;
     $name = ToString($name);
     $name =~ s/\s+//g;
-    $options = [TrimmedCommaList(Expand($options))];
-    PassOptions($name, 'sty', $options); });
+    PassOptions($name, 'sty', TrimmedCommaList(Expand($options))); });
 
 DefPrimitive('\PassOptionsToClass{}{}', sub {
     my ($stomach, $options, $name) = @_;
     $name = ToString($name);
     $name =~ s/\s+//g;
-    $options = [TrimmedCommaList(Expand($options))];
-    PassOptions($name, 'cls', $options); });
+    PassOptions($name, 'cls', TrimmedCommaList(Expand($options))); });
 
 DefConstructor('\RequirePackageWithOptions Semiverbatim []',
   "<?latexml package='#1'?>",
@@ -2291,7 +2289,7 @@ DefConstructor('\lx@equationgroup@subnumbering@begin',
     AssignValue(SAVED_EQUATION_NUMBER => LookupRegister('\c@equation'));
     $whatsit->setProperties(%eqn);
     ResetCounter('equation');
-    DefMacroI('\theequation',    undef, UnTeX($eqnum, 1) . '\alph{equation}');
+    DefMacroI('\theequation',    undef, UnTeX($eqnum,   1) . '\alph{equation}');
     DefMacroI('\theequation@ID', undef, UnTeX($eqn{id}, 1) . '.\@equation@ID'); });
 Tag('ltx:equationgroup', autoClose => 1);
 DefConstructor('\lx@equationgroup@subnumbering@end', sub {
