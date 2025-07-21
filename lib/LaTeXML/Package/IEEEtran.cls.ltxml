@@ -442,6 +442,15 @@ Let('\endbiographynophoto', '\endIEEEbiographynophoto');
 # TODO: Maybe once we can emulate ".bst" files natively this comes into play?
 DefMacro('\bstctlcite[]{}', Tokens());
 
+### Disable the internal alignment-related environment, as it gets used for low-level tricks such as arXiv:2210.00108v4
+### \newcommand{\linebreakand}{%
+###   \end{@IEEEauthorhalign}
+###   \hfill\mbox{}\par
+###   \mbox{}\hfill\begin{@IEEEauthorhalign}
+### }
+DefMacroI(T_CS('\begin{@IEEEauthorhalign}'), undef, T_CS('\relax'));
+DefMacroI(T_CS('\end{@IEEEauthorhalign}'),   undef, T_CS('\relax'));
+
 #======================================================================
 
 1;
