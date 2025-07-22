@@ -59,6 +59,7 @@ DefMacro('\lx@AC@if{}{}{}', sub {
 # \lx@acronym{acronym}{listname}{showform}
 DefConstructor('\lx@acronym Undigested {}{}{}',
   "<ltx:glossaryref key='#2' inlist='#3' show='#4'/>",
+  enterHorizontal => 1,
   reversion => '#1{#2}');
 
 DefMacro('\AC@acs{}',  '\lx@acronym{\acs}{#1}{acronym}{short}');

@@ -108,6 +108,7 @@ DefMacro('\nextstep', '
 ');
 
 DefConstructor('\spec {}', "<ltx:text framed='underline'>#1</ltx:text>",
+  enterHorizontal => 1,
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -115,6 +116,7 @@ DefConstructor('\spec {}', "<ltx:text framed='underline'>#1</ltx:text>",
     return;
   });
 DefConstructor('\speca {}', "<ltx:text framed='rectangle'>#1 </ltx:text>",
+  enterHorizontal => 1,
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);

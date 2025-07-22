@@ -34,8 +34,9 @@ DefPrimitive(T_BEGIN, sub {
     $stomach->bgroup;
     my $open   = Box(undef, undef, undef, T_BEGIN, isEmpty => 1, alignmentSkippable => 1);
     my $ismath = $STATE->lookupValue('IN_MATH');
+    my $mode   = $STATE->lookupValue('MODE');
     my @body   = $stomach->digestNextBody();
-    List($open, @body, mode => ($ismath ? 'math' : 'text')); });
+    List($open, @body, mode => $mode); });
 
 #######DefPrimitive('}', sub {
 DefPrimitive(T_END, sub {
@@ -58,15 +59,18 @@ DefConstructor('\lx@hidden@egroup', '',
 
 DefConstructor('\lx@framed[]{}',
   "<ltx:text framed='#frame' _noautoclose='1'>#2</ltx:text>",
-  properties => { frame => sub { ToString($_[1] || 'rectangle'); } });
+  properties => { frame => sub { ToString($_[1] || 'rectangle'); } },
+  enterHorizontal => 1);
 
 DefConstructor('\lx@hflipped{}',
-  "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1);
 
 DefConstructor('\lx@overlay{}{}',
   "<ltx:text class='ltx_overlay'>"
     . "<ltx:text class='ltx_overlay_base' _noautoclose='1'>#1</ltx:text>"
-    . "<ltx:text class='ltx_overlay_over' _noautoclose='1'>#2</ltx:text></ltx:text>");
+    . "<ltx:text class='ltx_overlay_over' _noautoclose='1'>#2</ltx:text></ltx:text>",
+  enterHorizontal => 1);
 
 #======================================================================
 DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
@@ -88,6 +92,7 @@ DefPrimitive('\lx@math@nounicode DefToken', sub {
 
 DefConstructor('\lx@text@nounicode DefToken',
   "<ltx:text _noautoclose='true' class='ltx_nounicode'>#1</ltx:text>",
+  enterHorizontal => 1,
   afterDigest => sub {
     reportNoUnicode(ToString($_[1]->getArg(0))); });
 
@@ -127,49 +132,43 @@ DefParameterType('BoxSpecification', sub {
 # but parameter think's it's just parsing from gullet...
 sub readBoxContents {
   no warnings 'recursion';
-  my ($gullet, $everybox) = @_;
+  my ($gullet, $everybox, $mode) = @_;
+  my $stomach = $STATE->getStomach;
   my $t;
   while (($t = $gullet->readToken) && !$t->defined_as(T_BEGIN)) { }    # Skip till { or \bgroup
-      # Now, insert some extra tokens, if any, possibly from \afterassignment
+  # Now, insert some extra tokens, if any, possibly from \afterassignment
   if (my $token = LookupValue('BeforeNextBox')) {
     AssignValue(BeforeNextBox => undef, 'global');
     $gullet->unread($token); }
   # AND, insert any extra tokens passed in, due to everyhbox or everyvbox
   $gullet->unread($everybox->unlist) if $everybox;
-  my ($contents, @leftover) = $STATE->getStomach->invokeToken(T_BEGIN);
-  my @stuff = $contents->unlist;
-  shift(@stuff); pop(@stuff);   # strip outer braces
-  return List(@stuff); }
+  $stomach->beginMode($mode);   # and new group!
+  my $token;
+  # Like $stomach->invokeToken(T_BEGIN), but building List in correct mode
+  local @LaTeXML::LIST = ();
+  while (defined($t = $gullet->getPendingComment || $gullet->readXToken(1))) {
+    last if $t->defined_as(T_END);
+    push(@LaTeXML::LIST, $stomach->invokeToken($t)); }
+  $stomach->endMode($mode);     # end mode, and close extra group
+  return List(@LaTeXML::LIST, mode=>$mode); }
 
 DefRegister('\everyhbox', Tokens());
 DefRegister('\everyvbox', Tokens());
 
 DefParameterType('HBoxContents', sub {
-    readBoxContents($_[0], LookupValue('\everyhbox')); },
+    readBoxContents($_[0], LookupValue('\everyhbox'), 'restricted_horizontal'); },
   undigested => 1,    # Cause it already is digested!
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 DefParameterType('VBoxContents', sub {
-    readBoxContents($_[0], LookupValue('\everyvbox')); },
+    readBoxContents($_[0], LookupValue('\everyvbox'), 'internal_vertical'); },
   undigested => 1,    # Cause it already is digested!
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
-# This re-binds a number of important control sequences to their default text binding.
-# This is useful within common boxing or footnote macros that can appear within
-# alignments or special environments that have redefined many of these.
-# You'll typically want this within a group or bounded=>1.
-AssignValue(TEXT_MODE_BINDINGS  => []);
-AssignValue(HTEXT_MODE_BINDINGS => []);
-AssignValue(VTEXT_MODE_BINDINGS => []);
-PushValue(HTEXT_MODE_BINDINGS => [T_MATH, T_CS('\lx@dollar@in@textmode')]);
-PushValue(VTEXT_MODE_BINDINGS => [T_MATH, T_CS('\lx@dollar@in@normalmode')]);
-###PushValue(TEXT_MODE_BINDINGS => [T_CS('\centerline'), T_CS('\relax')]);
 
+# Obsolete/Deprecated
 sub reenterTextMode {
   my ($verticalmode) = @_;
-  map { Let($$_[0], $$_[1]) }
-    @{ LookupValue(($verticalmode ? 'VTEXT_MODE_BINDINGS' : 'HTEXT_MODE_BINDINGS')) },
-    @{ LookupValue('TEXT_MODE_BINDINGS') };
   return }
 
 # Similarly, for metadata appearing within peculiar environments, fonts, etc
@@ -304,11 +303,11 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     my $model   = $document->getModel;
     my $current = $document->getElement;
-
+    my $tag     = $current && $document->getNodeQName($current);
     # What is the CORRECT (& general) way to ask whether we're in "vertical mode"??
     #  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
-    my $issvg  = $current && $document->getNodeQName($current) =~ /^svg:/;
-    my $vmode  = $current && $current->getAttribute('_vertical_mode_');
+    my $issvg  = $current && $tag =~ /^svg:/;
+    my $vmode  = $current && ($tag eq 'ltx:_CaptureBlock_'); # if going into insertBlock
     my $inline = $document->canContain($current, '#PCDATA');
     my $newtag = ($issvg ? 'svg:g' : ($vmode ? ($inline ? 'ltx:inline-block' : 'ltx:p') : 'ltx:text'));
     my $node   = $document->openElement($newtag, _noautoclose => 1, width => $props{width});
@@ -321,12 +320,8 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
       $document->maybeCloseElement('svg:svg'); }
     $document->maybeCloseNode($node);
   },
-  mode  => 'text', bounded => 1,
+  mode  => 'restricted_horizontal',
   sizer => '#2',
-  # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
-  # And also things like \centerline that will end up bumping up to block level!
-  beforeDigest => sub { reenterTextMode(); },
-
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
@@ -392,6 +387,15 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
               .'--fo_depth :' . $d->emValue(undef,$f).'em;');
  } });
 
+sub isVAttached {
+  my ($node) = @_;
+  while($node) {
+    return 1 if $node->hasAttribute('vattach');
+    my (@children) = $node->childNodes;
+    return if (scalar(@children) != 1) || ($children[0]->nodeType != XML_ELEMENT_NODE);
+    $node = $children[0]; }
+  return; }
+
 # This attempts to be a generalize vbox construction;
 # The idea is to receeive block-like material, possibly wrapped in appropriate
 # container which gets attributes.
@@ -416,7 +420,7 @@ sub insertBlock {
   if(my $w = $is_svg && $blockattr{width}) {
     $blockattr{width} = $w->emValue(undef, $contents->getFont) . "em" if ref $w; }
   my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
-  my $container = $document->openElement('ltx:_CaptureBlock_', '_vertical_mode_' => 1, %blockattr);
+  my $container = $document->openElement('ltx:_CaptureBlock_', %blockattr);
   $document->absorb($contents);
   my @nodes     = content_nodes($container);
   my @node_tags = map { $document->getNodeQName($_); } @nodes;
@@ -424,8 +428,12 @@ sub insertBlock {
   $document->closeToNode($container, 1);
   $document->closeNode($container);
   $document->closeToNode($context, 1);
+  # Hack: apparently TeX doesn't shift (vattach) a single node in a vbox/vtop/...
+  if(($nnodes == 1) && exists($blockattr{vattach}) && isVAttached($nodes[0])) {
+    $container->removeAttribute('vattach');
+    delete $blockattr{vattach}; 
+    $ignorable_attr = $is_svg || !scalar(keys %blockattr); }
   my $newcontainer;
-
   if ($nnodes < 1) {    # Insertion came up empty?
     $document->removeNode($container); }    # then remove the new block entirely
   elsif ($ignorable_attr                    # No attributes, contents allowed in context?
@@ -463,38 +471,63 @@ sub insertBlock {
   }
   return @nodes; }
 
+# Make sure the vbox/vtop attachment propogates to arg, when \halign or paragraph.
+sub hackVBoxAttachment {
+  my ($box, $valign) = @_;
+  # APPARENTLY \halign in TeX is processed into a internal_vertical list
+  # which can get the valign adjustment. So we need to copy it over to the Alignment
+  # But this does NOT affect {tabular} environments!
+  if(my $alignment = $box && $box->getProperty('alignment')){
+    my $def = $box->getDefinition;
+    if($def && ($def->getCSName eq '\halign')){
+      if(my $attr = $alignment->getProperty('attributes')){
+        $$attr{vattach} = $valign; } } }
+  else {
+    $box->setProperty(vattach => $valign); }
+  return; }
+
 DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
-    my @block = insertBlock($document, $contents, vattach => 'bottom'); },
+    # is_vbox property detects nested \vbox|\vtop : only inner one affects vattach!
+    my @block = ($contents->getProperty('is_vbox')
+                 ? $document->absorb($contents)
+                 : insertBlock($document, $contents, vattach => 'bottom')); },
   sizer       => '#2',
-  properties  => { layout => 'vertical', vattach => 'bottom' },
-  mode        => 'text',
+  properties  => { vattach => 'bottom' },
+  mode        => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
+    hackVBoxAttachment($box, 'bottom');
     if (my $h = GetKeyVal($spec, 'to')) {
       $whatsit->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setHeight($box->getHeight->add($s)); }
     $whatsit->setProperty(content_box => $box);
+    $whatsit->setProperty(is_vbox => 1);
     return; });
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
-    insertBlock($document, $contents, vattach => 'top'); },
+    # is_vbox property detects nested \vbox|\vtop : only inner one affects vattach!
+    my @block = ($contents->getProperty('is_vbox')
+                 ? $document->absorb($contents)
+                 : insertBlock($document, $contents, vattach => 'top')); },
   sizer       => '#2',
-  properties  => { layout => 'vertical', vattach => 'baseline' },
-  mode        => 'text',
+  properties  => { vattach => 'top' },
+  mode        => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
+    hackVBoxAttachment($box, 'top');
     if (my $h = GetKeyVal($spec, 'to')) {
       $whatsit->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setHeight($box->getHeight->add($s)); }
     $whatsit->setProperty(content_box => $box);
+    $whatsit->setProperty(is_vbox => 1);
     return; });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -609,39 +642,57 @@ sub _color_adjust {
   return $adj; }
 
 DefPrimitive('\box Number', sub {
-    my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = adjustBoxColor(LookupValue($box));
-    AssignValue($box, undef, 'inplace');
-    ($stuff ? $stuff : List()); });
+  my ($stomach, $n) = @_;
+  my $box   = 'box' . $n->valueOf;
+  my $stuff = adjustBoxColor(LookupValue($box));
+  AssignValue($box, undef, 'inplace');
+  return ($stuff ? $stuff : ()); });
 
 DefPrimitive('\copy Number', sub {
-    my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = adjustBoxColor(LookupValue($box));
-    ($stuff ? $stuff : List()); });
+  my ($stomach, $n) = @_;
+  my $box   = 'box' . $n->valueOf;
+  my $stuff = adjustBoxColor(LookupValue($box));
+  return ($stuff ? $stuff : ()); });
 
 # \unhbox<8bit>, \unhcopy<8bit>
 DefPrimitive('\unhbox Number', sub {
-    my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = adjustBoxColor(LookupValue($box));
-    AssignValue($box, undef, 'inplace');
-    (defined $stuff ? $stuff->unlist : List()); });
+  my ($stomach, $n) = @_;
+  my $box   = 'box' . $n->valueOf;
+  my $stuff = adjustBoxColor(LookupValue($box));
+  my $m     = ($stuff && $stuff->getProperty('mode')) || '';
+  $stomach->enterHorizontal;
+  AssignValue($box, undef, 'inplace');
+  # Only unlist if box is horizontal
+  return (!defined $stuff ? () : ($m =~ /horizontal$/ ? $stuff->unlist : $stuff)); });
 
 DefPrimitive('\unhcopy Number', sub {
-    my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = adjustBoxColor(LookupValue($box));
-    (defined $stuff ? $stuff->unlist : List()); });
+  my ($stomach, $n) = @_;
+  my $box   = 'box' . $n->valueOf;
+  my $stuff = adjustBoxColor(LookupValue($box));
+  my $m     = ($stuff && $stuff->getProperty('mode')) || '';
+  $stomach->enterHorizontal;
+  # Only unlist if box is horizontal
+  return (!defined $stuff ? () : ($m =~ /horizontal$/ ? $stuff->unlist : $stuff)); });
 
 # \unvbox<8bit>, \unvcopy<8bit>
 DefPrimitive('\unvbox Number', sub {
-    my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = adjustBoxColor(LookupValue($box));
-    AssignValue($box, undef, 'inplace');
-    (defined $stuff ? $stuff->unlist : List()); });
+  my ($stomach, $n) = @_;
+  my $box   = 'box' . $n->valueOf;
+  my $stuff = adjustBoxColor(LookupValue($box));
+  my $m     = ($stuff && $stuff->getProperty('mode')) || '';
+  $stomach->leaveHorizontal;
+  AssignValue($box, undef, 'inplace');
+  # Only unlist if box is vertical
+  return (!defined $stuff ? () : ($m =~ /vertical$/ ? $stuff->unlist : $stuff)); });
 
 DefPrimitive('\unvcopy Number', sub {
-    my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = adjustBoxColor(LookupValue($box));
-    (defined $stuff ? $stuff->unlist : List()); });
+  my ($stomach, $n) = @_;
+  my $box   = 'box' . $n->valueOf;
+  my $stuff = adjustBoxColor(LookupValue($box));
+  my $m     = ($stuff && $stuff->getProperty('mode')) || '';
+  $stomach->leaveHorizontal;
+  # Only unlist if box is vertical
+  return (!defined $stuff ? () : ($m =~ /vertical$/ ? $stuff->unlist : $stuff)); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Various box related parameters
@@ -702,6 +753,7 @@ DefConstructor('\vrule RuleSpecification',
     my $width  = GetKeyVal($dims, 'width');    # || Dimension('0.4pt');
     my $height = GetKeyVal($dims, 'height');
     my $depth  = GetKeyVal($dims, 'depth');
+    $stomach->enterHorizontal;
     $whatsit->setProperties(
       rwidth  => $width,  cwidth  => $width || Dimension('0.4pt'),
       rheight => $height, cheight => ($height), sheight => ($height ? $height->pxValue : 0),
@@ -736,6 +788,7 @@ DefConstructor('\hrule RuleSpecification',
     my $width  = GetKeyVal($dims, 'width');
     my $height = GetKeyVal($dims, 'height');
     my $depth  = GetKeyVal($dims, 'depth');
+    $stomach->leaveHorizontal;
     $whatsit->setProperties(
       rwidth  => $width  || '100%', cwidth  => $width, swidth => ($width ? $width->pxValue : 0),
       rheight => $height || '1px',  cheight => ($height || Dimension('0.4pt')),

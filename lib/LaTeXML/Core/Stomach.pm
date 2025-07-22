@@ -30,6 +30,8 @@ use LaTeXML::Core::Definition;
 use Scalar::Util qw(blessed);
 use base         qw(LaTeXML::Common::Object);
 
+DebuggableFeature('modes');
+
 #**********************************************************************
 sub new {
   my ($class, %options) = @_;
@@ -43,7 +45,8 @@ sub initialize {
   $$self{boxing}      = [];
   $$self{token_stack} = [];
   $$self{progress}    = 0;
-  $STATE->assignValue(MODE              => 'text',           'global');
+  $STATE->assignValue(BOUND_MODE        => 'vertical',       'global');
+  $STATE->assignValue(MODE              => 'vertical',       'global');
   $STATE->assignValue(IN_MATH           => 0,                'global');
   $STATE->assignValue(PRESERVE_NEWLINES => 1,                'global');
   $STATE->assignValue(afterGroup        => [],               'global');
@@ -128,6 +131,7 @@ sub digest {
       my ($gullet) = @_;
       $gullet->unread($tokens);
       $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+      my $mode      = $STATE->lookupValue('MODE');
       my $ismath    = $STATE->lookupValue('IN_MATH');
       my $initdepth = scalar(@{ $$self{boxing} });
       local @LaTeXML::LIST = ();
@@ -135,7 +139,7 @@ sub digest {
             $$self{gullet}->getPendingComment || $$self{gullet}->readXToken(1))) {
         push(@LaTeXML::LIST, invokeToken($self, $token));
         last if $initdepth > scalar(@{ $$self{boxing} }); }    # if we've closed the initial mode.
-      List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text'));
+      List(@LaTeXML::LIST, mode => $mode);
     }); }
 
 # Invoke a token;
@@ -230,9 +234,10 @@ sub invokeToken_simple {
   my $font = $STATE->lookupValue('font');
   if ($cc == CC_SPACE) {
     $STATE->clearPrefixes;                   # prefixes shouldn't apply here.
-    if ($STATE->lookupValue('IN_MATH')) {    # (but in Preamble, OK ?)
+    if($STATE->lookupValue('MODE') =~ /(?:math|vertical)$/) {
       return (); }
     else {
+      enterHorizontal($self);
       return Box($meaning->toString, $font, $$self{gullet}->getLocator, $meaning); } }
   elsif ($cc == CC_COMMENT) {                # Note: Comments need char decoding as well!
     my $comment = LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1);
@@ -247,6 +252,7 @@ sub invokeToken_simple {
       my ($glyph, $f, $reversion, %props) = LaTeXML::Package::decodeMathChar($mathcode, $meaning);
       return Box($glyph, $f, undef, $reversion, %props); }
     else {
+      enterHorizontal($self);
       return Box(LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1),
         undef, undef, $meaning); } } }
 
@@ -347,57 +353,162 @@ sub endgroup {
 #======================================================================
 # Mode (minimal so far; math vs text)
 # Could (should?) be taken up by Stomach by building horizontal, vertical or math lists ?
+# Modes describe how TeX assembles boxes being Box, List (of boxes) & Whatsits into pages
+# All modes except horizontal are bound in State and explicitly begun and ended using
+# $stomach->(begin|end)Mode; which also effect grouping.
+# The modes are:
+#  vertical : a vertical stack of boxes, like block. The initial mode of TeX.
+#     It is a bound mode, but is never entered explicitly.
+#     It can be resumed from horizontal mode by $stomach->leaveHorizontal
+#  internal_vertical : Also a bound vertical mode, specifically set by \vbox,
+#     and should normally be set for most vertically laid out blocks.
+#     It can be resumed from horizontal mode by $stomach->leaveHorizontal
+#    (probably indistinguishable from vertical in LaTeXML. Theoretically, it does not
+#     allow page breaks and may affect timing of \insert?)
+#  horizontal : essentially paragraph mode, allowing for line-breaks.
+#     It is NOT a bound mode, but is switched-to by non-vertical material digested
+#     while in a vertical mode ($stomach->enterHorizontal). If vertical material
+#     is encountered while in horizontal mode, $stomach->leaveHorizontal returns
+#     to vertical mode.
+#     Generally should get a width being the current pagewidth.
+#  restricted_horizontal : running horizontal text, without line-breaks.
+#     This is a bound mode set by \hbox.
+#     It is the default mode for digesting Whatsit arguments, although they
+#     may be absorbed into paragraphs where line-breaks occur.
+#  inline_math : math within a horizontal mode. A bound mode.
+#  display_math : math within a vertical mode. A bound mode.
+#     Should be illegal in restricted_horizontal mode;
+#     Should leaveHorizontal if in horizontal mode.
+#----------------------------------------------------------------------
+# These are the only modes that you can beginMode|endMode, and must be entered that way.
+our %bindable_mode = (
+    text                  => 'restricted_horizontal',
+    restricted_horizontal => 'restricted_horizontal',
+    vertical              => 'internal_vertical',
+    internal_vertical     => 'internal_vertical',
+    inline_math           => 'inline_math',
+    display_math          => 'display_math');
 
-# This sets the mode without doing any grouping (NOR does it stack the modes!!)
-# Useful for environments, where the group has already been established.
-# (presumably, in the long run, modes & groups should be much less coupled)
-sub setMode {
-  my ($self, $mode) = @_;
-  my $prevmode = $STATE->lookupValue('MODE');
-  my $ismath   = $mode =~ /math$/;
-  $STATE->assignValue(MODE    => $mode,   'local');
-  $STATE->assignValue(IN_MATH => $ismath, 'local');
-  my $curfont = $STATE->lookupValue('font');
-  if    ($mode eq $prevmode) { }
-  elsif ($ismath) {
-    # When entering math mode, we set the font to the default math font,
-    # and save the text font for any embedded text.
-    $STATE->assignValue(savedfont         => $curfont, 'local');
-    $STATE->assignValue(script_base_level => scalar(@{ $$self{boxing} }));    # See getScriptLevel
-    my $isdisplay = $mode =~ /^display/;
-    my $mathfont  = $STATE->lookupValue('mathfont')->merge(
-      color     => $curfont->getColor, background => $curfont->getBackground,
-      size      => $curfont->getSize,
-      mathstyle => ($isdisplay ? 'display' : 'text'));
-    $STATE->assignValue(font              => $mathfont, 'local');
-    $STATE->assignValue(initial_math_font => $mathfont, 'local');
-    $STATE->assignValue(fontfamily        => -1,        'local');
-    my $every = ($isdisplay ? T_CS('\everydisplay') : T_CS('\everymath'));
-    my $ereg  = $STATE->lookupDefinition($every);
-    if (my $toks = $ereg && $ereg->isRegister && $ereg->valueOf()) {
-      $self->getGullet->unread($toks); } }
+# Switch to horizontal mode, w/o stacking the mode
+# Can really only switch to horizontal mode from vertical|internal_vertical,
+# so no math, font, etc changes are needed.
+sub enterHorizontal {
+  my($self) = @_;
+  my $mode  = $STATE->lookupValue('MODE');
+  if($mode =~ /vertical$/){
+    Debug("MODE entering $mode => horizontal, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+        if $LaTeXML::DEBUG{modes};
+    $STATE->assignValue(MODE => 'horizontal', 'inplace'); } # SAME frame as BOUND_MODE!
+  elsif (($mode =~ /horizontal$/) || ($mode =~ /math$/)) { } # ignorable?
   else {
-    # When entering text mode, we should set the font to the text font in use before the math
-    # but inherit color and size
-    $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
-        color => $curfont->getColor, background => $curfont->getBackground,
-        size  => $curfont->getSize), 'local'); }
+    Warn('unexpected',$mode,$self,
+      "Cannot switch to horizontal mode from $mode"); }
   return; }
 
+# Resume vertical mode, if in horizontal mode, by executing \par, in TeX-like fashion.
+sub leaveHorizontal {
+  my($self) = @_;
+  my $mode  = $STATE->lookupValue('MODE');
+  my $bound = $STATE->lookupValue('BOUND_MODE');
+  # This needs to be an invisible, and slightly gentler, \par (see \lx@normal@par)
+  # BUT still allow user defined \par !
+  if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
+    local $LaTeXML::INTERNAL_PAR = 1;
+    push(@LaTeXML::LIST, $self->invokeToken(T_CS('\par'))); }
+  return; }
+
+# Repack recently digested horizontal items into single horizontal List.
+# Note that TeX would have done paragraph line-breaking, resulting in essentially
+# a vertical list.
+sub repackHorizontal {
+  my($self)=@_;
+  my @para = ();
+  my $item;
+  my $mode;
+  my $keep = 0;
+  while(@LaTeXML::LIST
+        && ($item = $LaTeXML::LIST[-1])
+        && (($mode = ($item->getProperty('mode')||'horizontal'))
+            =~ /^(?:horizontal|restricted_horizontal|inline_math)$/)) {
+    # if ONLY horizontal mode spaces, we can prune them; it just makes an empty ltx:p
+    $keep = 1 if ($mode ne 'horizontal') || ! $item->getProperty('isSpace');
+    unshift(@para,pop(@LaTeXML::LIST)); }
+  push(@LaTeXML::LIST, List(@para, mode=>'horizontal')) if $keep;
+  return; }
+
+# Resume vertical mode, internal form: reset mode, and repacks recently
+# digested horizontal items. This is useful within argument digestion, eg.
+sub leaveHorizontal_internal {
+  my($self) = @_;
+  my $mode  = $STATE->lookupValue('MODE');
+  my $bound = $STATE->lookupValue('BOUND_MODE');
+  # This needs to be an invisible, and slightly gentler, \par (see \lx@normal@par)
+  # BUT still allow user defined \par !
+  if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
+    Debug("MODE leaving $mode => $bound, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+        if $LaTeXML::DEBUG{modes};
+    repackHorizontal($self);
+    $STATE->assignValue(MODE => $bound, 'inplace'); }
+ return; }
+
 sub beginMode {
-  my ($self, $mode) = @_;
-  pushStackFrame($self);    # Effectively bgroup
-  setMode($self, $mode);
+  my ($self, $umode) = @_;
+  if (my $mode = $bindable_mode{$umode}) {
+    my $prevmode = $STATE->lookupValue('BOUND_MODE');
+    my $ismath   = $mode =~ /math$/;
+    my $wasmath  = $prevmode =~ /math$/;
+    pushStackFrame($self);    # Effectively bgroup
+    $STATE->assignValue(BOUND_MODE => $mode,   'local'); # New value within this frame!
+    $STATE->assignValue(MODE       => $mode,   'local');
+    $STATE->assignValue(IN_MATH    => $ismath, 'local');
+    Debug("MODE binding $prevmode => $mode, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+        if $LaTeXML::DEBUG{modes};
+    my $curfont = $STATE->lookupValue('font');
+    if    ($mode eq $prevmode) { }
+    elsif ($ismath) {
+      # When entering math mode, we set the font to the default math font,
+      # and save the text font for any embedded text.
+      $STATE->assignValue(savedfont         => $curfont, 'local');
+      $STATE->assignValue(script_base_level => scalar(@{ $$self{boxing} }));    # See getScriptLevel
+      my $isdisplay = $mode =~ /^display/;
+      my $mathfont  = $STATE->lookupValue('mathfont')->merge(
+        color     => $curfont->getColor, background => $curfont->getBackground,
+        size      => $curfont->getSize,
+        mathstyle => ($isdisplay ? 'display' : 'text'));
+      $STATE->assignValue(font              => $mathfont, 'local');
+      $STATE->assignValue(initial_math_font => $mathfont, 'local');
+      $STATE->assignValue(fontfamily        => -1,        'local');
+      my $every = ($isdisplay ? T_CS('\everydisplay') : T_CS('\everymath'));
+      my $ereg  = $STATE->lookupDefinition($every);
+      if (my $toks = $ereg && $ereg->isRegister && $ereg->valueOf()) {
+        $self->getGullet->unread($toks); } }
+    elsif($wasmath) {
+      # When entering text mode, we should set the font to the text font in use before the math
+      # but inherit color and size
+      $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
+          color => $curfont->getColor, background => $curfont->getBackground,
+          size  => $curfont->getSize), 'local'); }
+  }
+  else {
+    Warn('unexpected',$mode,$self, "Cannot enter $mode mode"); }
   return; }
 
 sub endMode {
-  my ($self, $mode) = @_;
-  if ((!$STATE->isValueBound('MODE', 0))    # Last stack frame was NOT a mode switch!?!?!
-    || ($STATE->lookupValue('MODE') ne $mode)) {    # Or was a mode switch to a different mode
-    Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self, "Attempt to end mode $mode",
-      currentFrameMessage($self)); }
-  else {    # Don't pop if there's an error; maybe we'll recover?
-    popStackFrame($self); }    # Effectively egroup.
+  my ($self, $umode) = @_;
+  if (my $mode = $bindable_mode{$umode}) {
+    if ((!$STATE->isValueBound('BOUND_MODE', 0))    # Last stack frame was NOT a mode switch!?!?!
+      || ($STATE->lookupValue('BOUND_MODE') ne $mode)) {    # Or was a mode switch to a different mode
+      # Don't pop if there's an error; maybe we'll recover?
+      Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self, "Attempt to end mode $mode",
+        currentFrameMessage($self)); }
+    else {
+      leaveHorizontal_internal($self) if $mode =~ /vertical$/; # nopar version!
+      popStackFrame($self);        # Effectively egroup.
+      Debug("MODE unbinding $mode => ".$STATE->lookupValue('MODE').", due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+          if $LaTeXML::DEBUG{modes};
+    }}
+  else {
+    Warn('unexpected',$mode,$self, "Cannot end $mode mode"); }
   return; }
 
 #**********************************************************************

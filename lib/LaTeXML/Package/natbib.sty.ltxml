@@ -661,6 +661,7 @@ DefMacro('\harvardand',       'and');
 
 DefConstructor('\harvardurl Semiverbatim',
   "<ltx:ref href='#href'>#1</ltx:ref>",
+  enterHorizontal => 1,
   properties => sub { (href => CleanURL(ToString($_[1]))); });
 
 Let('\citeN',      '\cite');

@@ -94,7 +94,8 @@ DefConstructor('\TeX',
     . "<ltx:text cssstyle='font-variant:small-caps;font-size:120%;' yoffset='-0.2ex'>e</ltx:text>"
     . "X"
     . "</ltx:text>",
-  sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); });
+  sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  enterHorizontal => 1);
 DefPrimitiveI('\i', undef, "\x{0131}", robust => 1);    # LATIN SMALL LETTER DOTLESS I
 DefPrimitiveI('\j', undef, "\x{0237}", robust => 1);
 
@@ -112,7 +113,8 @@ DefMacro('\oalign{}',
   '\@@oalign{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@oalign{}',
   '#1',
-  reversion    => '\oalign{#1}', bounded => 1, mode => 'text',
+  reversion    => '\oalign{#1}',
+  mode         => 'internal_vertical',
   beforeDigest => sub { alignmentBindings('l'); });
 
 # This is actually different; the lines should lie ontop of each other.
@@ -121,7 +123,8 @@ DefMacro('\ooalign{}',
   '\@@ooalign{\lx@begin@alignment#1\lx@end@alignment}');
 DefConstructor('\@@ooalign{}',
   '#1',
-  reversion    => '\ooalign{#1}', bounded => 1, mode => 'text',
+  reversion    => '\ooalign{#1}',
+  mode         => 'internal_vertical',
   beforeDigest => sub { alignmentBindings('l'); });
 
 DefConstructor('\buildrel Until:\over {}',
@@ -591,7 +594,7 @@ DefConstructor('\@proclaim{}{}',
 DefPrimitiveI('\raggedright',   undef, undef);
 DefPrimitiveI('\raggedleft',    undef, undef);    # this is actually LaTeX
 DefPrimitiveI('\ttraggedright', undef, undef);
-DefPrimitiveI('\leavevmode',    undef, undef);
+DefPrimitiveI('\leavevmode',    undef, sub { $_[0]->enterHorizontal; });
 DefMacro('\mathhexbox{}{}{}', '\leavevmode\hbox{$\m@th \mathchar"#1#2#3$}');
 
 #======================================================================
@@ -701,7 +704,8 @@ DefConstructor('\@math@daccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>\x{22c5}</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode        => 'text', alias => '\d',
+  mode  => 'restricted_horizontal',
+  alias => '\d',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -715,7 +719,8 @@ DefConstructor('\@math@baccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>" . UTF(0xAF) . "</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode        => 'text', alias => '\b',
+  mode  => 'restricted_horizontal',
+  alias => '\b',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -1169,6 +1174,7 @@ DefMacroI('\ldots', undef, '\lx@ldots');
 DefConstructorI('\vdots', undef,
   "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
   sizer      => "\x{22EE}",
+  enterHorizontal => 1,
   properties => sub {
     (LookupValue('IN_MATH')
       ? (font => LookupValue('font')->merge(family => 'serif',
@@ -1184,6 +1190,7 @@ DefMathI('\colon', undef, ':',        role => 'METARELOP');    # Seems like good
 DefConstructorI('\dots', undef,
   "?#isMath(<ltx:XMTok name='dots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
   sizer      => "\x{2026}",
+  enterHorizontal => 1,
   properties => sub {
     (LookupValue('IN_MATH')
       ? (font => LookupValue('font')->merge(family => 'serif',
@@ -1467,20 +1474,21 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
     $document->absorb($matrix);
     my $marray = $document->getNode->lastChild;
     my @rows   = $document->findnodes('ltx:XMRow', $marray);
-    my ($h, $d) = (10.0 * $UNITY, 0);    # 10pts.
-                                         # Contrived, since $matrix may be a List or...
+    ## Contrived, since $matrix may be a List or...
     my ($alignment) = grep { $_ } map { $_->getProperty('alignment') } $matrix->unlist;
+    my $pfont = $STATE->lookupValue('font')->specialize('(');
+    my $em    = $pfont->getEMWidth;
+    my ($h0,$h1, $half, $shift) = ($em, $em, $em, $em);
     if ($alignment) {
-      my $arrayh = $alignment->getHeight->ptValue;
-      my ($row0, $row1) = $alignment->rows;    # What's row 0 ?
-      $h = $$row1{y}->valueOf;
-      $d = $h - $arrayh; }
-    my $md = Dimension(-$d);
-    $h = Dimension($h); $d = Dimension($d);
-
+      my $arrayh     = $alignment->getTotalHeight;
+      my @rowheights = @{$$alignment{rowheights}};
+      $h0    = $rowheights[0];
+      $h1    = $rowheights[1];
+      $half  = $arrayh->subtract($h0)->divide(2);
+      $shift = $rowheights[0]->subtract($half); }
     foreach my $row (@rows) {                  # Add empty cells for 2nd & last colum
-      $document->openElementAt($row, 'ltx:XMCell');
-      $document->openElementAt($row, 'ltx:XMCell');
+      $document->openElementAt($row, 'ltx:XMCell', class => 'ltx_nopad');
+      $document->openElementAt($row, 'ltx:XMCell', class => 'ltx_nopad');
       $row->insertAfter($row->lastChild, $row->firstChild);    # Move to 2nd pos!
     }
     my @cols = element_nodes($rows[1]);
@@ -1489,15 +1497,17 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
     my $n    = scalar(@rows) - 1;
     $col1->setAttribute(rowspan => $n);
     $coln->setAttribute(rowspan => $n);
-    my $pfont = $STATE->lookupValue('font')->specialize('(');
+    # Pretend ('s row has height of row 1, to avoid shifting baseline.
+    # but shift the centerline to the middle of rows 2--n
+    # Set the (,) in mpadded stretchy w/ space as strut.
     $document->appendTree($col1,
-      ['ltx:XMWrap', { depth => $d },
-        ['ltx:XMTok', { role   => 'OPEN', height  => 0, depth => $d, yoffset => $md, font => $pfont }, '('],
-        ['ltx:XMTok', { height => $h,     yoffset => $md, font => $pfont }, ' ']]);   # Effectively, a strut
+      ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
+        ['ltx:XMTok', { role   => 'OPEN', stretchy => 'true', font => $pfont }, '('],
+        ['ltx:XMTok', { height => $half,  depth    => $half,  font => $pfont }, ' ']]);
     $document->appendTree($coln,
-      ['ltx:XMWrap', {},
-        ['ltx:XMTok', { role   => 'CLOSE', height => 0, depth => $d, yoffset => $md, font => $pfont }, ')'],
-        ['ltx:XMTok', { height => $h, yoffset => $md, font => $pfont }, ' ']]);
+      ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
+        ['ltx:XMTok', { role   => 'CLOSE', stretchy => 'true', font => $pfont }, ')'],
+        ['ltx:XMTok', { height => $half,   depth    => $half,  font => $pfont }, ' ']]);
     return; },
   reversion => '#1');
 
@@ -1557,8 +1567,8 @@ DefPrimitive('\normalbottom', undef);
 # otherwise, to the attribute.
 DefConstructor('\footnote{}{}',
   "^<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
-  mode         => 'text', bounded => 1,
-  beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
+  mode         => 'internal_vertical',
+  beforeDigest => sub { neutralizeFont(); },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     my $mark   = $whatsit->getArg(1);

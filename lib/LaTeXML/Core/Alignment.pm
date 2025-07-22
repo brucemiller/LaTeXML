@@ -538,6 +538,7 @@ sub normalize_sum_sizes {
     my ($rowh, $rowd) = (0, 0);
     my ($rowt, $rowb) = (($$row{tpadding} ? $$row{tpadding}->valueOf : 0),
       ($$row{bpadding} ? $$row{bpadding}->valueOf : 0));
+    my ($bordert, $borderb) = (0,0);
     for (my $j = 0 ; $j < $ncols ; $j++) {
       my $cell = $cols[$j];
       next if $$cell{skipped};
@@ -549,25 +550,45 @@ sub normalize_sum_sizes {
       my $b = $$cell{bpadding};
       my $r = $$cell{rpadding};
       my $l = $$cell{lpadding};
-
-      if (($$cell{colspan} || 1) == 1) {
+      my $cs = $$cell{colspan} || 1;
+      my $rs = $$cell{rowspan} || 1;
+      if ($cs == 1) {
         $colwidths[$j] = max($colwidths[$j], $w->valueOf) if $w;
         $collefts[$j]  = max($collefts[$j],  $l->valueOf) if $l;
         $colrights[$j] = max($colrights[$j], $r->valueOf) if $r; }
+      else {
+        # Divide up spanned columns, but don't double count
+        my $innerw = $w && $w->valueOf;
+        $innerw = $innerw - ($cs-1) * $l->valueOf if $l;
+        $innerw = $innerw - ($cs-1) * $r->valueOf if $r;
+        for (my $jj = $j; $jj < $j + $cs; $jj++) {
+          $colwidths[$jj] = max($colwidths[$jj], $innerw/$cs) if $w;
+          $collefts[$jj]  = max($collefts[$jj],  $l->valueOf/$cs) if $l;
+          $colrights[$jj] = max($colrights[$jj], $r->valueOf/$cs) if $r; } }
+
       if (($$cell{rowspan} || 1) == 1) {
         $rowh = max($rowh, $h->valueOf) if $h;
         $rowd = max($rowd, $d->valueOf) if $d;
         $rowt = max($rowt, $t->valueOf) if $t;
         $rowb = max($rowb, $b->valueOf) if $b; }
       else { }    # Ditto spanned rows
+      if (my $border = $$cell{border}) {
+        $bordert = 1 if $border =~ /[tT]/;
+        $borderb = 1 if $border =~ /[bB]/; }
     }
-    $$row{cheight}  = Dimension($rowh)->larger($hs);
-    $$row{cdepth}   = Dimension($rowd)->larger($ds);
-    $$row{tpadding} = Dimension($rowt);
-    $$row{bpadding} = Dimension($rowb);
+    if(($i == 0) && !$self->getProperty('isLaTeX')){
+      $$row{cheight}  = Dimension($rowh); }
+    else {
+      $$row{cheight}  = Dimension($rowh)->larger($hs); }
+    if(($i == $nrows-1) && !$self->getProperty('isLaTeX')){
+      $$row{cdepth}   = Dimension($rowd); }
+    else {
+      $$row{cdepth}   = Dimension($rowd)->larger($ds); }
+    $$row{tpadding} = Dimension($rowt + ($bordert ? 0.4*$UNITY : 0));
+    $$row{bpadding} = Dimension($rowb + ($borderb ? 0.4*$UNITY : 0));
     # NOTE: Should be storing column widths to; individually, as well as per-column!
-    push(@rowdepths,  $rowd);
-    push(@rowheights, $rowh + $rowd); }    # somehow our heights are way too short????
+    push(@rowdepths,  $$row{cdepth}->valueOf);
+    push(@rowheights, $$row{cheight}->valueOf); }
   ## Now compute the positions
   my @rowpos = ();
   my @colpos = ();
@@ -598,7 +619,8 @@ sub normalize_sum_sizes {
     $$self{cdepth}  = Dimension($d); }
   else {                        # middle
     my $font = $STATE->lookupValue('font');
-    my $c = $font && $font->getEXHeight || Dimension('1ex');
+#    my $c = $font && $font->getEXHeight || Dimension('1ex');
+    my $c = $font && ($font->getSize * $UNITY)/2 || Dimension('1ex'); # Math axis?
     $$self{cheight} = Dimension(($y+$c)/2);
     $$self{cdepth}  = Dimension(($y-$c)/2);  }
   @colwidths           = map { Dimension($_); } @colwidths;
@@ -627,10 +649,16 @@ sub normalize_sum_sizes {
       $$cell{y} = $rowpos[$i];
       Debug("CELL[$i,$j] " . showSize($$cell{cwidth}, $$cell{cheight}, $$cell{cdepth})
           . " @ " . ToString($$cell{x}) . "," . ToString($$cell{y})
+          . " pad ".ToString($$cell{lpadding}).",".ToString($$cell{rpadding})
           . " w/ " . join(',', map { $_ . '=' . ToString($$cell{$_}); }
             (qw(align vattach skipped colspan rowspan))))
         if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
-  } }
+    }
+    Debug("ROW[$i] " . showSize($$row{cwidth}, $$row{cheight}, $$row{cdepth})
+        . " @ " . ToString($$row{x}) . "," . ToString($$row{y})
+        . " pad ".ToString($$row{tpadding}).",".ToString($$row{bpadding}))
+    if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
+  }
   Debug("ALIGNMENT " . showSize($$self{cwidth}, $$self{cheight}, $$self{cdepth}))
     if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
   return; }

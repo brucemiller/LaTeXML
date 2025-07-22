@@ -164,18 +164,22 @@ DefConstructor('\halign BoxSpecification',
     my $alignment = $whatsit->getProperty('alignment');
     Tokens(T_CS('\halign'), Revert($spec), T_BEGIN, Revert($template), T_CS('\cr'),
       Revert($alignment), T_END); },
-  bounded => 1,
-  #  sizer       => '#1',
-  sizer       => sub { $_[0]->getProperty('alignment')->getSize; },
-  afterDigest => sub {
+  bounded         => 1,
+  leaveHorizontal => 1,
+  sizer           => sub { $_[0]->getProperty('alignment')->getSize; },
+  beforeConstruct => sub {
+    my ($document) = @_;
+    $document->maybeCloseElement('ltx:p'); },
+  afterDigest => sub {          # After spec, but before body!
     my ($stomach, $whatsit) = @_;
-    $stomach->bgroup;    # This will be closed by the \halign's closing }  (or will it?)
+    $whatsit->setProperty(mode => 'internal_vertical');
+    $stomach->beginMode('restricted_horizontal');
     my $template = parseHAlignTemplate($stomach->getGullet, $whatsit);
     my $spec     = $whatsit->getArg(1);
     alignmentBindings($template, undef,
       attributes => { width => orNull(GetKeyVal($spec, 'to')) });
     digestAlignmentBody($stomach, $whatsit);
-    $stomach->egroup;
+    $stomach->endMode('restricted_horizontal');
     $LaTeXML::ALIGN_STATE--;    # Balance the opening { OUTSIDE of the masking of ALIGN_STATE
     return; });
 
@@ -247,6 +251,7 @@ sub alignmentBindings {
   my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
   my $rowtype   = ($ismath ? 'ltx:XMRow'   : 'ltx:tr');
   my $coltype   = ($ismath ? 'ltx:XMCell'  : 'ltx:td');
+  $properties{strut} = LookupRegister('\baselineskip');
   my $alignment = LaTeXML::Core::Alignment->new(
     template       => $template,
     openContainer  => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
@@ -259,7 +264,7 @@ sub alignmentBindings {
     properties     => {%properties});
   AssignValue(Alignment => $alignment);
   Debug("Halign $alignment: New " . $template->show) if $LaTeXML::DEBUG{halign};
-  Let(T_MATH, ($ismath ? '\lx@dollar@in@mathmode' : '\lx@dollar@in@textmode'));
+  Let(T_MATH, ($ismath ? '\lx@dollar@in@mathmode' : '\lx@dollar@default'));
   return; }
 
 DefMacroI('\lx@alignment@row@before',    undef, undef);
@@ -355,10 +360,10 @@ sub digestAlignmentColumn {
   my ($stomach, $alignment, $lastwascr) = @_;
   my $gullet = $stomach->getGullet;
   my $ismath = $STATE->lookupValue('IN_MATH');
+  my $mode = $STATE->lookupValue('MODE');
   local @LaTeXML::LIST = ();
   # Scan for leading \omit, skipping over (& saving) \hline.
-  Debug("Halign $alignment: COLUMN starting scan "
-      . "(" . ($ismath ? " math" : " text") . ")") if $LaTeXML::DEBUG{halign};
+  Debug("Halign $alignment: COLUMN starting scan ($mode)") if $LaTeXML::DEBUG{halign};
   my $token;
   my $spanning = 0;
   while (1) {    # Outer loop; collects 1 column (possibly multiple spans) return from within!
@@ -410,7 +415,7 @@ sub digestAlignmentColumn {
         else {
           Debug("Halign $alignment: COLUMN ended with " . Stringify($token) . "\n"
               . "  => " . ToString(List(@LaTeXML::LIST))) if $LaTeXML::DEBUG{halign};
-          return (List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text')),
+          return (List(@LaTeXML::LIST, mode => $mode),
             $token, $type, $hidden); } }
       elsif ($token->defined_as(T_hidden_noalign)) {    # \puts something in vertical list
         Debug("Halign $alignment: COLUMN invisible noalign") if $LaTeXML::DEBUG{halign};
@@ -513,7 +518,7 @@ sub extractAlignmentColumn {
   delete $$colspec{width} unless $align eq 'justify';
   # Replacing boxes with the fil padding & vertical rules stripped off
   @boxes = (@saveleft, @boxes, @saveright);
-  $boxes = List(@boxes, mode => ($boxes->isMath ? 'math' : 'text'));
+  $boxes = List(@boxes, mode => $boxes->getProperty('mode'));
   # record relevant info in the Alignment.
   $$colspec{align}   = $align;
   $$colspec{border}  = $border = ($$colspec{border} || '') . $border;

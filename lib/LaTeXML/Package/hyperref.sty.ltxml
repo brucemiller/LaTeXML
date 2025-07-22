@@ -186,7 +186,7 @@ DefMacro('\url', '\begingroup\lx@hyper@url\url', locked => 1);
 DefConstructor('\lx@hyper@url@ Undigested {}{} Semiverbatim {}',
   "?#isMath(<ltx:XMWrap class='#class' href='#href'>#5</ltx:XMWrap>)"    # Allow this to work in Math!
     . " (<ltx:ref href='#href' class='#class'>#5</ltx:ref>)",
-  bounded    => 1,
+  bounded    => 1, enterHorizontal => 1,
   properties => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[4]),
       class => sub { my $c = ToString($_[1]); $c =~ s/^\\//; 'ltx_' . $c; }); },
   sizer     => '#5',
@@ -194,34 +194,41 @@ DefConstructor('\lx@hyper@url@ Undigested {}{} Semiverbatim {}',
 
 # \nolinkurl{url}
 DefConstructor('\nolinkurl Semiverbatim',
-  "<ltx:ref href='#1' class='ltx_nolink' >#1</ltx:ref>");
+  "<ltx:ref href='#1' class='ltx_nolink' >#1</ltx:ref>",
+  enterHorizontal => 1);
 
 # \hyperbaseurl{url}
 DefPrimitive('\hyperbaseurl Semiverbatim', sub { AssignValue(BASE_URL => ToString($_[1])); });
 
 # \hyperimage{imageurl}{text}
-DefConstructor('\hyperimage Semiverbatim {}', "<ltx:graphic graphic='#1' description='#2'/>");
+DefConstructor('\hyperimage Semiverbatim {}',
+  "<ltx:graphic graphic='#1' description='#2'/>",
+  enterHorizontal => 1);
 
 DefMacro('\hyperref', '\@ifnextchar[\hyperref@@ii\hyperref@@iv');
 # 2 argument form
 DefConstructor('\hyperref@@ii OptionalSemiverbatim {}',
   "<ltx:ref labelref='#label'>#2</ltx:ref>",
   bounded    => 1,
+  enterHorizontal => 1,
   properties => sub { (label => CleanLabel($_[1])); });
 # 4 argument form
 DefConstructor('\hyperref@@iv Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#4</ltx:ref>",
+  enterHorizontal => 1,
   properties => sub {
     (href => ComposeURL(LookupValue('BASE_URL'), $_[1],
         CleanID(ToString($_[2]) . '.' . ToString($_[3])))); });
 
 DefConstructor('\htmlref Semiverbatim  Semiverbatim',
   "<ltx:ref labelref='#label'>#1</ltx:ref>",
+  enterHorizontal => 1,
   properties => sub { (label => CleanLabel($_[2])); });
 
 # \hyperlink{name}{text}
 DefConstructor('\hyperlink Semiverbatim {}',
   "<ltx:ref idref='#1'>#2</ltx:ref>",
+  enterHorizontal => 1,
   properties => sub { (id => CleanID($_[1])); });
 DefMacro('\hyper@@link{}{}{}', '\hyperlink{#2}{#3}');
 
@@ -357,6 +364,7 @@ DefMacro('\@bookmarksopenlevel', '\maxdimen');
 DefConstructor('\autoref OptionalMatch:* Semiverbatim',
   "<ltx:ref ?#1(class='ltx_refmacro_autoref ltx_nolink')(class='ltx_refmacro_autoref') " .
     "show='autoref' labelref='#label' _force_font='true'/>",
+  enterHorizontal => 1,
   properties => sub { (label => CleanLabel($_[2])); });
 
 DefMacro('\lx@autorefnum@@{}', sub {

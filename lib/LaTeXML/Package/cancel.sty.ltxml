@@ -109,6 +109,7 @@ DefConstructor('\@@text@cancel{}',
     . "</ltx:text>"
     . "</ltx:del>",
   alias      => '\cancel',
+  mode       => 'restricted_horizontal', enterHorizontal => 1,
   properties => \&cancelColorProperties);
 DefConstructor('\@@text@bcancel{}',
   "<ltx:del class='updiagonalstrike' _force_font='#forcefont' _font='#cancelfont'>"
@@ -117,6 +118,7 @@ DefConstructor('\@@text@bcancel{}',
     . "</ltx:text>"
     . "</ltx:del>",
   alias      => '\bcancel',
+  mode       => 'restricted_horizontal', enterHorizontal => 1,
   properties => \&cancelColorProperties);
 DefConstructor('\@@text@xcancel{}',
   "<ltx:del class='downdiagonalstrike updiagonalstrike' _force_font='#forcefont' _font='#cancelfont'>"
@@ -125,6 +127,7 @@ DefConstructor('\@@text@xcancel{}',
     . "</ltx:text>"
     . "</ltx:del>",
   alias      => '\xcancel',
+  mode       => 'restricted_horizontal', enterHorizontal => 1,
   properties => \&cancelColorProperties);
 
 ProcessOptions();

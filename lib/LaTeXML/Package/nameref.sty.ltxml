@@ -25,6 +25,7 @@ RequirePackage('ltxcmds');
 DefConstructor('\nameref OptionalMatch:* Semiverbatim',
   "<ltx:ref ?#1(class='ltx_refmacro_nameref ltx_nolink')(class='ltx_refmacro_nameref')
     show='title' labelref='#label' _force_font='true'/>",
+  enterHorizontal => 1,
   properties => sub { (label => CleanLabel($_[2])); });
 
 DefMacro('\Nameref', '\nameref');    #\def\Nameref#1{‘\nameref{#1}’ on page~\pageref{#1}}

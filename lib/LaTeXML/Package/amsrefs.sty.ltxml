@@ -74,6 +74,7 @@ DefEnvironment('{biblist}', "<ltx:biblist>#body</ltx:biblist>");
 
 DefConstructor('\MR{}',
   "<ltx:ref href='#href' class='ltx_mathreviews'>MathReviews</ltx:ref>",
+  enterHorizontal => 1,
   properties => sub {
     my $mr = ToString($_[1]);
     # Patch up old-style MathReviews numbers

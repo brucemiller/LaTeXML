@@ -69,7 +69,8 @@ DefMacro('\@mt@getmtoption{}', '\ifcsname @mt@mathtoolsset@#1\endcsname'
 ## 3.1
 
 # ?
-DefConstructor('\mathmbox {}', "#1");
+DefConstructor('\mathmbox {}', "#1",
+  enterHorizontal => 1);
 
 # NOTE: Optional argument is one of \displaystyle,... !!!
 DefConstructor('\mathllap [] {}',

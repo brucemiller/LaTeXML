@@ -106,6 +106,7 @@ sub lstProcessInline {
 
 DefConstructor('\@listings@inline {}',
   "<ltx:text class='ltx_lstlisting' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1,
   reversion => '\lstinline{#1}');
 
 # Not a regular environment, since we're going to read the body verbatim!
@@ -237,7 +238,7 @@ DefConstructor('\@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('lstlisting'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -248,15 +249,16 @@ DefConstructor('\@@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
+  mode           => 'internal_vertical',
   properties => sub {
     my %props = RefStepID('lstlisting');
-    $props{layout} = 'vertical';
     return %props; },
   beforeDigest => sub { beforeFloat('lstlisting'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
 DefConstructor('\@@listings@block {} {} {}',
 "<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding' dataname='#3'>#2</ltx:listing>",
+  mode        => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # Could have some options about encoding?
@@ -266,7 +268,7 @@ DefConstructor('\@@listings@block {} {} {}',
       $listings_data = encode('UTF-8', $listings_data);
     }
     my $data = encode_base64($listings_data, '');    # NO linebreaking!
-    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64', layout => 'vertical'); });
+    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64'); });
 
 DefMacro('\lst@HRefStepCounter{}', '');
 
@@ -1484,10 +1486,12 @@ sub TokenizeBalanced {
   return $tokens; }
 
 DefConstructor('\@listingLiterate {}',
-  "<ltx:text class='ltx_lst_literate' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_lst_literate' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1,);
 
 DefConstructor('\@listingKeyword Semiverbatim {}',
   "?#class(<ltx:text class='ltx_lst_#class' _noautoclose='1'>#2</ltx:text>)(#2)",
+  enterHorizontal => 1,
   properties => { class => sub {
       my $classname = ToString($_[1]);
       my $class     = $classname && LookupValue('LST_CLASSES')->{$classname};
@@ -1500,6 +1504,7 @@ DefConstructor('\@listingKeyword Semiverbatim {}',
 DefConstructor('\@listingGroup Semiverbatim {}',
   #   "<ltx:text class='#1'>#2</ltx:text>");
   "<ltx:text class='#1'>#2",
+  enterHorizontal => 1,
   # sorta like maybeCloseElement, except only if CURRENT
   afterConstruct => sub { my ($doc) = @_;
     if ($doc->getNodeQName($doc->getElement) eq 'ltx:text') {
@@ -1543,7 +1548,8 @@ DefConstructor('\@lst@linenumber{}', "<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>
 
 DefMacro('\lstnumbertyperefname', 'line');
 
-DefConstructor('\@lst@visible@space', "\x{2423}");
+DefConstructor('\@lst@visible@space', "\x{2423}",
+  enterHorizontal => 1);
 
 sub lstDoNumber {
   my ($isempty) = @_;

@@ -40,13 +40,11 @@ DefPrimitive('\nonscript', undef);
 
 # Decide whether we're going into or out of math, inline or display.
 Tag('ltx:XMText', autoOpen => 1, autoClose => 1);
-# This really should be T_MATH
-# and it should (or not) check for a second $ only if not in restricted horizontal mode!
-# (and then all the \lx@dollar@in@(text|math|normal)mode defns would not be needed.
-DefPrimitiveI('\lx@dollar@in@normalmode', undef, sub {
+DefPrimitiveI('\lx@dollar@default', undef, sub {
     my ($stomach) = @_;
     my $gullet    = $stomach->getGullet;
     my $mode      = LookupValue('MODE');
+    my $bound     = LookupValue('BOUND_MODE');
     my $op        = '\lx@begin@inline@math';
     if ($mode eq 'display_math') {
       if ($gullet->ifNext(T_MATH)) {
@@ -63,25 +61,21 @@ DefPrimitiveI('\lx@dollar@in@normalmode', undef, sub {
         $op = undef; } }
     elsif ($mode eq 'inline_math') {
       $op = '\\lx@end@inline@math'; }
-    #  elsif(!LookupValue('Alignment') && $gullet->ifNext(T_MATH)){
-    elsif ($gullet->ifNext(T_MATH)) {
+    # Only check for 2nd $ when within a vertical mode
+    elsif (($bound =~ /vertical$/) && ($gullet->ifNext(T_MATH))) {
       $gullet->readToken;
       $op = '\lx@begin@display@math'; }
     $stomach->invokeToken(T_CS($op)) if $op; });
 # Let this be the default, conventional $
-Let(T_MATH, T_CS('\lx@dollar@in@normalmode'));
+Let(T_MATH, T_CS('\lx@dollar@default'));
+# Obsolete
+Let(T_CS('\lx@dollar@in@normalmode'), T_CS('\lx@dollar@default'));
+Let(T_CS('\lx@dollar@in@textmode'),   T_CS('\lx@dollar@default'));
 
 #======================================================================
-# Math mode in alignment
-# Special forms for $ appearing within alignments.
+# Math mode in special cases: math alignments, or perverse equations for ...$text$...
 # Note that $ within a math alignment (eg array environment),
 # switches to text mode! There's no $$ for display math.
-
-# This is the "normal" case: $ appearing with an alignment that is in text mode.
-# It's just like regular $, except it doesn't look for $$ (no display math).
-DefPrimitiveI('\lx@dollar@in@textmode', undef, sub {
-    no warnings 'recursion';
-    $_[0]->invokeToken(T_CS((LookupValue('IN_MATH') ? '\\lx@end@inline@math' : '\lx@begin@inline@math'))); });
 
 # This one is for $ appearing within an alignment that's already math.
 # This should switch to text mode (because it's balancing the hidden $
@@ -120,10 +114,10 @@ DefConstructorI('\lx@begin@inmath@text', undef,
     . "#body"
     . "</ltx:XMText>",
   alias        => T_MATH,
-  beforeDigest => sub { $_[0]->beginMode('text'); }, captureBody => 1);
+  beforeDigest => sub { $_[0]->beginMode('restricted_horizontal'); }, captureBody => 1);
 DefConstructorI('\lx@end@inmath@text', undef, "",
   alias        => T_MATH,
-  beforeDigest => sub { $_[0]->endMode('text'); });
+  beforeDigest => sub { $_[0]->endMode('restricted_horizontal'); });
 
 #======================================================================
 # Effectively these are the math hooks, redefine these to do what you want with math?
@@ -136,7 +130,10 @@ DefConstructorI('\lx@begin@display@math', undef,
     . "</ltx:Math>"
     . "</ltx:equation>",
   reversion    => Tokens(T_MATH, T_MATH),
-  beforeDigest => sub { $_[0]->beginMode('display_math'); },
+  beforeDigest => sub { 
+    $_[0]->enterHorizontal;
+    $_[0]->beginMode('display_math'); },
+  properties   => {mode=>'display_math'},
   captureBody  => 1);
 DefConstructorI('\lx@end@display@math', undef, "",
   reversion    => Tokens(T_MATH, T_MATH),
@@ -149,7 +146,10 @@ DefConstructorI('\lx@begin@inline@math', undef,
     . "</ltx:XMath>"
     . "</ltx:Math>",
   reversion    => Tokens(T_MATH),
-  beforeDigest => sub { $_[0]->beginMode('inline_math'); },
+  beforeDigest => sub {
+    $_[0]->enterHorizontal;
+    $_[0]->beginMode('inline_math'); },
+  properties   => {mode=>'inline_math'},
   captureBody  => 1);
 DefConstructorI('\\lx@end@inline@math', undef, "",
   reversion    => Tokens(T_MATH),
@@ -914,12 +914,14 @@ DefMath('\lx@math@overline{}', UTF(0xAF),
   operator_role => 'OVERACCENT', operator_stretchy => 'true',
   name          => 'overline',   alias             => '\overline');
 DefConstructor('\lx@text@overline{}',
-  "<ltx:text framed='overline' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text framed='overline' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1);
 DefMath('\lx@math@underline{}', UTF(0xAF),
   operator_role => 'UNDERACCENT', operator_stretchy => 'true',
   name          => 'underline',   alias             => '\underline');
 DefConstructor('\lx@text@underline{}',
-  "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1);
 DefMath('\lx@math@overrightarrow{}', "\x{2192}",
   operator_role => 'OVERACCENT',     operator_stretchy => 'true',
   name          => 'overrightarrow', alias             => '\overrightarrow');

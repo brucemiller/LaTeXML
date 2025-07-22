@@ -29,6 +29,7 @@ DefMacro('\@gls@link[]{}{}',
     . '\lx@orig@glossaries@gls@link[#1]{#2}{#3}}');
 DefConstructor('\lx@glossaries@gls@link{}{}{}',
   "<ltx:glossaryref inlist='#list' key='#2'>#3</ltx:glossaryref>",
+  enterHorizontal => 1,
   properties => sub {
     my $list = ToString($_[1]);
     $list = 'main' unless $_[1];

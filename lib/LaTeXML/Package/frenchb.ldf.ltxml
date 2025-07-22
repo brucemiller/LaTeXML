@@ -20,8 +20,8 @@ use LaTeXML::Package;
 RequirePackage('textcomp');
 InputDefinitions('frenchb', type => 'ldf', noltxml => 1);
 
-DefConstructor('\fup{}',        "<ltx:sup>#1</ltx:sup>");
-DefConstructor('\FB@up@fake{}', "<ltx:sup>#1</ltx:sup>");
+DefConstructor('\fup{}',        "<ltx:sup>#1</ltx:sup>", enterHorizontal => 1);
+DefConstructor('\FB@up@fake{}', "<ltx:sup>#1</ltx:sup>", enterHorizontal => 1);
 
 # Attempt to make it work with older & newer versions.
 Let('\ltx@orig@nombre', '\nombre');

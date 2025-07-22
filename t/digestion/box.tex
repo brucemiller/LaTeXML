@@ -9,6 +9,8 @@
 \newbox\myboxA
 \newbox\myboxB
 \newbox\myboxC
+\newbox\myboxD
+\newbox\myboxE
 Not yet set:\testbox{\myboxA}
 \setbox\myboxA=\hbox{}
 Set empty:\testbox{\myboxA}
@@ -45,5 +47,26 @@ Once? {\setbox\myboxA=\hbox{Once}\box\myboxA\box\myboxA}\box\myboxA\box\myboxA.
 
 \def\mybox#1{\hbox{#1}}
 \[ a - \lower1ex\mybox{a} \]
+
+
+\setbox\myboxA=\vbox spread 1cm{1cm Box}
+\setbox\myboxB=\vbox spread 2cm{2cm Box}
+\setbox\myboxC=\vbox{\unvbox\myboxA\unvbox\myboxB}
+\setbox\myboxD=\copy\myboxC
+\setbox\myboxE=\vbox{\unvbox\myboxC\unvbox\myboxD}
+
+combined vbox: \fbox{\box\myboxE}
+
+First line
+\vskip0.01em
+second line
+
+\noindent
+\hrule
+\vskip 8 pt
+Some text between two hrules.
+\vskip 8 pt
+\noindent
+\hrule
 
 \end{document}

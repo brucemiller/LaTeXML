@@ -100,6 +100,7 @@ ProcessOptions(inorder => 1, keysets => ['LTXML']);
 # OTOH, would be nice to have an idiom to make (some of) them be links; or only the first one?
 # [does this really belong here? or should this be disableable?]
 DefConstructor('\URL[] Verbatim', "<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
+  enterHorizontal => 1,
   properties => sub { (href => CleanURL($_[2])); });
 DefMacro('\XML',      '\textsc{xml}');     # '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
 DefMacro('\SGML',     '\textsc{sgml}');    # '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
@@ -125,6 +126,7 @@ DefConstructor('\LaTeXML@logo',
     . "</ltx:text>"
     . "<ltx:text cssstyle='font-size:90%' yoffset='-0.2ex'>XML</ltx:text>"
     . "</ltx:text>",
+  enterHorizontal => 1,
   sizer => sub { (Dimension('3.8em'), Dimension('1.6ex'), Dimension('0.4ex')); });
 
 DefMacro('\LaTeXMLversion',  sub { ExplodeText($LaTeXML::VERSION); });
@@ -220,6 +222,7 @@ DefConstructor('\lxWithAnnotation RequiredKeyVals {}', sub {
 # Similar to stuff from hyperref, but more straightforward
 DefConstructor('\lxRef Semiverbatim {}',
   "<ltx:ref labelref='#label'>#2</ltx:ref>",
+  enterHorizontal => 1,
   properties => sub { (label => CleanLabel($_[1])); });
 
 #======================================================================
@@ -378,7 +381,7 @@ DefConstructor('\@lxDefMathDeclare{} RequiredKeyVals:XMath', sub {
       $document->insertElement('ltx:text', $description); }
     $document->closeElement('ltx:declare');
     $document->setNode($save); },
-  mode        => 'text',
+  mode   => 'restricted_horizontal',
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my ($id, $kv) = $whatsit->getArgs;
     normalizeDeclareKeys($kv, $whatsit);
@@ -466,8 +469,8 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
         $document->insertElement('ltx:text', $description); }
       $document->closeElement('ltx:declare');
       $document->setNode($save); } },
-  mode         => 'text',
-  beforeDigest => sub { reenterTextMode(); neutralizeFont(); },
+  mode         => 'restricted_horizontal',
+  beforeDigest => sub { neutralizeFont(); },
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
     my ($star, $kv, $pattern) = $whatsit->getArgs;
     return unless $kv;

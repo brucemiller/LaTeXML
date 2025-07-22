@@ -90,7 +90,8 @@ DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 DefEnvironment('{theacknowledgments}', "<ltx:acknowledgements>#body</ltx:acknowledgements>");
 #======================================================================
 DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label' _force_font='true'/>)",
-  properties => sub { (label => CleanLabel($_[1])); });
+  properties => sub { (label => CleanLabel($_[1])); },
+  enterHorizontal => 1);
 
 #======================================================================
 DefMacro('\source{}',           '\lx@note{source}{#1}');

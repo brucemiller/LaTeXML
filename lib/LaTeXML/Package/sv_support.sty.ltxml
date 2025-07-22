@@ -230,6 +230,7 @@ DefEnvironment('{translation}{}', "<ltx:quote role='translation' lang='#1'>#body
 DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
+  enterHorizontal => 1,
   reversion => '\qed');
 Let('\smartqed',     '\qed');
 Let('\squareforqed', '\qed');

@@ -55,7 +55,9 @@ DefConstructorI('\indent', undef, sub {
       my $noindent = $prev && ($document->getNodeQName($prev) =~ /^ltx:(?:toc)?title$/);
       $document->openElement("ltx:para", ($noindent ? () : (class => "ltx_indent"))); }
     # Otherwise ignore.
-    return; });
+    return; },
+    properties => { isSpace => 1},
+    enterHorizontal => 1);
 DefConstructorI('\noindent', undef, sub {
     my ($document) = @_;
     my $node = $document->getElement;
@@ -66,7 +68,9 @@ DefConstructorI('\noindent', undef, sub {
       # Used in a position where a paragraph can be started, start
       $document->openElement("ltx:para", class => "ltx_noindent"); }
     # Otherwise ignore.
-    return; });
+    return; },
+    properties => { isSpace => 1},
+    enterHorizontal => 1);
 
 sub alignLine {
   my ($document, $line, $alignment) = @_;
@@ -85,10 +89,11 @@ sub alignLine {
 # A para can contain both p and displayed equations and such.
 
 # Remember; \par _closes_, not opens, paragraphs!
-# Here, we want to close both an open p and para (if either are open).
+# Generally, we want to close both an open ltx:p and ltx:para (if either are open).
+# But when executed "internally" (by $stomach->leaveHorizontal), only close ltx:p.
 # NOTE Also that the whole inPreamble bit is, I think, overused.
 # For example, \par should be a NOOP in vertical mode, and that would generally make it
-# ignored in the preamble.
+# ignored in the preamble. (if we can be sure we're tracking modes correctly).
 DefConstructorI('\lx@normal@par', undef, sub {
     my ($document, %props) = @_;
     if ($props{inPreamble}) { }
@@ -99,9 +104,24 @@ DefConstructorI('\lx@normal@par', undef, sub {
       if ($qname eq 'ltx:para' && !$node->getAttribute("class")) { # Only set on the para about to close, if unknown!
         if (my $c = $props{class}) {
           $document->setAttribute($node, class => $c); } }
-      $document->maybeCloseElement('ltx:para'); } },
+      $document->maybeCloseElement('ltx:para') unless $props{internal_par}; } },
+  beforeDigest => sub {
+    my ($stomach) = @_;
+    my $mode  = $STATE->lookupValue('MODE');
+    my $bound = $STATE->lookupValue('BOUND_MODE');
+    # combine any digested horizontal material into a horizontal List
+    if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
+      Debug("MODE leaving $mode => $bound, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+          if $LaTeXML::DEBUG{modes};
+      $stomach->repackHorizontal;
+      $STATE->assignValue(MODE => $bound, 'inplace'); }
+  return; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(mode=>$STATE->lookupValue('MODE'));
+    # When invoked by $stomach->leaveHorizontal: no reversion, don't close ltx:para
+    $whatsit->setProperties(internal_par => 1, reversion=>Tokens())
+        if $LaTeXML::INTERNAL_PAR;
     if (LookupValue('inPreamble')) {
       $whatsit->setProperty(inPreamble => 1); }
     else {

@@ -76,7 +76,7 @@ DefConstructor('\turnbox{Float} {}',
   properties => sub {
     my ($stomach, $angle, $box) = @_;
     rotatedProperties($box, $angle); },
-  mode => 'text');
+  mode => 'internal_vertical');
 
 #======================================================================
 # These should produce a table or figure, but marked to rotate by 90degrees!
@@ -88,6 +88,9 @@ DefConstructor('\turnbox{Float} {}',
 # that could sensibly go inside or outside the figure!
 # Next best thing: at least make the contained elements have normal wrap
 
+sub rotatedPage {
+  AssignRegister('\hsize' => LookupRegister('\textheight')); }
+
 DefEnvironment('{sidewaysfigure}[]',
   "<ltx:figure xml:id='#id' ?#1(placement='#1')"
     . " angle='#angle' width='#width' height='#height' depth='#depth'"
@@ -97,8 +100,8 @@ DefEnvironment('{sidewaysfigure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties      => { layout => 'vertical' },
-  beforeDigest    => sub { beforeFloat('figure'); },
+  mode            => 'internal_vertical',
+  beforeDigest    => sub { beforeFloat('figure'); rotatedPage(); },
   afterDigest     => sub { afterFloat($_[1]); },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
@@ -113,8 +116,8 @@ DefEnvironment('{sidewaysfigure*}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties      => { layout => 'vertical' },
-  beforeDigest    => sub { beforeFloat('figure', double => 1); },
+  mode            => 'internal_vertical',
+  beforeDigest    => sub { beforeFloat('figure', double => 1); rotatedPage(); },
   afterDigest     => sub { afterFloat($_[1]); },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
@@ -129,8 +132,8 @@ DefEnvironment('{sidewaystable}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
-  beforeDigest => sub { beforeFloat('table'); },
+  mode         => 'internal_vertical',
+  beforeDigest => sub { beforeFloat('table'); rotatedPage(); },
   afterDigest  => sub { afterFloat($_[1]); },
 
   afterDigestBody => sub {
@@ -146,8 +149,8 @@ DefEnvironment('{sidewaystable*}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
-  beforeDigest => sub { beforeFloat('table', double => 1); },
+  mode         => 'internal_vertical',
+  beforeDigest => sub { beforeFloat('table', double => 1); rotatedPage(); },
   afterDigest  => sub { afterFloat($_[1]); },
 
   afterDigestBody => sub {

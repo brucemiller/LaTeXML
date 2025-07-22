@@ -114,7 +114,9 @@ sub new {
       $$self{catcode}{ chr($c) } = [CC_LETTER];
       $$self{catcode}{ chr($c + ord('a') - ord('A')) } = [CC_LETTER]; }
   }
-  $$self{value}{SPECIALS} = [['^', '_', '~', '&', '$', '#', "'"]];
+  $$self{value}{MODE}         = ['vertical'];
+  $$self{value}{BOUND_MODE}   = ['vertical'];
+  $$self{value}{SPECIALS}     = [['^', '_', '~', '&', '$', '#', "'"]];
   if ($options{catcodes} eq 'style') {
     $$self{catcode}{'@'} = [CC_LETTER]; }
   $$self{mathcode}            = {};
@@ -586,7 +588,7 @@ sub beginSemiverbatim {
   my ($self, @extraspecials) = @_;
   # Is this a good/safe enough shorthand, or should we really be doing beginMode?
   pushFrame($self);
-  assignValue($self, MODE    => 'text');
+  assignValue($self, MODE    => 'restricted_horizontal');
   assignValue($self, IN_MATH => 0);
   map { assignCatcode($self, $_ => CC_OTHER, 'local') }
     @{ lookupValue($self, 'SPECIALS') }, @extraspecials;

@@ -20,6 +20,7 @@ DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1,
   font => { encoding => 'U', family => 'blackboard', series => 'medium', shape => 'upright' });
 
 DefConstructor('\textbb{}', '#1', bounded => 1, forbidMath => 1,
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   font => { encoding => 'U', family => 'blackboard' });
 
 DefConstructor('\bbfamily', '',

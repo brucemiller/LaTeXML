@@ -84,6 +84,7 @@ sub invoke {
   Debug('{' . $self->tracingCSName . '}') if $tracing;
   # Get some info before we process arguments...
   my $font   = $STATE->lookupValue('font');
+  my $mode   = $STATE->lookupValue('MODE');
   my $ismath = $STATE->lookupValue('IN_MATH');
   # Parse AND digest the arguments to the Constructor
   my $parms = $$self{parameters};
@@ -103,6 +104,7 @@ sub invoke {
       $props{$key} = &$value($stomach, @args); } }
   $props{font}        = $font                           unless defined $props{font};
   $props{locator}     = $stomach->getGullet->getLocator unless defined $props{locator};
+  $props{mode}        = $mode                           unless defined $props{mode};
   $props{isMath}      = $ismath                         unless defined $props{isMath};
   $props{level}       = $stomach->getBoxingLevel;
   $props{scriptlevel} = $stomach->getScriptLevel if $ismath;
@@ -112,7 +114,6 @@ sub invoke {
   my @post = $self->executeAfterDigest($stomach, $whatsit);
   if (my $cap = $$self{captureBody}) {
     $whatsit->setBody(@post, $stomach->digestNextBody((ref $cap ? $cap : undef))); @post = (); }
-
   my @postpost = $self->executeAfterDigestBody($stomach, $whatsit);
   LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
   return (@pre, $whatsit, @post, @postpost); }

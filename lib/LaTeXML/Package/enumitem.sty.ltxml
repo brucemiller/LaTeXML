@@ -146,35 +146,40 @@ if (!LookupValue('enumitem@loadonly')) {
     properties      => sub { beginEnumItemize('itemize', '@item', $_[1]); },
     beforeDigestEnd => sub { Digest('\par'); },
     afterDigestBody => sub { endEnumItemize($_[1]); },
-    locked          => 1, mode => 'text');
-
+    mode            => 'internal_vertical',
+    locked          => 1);
   DefEnvironment('{enumerate} OptionalKeyVals:enumitem',
     "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
     properties      => sub { beginEnumItemize('enumerate', 'enum', $_[1]); },
     beforeDigestEnd => sub { Digest('\par'); },
     afterDigestBody => sub { endEnumItemize($_[1]); },
-    locked          => 1, mode => 'text');
+    mode            => 'internal_vertical',
+    locked          => 1);
   DefEnvironment('{description} OptionalKeyVals:enumitem',
     "<ltx:description  xml:id='#id'>#body</ltx:description>",
     beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
     properties      => sub { beginEnumItemize('description', '@desc', $_[1]); },
     beforeDigestEnd => sub { Digest('\par'); },
     afterDigestBody => sub { endEnumItemize($_[1]); },
-    locked          => 1, mode => 'text');
+    mode            => 'internal_vertical',
+    locked          => 1);
 }
 if (LookupValue('enumitem@inline')) {
   DefEnvironment('{itemize*} OptionalKeyVals:enumitem',
     "<ltx:inline-itemize xml:id='#id'>#body</ltx:inline-itemize>",
     properties      => sub { beginEnumItemize('inline@itemize', '@item', $_[1]); },
-    afterDigestBody => sub { endEnumItemize($_[1]); },);
+    afterDigestBody => sub { endEnumItemize($_[1]); },
+    mode            => 'internal_vertical');
   DefEnvironment('{enumerate*} OptionalKeyVals:enumitem',
     "<ltx:inline-enumerate xml:id='#id'>#body</ltx:inline-enumerate>",
     properties      => sub { beginEnumItemize('inline@enumerate', 'enum', $_[1]); },
-    afterDigestBody => sub { endEnumItemize($_[1]); },);
+    afterDigestBody => sub { endEnumItemize($_[1]); },
+    mode            => 'internal_vertical');
   DefEnvironment('{description*} OptionalKeyVals:enumitem',
     "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
     properties      => sub { beginEnumItemize('inline@description', '@desc', $_[1]); },
-    afterDigestBody => sub { endEnumItemize($_[1]); },);
+    afterDigestBody => sub { endEnumItemize($_[1]); },
+    mode            => 'internal_vertical');
 }
 DefPrimitive('\newlist{}{}{}', sub {
     my ($stomach, $listname, $listtype, $maxdepth) = @_;
@@ -196,7 +201,8 @@ DefPrimitive('\newlist{}{}{}', sub {
       properties      => sub { beginEnumItemize($listname, $listname, $_[1]); },
       beforeDigestEnd => sub { Digest('\par'); },
       afterDigestBody => sub { endEnumItemize($_[1]); },
-      locked          => 1, mode => 'text');
+      mode            => 'internal_vertical',
+      locked          => 1);
     return; });
 Let('\renewlist', '\newlist');
 

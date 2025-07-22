@@ -46,7 +46,8 @@ DefMacro('\ltx@text@numprint@{}',    '\ltx@text@number{\ltx@orig@numprint{#1}}')
 DefMacro('\ltx@text@numprint@@{}{}', '\ltx@text@number{\ltx@orig@numprint[#1]{#2}}');
 
 DefConstructor('\ltx@text@number{}',
-  "<ltx:text class='ltx_number' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_number' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1);
 
 # Math mode
 DefMacro('\ltx@math@numprint@{}',

@@ -107,11 +107,15 @@ DefMacro('\@multicolumn',
   '\lx@DEPRECATE{\@multicolumn}{\lx@alignment@multicolumn}\lx@alignment@multicolumn');
 
 DefMacro('\@dollar@in@normalmode',
-  '\lx@DEPRECATE{\@dollar@in@normalmode}{\lx@dollar@in@normalmode}\lx@dollar@in@normalmode');
+  '\lx@DEPRECATE{\@dollar@in@normalmode}{\lx@dollar@default}\lx@dollar@default');
 DefMacro('\@dollar@in@mathmode',
   '\lx@DEPRECATE{\@dollar@in@mathmode}{\lx@dollar@in@mathmode}\lx@dollar@in@mathmode');
 DefMacro('\@dollar@in@textmode',
-  '\lx@DEPRECATE{\@dollar@in@textmode}{\lx@dollar@in@textmode}\lx@dollar@in@tecxtmode');
+  '\lx@DEPRECATE{\@dollar@in@textmode}{\lx@dollar@default}\lx@dollar@default');
+DefMacro('\lx@dollar@in@normalmode',
+  '\lx@DEPRECATE{\ls@dollar@in@normalmode}{\lx@dollar@default}\lx@dollar@default');
+DefMacro('\lx@dollar@in@textmode',
+  '\lx@DEPRECATE{\lx@dollar@in@textmode}{\lx@dollar@default}\lx@dollar@default');
 
 DefMacro('\math@underline',
   '\lx@DEPRECATE{\math@underline}{\lx@math@underline}\lx@math@underline');

@@ -143,4 +143,27 @@ Once? Once.</p>
       </Math>
     </equation>
   </para>
+  <para xml:id="p16">
+    <p>combined vbox: <inline-block framed="rectangle" vattach="bottom">
+        <block vattach="bottom">
+          <p vattach="bottom">1cm Box</p>
+          <p vattach="bottom">2cm Box</p>
+        </block>
+        <block vattach="bottom">
+          <p vattach="bottom">1cm Box</p>
+          <p vattach="bottom">2cm Box</p>
+        </block>
+      </inline-block></p>
+  </para>
+  <para xml:id="p17">
+    <p>First line</p>
+  </para>
+  <para xml:id="p18">
+    <p>second line</p>
+  </para>
+  <rule height="1px" width="100%"/>
+  <para xml:id="p19">
+    <p>Some text between two hrules.</p>
+  </para>
+  <rule height="1px" width="100%"/>
 </document>

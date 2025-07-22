@@ -233,5 +233,8 @@ DefPrimitive('\pdftexcmds@directlua{}', undef);
 
 # Not really sure where this comes from; pdftex?
 DefRegister('\synctex', Number(0));
+
+# Presumably obsolete...
+DefMacro('\reserveinserts{}', '');
 #======================================================================
 1;

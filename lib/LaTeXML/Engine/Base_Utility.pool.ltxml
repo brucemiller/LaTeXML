@@ -326,14 +326,14 @@ sub removeEmptyElement {
 # \lx@tag[open][close]{stuff}
 DefConstructor('\lx@tag[][][]{}',
   "<ltx:tag open='#1' close='#2'>#4</ltx:tag>",
-  bounded        => 1, mode => 'text',
+  mode           => 'restricted_horizontal',   enterHorizontal => 1,
   afterConstruct => \&removeEmptyElement);
 
 # \lx@tag@intags{role}{stuff}
 DefConstructor('\lx@tag@intags[]{}',
   "<ltx:tag role='#1'>#2</ltx:tag>",
-  bounded        => 1, mode => 'text',
-  beforeDigest   => sub { reenterTextMode(); neutralizeFont() },
+  mode           => 'restricted_horizontal',
+  beforeDigest   => sub { neutralizeFont() },
   afterConstruct => \&removeEmptyElement);
 
 DefConstructor('\lx@tags{}',

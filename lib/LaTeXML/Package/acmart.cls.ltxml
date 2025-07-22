@@ -81,26 +81,36 @@ DefMacro('\additionalaffiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@adda
 DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
 DefMacro('\orcid Semiverbatim',    '\@add@to@frontmatter{ltx:creator}{\@@@orcid{\@@orcid{#1}}}');
-DefConstructor('\@@orcid{}', '<ltx:ref title="ORCID identifier" href="https://orcid.org/#1">#1</ltx:ref>');
+DefConstructor('\@@orcid{}',
+  '<ltx:ref title="ORCID identifier" href="https://orcid.org/#1">#1</ltx:ref>',
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\@@@orcid{}', "^ <ltx:contact role='orcid'>#1</ltx:contact>");
 
 # Internal structure to affiliation
 DefConstructor('\position{}',
-  "<ltx:text class='ltx_affiliation_position' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_affiliation_position' _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\institution{}',
-  "<ltx:text class='ltx_affiliation_institution' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_affiliation_institution' _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\department{}',
-  "<ltx:text class='ltx_affiliation_department' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_affiliation_department' _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\streetaddress{}',
-  "<ltx:text class='ltx_affiliation_streetaddress' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_affiliation_streetaddress' _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\city{}',
-  "<ltx:text class='ltx_affiliation_city' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_affiliation_city' _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\state{}',
-  "<ltx:text class='ltx_affiliation_state' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_affiliation_state' _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\postcode{}',
-  "<ltx:text class='ltx_affiliation_postcode' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_affiliation_postcode' _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\country{}',
-  "<ltx:text class='ltx_affiliation_country' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_affiliation_country' _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 
 # Ignorable stuff ?
 DefMacro('\shortauthors{}',                  '');
@@ -154,7 +164,7 @@ DefEnvironment('{teaserfigure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('figure'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -163,7 +173,7 @@ DefEnvironment('{marginfigure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('figure'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
@@ -172,7 +182,7 @@ DefEnvironment('{margintable}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('table'); },
   afterDigest  => sub { afterFloat($_[1]); });
 

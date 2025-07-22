@@ -34,7 +34,7 @@ DefConstructor('\@@supertabular Undigested DigestedBody',
   '#2',
   reversion    => '\begin{supertabular}{#1}#2\end{supertabular}',
   beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
+  mode         => 'restricted_horizontal');
 
 # Environment \begin{supertabular*}{width}{pattern} ... \end{supertabular*}
 DefMacro('\csname supertabular*\endcsname{Dimension}{}',
@@ -50,7 +50,7 @@ DefConstructor('\@@supertabular@ {Dimension} Undigested DigestedBody',
   '#3',
   reversion    => '\begin{supertabular*}{#1}{#2}#3\end{supertabular*}',
   beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
+  mode         => 'restricted_horizontal');
 
 # The following 2 environments set the tabular in (or as if in) a minipage.
 # I don't know what significance that might have, so they're basically

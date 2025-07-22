@@ -59,6 +59,7 @@ DeclareOption('thref', sub {
     # We'll use latexml's show attribute to mimic the effect
     DefConstructor('\thref OptionalMatch:* Semiverbatim',
       "<ltx:ref labelref='#label' show='typerefnum' _force_font='true'/>",
+      enterHorizontal => 1,
       properties => sub { (label => CleanLabel($_[2])); });
 });
 
@@ -147,7 +148,8 @@ DefPrimitive('\theoremclass{}', sub {
 ###DefMacro('\TheoremSymbol','');
 # need some styling here to put at right...
 DefMacro('\TheoremSymbol', '\@qedbox{\the\thm@symbol}');
-DefConstructor('\@qedbox{}', "<ltx:text class='ltx_align_floatright'>#1</ltx:text>");
+DefConstructor('\@qedbox{}', "<ltx:text class='ltx_align_floatright'>#1</ltx:text>",
+  enterHorizontal => 1);
 RawTeX('\newif\ifsetendmark\setendmarktrue');
 DefMacro('\NoEndMark', '\global\setendmarkfalse');
 DefMacroI('\thm@doendmark', undef, '\ifsetendmark\TheoremSymbol\fi');

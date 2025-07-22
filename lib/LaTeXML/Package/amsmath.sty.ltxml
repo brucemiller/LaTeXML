@@ -97,7 +97,7 @@ DefMacro('\@ams@intertext{}',
   '\lx@hidden@crcr\noalign{\@@ams@intertext{#1}}');
 
 DefConstructor('\@@ams@intertext{}',
-  "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode => 'text');
+  "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode => 'internal_vertical');
 
 # Note that most of ams's alignment environments originate in AmSTeX.
 # To make \begin{foo}...\end{foo} also work as \foo...\endfoo within AmSTeX.pool,
@@ -731,7 +731,8 @@ DefMacro('\displaybreak[]', '');    # Ignorable
 # Section 3.10 Interrupting a display
 
 # default when not used inside an appropriate alignment.
-DefConstructor('\intertext{}', "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode => 'text');
+DefConstructor('\intertext{}', "<ltx:p class='ltx_intertext'>#1</ltx:p>",
+  mode => 'internal_vertical');
 
 #======================================================================
 # Section 3.11 Equation numbering
@@ -748,6 +749,7 @@ DefPrimitive('\numberwithin[]{}{}', sub {
 
 # Section 3.11.2 Cross references to equation numbers
 DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label' _force_font='true'/>)",
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub { (label => CleanLabel($_[1])); });
 DefMacro('\thetag{}', '{\rm #1}');
 

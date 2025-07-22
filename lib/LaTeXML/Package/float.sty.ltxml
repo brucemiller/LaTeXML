@@ -57,7 +57,7 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
         . "#tags"
         . "#body"
         . "</ltx:float>",
-      properties     => { layout => 'vertical' },
+      mode           => 'internal_vertical',
       beforeDigest   => sub { beforeFloat($type); },
       afterDigest    => sub { afterFloat($_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });
@@ -66,7 +66,7 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
         . "#tags"
         . "#body"
         . "</ltx:float>",
-      properties     => { layout => 'vertical' },
+      mode           => 'internal_vertical',
       beforeDigest   => sub { beforeFloat($type, double => 1); },
       afterDigest    => sub { afterFloat($_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });

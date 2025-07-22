@@ -27,7 +27,7 @@ DefConstructor('\@@tabulary{Dimension}[] Undigested DigestedBody',
   '#4',
   reversion    => '\begin{tabulary}{#1}[#2]{#3}#4\end{tabulary}',
   beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
+  mode         => 'restricted_horizontal');
 
 # Like l,c,r,j, but set like p w/o explicit width...
 DefColumnType('L', sub {

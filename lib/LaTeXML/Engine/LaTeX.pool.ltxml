@@ -65,6 +65,7 @@ DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
     LoadClass($class,
       options => $options,
       after   => Tokens(T_CS('\AtBeginDocument'), T_CS('\warn@unusedclassoptions')));
+    $stomach->leaveHorizontal_internal;
     return; });
 
 AssignValue('@unusedoptionlist', []);
@@ -107,6 +108,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
         handleoptions => 1, options => $options,
         after         => Tokens(T_CS('\compat@loadpackages')));
       RequirePackage($class, options => $options, as_class => 1); }
+    $stomach->leaveHorizontal_internal;
     return; });
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {
@@ -296,9 +298,10 @@ DefConstructor('\lx@newline OptionalMatch:* [Glue]', sub {
       $document->insertElement('ltx:XMHint', undef, name => 'newline'); }
     else {
       my $context = $document->getElement;
-      if    (!$context || $context->getAttribute('_vertical_mode_')) { }
-      elsif (($document->getNodeQName($context) eq 'ltx:p')
-        && $context->parentNode->getAttribute('_vertical_mode_')) {
+      my $tag     = $context && $document->getNodeQName($context);
+      if    (!$context || ($tag eq 'ltx:_CaptureBlock_')) { } # skip, if in insertBlock
+      elsif (($tag eq 'ltx:p')
+        && ($document->getNodeQName($context->parentNode) eq 'ltx:_CaptureBlock_')) {
         $document->maybeCloseElement('ltx:p'); }
       elsif ($document->canContain($context, 'ltx:break')) {
         $document->insertElement('ltx:break'); } } },
@@ -347,7 +350,7 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
       $document->openElement('ltx:document', 'xml:id' => $id); } },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $stomach->beginMode('text');
+    $stomach->beginMode('internal_vertical');
     DefMacroI('\@currenvir', undef, 'document');
     AssignValue(current_environment => 'document');
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
@@ -360,6 +363,7 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     if (my $ops = LookupValue('@document@preamble@afterend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
     $_[1]->setFont(LookupValue('font'));    # Start w/ whatever font was last selected.
+    $stomach->leaveHorizontal_internal;
     return @boxes; });
 
 # \document is used directly in e.g. expl3.sty
@@ -406,7 +410,7 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
       Warn('unexpected', '\end{document}', $stomach,
         "Attempt to end document with open groups, environments or conditionals", @lines);
     }
-    $stomach->endMode('text');
+    $stomach->endMode('internal_vertical');
     # ???? don't push? or what
     #    if (my $ops = LookupValue('@after@end@document')) {
     #      push(@boxes, Digest(Tokens(@$ops))); }
@@ -444,7 +448,8 @@ DefConstructor('\LaTeX',
     . "<ltx:text cssstyle='font-variant:small-caps;font-size:120%' yoffset='-0.2ex'>e</ltx:text>"
     . "X"
     . "</ltx:text>",
-  sizer => sub { (Dimension('2.6em'), Dimension('1.6ex'), Dimension('0.5ex')); });
+  sizer => sub { (Dimension('2.6em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  enterHorizontal => 1);
 DefConstructor('\LaTeXe',
   "<ltx:text class='ltx_LaTeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.1em'>"
     . "L"
@@ -454,7 +459,8 @@ DefConstructor('\LaTeXe',
     . "X"
     . "\x{2002}2<ltx:text cssstyle='font-style:italic' yoffset='-0.3ex'>\x{03B5}</ltx:text>"
     . "</ltx:text>",
-  sizer => sub { (Dimension('3.7em'), Dimension('1.6ex'), Dimension('0.5ex')); });
+  sizer => sub { (Dimension('3.7em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  enterHorizontal => 1);
 
 DefMacroI('\fmtname',    undef, 'LaTeX2e');
 DefMacroI('\fmtversion', undef, '2018/12/01');
@@ -471,7 +477,8 @@ DefConstructor('\emph{}', sub {
     $document->openElement($tag, _force_font => 1, %props);
     $document->absorb($body);
     $document->maybeCloseElement($tag); },
-  mode         => 'text', bounded => 1, font => { emph => 1 }, alias => '\emph',
+  mode => 'restricted_horizontal', enterHorizontal => 1,
+  font => { emph => 1 }, alias => '\emph',
   beforeDigest => sub {
     DefMacroI('\f@shape', undef,
       (ToString(Tokens(Expand(T_CS('\f@shape')))) eq 'it' ? 'n' : 'it')); });
@@ -530,9 +537,9 @@ DefConstructor('\lx@note[]{}[]{}',
     . "#tags"
     . "#4"
     . "</ltx:note>",
-  mode         => 'text', bounded => 1,
+  mode         => 'internal_vertical',
   sizer        => '#mark',
-  beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
+  beforeDigest => sub { neutralizeFont(); },
   properties   => sub {
     my $type = ToString($_[2]);
     (role => $type,
@@ -543,7 +550,7 @@ DefConstructor('\lx@notemark[]{}[]',
   "^<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
     . "#tags"
     . "</ltx:note>",
-  mode       => 'text',
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub {
     my $type = ToString($_[2]);
     (role => $type . 'mark',
@@ -552,7 +559,7 @@ DefConstructor('\lx@notemark[]{}[]',
   reversion => '');
 DefConstructor('\lx@notetext[]{}[]{}',
   "^<ltx:note role='#role' mark='#mark' xml:id='#id'>#4</ltx:note>",
-  mode       => 'text',
+  mode       => 'internal_vertical',
   properties => sub {
     my $type = ToString($_[2]);
     (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || Digest(T_CS('\the' . $type)))); },
@@ -698,6 +705,7 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
       $document->absorb($tags); }
     $document->insertElement('ltx:title',    $props{title});
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
+  afterDigest => sub { $_[0]->leaveHorizontal_internal; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
     MaybePeekLabel();
@@ -734,6 +742,7 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
       (LookupValue('INDENT_FIRST') ? (class => 'ltx_indentfirst') : ()));
     $document->insertElement('ltx:title',    $props{title});
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
+  afterDigest => sub { $_[0]->leaveHorizontal_internal; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
     MaybePeekLabel();
@@ -882,6 +891,7 @@ DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
       $pkg =~ s/\s+//g;
       next if !$pkg || $pkg =~ /^%/;
       RequirePackage($pkg, options => $options); }
+    $stomach->leaveHorizontal_internal;
     return });
 
 DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
@@ -894,6 +904,7 @@ DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
       $pkg =~ s/\s+//g;
       next if !$pkg || $pkg =~ /^%/;
       RequirePackage($pkg, options => $options); }
+    $stomach->leaveHorizontal_internal;
     return });
 
 DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
@@ -904,6 +915,7 @@ DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
     my $class   = ToString($whatsit->getArg(2));
     $class =~ s/\s+//g;
     LoadClass($class, options => $options);
+    $stomach->leaveHorizontal_internal;
     return; });
 
 # Related internal macros for package definition
@@ -970,6 +982,7 @@ DefConstructor('\RequirePackageWithOptions Semiverbatim []',
     my $package = ToString($whatsit->getArg(1));
     $package =~ s/\s+//g;
     RequirePackage($package, withoptions => 1);
+    $stomach->leaveHorizontal_internal;
     return; });
 
 DefConstructor('\LoadClassWithOptions Semiverbatim []',
@@ -979,6 +992,7 @@ DefConstructor('\LoadClassWithOptions Semiverbatim []',
     my $class = ToString($whatsit->getArg(1));
     $class =~ s/\s+//g;
     LoadClass($class, withoptions => 1);
+    $stomach->leaveHorizontal_internal;
     return; });
 
 DefPrimitive('\@onefilewithoptions {} [][] {}', sub {
@@ -1133,8 +1147,8 @@ DefMacro('\@startcolumn',  '');
 # Style parameters from Fig. C.3, p.182
 DefRegister('\paperheight'     => Dimension('11in'));
 DefRegister('\paperwidth'      => Dimension('8.5in'));
-DefRegister('\textheight'      => Dimension('7in'));
-DefRegister('\textwidth'       => Dimension('6in'));
+DefRegister('\textheight'      => Dimension('550pt'));
+DefRegister('\textwidth'       => Dimension('345pt'));
 DefRegister('\topmargin'       => Dimension(0));
 DefRegister('\headheight'      => Dimension(0));
 DefRegister('\headsep'         => Dimension(0));
@@ -1164,10 +1178,11 @@ DefMacro('\date{}',
     . 'name={\@ifundefined{datename}{}{\datename}}]{#1}');
 
 DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact>",
-  alias => '\thanks', mode => 'text');
+  alias => '\thanks',
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
   beforeDigest => sub { Let('\thanks', '\person@thanks'); },
-  bounded      => 1, mode => 'text');
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 
 # Sanitize person names for (obvious) punctuation abuse at start+end
 Tag('ltx:personname', afterClose => sub {
@@ -1285,7 +1300,8 @@ DefEnvironment('{abstract}', '',
     DefMacroI('\maybe@end@abstract', undef, Tokens(), scope => 'global');
     return; },
   afterConstruct => sub { insertFrontMatter(@_); },    # HERE if not already done.
-  locked         => 1, mode => 'text');
+  locked         => 1,
+  mode => 'internal_vertical');
 # If we get a plain \abstract, instead of an environment, look for \abstract{the abstract}
 AssignValue('\abstract:locked' => 0);    # REDEFINE the above locked definition!
 DefMacro('\abstract', sub {
@@ -1335,7 +1351,8 @@ DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
     return; },
   beforeDigestEnd => sub { Digest(T_CS('\maybe@end@titlepage')); },
   afterConstruct  => sub { insertFrontMatter($_[0]); },
-  locked          => 1, mode => 'text');
+  locked          => 1,
+  mode => 'internal_vertical');
 
 Tag('ltx:titlepage', autoClose => 1);
 DefConstructorI('\maybe@end@titlepage', undef, sub {
@@ -1421,13 +1438,13 @@ DefConstructorI('\@add@flushleft', undef,
 Let('\@block@cr', '\lx@newline');    # Obsolete, but in case still used
 DefEnvironment('{quote}',
   '<ltx:quote>#body</ltx:quote>',
-  mode => 'text');
+   mode => 'internal_vertical');
 DefEnvironment('{quotation}',
   '<ltx:quote>#body</ltx:quote>',
-  mode => 'text');
+  mode => 'internal_vertical');
 DefEnvironment('{verse}',
   '<ltx:quote role="verse">#body</ltx:quote>',
-  mode => 'text');
+  mode => 'internal_vertical');
 
 #======================================================================
 # C.6.2 List-Making environments
@@ -1645,20 +1662,23 @@ DefConstructor('\inline@description@item OptionalUndigested',
 
 DefEnvironment('{itemize}',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+  mode            => 'internal_vertical',
   properties      => sub { beginItemize('itemize', '@item'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1, mode => 'text');
+  locked          => 1);
 DefEnvironment('{enumerate}',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
+  mode            => 'internal_vertical',
   properties      => sub { beginItemize('enumerate', 'enum'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1, mode => 'text');
+  locked          => 1);
 DefEnvironment('{description}',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
+  mode            => 'internal_vertical',
   beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
   properties      => sub { beginItemize('description', '@desc'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1, mode => 'text');
+  locked          => 1);
 
 DefMacro('\makelabel{}', '#1');
 DefMacro('\@mklab{}',    '\hfil #1');
@@ -1885,6 +1905,7 @@ DefMacroI('\@verbatim', undef,
   '\par\aftergroup\lx@end@verbatim\lx@@verbatim');    # Close enough?
 DefConstructorI('\lx@@verbatim', undef,
   "<ltx:verbatim font='#font'>",
+  enterHorizontal => 1,
   beforeDigest => sub {
     my ($stomach) = @_;
     StartSemiverbatim('%', '\\', '{', '}');
@@ -2009,12 +2030,13 @@ DefPrimitive('\lx@use@visiblespace', sub {
 DefMacro('\@internal@verb{}{}{}', '\ifmmode\@internal@math@verb{#1}{#2}{#3}\else\@internal@text@verb{#1}{#2}{#3}\fi');
 DefConstructor('\@internal@math@verb{} Undigested {}',
   "<ltx:XMTok font='#font'>#3</ltx:XMTok>",
-  mode      => 'text',
+  mode => 'restricted_horizontal', enterHorizontal => 1,
   font      => { family => 'typewriter', series => 'medium', shape => 'upright' },
   reversion => '\verb#1#2#3#2');
 DefConstructor('\@internal@text@verb{} Undigested {}',
   "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
   font            => { family => 'typewriter', series => 'medium', shape => 'upright' },
+  enterHorizontal => 1,
   beforeConstruct => sub {
     my ($doc, $whatsit) = @_;
     $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); },
@@ -2164,7 +2186,7 @@ DefPrimitive('\lx@equation@settag@ Digested', sub {
     my $tags = LookupValue('EQUATIONROW_TAGS');
     $$tags{tags} = $_[1];
     return; },
-  mode => 'text');
+  mode => 'restricted_horizontal');
 
 sub afterEquation {
   my ($whatsit) = @_;
@@ -2609,22 +2631,28 @@ DefConstructor('\lx@stackrel{}{}',
 
 DefConstructorI('\thinspace', undef,
   "?#isMath(<ltx:XMHint name='thinspace' width='#width'/>)(\x{2009})",
-  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip'); } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip'); } },
+  enterHorizontal => 1);
 DefConstructorI('\negthinspace', undef,
   "?#isMath(<ltx:XMHint name='negthinspace' width='#width'/>)()",
-  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip')->negate; } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip')->negate; } },
+  enterHorizontal => 1);
 DefConstructorI('\medspace', undef,
   "?#isMath(<ltx:XMHint name='medspace' width='#width'/>)()",
-  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip'); } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip'); } },
+  enterHorizontal => 1);
 DefConstructorI('\negmedspace', undef,
   "?#isMath(<ltx:XMHint name='negmedspace' width='#width'/>)()",
-  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip')->negate; } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip')->negate; } },
+  enterHorizontal => 1);
 DefConstructorI('\thickspace', undef,
   "?#isMath(<ltx:XMHint name='thickspace' width='#width'/>)(\x{2004})",
-  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip'); } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip'); } },
+  enterHorizontal => 1);
 DefConstructorI('\negthickspace', undef,
   "?#isMath(<ltx:XMHint name='negthickspace' width='#width'/>)(\x{2004})",
-  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip')->negate; } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip')->negate; } },
+  enterHorizontal => 1);
 
 #======================================================================
 # C.7.8 Changing Style
@@ -2772,7 +2800,8 @@ DefPrimitive('\DeclareTextSymbol DefToken {}{Number}', sub {
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
     my $ecs = T_CS('\\' . $encoding . $css);
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($ecs, 'text', $code, $encoding));
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($ecs,
+      'restricted_horizontal', $code, $encoding));
     return; });
 
 DefPrimitive('\DeclareTextSymbolDefault DefToken {}', sub {
@@ -3114,6 +3143,7 @@ sub defineNewTheorem {
       . "#tags"
       . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
       . "#body",
+    mode           => 'internal_vertical',
     afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
     beforeDigest   => sub {
       useTheoremStyle($thmset);
@@ -3307,14 +3337,14 @@ DefEnvironmentI('@float', '[]{}',
   "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
     . "#body"
     . "</ltx:float>",
-  properties        => { layout => 'vertical' },
+  mode              => 'internal_vertical',
   beforeDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(2))); },
   afterDigest       => sub { afterFloat($_[1]); });
 DefEnvironmentI('@dblfloat', '[]{}',
   "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
     . "#body"
     . "</ltx:float>",
-  properties        => { layout => 'vertical' },
+  mode              => 'internal_vertical',
   beforeDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(2)), double => 1); },
   afterDigest       => sub { afterFloat($_[1]); });
 
@@ -3431,7 +3461,8 @@ sub arrange_panels_and_breaks {
         push(@all_contents, $break);
         $current_width = 0;
         @row_contents  = (); }
-      my $child_width = $document->getNodeBox($child)->getWidth->valueOf();
+      my $child_box = $document->getNodeBox($child);
+      my $child_width = $child_box && $child_box->getWidth->valueOf() || 0;
       if (@row_contents && ($current_width + $child_width > $float_width)) {
         # break when we exceed the line width, to keep close with the PDF arrangement
         my $break = $document->insertElementBefore($child, 'break', 'class' => 'ltx_break');
@@ -3510,13 +3541,13 @@ Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
-DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>", sizer => 0);
+DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>",
+  sizer => 0, mode => 'restricted_horizontal', leaveHorizontal => 1);
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
-  sizer => 0);
+  sizer => 0, mode => 'restricted_horizontal', leaveHorizontal => 1);
 
 sub beforeFloat {
   my ($type, %options) = @_;
-  #Debug("FLOAT begin $type". join(',',map { $_."=".ToString($options{$_}); } sort keys %options));
   DefMacroI('\@captype', undef, $type);
   AssignRegister('\hsize' => LookupDimension($options{double} ? '\textwidth' : '\columnwidth'));
   if (my $main = $options{preincrement}) {
@@ -3540,7 +3571,7 @@ DefEnvironment('{figure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('figure'); },
   afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
@@ -3550,7 +3581,7 @@ DefEnvironment('{figure*}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('figure', double => 1); },
   afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
@@ -3559,7 +3590,7 @@ DefEnvironment('{table}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('table'); },
   afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
@@ -3568,7 +3599,7 @@ DefEnvironment('{table*}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  mode         => 'internal_vertical',
   beforeDigest => sub { beforeFloat('table', double => 1); },
   afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
@@ -3581,7 +3612,7 @@ DefEnvironment('{table*}[]',
 sub collapseFloat {
   my ($document, $float) = @_;
   my $qname  = $document->getNodeQName($float);
-  my @inners = $document->findnodes($qname, $float);
+  my @inners = $document->findnodes('ltx:float|ltx:figure|ltx:table', $float);
   if (scalar(@inners) == 1) {    # Only 1 inner float of same type
     my $inner    = $inners[0];
     my $ocaption = $document->findnodes('ltx:caption', $float);
@@ -3684,7 +3715,7 @@ DefConstructor('\@@tabbing SkipSpaces DigestedBody',
   '#1',
   reversion    => '\begin{tabbing}#1\end{tabbing}',
   beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
+  mode => 'internal_vertical');
 
 DefMacroI('\@tabbing@tabset',  undef, '\@tabbing@tabset@marker&');
 DefMacroI('\@tabbing@nexttab', undef, '\@tabbing@nexttab@marker&');
@@ -3802,7 +3833,8 @@ sub tabularBindings {
     if ($str != 1) {
       $properties{attributes}{rowsep} = Dimension(($str - 1) . 'em'); } }
   if (!defined $properties{strut}) {
-    $properties{strut} = LookupRegister('\baselineskip')->multiply(1.5); }    # Account for html space
+    $properties{isLaTeX}=1;
+    $properties{strut} = LookupRegister('\baselineskip'); }    # Account for html space
   alignmentBindings($template, 'text', %properties);
   Let("\\\\",            '\@tabularcr');
   Let('\lx@intercol',    '\lx@text@intercol');
@@ -3861,10 +3893,9 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
       $$attr{vattach} = translateAttachment($whatsit->getArg(1)); }
     return; },
   locked => 1,
-  mode   => 'text');
+  mode   => 'restricted_horizontal', enterHorizontal => 1);
 
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
-###  '\@tabular@bindings{#3}\@@tabular@{#1}[#2]{#3}\lx@begin@alignment');
   '\@tabular@bindings{#3}[width=#1,vattach=#2]\@@tabular@{#1}[#2]{#3}\lx@begin@alignment');
 DefMacro('\csname endtabular*\endcsname',
   '\lx@end@alignment\@end@tabular@');
@@ -3872,7 +3903,7 @@ DefConstructor('\@@tabular@{Dimension}[] Undigested DigestedBody',
   '#4',
   beforeDigest => sub { $_[0]->bgroup; },
   reversion    => '\begin{tabular*}{#1}[#2]{#3}#4\end{tabular*}',
-  mode         => 'text');
+  mode   => 'restricted_horizontal', enterHorizontal => 1);
 DefPrimitive('\@end@tabular@', sub { $_[0]->egroup; });
 Let('\multicolumn', '\lx@alignment@multicolumn');
 
@@ -3973,9 +4004,9 @@ DefConstructor('\label Semiverbatim', sub {
     if (my $ctr = LookupValue('current_counter')) {
       unshift(@{ LookupValue('scopes_for_counter:' . $ctr) }, $scope);
       $STATE->activateScope($scope);
-      $_[0]->beginMode('text');
+      $_[0]->beginMode('restricted_horizontal');
       AssignValue('LABEL@' . $label, Digest(T_CS('\@currentlabel')), 'global');
-      $_[0]->endMode('text'); }
+      $_[0]->endMode('restricted_horizontal'); }
     return; });
 
 # If a node has been labeled, but still  hasn't yet got an id by afterClose:late,
@@ -3991,7 +4022,8 @@ DefConstructor('\ref OptionalMatch:* Semiverbatim',
   "<ltx:ref ?#1(class='ltx_nolink')() labelref='#label' _force_font='true'/>",
   sizer      => '()',                                    # Don't actually know how big this will be!
   properties => sub { (label => CleanLabel($_[2])); },
-  robust     => 1);
+  robust     => 1,
+  enterHorizontal => 1);
 # "page" does not make sense in xml.  If the user really wants, they will need:
 # \usepackage{latexml} ... \iflatexml alternate\else page \pageref{label}\fi
 Let('\pageref', '\ref');
@@ -4247,6 +4279,7 @@ DefConstructor('\lx@bibitem[] Semiverbatim',
   "<ltx:bibitem key='#key' xml:id='#id'>"
     . "#tags"
     . "<ltx:bibblock>",
+  enterHorizontal => 1,
   afterDigest => sub {
     # check if the previous bibitem had an empty body,
     # in which case prune it and reuse its ID and counters.
@@ -4296,7 +4329,8 @@ DefConstructor('\lx@mung@bibliography@pre', sub {
       $document->maybeCloseElement($tag); }    # Or even remove (if empty)?
     return; });
 DefConstructorI('\lx@bibnewblock', undef, sub {
-    $_[0]->openElement('ltx:bibblock') if $_[0]->isOpenable('ltx:bibblock'); });
+  $_[0]->openElement('ltx:bibblock') if $_[0]->isOpenable('ltx:bibblock'); },
+  enterHorizontal => 1);
 Let('\newblock', '\lx@bibnewblock');
 Tag('ltx:bibitem',  autoOpen => 1, autoClose => 1);
 Tag('ltx:bibblock', autoOpen => 1, autoClose => 1);
@@ -4348,12 +4382,13 @@ AssignValue(CITE_UNIT           => undef);
 DefMacro('\@cite{}{}', '[{#1\if@tempswa , #2\fi}]');
 DefConstructor('\@@cite []{}', "<ltx:cite ?#1(class='ltx_citemacro_#1')>#2</ltx:cite>",
   alias => '\cite',
-  mode  => 'text');
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 
 # \@@bibref{what to show}{bibkeys}{phrase1}{phrase2}
 DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
   "<ltx:bibref show='#1' bibrefs='#bibrefs' inlist='#bibunit'"
     . " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
+  enterHorizontal => 1,
   properties => sub { (bibrefs => CleanBibKey($_[2]),
       separator   => Digest(LookupValue('CITE_SEPARATOR')),
       yyseparator => Digest(LookupValue('CITE_YY_SEPARATOR')),
@@ -4361,7 +4396,7 @@ DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
 
 # Simple container for any phrases used in the bibref
 DefConstructor('\@@citephrase{}', "<ltx:bibrefphrase>#1</ltx:bibrefphrase>",
-  mode => 'text');
+  mode => 'restricted_horizontal', enterHorizontal => 1);
 
 DefMacro('\cite[] Semiverbatim', sub {
     my ($gullet, $post, $keys) = @_;
@@ -4566,8 +4601,9 @@ sub addIndexPhraseKey {
   return; }
 
 DefConstructor('\@index[][]{}', "^<ltx:indexmark style='#1' inlist='#2'>#3</ltx:indexmark>",
-  bounded => 1, beforeDigest => sub { reenterTextMode(); neutralizeFont(); },
-  mode    => 'text', reversion => '', sizer => 0);
+  bounded => 1, beforeDigest => sub { neutralizeFont(); },
+  mode => 'restricted_horizontal',
+ reversion => '', sizer => 0);
 
 DefConstructor('\@indexphrase[]{}',
   "<ltx:indexphrase key='#key' _standalone_font='true'>#2</ltx:indexphrase>",
@@ -4809,17 +4845,17 @@ DefMacroI('\depth',       undef, '0pt');
 DefMacroI('\width',       undef, '0pt');
 
 DefConstructor('\mbox {}',
-  "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text', bounded => 1,
+  "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',
   sizer        => '#1',
-  robust       => 1,
-  beforeDigest => sub { reenterTextMode(); });
+  robust       => 1);
 
 our %makebox_alignment = (l => 'left', r => 'right', s => 'justified');
 DefMacro('\makebox', '\@ifnextchar(\pic@makebox\@makebox', robust => 1);
 DefConstructor('\@makebox[Dimension][]{}',
   "<ltx:text ?#width(width='#width') ?#align(align='#align') _noautoclose='1'>#3</ltx:text>",
-  mode         => 'text', bounded => 1, alias => '\makebox', sizer => '#3',
-  beforeDigest => sub { reenterTextMode(); },
+  mode => 'restricted_horizontal', enterHorizontal => 1,
+ alias => '\makebox', sizer => '#3',
   properties   => sub {
     (($_[2] ? (align => $makebox_alignment{ ToString($_[2]) }) : ()),
       ($_[1] ? (width => $_[1]) : ())) });
@@ -4853,7 +4889,7 @@ DefConstructor('\@framebox[Dimension][]{}',
   beforeDigest => sub {
     my ($stomach) = @_;
     my $wasmath = LookupValue('IN_MATH');
-    $stomach->beginMode('text');
+    $stomach->beginMode('restricted_horizontal');
     AssignValue(FRAME_IN_MATH => $wasmath); },
   properties => sub {
     my $sep = LookupRegister('\fboxsep')->toAttribute;
@@ -4865,7 +4901,7 @@ DefConstructor('\@framebox[Dimension][]{}',
     my ($stomach, $whatsit) = @_;
     my $wasmath = LookupValue('FRAME_IN_MATH');
     my $arg     = $whatsit->getArg(3);
-    $stomach->endMode('text');
+    $stomach->endMode('restricted_horizontal');
     if ($wasmath && $arg->isMath) {
       $whatsit->setProperties(mathframe => 1, inner => $arg->getBody); }
     return; },
@@ -4928,23 +4964,25 @@ EOL
 Let('\lx@parboxnewline', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring inner-pos, for now, though.
-DefConstructor('\parbox[] [Dimension] OptionalUndigested {Dimension} VBoxContents', sub {
+DefMacro('\parbox[] [] [] {Dimension}{}',
+  '\lx@hidden@bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\lx@hidden@egroup');
+
+DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
     insertBlock($document, $body,
       width   => $width,
       vattach => $props{vattach},
       class   => 'ltx_parbox');
     return; },
+  alias      => '\parbox',
   sizer      => '#5',
   properties => sub {
     (width => $_[4],
       vattach => translateAttachment($_[1]),
       height  => $_[2]); },
-  mode         => 'text', bounded => 1,
+  mode         => 'internal_vertical',
   robust       => 1,
   beforeDigest => sub {
-    reenterTextMode(1);    # actually vertical mode!
-    AssignRegister('\hsize' => $_[4]);
     Let('\\\\', '\lx@newline'); });
 DefMacroI('\@parboxrestore', undef, Tokens());
 
@@ -4959,25 +4997,30 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
       class   => 'ltx_minipage');
     return; },
   sizer      => '#body',
-  mode       => 'text',
-  properties => sub { (
-      width   => $_[4],
-      vattach => translateAttachment($_[1])); },
+  mode       => 'internal_vertical',
   beforeDigest => sub {
-    reenterTextMode(1);    # actually vertical mode!
-    Digest(T_CS('\@minipagetrue'));
-    AssignRegister('\hsize' => $_[4]);
-    Let('\\\\', '\lx@newline');
-  });
+    Digest(T_CS('\@minipagetrue')); },
+  afterDigestBegin => sub {
+    my($stomach, $whatsit) = @_;
+    my $vattach = translateAttachment($whatsit->getArg(1));
+    my $width   = $whatsit->getArg(4);
+    AssignRegister('\hsize'       => $width);
+    AssignRegister('\textwidth'   => $width);
+    AssignRegister('\columnwidth' => $width);
+    $whatsit->setProperties(width => $width, vattach => $vattach);
+    Let('\\\\', '\lx@newline'); },
+  afterDigestBody => sub {
+    my($stomach,$whatsit)=@_;
+    $whatsit->getBody->setProperty(vattach=>$whatsit->getProperty('vattach')); },
+);
 
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}',
   "<ltx:rule ?#offset(yoffset='#offset') width='#width' height='#height'/>",
   properties => sub { (offset => $_[1], width => $_[2], height => $_[3]) });
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
   "<ltx:text yoffset='#1' _noautoclose='1'>#4</ltx:text>",
-  mode         => 'text', bounded => 1,
-  beforeDigest => sub { reenterTextMode(); },
-  sizer        => sub { raisedSizer($_[0]->getArg(4), $_[0]->getArg(1)); });
+  mode  => 'restricted_horizontal', enterHorizontal => 1,
+  sizer => sub { raisedSizer($_[0]->getArg(4), $_[0]->getArg(1)); });
 
 DefMacro('\@finalstrut{}', '\unskip\ifhmode\nobreak\fi\vrule\@width\z@\@height\z@\@depth\dp#1');
 
@@ -5125,7 +5168,7 @@ DefEnvironment('{picture} Pair OptionalPair',
     . " fill='none' stroke='none' unitlength='#unitlength'>"
     . "?#transform(<ltx:g transform='#transform'>#body</ltx:g>)(#body)"
     . "</ltx:picture>",
-  mode         => 'text',
+  mode         => 'internal_vertical',
   beforeDigest => \&before_picture,
   properties   => sub {
     my ($stomach, $size, $pos) = @_;
@@ -5151,7 +5194,7 @@ DefConstructor('\lx@pic@put Pair{}',
     (transform => 'translate(' . picScale($_[1])->pxValue . ')',
       innerwidth => $w, innerheight => $h, innerdepth => $d); },
   alias => '\put',
-  mode  => 'text');
+  mode  => 'restricted_horizontal');
 
 DefConstructor('\line Pair:Number {Float}',
   "<ltx:line points='#points' stroke='#color' stroke-width='#thick'/>",
@@ -5207,7 +5250,6 @@ DefConstructor('\pic@makebox@ Undigested RequiredKeyVals Pair []{}',
     . "<ltx:g class='makebox' innerwidth='#width' innerheight='#height' innerdepth='#depth'"
     . " transform='translate(#xshift,#yshift)'>#box</ltx:g>",
   reversion    => '#1#3[#4]{#5}',
-  beforeDigest => sub { reenterTextMode(); },
   properties   => sub {
     my ($stomach, $cs, $kv, $size, $pos, $box) = @_;
     my ($w, $h, $d)                            = $box->getSize;
@@ -5263,7 +5305,7 @@ DefConstructor('\shortstack[]{}  OptionalMatch:* [Dimension]',
   "<ltx:inline-block align='#align'><ltx:p>#2</ltx:p></ltx:inline-block>",
   bounded      => 1,
   sizer        => '#2',
-  beforeDigest => sub { reenterTextMode();
+  beforeDigest => sub {
     # then RE-RE-define this one!!!
     Let("\\\\", '\@shortstack@cr');
     AssignRegister('\baselineskip' => Glue('-1pt'));
@@ -5274,7 +5316,7 @@ DefConstructor('\shortstack[]{}  OptionalMatch:* [Dimension]',
   # Note: does not get layout=vertical, since linebreaks are explicit
   properties => { align => sub { ($_[1] ? $alignments{ ToString($_[1]) } : undef); },
     vattach => 'bottom' },                # for size computation
-  mode => 'text');
+  mode => 'restricted_horizontal');
 
 DefMacro('\multiput Pair Pair {}{}', sub {
     my ($gullet, $pos, $d, $nt, $body) = @_;
@@ -5388,36 +5430,46 @@ DefMacro('\usefont{}{}{}{}',
   '\fontencoding{#1}\fontfamily{#2}\fontseries{#3}\fontshape{#4}\selectfont');
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
-DefConstructor('\textmd@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { series => 'medium' }, alias => '\textmd',
+DefConstructor('\textmd@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { series => 'medium' }, alias => '\textmd',
   beforeDigest => sub { DefMacro('\f@series', 'm'); });
-DefConstructor('\textbf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { series => 'bold' }, alias => '\textbf',
+DefConstructor('\textbf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { series => 'bold' }, alias => '\textbf',
   beforeDigest => sub { DefMacro('\f@series', 'b'); });
-DefConstructor('\textrm@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { family => 'serif' }, alias => '\textrm',
+DefConstructor('\textrm@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { family => 'serif' }, alias => '\textrm',
   beforeDigest => sub { DefMacro('\f@family', 'cm'); });
-DefConstructor('\textsf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { family => 'sansserif' }, alias => '\textsf',
+DefConstructor('\textsf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { family => 'sansserif' }, alias => '\textsf',
   beforeDigest => sub { DefMacro('\f@family', 'cmss'); });
-DefConstructor('\texttt@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { family => 'typewriter' }, alias => '\texttt',
+DefConstructor('\texttt@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { family => 'typewriter' }, alias => '\texttt',
   beforeDigest => sub { DefMacro('\f@family', 'cmtt'); });
 
-DefConstructor('\textup@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'upright' }, alias => '\textup',
+DefConstructor('\textup@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { shape => 'upright' }, alias => '\textup',
   beforeDigest => sub { DefMacro('\f@shape', ''); });
-DefConstructor('\textit@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'italic' }, alias => '\textit',
+DefConstructor('\textit@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { shape => 'italic' }, alias => '\textit',
   beforeDigest => sub { DefMacro('\f@shape', 'it'); });
-DefConstructor('\textsl@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'slanted' }, alias => '\textsl',
+DefConstructor('\textsl@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { shape => 'slanted' }, alias => '\textsl',
   beforeDigest => sub { DefMacro('\f@shape', 'sl'); });
-DefConstructor('\textsc@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'smallcaps' }, alias => '\textsc',
+DefConstructor('\textsc@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { shape => 'smallcaps' }, alias => '\textsc',
   beforeDigest => sub { DefMacro('\f@shape', 'sc'); });
-DefConstructor('\textnormal@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { family => 'serif', series => 'medium', shape => 'upright' }, alias => '\textnormal',
+DefConstructor('\textnormal@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  mode => 'restricted_horizontal',  enterHorizontal => 1,
+  font => { family => 'serif', series => 'medium', shape => 'upright' }, alias => '\textnormal',
   beforeDigest => sub { DefMacro('\f@family', 'cmtt');
     DefMacro('\f@series', 'm');
     DefMacro('\f@shape',  'n'); });
@@ -5437,7 +5489,7 @@ DefPrimitive('\DeclareTextFontCommand{}{}', sub {
     my ($stomach, $cmd, $font) = @_;
     DefConstructorI($cmd, "{}",
       "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)",
-      mode         => 'text', bounded => 1,
+       mode => 'restricted_horizontal', enterHorizontal => 1,
       beforeDigest => sub { Digest($font); (); });
     return; });
 
@@ -5523,13 +5575,13 @@ DefPrimitiveI('\textellipsis',   undef, "\x{2026}");    # HORIZONTAL ELLIPSIS
 DefPrimitiveI('\textregistered', undef, UTF(0xAE));     # REGISTERED SIGN
 DefPrimitiveI('\texttrademark',  undef, "\x{2122}");    # TRADE MARK SIGN
 DefConstructor('\textsuperscript{}', "<ltx:sup>#1</ltx:sup>",
-  mode => 'text');
+  mode => 'restricted_horizontal',  enterHorizontal => 1);
 DefConstructor('\@textsuperscript{}', "<ltx:sup>#1</ltx:sup>",
-  mode => 'text', locked => 1);
+  mode => 'restricted_horizontal',  enterHorizontal => 1, locked => 1);
 # This is something coming from xetex/xelatex ? Why define this way?
 #DefConstructor('\realsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
 DefConstructor('\realsuperscript{}', "<ltx:sup>#1</ltx:sup>",
-  mode => 'text');
+  mode => 'restricted_horizontal',  enterHorizontal => 1);
 DefPrimitiveI('\textordfeminine',  undef, UTF(0xAA));    # FEMININE ORDINAL INDICATOR
 DefPrimitiveI('\textordmasculine', undef, UTF(0xBA));    # MASCULINE ORDINAL INDICATOR
 
@@ -6115,7 +6167,8 @@ RawTeX(<<'EOTeX');
 \newif\if@reversemargin \@reversemarginfalse
 \newif\if@mparswitch    \@mparswitchfalse
 \newif\if@firstamp      \@firstampfalse
-\newcount\col@number    \@ne
+\newcount\col@number
+\col@number \@ne
 \newread\@inputcheck
 \newwrite\@unused
 \newwrite\@mainaux
@@ -6500,7 +6553,7 @@ DefMacro('\eminnershape', "");
 DefMacro('\TextOrMath{}{}', '\ifmmode#2\else#1\fi');
 
 DefConstructor('\textsubscript{}', "<ltx:sub>#1</ltx:sub>",
-  mode => 'text');
+  mode => 'restricted_horizontal',  enterHorizontal => 1);
 
 #**********************************************************************
 # We need this bit from utf8.def for textcomp

@@ -125,6 +125,7 @@ DefMacro('\popQED',    sub { (PopValue('QED@stack') || ()); });
 DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
+  enterHorizontal => 1,
   reversion => '\qed');
 Let('\mathqed',    '\qed');
 Let('\textsquare', '\qed');
