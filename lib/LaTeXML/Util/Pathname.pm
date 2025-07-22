@@ -46,10 +46,11 @@ our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_cwd &pathname_chdir &pathname_mkdir &pathname_copy
   &pathname_installation);
 
-my $ISWINDOWS;
+my ($DOSPATHS, $ISWINDOWS);
 
 BEGIN {
-  $ISWINDOWS = $^O =~ /^(MSWin|NetWare|cygwin)/i;
+  $DOSPATHS  = $^O =~ /^(MSWin|NetWare)/i;
+  $ISWINDOWS = $^O eq 'MSWin32';
   require Win32::ShellQuote if $ISWINDOWS;
 }
 
@@ -61,7 +62,7 @@ BEGIN {
 ### my $SEP         = '/';                          # [CONSTANT]
 # Some indicators that this is not sufficient? (calls to libraries/externals???)
 # PRELIMINARY test, probably need to be even more careful
-my $SEP         = ($ISWINDOWS ? '\\' : '/');    # [CONSTANT]
+my $SEP         = ($DOSPATHS  ? '\\' : '/');    # [CONSTANT]
 my $KPATHSEP    = ($ISWINDOWS ? ';'  : ':');    # [CONSTANT]
 my $LITERAL_RE  = '(?:literal)(?=:)';           # [CONSTANT]
 my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';    # [CONSTANT]
