@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="aastex631"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_authors_multiline">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <resource src="ltx-ulem.css" type="text/css"/>
+  <table inlist="lot" xml:id="S0.T1">
+    <tags>
+      <tag>Table 1</tag>
+      <tag role="autoref">Table 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Table 1</tag>
+    </tags>
+    <toccaption><tag close=" ">1</tag>Cap</toccaption>
+    <caption><tag close=": ">Table 1</tag>Cap</caption>
+    <block>
+      <tabular>
+        <thead>
+          <tr>
+            <td align="center" border="tt" thead="column">A</td>
+            <td align="center" border="tt" thead="column">B</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="center" border="b t">A quick and easy sentence.</td>
+            <td align="center" border="b t">Before the page is over.</td>
+          </tr>
+        </tbody>
+      </tabular>
+      <note mark="*" role="footnotetext">A note</note>
+    </block>
+  </table>
+</document>

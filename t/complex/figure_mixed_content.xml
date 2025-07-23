@@ -222,23 +222,24 @@
         <listingline xml:id="lstnumberx1"><text class="ltx_lst_space">    </text><text class="ltx_lst_identifier">listing</text></listingline>
       </listing>
       <break class="ltx_break"/>
-      <itemize class="ltx_figure_panel" xml:id="S0.I2">
-        <item xml:id="S0.I2.i1">
-          <tags>
-            <tag>•</tag>
-            <tag role="typerefnum">1st item</tag>
-          </tags>
-          <para xml:id="S0.I2.i1.p1">
-            <p>itemize 1</p>
-          </para>
-        </item>
-      </itemize>
-      <break class="ltx_break"/>
-      <note class="ltx_figure_panel" mark="1" role="footnote" xml:id="footnote1"><tags>
-          <tag>1</tag>
-          <tag role="refnum">1</tag>
-          <tag role="typerefnum">footnote 1</tag>
-        </tags>note1</note>
+      <block class="ltx_figure_panel">
+        <itemize xml:id="S0.I2">
+          <item xml:id="S0.I2.i1">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">1st item</tag>
+            </tags>
+            <para xml:id="S0.I2.i1.p1">
+              <p>itemize 1</p>
+            </para>
+          </item>
+        </itemize>
+        <note mark="1" role="footnote" xml:id="footnote1"><tags>
+            <tag>1</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">footnote 1</tag>
+          </tags>note1</note>
+      </block>
       <break class="ltx_break"/>
       <p class="ltx_figure_panel">.</p>
       <break class="ltx_break"/>
