@@ -17,11 +17,14 @@ use warnings;
 use LaTeXML::Package;
 #======================================================================
 # Note: the original package loads tikz (!) and assumes etoolbox(?)
-RequirePackage('hyperref');
+RequirePackage('hyperref');     # gratuitous
+
+DefConstructor('\lx@orcidlink{}{}',
+  "<ltx:ref title='ORCID #1' class='ltx_orcid' href='https://orcid.org/#1'>#2</ltx:ref>");
 
 # but avoid \ifstrempty (etoolbox)
 DefMacro('\orcidlinkX{}{}{}',
-  '\href{https://orcid.org/#2}{\ifx&#1&\else#1\,\fi\orcidlogo\ifx&#3&\else\,#3\fi}',
+  '\lx@orcidlink{#2}{\ifx&#1&\else#1\,\fi\orcidlogo\ifx&#3&\else\,#3\fi}',
   robust => 1);
 
 # Default, Full, Compact and Inline versions
@@ -33,7 +36,7 @@ DefMacro('\orcidlinki{}{}', '\orcidlinkX{#1}{#2}{}');
 # Logo adapted from https://orcid.org/assets/vectors/orcid.logo.icon.svg
 # Slightly simplified svg; Tweaked so "id" has height 1em & aligns with baseline.
 DefConstructor('\orcidlogo',
-  '<svg:svg width="1.7em" height="1.7em" viewBox="0 0 72 72" version="1.1" overflow="visible">'
+  '<svg:svg class="ltx_orcidlogo" width="1.7em" height="1.7em" viewBox="0 0 72 72" version="1.1" overflow="visible">'
    .'<svg:g transform="translate(0,20)">'
    .'<svg:path d="M72,36 C72,55.884375 55.884375,72 36,72 C16.115625,72 0,55.884375 0,36 C0,16.115625 16.115625,0 36,0 C55.884375,0 72,16.115625 72,36 Z" fill="#diskcolor"/>'
    .'<svg:g transform="translate(18.868966, 12.910345)" fill="#lettercolor">'
