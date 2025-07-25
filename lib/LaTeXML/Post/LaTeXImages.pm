@@ -45,6 +45,7 @@ our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE? Encoded in PI?]
 sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
+  $$self{cmd}           = $LATEXCMD;
   $$self{magnification} = $options{magnification} || 1.33333;
   $$self{maxwidth}      = $options{maxwidth}      || 800;
   $$self{DPI}           = $options{DPI}           || 100;
@@ -130,9 +131,9 @@ sub canProcess {
       "Please install one of: " . join(',', image_classes()));
     return; }
   # AND check if we have an approriprate latex!!!
-  if (($LATEXCMD =~ /^(\S+)/) && !which($1)) {    # does the command seem to be available?
-    Error('expected', $LATEXCMD, undef,
-      "No latex command ($LATEXCMD) found; Skipping.",
+  if (($$self{cmd} =~ /^(\S+)/) && !which($1)) {    # does the command seem to be available?
+    Error('expected', $$self{cmd}, undef,
+      "No latex command ($$self{cmd}) found; Skipping.",
       "Please install TeX to generate images from LaTeX");
     return; }
   return 1; }
@@ -200,6 +201,10 @@ sub cleanTeX {
 
 sub generateImages {
   my ($self, $doc, @nodes) = @_;
+  local $LaTeXML::Post::Graphics::SEARCHPATHS
+    = [map { pathname_canonical($_) } $doc->findGraphicsPaths, $doc->getSearchPaths];
+  Debug(" [Using graphicspaths: "
+      . join(', ', @$LaTeXML::Post::Graphics::SEARCHPATHS) . "]") if $LaTeXML::DEBUG{images};
 
   my $jobname  = "ltxmlimg";
   my $orig_cwd = pathname_cwd();
@@ -268,7 +273,8 @@ sub generateImages {
     print $TEX $add_to_body if $add_to_body;
 
     foreach my $entry (@pending) {
-##      print TEX "\\fbox{$$entry{tex}}\\clearpage\n"; }
+      # Heuristic: .pdf mention requires pdflatex to build
+      # $$self{cmd} = 'pdflatex' if $entry =~ /\.pdf/;
       print $TEX "$$entry{tex}\\clearpage\n"; }
     print $TEX "\\end{document}\n";
     close($TEX);
@@ -276,7 +282,7 @@ sub generateImages {
     # === Run LaTeX on the file.
     # (keep the command simple so it works in Windows)
     pathname_chdir($workdir);
-    my $ltxcommand = "$LATEXCMD $jobname > $jobname.ltxoutput";
+    my $ltxcommand = "$$self{cmd} $jobname > $jobname.ltxoutput";
     my $ltxerr;
     {
       local $ENV{TEXINPUTS} = join($sep, '.', @searchpaths,
@@ -288,9 +294,9 @@ sub generateImages {
 
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     # And sometimes it doesn't produce a dvi, even with 0 return code?
-    if (($ltxerr != 0) || (!-f "$workdir/$jobname.dvi")) {
+    if (($ltxerr != 0) || ($$self{cmd} eq 'latex' && !-f "$workdir/$jobname.dvi")) {
       $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images};    # Preserve junk
-      Error('shell', $LATEXCMD, undef,
+      Error('shell', $$self{cmd}, undef,
         "LaTeX command '$ltxcommand' failed",
         ($ltxerr == 0 ? "No dvi file generated" : "returned code $ltxerr (!= 0): $@"),
         ($LaTeXML::DEBUG{images}
@@ -422,6 +428,12 @@ sub pre_preamble {
     $result_add_to_body .= "\\title{}\\date{}\n"; }
   $result_add_to_body .= "\\makeatother\n";
 
+  # Check for graphicspaths
+  my $graphicspaths = '';
+  if (@$LaTeXML::Post::Graphics::SEARCHPATHS) {
+    $graphicspaths = "\\graphicspath{" . join(',', @$LaTeXML::Post::Graphics::SEARCHPATHS) . "}\n";
+  }
+
   my $result_preamble = <<"EOPreamble";
 \\batchmode
 \\def\\inlatexml{true}
@@ -466,6 +478,7 @@ $packages
 }%
 \\def\\lxBeginImage{\\setbox\\lxImageBox\\hbox\\bgroup\\color\@begingroup\\kern\\lxImageBoxSep}
 \\def\\lxEndImage{\\kern\\lxImageBoxSep\\color\@endgroup\\egroup}
+$graphicspaths
 $preambles
 \\makeatother
 EOPreamble
