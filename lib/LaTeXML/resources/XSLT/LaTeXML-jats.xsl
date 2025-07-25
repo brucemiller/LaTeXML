@@ -21,11 +21,11 @@
     xmlns:xsl   ="http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   ="http://dlmf.nist.gov/LaTeXML"
     xmlns:str   ="http://exslt.org/strings"
-    xmlns:m     ="http://www.w3.org/1998/Math/MathML"
+    xmlns:mml   ="http://www.w3.org/1998/Math/MathML"
     xmlns:svg   ="http://www.w3.org/2000/svg"
     xmlns:xlink ="http://www.w3.org/1999/xlink"
     extension-element-prefixes="str"
-    exclude-result-prefixes="ltx str m svg xlink">
+    exclude-result-prefixes="ltx str">
 
   <!-- Possibly useful validator:
        https://www.ncbi.nlm.nih.gov/pmc/tools/xmlchecker/
@@ -76,7 +76,7 @@
        Basic Document structure -->
   <xsl:template match="ltx:document">
     <!-- we need to partition the top-level elements into frontmatter, body and backmatter -->
-    <article>
+    <article xmlns:mml="http://www.w3.org/1998/Math/MathML">
       <front>
         <journal-meta>
           <journal-id>not-yet-known</journal-id>
@@ -556,29 +556,29 @@
 
   <xsl:template match="ltx:Math[@mode='inline']">
     <inline-formula>
-      <xsl:apply-templates select="m:math"/>
+      <xsl:apply-templates select="mml:math"/>
     </inline-formula>
   </xsl:template>
 
   <!-- caller (ltx:equation) will wrap disp-formula, as needed -->
   <xsl:template match="ltx:Math">
-    <xsl:apply-templates select="m:math"/>
+    <xsl:apply-templates select="mml:math"/>
   </xsl:template>
 
   <xsl:template match="ltx:MathFork">
-    <xsl:apply-templates select="ltx:Math[1]/m:math"/>
+    <xsl:apply-templates select="ltx:Math[1]/mml:math"/>
   </xsl:template>
 
   <!-- Copy MathML as is, but use mml as namespace prefix,
        since that's assumed by many non-XML aware JATS applications. -->
-  <xsl:template match="m:*">
+  <xsl:template match="mml:*">
     <xsl:element name="mml:{local-name()}" namespace="http://www.w3.org/1998/Math/MathML">
       <xsl:copy-of select="@*"/>
       <xsl:apply-templates/>
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="m:math">
+  <xsl:template match="mml:math">
     <xsl:element name="mml:math" namespace="http://www.w3.org/1998/Math/MathML">
       <!-- Get the ltx:Math's @xml:id onto the mml:math -->
       <xsl:apply-templates select="../@xml:id" mode="copy-attribute"/>
@@ -662,7 +662,14 @@
   </xsl:template>
 
   <xsl:template match="ltx:graphics">
-    <graphic xlink:href="{./@graphic}"/>
+    <xsl:choose>
+      <xsl:when test="@imagesrc">
+        <graphic xlink:href="{./@imagesrc}"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <graphic xlink:href="{./@graphic}"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="ltx:theorem">
