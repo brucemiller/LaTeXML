@@ -28,29 +28,29 @@ DefMacro('\Bbb{}', '\mathbb{#1}');
 # These constructors DO create Tokens with the appropriate series & size font attributes;
 # However, the way delimiters are stored in the parsed math representation (as attributes)
 # loses that font information, so that these tokens will appear as normal delimiters in the mathml.
-DefConstructor('\biglb Token', '#1',
-  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
+DefConstructor('\biglb TeXDelimiter', '#1',
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN', 0); },
   font           => { size => 'big', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\bigrb Token', '#1',
-  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
+DefConstructor('\bigrb TeXDelimiter', '#1',
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'CLOSE', 0); },
   font           => { size => 'big', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\Biglb Token', '#1',
-  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
+DefConstructor('\Biglb TeXDelimiter', '#1',
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN', 0); },
   font           => { size => 'Big', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\Bigrb Token', '#1',
-  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
+DefConstructor('\Bigrb TeXDelimiter', '#1',
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'CLOSE', 0); },
   font           => { size => 'Big', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\bigglb Token', '#1',
-  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
+DefConstructor('\bigglb TeXDelimiter', '#1',
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN', 0); },
   font           => { size => 'bigg', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\biggrb Token', '#1',
-  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
+DefConstructor('\biggrb TeXDelimiter', '#1',
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'CLOSE', 0); },
   font           => { size => 'bigg', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\Bigglb Token', '#1',
-  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
+DefConstructor('\Bigglb TeXDelimiter', '#1',
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN', 0); },
   font           => { size => 'Bigg', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\Biggrb Token', '#1',
-  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
+DefConstructor('\Biggrb TeXDelimiter', '#1',
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'CLOSE', 0); },
   font           => { size => 'Bigg', series => 'bold', forcebold => 1 }, bounded => 1);
 
 DefMath('\gtrsim', "\x{2273}", role => 'RELOP',

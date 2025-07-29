@@ -700,6 +700,30 @@ DefConstructor('\mathinner Digested', sub { adjustMathRole('ATOM',  @_); });
 # \left     c  makes TeX calculate the size of the delimiter needed at the left of a subformula.
 # \right    c  makes TeX calculate the size of the delimiter needed at the right of a subformula.
 
+# Read a Delimiter, for \left,\right, but also \big, etc
+# Formally a delimiter is either a token, or \delimiter<number> or maybe \radical<number>,
+# but we don't actually restrict to those.
+# Note that \big expands into \left, unwrapping {} once; only the first atom gets big.
+DefParameterType('TeXDelimiter', sub {
+  no warnings 'recursion';
+  my ($gullet) = @_;
+  $gullet->skipFiller;          # Skip spaces and \relax
+  my $token = $gullet->readXToken(0);
+  if ($token && $token->getCatcode == CC_BEGIN) { # Unwrap once; re-read token
+    $gullet->unread($gullet->readBalanced(1));
+    $gullet->skipFiller;
+    $token = $gullet->readXToken(0); }
+  # Replace "." by special hint.
+  $token = T_CS('\lx@delimiterdot') if (! defined $token) || (ToString($token) eq '.');
+  my ($delim) = $STATE->getStomach->invokeToken($token);
+  return $delim; },
+  undigested => 1,                         # since _already_ digested.
+  reversion  => sub { Revert($_[0]); });   # shouldn't need braces
+
+DefConstructor('\lx@delimiterdot', "<ltx:XMHint/>",
+  alias => '.',
+  properties => {hint => 1});
+
 # This duplicates in slightly different way what DefMath has put together.
 # [duplication seems like a bad idea!]
 # This should ultimately be part of some set of Unicode tables.
@@ -733,32 +757,22 @@ our %DELIMITER_MAP =
   );
 
 # The \lx@left, \lx@right versions are like \left,\right but without any extra grouping
-DefConstructor('\lx@left TeXDelimiter',
-  "?#hint(<ltx:XMHint/>)(#1)",
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
-    return; },
-  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN'); },
+DefConstructor('\lx@left TeXDelimiter', "#1",
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN', 1); },
   alias          => '\left');
 
-DefConstructor('\lx@right TeXDelimiter',
-  "?#hint(<ltx:XMHint/>)(#1)",
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
-    return; },
-  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'CLOSE'); },
+DefConstructor('\lx@right TeXDelimiter', "#1",
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'CLOSE', 1); },
   alias          => '\right');
 
 # This is a little messier than you'd think.
 # These effectively create a (boxing) group BETWEEN the \left,\right. (but should be hidden)
 # But you have to digest \left's delimiter before you can start the {...} group!
-DefConstructor('\left TeXDelimiter',
-  "?#hint(<ltx:XMHint/>)(#1)",
+DefConstructor('\left TeXDelimiter', "#1",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(hint => 1) if ToString($whatsit->getArg(1)) eq '.';
     $stomach->getGullet->unread(T_CS('\lx@hidden@bgroup'));
     return; },
-  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN'); });
+  afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN', 1); });
 
 DefMacro('\right', '\lx@hidden@egroup@right\lx@right');
 
@@ -775,27 +789,26 @@ DefConstructor('\lx@hidden@egroup@right', '',
 
 # Add delimiter relevant attributes to the current token
 sub augmentDelimiterProperties {
-  my ($document, $whatsit, $pos) = @_;
+  my ($document, $whatsit, $role, $stretchy) = @_;
   my $current = $document->getNode;
   my $delim   = $document->getLastChildElement($current) || $current;
   my $char    = $delim && $delim->textContent;
   $document->setNodeBox($delim, $whatsit);
-  if    ($whatsit->getProperty('hint')) { }
-  elsif (my $entry = $DELIMITER_MAP{$char}) {
-    $delim->setAttribute(role     => $$entry{ ($pos eq 'OPEN' ? 'lrole' : 'rrole') } || $pos);
-    $delim->setAttribute(name     => $$entry{name}) if $$entry{name};
-    $delim->setAttribute(stretchy => 'true');
-    if (exists $$entry{meaning}) {
-      if (my $meaning = $$entry{meaning}) {
-        $delim->setAttribute(meaning => $meaning); }
-      else {
-        $delim->removeAttribute('meaning'); } }    # RETRACT the assumed meaning on the delimiter
-    if (exists $$entry{char}) {
-      if (my $char = $$entry{char}) {
-        $delim->firstChild->setData($char); } }
-  }
-  elsif (($delim->getAttribute('role') || '') eq $pos) {
-    $delim->setAttribute(stretchy => 'true'); }
+  if (! $whatsit->getProperty('hint')) {
+    $delim->setAttribute(stretchy => 'true') if $stretchy;
+    if (my $entry = $DELIMITER_MAP{$char}) {
+      my $newrole = $role && $$entry{ ($role eq 'OPEN' ? 'lrole' : 'rrole') } || $role;
+      $delim->setAttribute(role => $newrole) if $newrole;
+      $delim->setAttribute(name => $$entry{name}) if $$entry{name};
+      if (exists $$entry{meaning}) {
+        if (my $meaning = $$entry{meaning}) {
+          $delim->setAttribute(meaning => $meaning); }
+        else {
+          $delim->removeAttribute('meaning'); } }    # RETRACT any assumed meaning
+      if (exists $$entry{char}) {                    # replace the char content!
+        if (my $char = $$entry{char}) {
+          $delim->firstChild->setData($char); } }
+    } }
   return; }
 
 #======================================================================
