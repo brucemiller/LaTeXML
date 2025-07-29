@@ -379,14 +379,6 @@ DefParameterType('Digested', \&readDigested,
   undigested => 1,                                           # since _already_ digested.
   reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
-# Read a Delimiter;
-# Formally a delimiter is either a token, or \delimiter<number> or maybe \radical<number>,
-# but we don't actually restrict to those.
-# Here, we just read a single Digested thing, but reversion gets no braces
-DefParameterType('TeXDelimiter', \&readDigested,
-  undigested => 1,                         # since _already_ digested.
-  reversion  => sub { Revert($_[0]); });
-
 # A variation: Digest until we encounter a given token!
 DefParameterType('DigestUntil', sub {
     my ($gullet, $until) = @_;
