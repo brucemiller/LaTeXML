@@ -213,47 +213,84 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
           <tag>(5)</tag>
           <tag role="refnum">5</tag>
         </tags>
-        <Math class="ltx_math_unparsed" mode="display" tex="(a|b),\qquad\bigl{(}a\bigm{|}b\bigr{)},\qquad\Bigl{(}a\Bigm{|}b\Bigr{)},\qquad%&#10;\biggl{(}a\biggm{|}b\biggr{)},\qquad\Biggl{(}a\Biggm{|}b\Biggr{)}" xml:id="S1.E5.m1">
+        <Math mode="display" tex="(a|b),\qquad\bigl(a\bigm|b\bigr),\qquad\Bigl(a\Bigm|b\Bigr),\qquad\biggl(a%&#10;\biggm|b\biggr),\qquad\Biggl(a\Biggm|b\Biggr)" text="list@(conditional@(a, b), conditional@(a, b), conditional@(a, b), conditional@(a, b), conditional@(a, b))" xml:id="S1.E5.m1">
           <XMath>
-            <XMWrap>
-              <XMTok role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok role="CLOSE" stretchy="false">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok fontsize="120%" role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok fontsize="120%" role="MIDDLE" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok fontsize="120%" role="CLOSE" stretchy="false">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok fontsize="160%" role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok fontsize="160%" role="MIDDLE" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok fontsize="160%" role="CLOSE" stretchy="false">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok fontsize="210%" role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok fontsize="210%" role="MIDDLE" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok fontsize="210%" role="CLOSE" stretchy="false">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok fontsize="260%" role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok fontsize="260%" role="MIDDLE" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok fontsize="260%" role="CLOSE" stretchy="false">)</XMTok>
-            </XMWrap>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="S1.E5.m1.1"/>
+                <XMRef idref="S1.E5.m1.2"/>
+                <XMRef idref="S1.E5.m1.3"/>
+                <XMRef idref="S1.E5.m1.4"/>
+                <XMRef idref="S1.E5.m1.5"/>
+              </XMApp>
+              <XMWrap>
+                <XMDual xml:id="S1.E5.m1.1">
+                  <XMRef idref="S1.E5.m1.1.1"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMApp xml:id="S1.E5.m1.1.1">
+                      <XMTok meaning="conditional" role="MODIFIEROP" stretchy="false">|</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMDual xml:id="S1.E5.m1.2">
+                  <XMRef idref="S1.E5.m1.2.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="120%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMApp xml:id="S1.E5.m1.2.1">
+                      <XMTok fontsize="120%" meaning="conditional" role="MODIFIEROP" stretchy="false">|</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    </XMApp>
+                    <XMTok fontsize="120%" role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMDual xml:id="S1.E5.m1.3">
+                  <XMRef idref="S1.E5.m1.3.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="160%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMApp xml:id="S1.E5.m1.3.1">
+                      <XMTok fontsize="160%" meaning="conditional" role="MODIFIEROP" stretchy="false">|</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    </XMApp>
+                    <XMTok fontsize="160%" role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMDual xml:id="S1.E5.m1.4">
+                  <XMRef idref="S1.E5.m1.4.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="210%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMApp xml:id="S1.E5.m1.4.1">
+                      <XMTok fontsize="210%" meaning="conditional" role="MODIFIEROP" stretchy="false">|</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    </XMApp>
+                    <XMTok fontsize="210%" role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMDual xml:id="S1.E5.m1.5">
+                  <XMRef idref="S1.E5.m1.5.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="260%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMApp xml:id="S1.E5.m1.5.1">
+                      <XMTok fontsize="260%" meaning="conditional" role="MODIFIEROP" stretchy="false">|</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    </XMApp>
+                    <XMTok fontsize="260%" role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
@@ -318,12 +355,72 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
       </equation>
     </para>
     <para xml:id="S1.p5">
+      <p>Weird arguments for delimiters</p>
       <equation xml:id="S1.E7">
         <tags>
           <tag>(7)</tag>
           <tag role="refnum">7</tag>
         </tags>
-        <Math mode="display" tex="\mbox{Hello}+y-1.2345" text="([Hello] + y) - 1.2345" xml:id="S1.E7.m1">
+        <Math mode="display" tex="\left(x\right),\qquad\Bigg(x\Bigg),\qquad\Big((x-z\Big))" text="list@(x, x, x - z)" xml:id="S1.E7.m1">
+          <XMath>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="S1.E7.m1.3"/>
+                <XMRef idref="S1.E7.m1.4"/>
+                <XMRef idref="S1.E7.m1.5"/>
+              </XMApp>
+              <XMWrap>
+                <XMDual xml:id="S1.E7.m1.3">
+                  <XMRef idref="S1.E7.m1.1"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="true">(</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S1.E7.m1.1">x</XMTok>
+                    <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMDual xml:id="S1.E7.m1.4">
+                  <XMRef idref="S1.E7.m1.2"/>
+                  <XMWrap>
+                    <XMTok fontsize="260%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S1.E7.m1.2">x</XMTok>
+                    <XMTok fontsize="260%" role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMDual xml:id="S1.E7.m1.5">
+                  <XMRef idref="S1.E7.m1.5.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="160%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMDual xml:id="S1.E7.m1.5.1">
+                      <XMRef idref="S1.E7.m1.5.1.1"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMApp xml:id="S1.E7.m1.5.1.1">
+                          <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                          <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                          <XMTok font="italic" role="UNKNOWN">z</XMTok>
+                        </XMApp>
+                        <XMTok fontsize="160%" role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+              </XMWrap>
+            </XMDual>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para xml:id="S1.p6">
+      <equation xml:id="S1.E8">
+        <tags>
+          <tag>(8)</tag>
+          <tag role="refnum">8</tag>
+        </tags>
+        <Math mode="display" tex="\mbox{Hello}+y-1.2345" text="([Hello] + y) - 1.2345" xml:id="S1.E8.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="minus" role="ADDOP">-</XMTok>
@@ -338,36 +435,36 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
         </Math>
       </equation>
       <p>Some spacing <text font="typewriter">m:mspace</text>.</p>
-      <equation xml:id="S1.E8">
+      <equation xml:id="S1.E9">
         <tags>
-          <tag>(8)</tag>
-          <tag role="refnum">8</tag>
+          <tag>(9)</tag>
+          <tag role="refnum">9</tag>
         </tags>
-        <Math mode="display" tex="xy,\qquad x\hskip 10.00002pty,\qquad x\hskip 20.00003pty" text="list@(x * y, x, y, x, y)" xml:id="S1.E8.m1">
+        <Math mode="display" tex="xy,\qquad x\hskip 10.00002pty,\qquad x\hskip 20.00003pty" text="list@(x * y, x, y, x, y)" xml:id="S1.E9.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S1.E8.m1.5"/>
-                <XMRef idref="S1.E8.m1.1"/>
-                <XMRef idref="S1.E8.m1.2"/>
-                <XMRef idref="S1.E8.m1.3"/>
-                <XMRef idref="S1.E8.m1.4"/>
+                <XMRef idref="S1.E9.m1.5"/>
+                <XMRef idref="S1.E9.m1.1"/>
+                <XMRef idref="S1.E9.m1.2"/>
+                <XMRef idref="S1.E9.m1.3"/>
+                <XMRef idref="S1.E9.m1.4"/>
               </XMApp>
               <XMWrap>
-                <XMApp xml:id="S1.E8.m1.5">
+                <XMApp xml:id="S1.E9.m1.5">
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok font="italic" role="UNKNOWN">x</XMTok>
                   <XMTok font="italic" role="UNKNOWN">y</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMTok font="italic" role="UNKNOWN" xml:id="S1.E8.m1.1">x</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S1.E9.m1.1">x</XMTok>
                 <XMHint name="quad" role="PUNCT" width="10pt"/>
-                <XMTok font="italic" role="UNKNOWN" xml:id="S1.E8.m1.2">y</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S1.E9.m1.2">y</XMTok>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMTok font="italic" role="UNKNOWN" xml:id="S1.E8.m1.3">x</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S1.E9.m1.3">x</XMTok>
                 <XMHint name="qquad" role="PUNCT" width="20pt"/>
-                <XMTok font="italic" role="UNKNOWN" xml:id="S1.E8.m1.4">y</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S1.E9.m1.4">y</XMTok>
               </XMWrap>
             </XMDual>
           </XMath>
@@ -386,100 +483,37 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
     <para xml:id="S2.p1">
       <p>Various layout schemata <text font="typewriter">m:mrow</text>, <text font="typewriter">m:mfrac</text> (with various <text font="typewriter">@linethickness</text>),
 and <text font="typewriter">m:mstyle</text>:</p>
-      <equation xml:id="S2.E9">
-        <tags>
-          <tag>(9)</tag>
-          <tag role="refnum">9</tag>
-        </tags>
-        <Math mode="display" tex="\frac{a}{b},\qquad\tfrac{a}{b},\qquad\dfrac{a}{b}" text="list@(a / b, a / b, a / b)" xml:id="S2.E9.m1">
-          <XMath>
-            <XMDual>
-              <XMApp>
-                <XMTok meaning="list"/>
-                <XMRef idref="S2.E9.m1.1"/>
-                <XMRef idref="S2.E9.m1.2"/>
-                <XMRef idref="S2.E9.m1.3"/>
-              </XMApp>
-              <XMWrap>
-                <XMApp xml:id="S2.E9.m1.1">
-                  <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
-                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
-                </XMApp>
-                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S2.E9.m1.2">
-                  <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
-                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
-                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
-                </XMApp>
-                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S2.E9.m1.3">
-                  <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
-                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
-                </XMApp>
-              </XMWrap>
-            </XMDual>
-          </XMath>
-        </Math>
-      </equation>
       <equation xml:id="S2.E10">
         <tags>
           <tag>(10)</tag>
           <tag role="refnum">10</tag>
         </tags>
-        <Math mode="display" tex="\binom{a}{b}\genfrac{}{}{0.0pt}{}{a}{b},\qquad\genfrac{}{}{0.04303pt}{}{a}{b},%&#10;\qquad\genfrac{}{}{0.43057pt}{}{a}{b},\qquad\genfrac{}{}{4.30554pt}{}{a}{b}" text="list@(binomial@(a, b) * (a FRACOP b), a / b, a / b, a / b)" xml:id="S2.E10.m1">
+        <Math mode="display" tex="\frac{a}{b},\qquad\tfrac{a}{b},\qquad\dfrac{a}{b}" text="list@(a / b, a / b, a / b)" xml:id="S2.E10.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S2.E10.m1.19"/>
-                <XMRef idref="S2.E10.m1.16"/>
-                <XMRef idref="S2.E10.m1.17"/>
-                <XMRef idref="S2.E10.m1.18"/>
+                <XMRef idref="S2.E10.m1.1"/>
+                <XMRef idref="S2.E10.m1.2"/>
+                <XMRef idref="S2.E10.m1.3"/>
               </XMApp>
               <XMWrap>
-                <XMApp xml:id="S2.E10.m1.19">
-                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                  <XMDual>
-                    <XMApp>
-                      <XMTok meaning="binomial" name="binom" role="UNKNOWN"/>
-                      <XMRef idref="S2.E10.m1.1"/>
-                      <XMRef idref="S2.E10.m1.2"/>
-                    </XMApp>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="true">(</XMTok>
-                      <XMApp xml:id="S2.E10.m1.15">
-                        <XMTok mathstyle="display" role="FRACOP" thickness="0pt"/>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.1">a</XMTok>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.2">b</XMTok>
-                      </XMApp>
-                      <XMTok role="CLOSE" stretchy="true">)</XMTok>
-                    </XMWrap>
-                  </XMDual>
-                  <XMApp>
-                    <XMTok mathstyle="display" role="FRACOP" thickness="0.0pt" xml:id="S2.E10.m1.3"/>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.4">a</XMTok>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.5">b</XMTok>
-                  </XMApp>
+                <XMApp xml:id="S2.E10.m1.1">
+                  <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S2.E10.m1.16">
-                  <XMTok mathstyle="display" meaning="divide" role="FRACOP" thickness="0.0pt" xml:id="S2.E10.m1.6"/>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.7">a</XMTok>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.8">b</XMTok>
+                <XMApp xml:id="S2.E10.m1.2">
+                  <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S2.E10.m1.17">
-                  <XMTok mathstyle="display" meaning="divide" role="FRACOP" thickness="0.4pt" xml:id="S2.E10.m1.9"/>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.10">a</XMTok>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.11">b</XMTok>
-                </XMApp>
-                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S2.E10.m1.18">
-                  <XMTok mathstyle="display" meaning="divide" role="FRACOP" thickness="4.3pt" xml:id="S2.E10.m1.12"/>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.13">a</XMTok>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E10.m1.14">b</XMTok>
+                <XMApp xml:id="S2.E10.m1.3">
+                  <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
                 </XMApp>
               </XMWrap>
             </XMDual>
@@ -491,49 +525,112 @@ and <text font="typewriter">m:mstyle</text>:</p>
           <tag>(11)</tag>
           <tag role="refnum">11</tag>
         </tags>
-        <Math mode="display" tex="\genfrac{(}{)}{}{}{a}{b},\qquad\genfrac{(}{)}{}{}{a^{2}}{b^{2}},\qquad\genfrac%&#10;{(}{)}{}{}{\int_{a}^{b}f(x)dx}{\int_{a}^{b}g(x)dx}" text="list@(a / b, a ^ 2 / b ^ 2, ((integral _ a) ^ b)@(f * x * differential-d@(x)) / ((integral _ a) ^ b)@(g * x * differential-d@(x)))" xml:id="S2.E11.m1">
+        <Math mode="display" tex="\binom{a}{b}\genfrac{}{}{0.0pt}{}{a}{b},\qquad\genfrac{}{}{0.04303pt}{}{a}{b},%&#10;\qquad\genfrac{}{}{0.43057pt}{}{a}{b},\qquad\genfrac{}{}{4.30554pt}{}{a}{b}" text="list@(binomial@(a, b) * (a FRACOP b), a / b, a / b, a / b)" xml:id="S2.E11.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S2.E11.m1.13"/>
-                <XMRef idref="S2.E11.m1.14"/>
-                <XMRef idref="S2.E11.m1.15"/>
+                <XMRef idref="S2.E11.m1.19"/>
+                <XMRef idref="S2.E11.m1.16"/>
+                <XMRef idref="S2.E11.m1.17"/>
+                <XMRef idref="S2.E11.m1.18"/>
               </XMApp>
               <XMWrap>
-                <XMDual xml:id="S2.E11.m1.13">
+                <XMApp xml:id="S2.E11.m1.19">
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMDual>
+                    <XMApp>
+                      <XMTok meaning="binomial" name="binom" role="UNKNOWN"/>
+                      <XMRef idref="S2.E11.m1.1"/>
+                      <XMRef idref="S2.E11.m1.2"/>
+                    </XMApp>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="true">(</XMTok>
+                      <XMApp xml:id="S2.E11.m1.15">
+                        <XMTok mathstyle="display" role="FRACOP" thickness="0pt"/>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.1">a</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.2">b</XMTok>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
                   <XMApp>
-                    <XMRef idref="S2.E11.m1.1"/>
-                    <XMRef idref="S2.E11.m1.2"/>
-                    <XMRef idref="S2.E11.m1.3"/>
+                    <XMTok mathstyle="display" role="FRACOP" thickness="0.0pt" xml:id="S2.E11.m1.3"/>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.4">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.5">b</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMApp xml:id="S2.E11.m1.16">
+                  <XMTok mathstyle="display" meaning="divide" role="FRACOP" thickness="0.0pt" xml:id="S2.E11.m1.6"/>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.7">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.8">b</XMTok>
+                </XMApp>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMApp xml:id="S2.E11.m1.17">
+                  <XMTok mathstyle="display" meaning="divide" role="FRACOP" thickness="0.4pt" xml:id="S2.E11.m1.9"/>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.10">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.11">b</XMTok>
+                </XMApp>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMApp xml:id="S2.E11.m1.18">
+                  <XMTok mathstyle="display" meaning="divide" role="FRACOP" thickness="4.3pt" xml:id="S2.E11.m1.12"/>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.13">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.14">b</XMTok>
+                </XMApp>
+              </XMWrap>
+            </XMDual>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S2.E12">
+        <tags>
+          <tag>(12)</tag>
+          <tag role="refnum">12</tag>
+        </tags>
+        <Math mode="display" tex="\genfrac{(}{)}{}{}{a}{b},\qquad\genfrac{(}{)}{}{}{a^{2}}{b^{2}},\qquad\genfrac%&#10;{(}{)}{}{}{\int_{a}^{b}f(x)dx}{\int_{a}^{b}g(x)dx}" text="list@(a / b, a ^ 2 / b ^ 2, ((integral _ a) ^ b)@(f * x * differential-d@(x)) / ((integral _ a) ^ b)@(g * x * differential-d@(x)))" xml:id="S2.E12.m1">
+          <XMath>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="S2.E12.m1.13"/>
+                <XMRef idref="S2.E12.m1.14"/>
+                <XMRef idref="S2.E12.m1.15"/>
+              </XMApp>
+              <XMWrap>
+                <XMDual xml:id="S2.E12.m1.13">
+                  <XMApp>
+                    <XMRef idref="S2.E12.m1.1"/>
+                    <XMRef idref="S2.E12.m1.2"/>
+                    <XMRef idref="S2.E12.m1.3"/>
                   </XMApp>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="true">(</XMTok>
-                    <XMApp xml:id="S2.E11.m1.10">
-                      <XMTok mathstyle="display" meaning="divide" role="FRACOP" xml:id="S2.E11.m1.1"/>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.2">a</XMTok>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.3">b</XMTok>
+                    <XMApp xml:id="S2.E12.m1.10">
+                      <XMTok mathstyle="display" meaning="divide" role="FRACOP" xml:id="S2.E12.m1.1"/>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S2.E12.m1.2">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S2.E12.m1.3">b</XMTok>
                     </XMApp>
                     <XMTok role="CLOSE" stretchy="true">)</XMTok>
                   </XMWrap>
                 </XMDual>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMDual xml:id="S2.E11.m1.14">
+                <XMDual xml:id="S2.E12.m1.14">
                   <XMApp>
-                    <XMRef idref="S2.E11.m1.4"/>
-                    <XMRef idref="S2.E11.m1.5"/>
-                    <XMRef idref="S2.E11.m1.6"/>
+                    <XMRef idref="S2.E12.m1.4"/>
+                    <XMRef idref="S2.E12.m1.5"/>
+                    <XMRef idref="S2.E12.m1.6"/>
                   </XMApp>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="true">(</XMTok>
-                    <XMApp xml:id="S2.E11.m1.11">
-                      <XMTok mathstyle="display" meaning="divide" role="FRACOP" xml:id="S2.E11.m1.4"/>
-                      <XMApp xml:id="S2.E11.m1.5">
+                    <XMApp xml:id="S2.E12.m1.11">
+                      <XMTok mathstyle="display" meaning="divide" role="FRACOP" xml:id="S2.E12.m1.4"/>
+                      <XMApp xml:id="S2.E12.m1.5">
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                         <XMTok font="italic" role="UNKNOWN">a</XMTok>
                         <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
-                      <XMApp xml:id="S2.E11.m1.6">
+                      <XMApp xml:id="S2.E12.m1.6">
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                         <XMTok font="italic" role="UNKNOWN">b</XMTok>
                         <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
@@ -543,17 +640,17 @@ and <text font="typewriter">m:mstyle</text>:</p>
                   </XMWrap>
                 </XMDual>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMDual xml:id="S2.E11.m1.15">
+                <XMDual xml:id="S2.E12.m1.15">
                   <XMApp>
-                    <XMRef idref="S2.E11.m1.7"/>
-                    <XMRef idref="S2.E11.m1.8"/>
-                    <XMRef idref="S2.E11.m1.9"/>
+                    <XMRef idref="S2.E12.m1.7"/>
+                    <XMRef idref="S2.E12.m1.8"/>
+                    <XMRef idref="S2.E12.m1.9"/>
                   </XMApp>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="true">(</XMTok>
-                    <XMApp xml:id="S2.E11.m1.12">
-                      <XMTok mathstyle="display" meaning="divide" role="FRACOP" xml:id="S2.E11.m1.7"/>
-                      <XMApp xml:id="S2.E11.m1.8">
+                    <XMApp xml:id="S2.E12.m1.12">
+                      <XMTok mathstyle="display" meaning="divide" role="FRACOP" xml:id="S2.E12.m1.7"/>
+                      <XMApp xml:id="S2.E12.m1.8">
                         <XMApp>
                           <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                           <XMApp>
@@ -567,10 +664,10 @@ and <text font="typewriter">m:mstyle</text>:</p>
                           <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMTok font="italic" role="UNKNOWN">f</XMTok>
                           <XMDual>
-                            <XMRef idref="S2.E11.m1.8.1"/>
+                            <XMRef idref="S2.E12.m1.8.1"/>
                             <XMWrap>
                               <XMTok role="OPEN" stretchy="false">(</XMTok>
-                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.8.1">x</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E12.m1.8.1">x</XMTok>
                               <XMTok role="CLOSE" stretchy="false">)</XMTok>
                             </XMWrap>
                           </XMDual>
@@ -580,7 +677,7 @@ and <text font="typewriter">m:mstyle</text>:</p>
                           </XMApp>
                         </XMApp>
                       </XMApp>
-                      <XMApp xml:id="S2.E11.m1.9">
+                      <XMApp xml:id="S2.E12.m1.9">
                         <XMApp>
                           <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                           <XMApp>
@@ -594,10 +691,10 @@ and <text font="typewriter">m:mstyle</text>:</p>
                           <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMTok font="italic" role="UNKNOWN">g</XMTok>
                           <XMDual>
-                            <XMRef idref="S2.E11.m1.9.1"/>
+                            <XMRef idref="S2.E12.m1.9.1"/>
                             <XMWrap>
                               <XMTok role="OPEN" stretchy="false">(</XMTok>
-                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E11.m1.9.1">x</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E12.m1.9.1">x</XMTok>
                               <XMTok role="CLOSE" stretchy="false">)</XMTok>
                             </XMWrap>
                           </XMDual>
@@ -619,47 +716,47 @@ and <text font="typewriter">m:mstyle</text>:</p>
     </para>
     <para xml:id="S2.p2">
       <p>Roots <text font="typewriter">m:msqrt</text> and <text font="typewriter">m:mroot</text>, as well as enclosures <text font="typewriter">m:menclose</text>:</p>
-      <equation xml:id="S2.E12">
+      <equation xml:id="S2.E13">
         <tags>
-          <tag>(12)</tag>
-          <tag role="refnum">12</tag>
+          <tag>(13)</tag>
+          <tag role="refnum">13</tag>
         </tags>
-        <Math mode="display" tex="\sqrt{x},\qquad\sqrt[3]{x},\qquad\root 3 \of{x},\qquad\boxed{x^{2}},\qquad\not%&#10;{?}" text="list@(square-root@(x), nth-root@(3, x), nth-root@(3, x), x ^ 2, not-?)" xml:id="S2.E12.m1">
+        <Math mode="display" tex="\sqrt{x},\qquad\sqrt[3]{x},\qquad\root 3 \of{x},\qquad\boxed{x^{2}},\qquad\not%&#10;{?}" text="list@(square-root@(x), nth-root@(3, x), nth-root@(3, x), x ^ 2, not-?)" xml:id="S2.E13.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S2.E12.m1.1"/>
-                <XMRef idref="S2.E12.m1.2"/>
-                <XMRef idref="S2.E12.m1.3"/>
-                <XMRef idref="S2.E12.m1.4"/>
-                <XMRef idref="S2.E12.m1.5"/>
+                <XMRef idref="S2.E13.m1.1"/>
+                <XMRef idref="S2.E13.m1.2"/>
+                <XMRef idref="S2.E13.m1.3"/>
+                <XMRef idref="S2.E13.m1.4"/>
+                <XMRef idref="S2.E13.m1.5"/>
               </XMApp>
               <XMWrap>
-                <XMApp xml:id="S2.E12.m1.1">
+                <XMApp xml:id="S2.E13.m1.1">
                   <XMTok meaning="square-root"/>
                   <XMTok font="italic" role="UNKNOWN">x</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S2.E12.m1.2">
+                <XMApp xml:id="S2.E13.m1.2">
                   <XMTok meaning="nth-root"/>
                   <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
                   <XMTok font="italic" role="UNKNOWN">x</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S2.E12.m1.3">
+                <XMApp xml:id="S2.E13.m1.3">
                   <XMTok meaning="nth-root"/>
                   <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
                   <XMTok font="italic" role="UNKNOWN">x</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp enclose="box" xml:id="S2.E12.m1.4">
+                <XMApp enclose="box" xml:id="S2.E13.m1.4">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">x</XMTok>
                   <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMTok name="not-?" role="UNKNOWN" xml:id="S2.E12.m1.5">?̸</XMTok>
+                <XMTok name="not-?" role="UNKNOWN" xml:id="S2.E13.m1.5">?̸</XMTok>
               </XMWrap>
             </XMDual>
           </XMath>
@@ -668,44 +765,44 @@ and <text font="typewriter">m:mstyle</text>:</p>
     </para>
     <para xml:id="S2.p3">
       <p>More spacing examples with <text font="typewriter">m:mpadded</text>:</p>
-      <equation xml:id="S2.E13">
+      <equation xml:id="S2.E14">
         <tags>
-          <tag>(13)</tag>
-          <tag role="refnum">13</tag>
+          <tag>(14)</tag>
+          <tag role="refnum">14</tag>
         </tags>
-        <Math mode="display" tex="a+b,\qquad a\,+\,b,\qquad a\&gt;+\&gt;b,\qquad a\;+\;b,\qquad" text="list@(a + b, a + b, a + b, a + b)" xml:id="S2.E13.m1">
+        <Math mode="display" tex="a+b,\qquad a\,+\,b,\qquad a\&gt;+\&gt;b,\qquad a\;+\;b,\qquad" text="list@(a + b, a + b, a + b, a + b)" xml:id="S2.E14.m1">
           <XMath>
             <XMDual>
-              <XMRef idref="S2.E13.m1.1"/>
+              <XMRef idref="S2.E14.m1.1"/>
               <XMWrap>
-                <XMDual xml:id="S2.E13.m1.1">
+                <XMDual xml:id="S2.E14.m1.1">
                   <XMApp>
                     <XMTok meaning="list"/>
-                    <XMRef idref="S2.E13.m1.1.1"/>
-                    <XMRef idref="S2.E13.m1.1.2"/>
-                    <XMRef idref="S2.E13.m1.1.3"/>
-                    <XMRef idref="S2.E13.m1.1.4"/>
+                    <XMRef idref="S2.E14.m1.1.1"/>
+                    <XMRef idref="S2.E14.m1.1.2"/>
+                    <XMRef idref="S2.E14.m1.1.3"/>
+                    <XMRef idref="S2.E14.m1.1.4"/>
                   </XMApp>
                   <XMWrap>
-                    <XMApp xml:id="S2.E13.m1.1.1">
+                    <XMApp xml:id="S2.E14.m1.1.1">
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
                       <XMTok font="italic" role="UNKNOWN">a</XMTok>
                       <XMTok font="italic" role="UNKNOWN">b</XMTok>
                     </XMApp>
                     <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                    <XMApp xml:id="S2.E13.m1.1.2">
+                    <XMApp xml:id="S2.E14.m1.1.2">
                       <XMTok meaning="plus" role="ADDOP" rpadding="1.7pt">+</XMTok>
                       <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">a</XMTok>
                       <XMTok font="italic" role="UNKNOWN">b</XMTok>
                     </XMApp>
                     <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                    <XMApp xml:id="S2.E13.m1.1.3">
+                    <XMApp xml:id="S2.E14.m1.1.3">
                       <XMTok meaning="plus" role="ADDOP" rpadding="2.2pt">+</XMTok>
                       <XMTok font="italic" role="UNKNOWN" rpadding="2.2pt">a</XMTok>
                       <XMTok font="italic" role="UNKNOWN">b</XMTok>
                     </XMApp>
                     <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                    <XMApp xml:id="S2.E13.m1.1.4">
+                    <XMApp xml:id="S2.E14.m1.1.4">
                       <XMTok meaning="plus" role="ADDOP" rpadding="2.8pt">+</XMTok>
                       <XMTok font="italic" role="UNKNOWN" rpadding="2.8pt">a</XMTok>
                       <XMTok font="italic" role="UNKNOWN">b</XMTok>
@@ -719,13 +816,13 @@ and <text font="typewriter">m:mstyle</text>:</p>
         </Math>
       </equation>
       <equationgroup class="ltx_eqn_eqnarray" xml:id="S5.EGx1">
-        <equation xml:id="S2.E14">
+        <equation xml:id="S2.E15">
           <tags>
-            <tag>(14)</tag>
-            <tag role="refnum">14</tag>
+            <tag>(15)</tag>
+            <tag role="refnum">15</tag>
           </tags>
           <MathFork>
-            <Math tex="\displaystyle X=f(x)+g(x)+h(x)" text="X = f * x + g * x + h * x" xml:id="S2.E14.m4">
+            <Math tex="\displaystyle X=f(x)+g(x)+h(x)" text="X = f * x + g * x + h * x" xml:id="S2.E15.m4">
               <XMath>
                 <XMApp>
                   <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -736,10 +833,10 @@ and <text font="typewriter">m:mstyle</text>:</p>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMTok font="italic" role="UNKNOWN">f</XMTok>
                       <XMDual>
-                        <XMRef idref="S2.E14.m4.1"/>
+                        <XMRef idref="S2.E15.m4.1"/>
                         <XMWrap>
                           <XMTok role="OPEN" stretchy="false">(</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="S2.E14.m4.1">x</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m4.1">x</XMTok>
                           <XMTok role="CLOSE" stretchy="false">)</XMTok>
                         </XMWrap>
                       </XMDual>
@@ -748,10 +845,10 @@ and <text font="typewriter">m:mstyle</text>:</p>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMTok font="italic" role="UNKNOWN">g</XMTok>
                       <XMDual>
-                        <XMRef idref="S2.E14.m4.2"/>
+                        <XMRef idref="S2.E15.m4.2"/>
                         <XMWrap>
                           <XMTok role="OPEN" stretchy="false">(</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="S2.E14.m4.2">x</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m4.2">x</XMTok>
                           <XMTok role="CLOSE" stretchy="false">)</XMTok>
                         </XMWrap>
                       </XMDual>
@@ -760,10 +857,10 @@ and <text font="typewriter">m:mstyle</text>:</p>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMTok font="italic" role="UNKNOWN">h</XMTok>
                       <XMDual>
-                        <XMRef idref="S2.E14.m4.3"/>
+                        <XMRef idref="S2.E15.m4.3"/>
                         <XMWrap>
                           <XMTok role="OPEN" stretchy="false">(</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="S2.E14.m4.3">x</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m4.3">x</XMTok>
                           <XMTok role="CLOSE" stretchy="false">)</XMTok>
                         </XMWrap>
                       </XMDual>
@@ -774,17 +871,17 @@ and <text font="typewriter">m:mstyle</text>:</p>
             </Math>
             <MathBranch>
               <tr>
-                <td align="right"><Math mode="inline" tex="\displaystyle X" text="X" xml:id="S2.E14.m1">
+                <td align="right"><Math mode="inline" tex="\displaystyle X" text="X" xml:id="S2.E15.m1">
                     <XMath>
                       <XMTok font="italic" role="UNKNOWN">X</XMTok>
                     </XMath>
                   </Math></td>
-                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E14.m2">
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E15.m2">
                     <XMath>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                     </XMath>
                   </Math></td>
-                <td align="left"><Math mode="inline" tex="\displaystyle f(x)+g(x)+h(x)" text="f * x + g * x + h * x" xml:id="S2.E14.m3">
+                <td align="left"><Math mode="inline" tex="\displaystyle f(x)+g(x)+h(x)" text="f * x + g * x + h * x" xml:id="S2.E15.m3">
                     <XMath>
                       <XMApp>
                         <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -792,10 +889,10 @@ and <text font="typewriter">m:mstyle</text>:</p>
                           <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMTok font="italic" role="UNKNOWN">f</XMTok>
                           <XMDual>
-                            <XMRef idref="S2.E14.m3.1"/>
+                            <XMRef idref="S2.E15.m3.1"/>
                             <XMWrap>
                               <XMTok role="OPEN" stretchy="false">(</XMTok>
-                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E14.m3.1">x</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m3.1">x</XMTok>
                               <XMTok role="CLOSE" stretchy="false">)</XMTok>
                             </XMWrap>
                           </XMDual>
@@ -804,10 +901,10 @@ and <text font="typewriter">m:mstyle</text>:</p>
                           <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMTok font="italic" role="UNKNOWN">g</XMTok>
                           <XMDual>
-                            <XMRef idref="S2.E14.m3.2"/>
+                            <XMRef idref="S2.E15.m3.2"/>
                             <XMWrap>
                               <XMTok role="OPEN" stretchy="false">(</XMTok>
-                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E14.m3.2">x</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m3.2">x</XMTok>
                               <XMTok role="CLOSE" stretchy="false">)</XMTok>
                             </XMWrap>
                           </XMDual>
@@ -816,10 +913,10 @@ and <text font="typewriter">m:mstyle</text>:</p>
                           <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMTok font="italic" role="UNKNOWN">h</XMTok>
                           <XMDual>
-                            <XMRef idref="S2.E14.m3.3"/>
+                            <XMRef idref="S2.E15.m3.3"/>
                             <XMWrap>
                               <XMTok role="OPEN" stretchy="false">(</XMTok>
-                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E14.m3.3">x</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m3.3">x</XMTok>
                               <XMTok role="CLOSE" stretchy="false">)</XMTok>
                             </XMWrap>
                           </XMDual>
@@ -831,19 +928,19 @@ and <text font="typewriter">m:mstyle</text>:</p>
             </MathBranch>
           </MathFork>
         </equation>
-        <equation xml:id="S2.E15">
+        <equation xml:id="S2.E16">
           <tags>
-            <tag>(15)</tag>
-            <tag role="refnum">15</tag>
+            <tag>(16)</tag>
+            <tag role="refnum">16</tag>
           </tags>
           <MathFork>
-            <Math class="ltx_math_unparsed" tex="\displaystyle=f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E15.m3">
+            <Math class="ltx_math_unparsed" tex="\displaystyle=f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E16.m3">
               <XMath>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMTok font="italic" role="UNKNOWN">f</XMTok>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m3.1">x</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E16.m3.1">x</XMTok>
                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
                 <XMTok meaning="plus" role="ADDOP" rpadding="18.6pt">+</XMTok>
@@ -859,17 +956,17 @@ and <text font="typewriter">m:mstyle</text>:</p>
             <MathBranch>
               <tr>
                 <td/>
-                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E15.m1">
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E16.m1">
                     <XMath>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                     </XMath>
                   </Math></td>
-                <td align="left"><Math class="ltx_math_unparsed" mode="inline" tex="\displaystyle f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E15.m2">
+                <td align="left"><Math class="ltx_math_unparsed" mode="inline" tex="\displaystyle f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E16.m2">
                     <XMath>
                       <XMTok font="italic" role="UNKNOWN">f</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">(</XMTok>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m2.1">x</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S2.E16.m2.1">x</XMTok>
                         <XMTok role="CLOSE" stretchy="false">)</XMTok>
                       </XMWrap>
                       <XMTok meaning="plus" role="ADDOP" rpadding="18.6pt">+</XMTok>
@@ -906,32 +1003,32 @@ under- and over-scripts (<text font="typewriter">m:munder</text>, <text font="ty
 some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>, <text font="typewriter">m:mprescripts</text>).</p>
     </para>
     <para xml:id="S3.p2">
-      <equation xml:id="S3.E17">
+      <equation xml:id="S3.E18">
         <tags>
-          <tag>(17)</tag>
-          <tag role="refnum">17</tag>
+          <tag>(18)</tag>
+          <tag role="refnum">18</tag>
         </tags>
-        <Math mode="display" tex="a^{b},\qquad a^{b^{c}},\qquad a^{b^{c^{d}}},\qquad a_{b},\qquad a_{b_{c}},%&#10;\qquad a_{b_{c_{d}}},\qquad a^{b}_{c}" text="list@(a ^ b, a ^ b ^ c, a ^ b ^ c ^ d, a _ b, a _ b _ c, a _ b _ c _ d, (a ^ b) _ c)" xml:id="S3.E17.m1">
+        <Math mode="display" tex="a^{b},\qquad a^{b^{c}},\qquad a^{b^{c^{d}}},\qquad a_{b},\qquad a_{b_{c}},%&#10;\qquad a_{b_{c_{d}}},\qquad a^{b}_{c}" text="list@(a ^ b, a ^ b ^ c, a ^ b ^ c ^ d, a _ b, a _ b _ c, a _ b _ c _ d, (a ^ b) _ c)" xml:id="S3.E18.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S3.E17.m1.1"/>
-                <XMRef idref="S3.E17.m1.2"/>
-                <XMRef idref="S3.E17.m1.3"/>
-                <XMRef idref="S3.E17.m1.4"/>
-                <XMRef idref="S3.E17.m1.5"/>
-                <XMRef idref="S3.E17.m1.6"/>
-                <XMRef idref="S3.E17.m1.7"/>
+                <XMRef idref="S3.E18.m1.1"/>
+                <XMRef idref="S3.E18.m1.2"/>
+                <XMRef idref="S3.E18.m1.3"/>
+                <XMRef idref="S3.E18.m1.4"/>
+                <XMRef idref="S3.E18.m1.5"/>
+                <XMRef idref="S3.E18.m1.6"/>
+                <XMRef idref="S3.E18.m1.7"/>
               </XMApp>
               <XMWrap>
-                <XMApp xml:id="S3.E17.m1.1">
+                <XMApp xml:id="S3.E18.m1.1">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E17.m1.2">
+                <XMApp xml:id="S3.E18.m1.2">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
@@ -941,7 +1038,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   </XMApp>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E17.m1.3">
+                <XMApp xml:id="S3.E18.m1.3">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
@@ -955,13 +1052,13 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   </XMApp>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E17.m1.4">
+                <XMApp xml:id="S3.E18.m1.4">
                   <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E17.m1.5">
+                <XMApp xml:id="S3.E18.m1.5">
                   <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
@@ -971,7 +1068,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   </XMApp>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E17.m1.6">
+                <XMApp xml:id="S3.E18.m1.6">
                   <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
@@ -985,7 +1082,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   </XMApp>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E17.m1.7">
+                <XMApp xml:id="S3.E18.m1.7">
                   <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
@@ -1001,34 +1098,34 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
       </equation>
     </para>
     <para xml:id="S3.p3">
-      <equation xml:id="S3.E18">
+      <equation xml:id="S3.E19">
         <tags>
-          <tag>(18)</tag>
-          <tag role="refnum">18</tag>
+          <tag>(19)</tag>
+          <tag role="refnum">19</tag>
         </tags>
-        <Math mode="display" tex="\sum^{b},\qquad\sum_{b},\qquad\sum^{b}_{c}" text="list@(sum ^ b, sum _ b, (sum ^ b) _ c)" xml:id="S3.E18.m1">
+        <Math mode="display" tex="\sum^{b},\qquad\sum_{b},\qquad\sum^{b}_{c}" text="list@(sum ^ b, sum _ b, (sum ^ b) _ c)" xml:id="S3.E19.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S3.E18.m1.1"/>
-                <XMRef idref="S3.E18.m1.2"/>
-                <XMRef idref="S3.E18.m1.3"/>
+                <XMRef idref="S3.E19.m1.1"/>
+                <XMRef idref="S3.E19.m1.2"/>
+                <XMRef idref="S3.E19.m1.3"/>
               </XMApp>
               <XMWrap>
-                <XMApp xml:id="S3.E18.m1.1">
+                <XMApp xml:id="S3.E19.m1.1">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E18.m1.2">
+                <XMApp xml:id="S3.E19.m1.2">
                   <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E18.m1.3">
+                <XMApp xml:id="S3.E19.m1.3">
                   <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
@@ -1042,21 +1139,21 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="S3.E19">
+      <equation xml:id="S3.E20">
         <tags>
-          <tag>(19)</tag>
-          <tag role="refnum">19</tag>
+          <tag>(20)</tag>
+          <tag role="refnum">20</tag>
         </tags>
-        <Math mode="display" tex="X=\sum_{1\leq i\leq j\leq n}X_{ij},\qquad X=\sum_{\mathclap{1\leq i\leq j\leq n%&#10;}}X_{ij},\qquad X=\smashoperator[r]{\sum_{1\leq i\leq j\leq n}^{}}X_{ij},%&#10;\qquad X=\smashoperator[l]{\sum_{1\leq i\leq j\leq n}^{}}X_{ij}" text="formulae@(X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j)), formulae@(X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j)), formulae@(X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j)), X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j)))))" xml:id="S3.E19.m1">
+        <Math mode="display" tex="X=\sum_{1\leq i\leq j\leq n}X_{ij},\qquad X=\sum_{\mathclap{1\leq i\leq j\leq n%&#10;}}X_{ij},\qquad X=\smashoperator[r]{\sum_{1\leq i\leq j\leq n}^{}}X_{ij},%&#10;\qquad X=\smashoperator[l]{\sum_{1\leq i\leq j\leq n}^{}}X_{ij}" text="formulae@(X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j)), formulae@(X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j)), formulae@(X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j)), X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j)))))" xml:id="S3.E20.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="formulae"/>
-                <XMRef idref="S3.E19.m1.1"/>
-                <XMRef idref="S3.E19.m1.2"/>
+                <XMRef idref="S3.E20.m1.1"/>
+                <XMRef idref="S3.E20.m1.2"/>
               </XMApp>
               <XMWrap>
-                <XMApp xml:id="S3.E19.m1.1">
+                <XMApp xml:id="S3.E20.m1.1">
                   <XMTok meaning="equals" role="RELOP">=</XMTok>
                   <XMTok font="italic" role="UNKNOWN">X</XMTok>
                   <XMApp>
@@ -1086,14 +1183,14 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   </XMApp>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMDual xml:id="S3.E19.m1.2">
+                <XMDual xml:id="S3.E20.m1.2">
                   <XMApp>
                     <XMTok meaning="formulae"/>
-                    <XMRef idref="S3.E19.m1.2.1"/>
-                    <XMRef idref="S3.E19.m1.2.2"/>
+                    <XMRef idref="S3.E20.m1.2.1"/>
+                    <XMRef idref="S3.E20.m1.2.2"/>
                   </XMApp>
                   <XMWrap>
-                    <XMApp xml:id="S3.E19.m1.2.1">
+                    <XMApp xml:id="S3.E20.m1.2.1">
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                       <XMTok font="italic" role="UNKNOWN">X</XMTok>
                       <XMApp>
@@ -1123,14 +1220,14 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                       </XMApp>
                     </XMApp>
                     <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                    <XMDual xml:id="S3.E19.m1.2.2">
+                    <XMDual xml:id="S3.E20.m1.2.2">
                       <XMApp>
                         <XMTok meaning="formulae"/>
-                        <XMRef idref="S3.E19.m1.2.2.1"/>
-                        <XMRef idref="S3.E19.m1.2.2.2"/>
+                        <XMRef idref="S3.E20.m1.2.2.1"/>
+                        <XMRef idref="S3.E20.m1.2.2.2"/>
                       </XMApp>
                       <XMWrap>
-                        <XMApp xml:id="S3.E19.m1.2.2.1">
+                        <XMApp xml:id="S3.E20.m1.2.2.1">
                           <XMTok meaning="equals" role="RELOP">=</XMTok>
                           <XMTok font="italic" role="UNKNOWN">X</XMTok>
                           <XMApp>
@@ -1160,7 +1257,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                           </XMApp>
                         </XMApp>
                         <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                        <XMApp xml:id="S3.E19.m1.2.2.2">
+                        <XMApp xml:id="S3.E20.m1.2.2.2">
                           <XMTok meaning="equals" role="RELOP">=</XMTok>
                           <XMTok font="italic" role="UNKNOWN">X</XMTok>
                           <XMApp>
@@ -1200,23 +1297,23 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
       </equation>
     </para>
     <para xml:id="S3.p4">
-      <equation xml:id="S3.E20">
+      <equation xml:id="S3.E21">
         <tags>
-          <tag>(20)</tag>
-          <tag role="refnum">20</tag>
+          <tag>(21)</tag>
+          <tag role="refnum">21</tag>
         </tags>
-        <Math mode="display" tex="a\overset{\mathrm{def}}{\rightarrow}b,\qquad a\underset{\mathrm{def}}{%&#10;\rightarrow}b,\qquad a\overrightarrow{\mathrm{def}}b,\qquad a\underrightarrow{%&#10;\mathrm{def}}b" text="list@(a * def@(rightarrow) * b, a * def@(rightarrow) * b, a * overrightarrow@(def) * b, a * underrightarrow@(def) * b)" xml:id="S3.E20.m1">
+        <Math mode="display" tex="a\overset{\mathrm{def}}{\rightarrow}b,\qquad a\underset{\mathrm{def}}{%&#10;\rightarrow}b,\qquad a\overrightarrow{\mathrm{def}}b,\qquad a\underrightarrow{%&#10;\mathrm{def}}b" text="list@(a * def@(rightarrow) * b, a * def@(rightarrow) * b, a * overrightarrow@(def) * b, a * underrightarrow@(def) * b)" xml:id="S3.E21.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S3.E20.m1.1"/>
-                <XMRef idref="S3.E20.m1.2"/>
-                <XMRef idref="S3.E20.m1.3"/>
-                <XMRef idref="S3.E20.m1.4"/>
+                <XMRef idref="S3.E21.m1.1"/>
+                <XMRef idref="S3.E21.m1.2"/>
+                <XMRef idref="S3.E21.m1.3"/>
+                <XMRef idref="S3.E21.m1.4"/>
               </XMApp>
               <XMWrap>
-                <XMApp xml:id="S3.E20.m1.1">
+                <XMApp xml:id="S3.E21.m1.1">
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
@@ -1226,7 +1323,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E20.m1.2">
+                <XMApp xml:id="S3.E21.m1.2">
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
@@ -1236,7 +1333,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E20.m1.3">
+                <XMApp xml:id="S3.E21.m1.3">
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
@@ -1246,7 +1343,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp xml:id="S3.E20.m1.4">
+                <XMApp xml:id="S3.E21.m1.4">
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
@@ -1262,25 +1359,25 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
       </equation>
     </para>
     <para xml:id="S3.p5">
-      <equation xml:id="S3.E21">
+      <equation xml:id="S3.E22">
         <tags>
-          <tag>(21)</tag>
-          <tag role="refnum">21</tag>
+          <tag>(22)</tag>
+          <tag role="refnum">22</tag>
         </tags>
-        <Math mode="display" tex="\overline{abc}^{s}\qquad\overleftarrow{abc}^{s}\qquad\overrightarrow{abc}^{s}%&#10;\qquad\overbrace{abc}^{s}\qquad\underline{abc}_{s}\qquad\underbrace{abc}_{s}" text="list@((overline@(a * b * c)) ^ s, (overleftarrow@(a * b * c)) ^ s, (overrightarrow@(a * b * c)) ^ s, (overbrace@(a * b * c)) ^ s, (underline@(a * b * c)) _ s, (underbrace@(a * b * c)) _ s)" xml:id="S3.E21.m1">
+        <Math mode="display" tex="\overline{abc}^{s}\qquad\overleftarrow{abc}^{s}\qquad\overrightarrow{abc}^{s}%&#10;\qquad\overbrace{abc}^{s}\qquad\underline{abc}_{s}\qquad\underbrace{abc}_{s}" text="list@((overline@(a * b * c)) ^ s, (overleftarrow@(a * b * c)) ^ s, (overrightarrow@(a * b * c)) ^ s, (overbrace@(a * b * c)) ^ s, (underline@(a * b * c)) _ s, (underbrace@(a * b * c)) _ s)" xml:id="S3.E22.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S3.E21.m1.1"/>
-                <XMRef idref="S3.E21.m1.2"/>
-                <XMRef idref="S3.E21.m1.3"/>
-                <XMRef idref="S3.E21.m1.4"/>
-                <XMRef idref="S3.E21.m1.5"/>
-                <XMRef idref="S3.E21.m1.6"/>
+                <XMRef idref="S3.E22.m1.1"/>
+                <XMRef idref="S3.E22.m1.2"/>
+                <XMRef idref="S3.E22.m1.3"/>
+                <XMRef idref="S3.E22.m1.4"/>
+                <XMRef idref="S3.E22.m1.5"/>
+                <XMRef idref="S3.E22.m1.6"/>
               </XMApp>
               <XMWrap>
-                <XMApp xml:id="S3.E21.m1.1">
+                <XMApp xml:id="S3.E22.m1.1">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMApp>
                     <XMTok name="overline" role="OVERACCENT" stretchy="true">¯</XMTok>
@@ -1294,7 +1391,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">s</XMTok>
                 </XMApp>
                 <XMHint name="qquad" role="PUNCT" width="20pt"/>
-                <XMApp xml:id="S3.E21.m1.2">
+                <XMApp xml:id="S3.E22.m1.2">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMApp>
                     <XMTok name="overleftarrow" role="OVERACCENT" stretchy="true">←</XMTok>
@@ -1308,7 +1405,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">s</XMTok>
                 </XMApp>
                 <XMHint name="qquad" role="PUNCT" width="20pt"/>
-                <XMApp xml:id="S3.E21.m1.3">
+                <XMApp xml:id="S3.E22.m1.3">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMApp>
                     <XMTok name="overrightarrow" role="OVERACCENT" stretchy="true">→</XMTok>
@@ -1322,7 +1419,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">s</XMTok>
                 </XMApp>
                 <XMHint name="qquad" role="PUNCT" width="20pt"/>
-                <XMApp xml:id="S3.E21.m1.4">
+                <XMApp xml:id="S3.E22.m1.4">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
                   <XMApp scriptpos="mid">
                     <XMTok name="overbrace" role="OVERACCENT" stretchy="true">⏞</XMTok>
@@ -1336,7 +1433,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">s</XMTok>
                 </XMApp>
                 <XMHint name="qquad" role="PUNCT" width="20pt"/>
-                <XMApp xml:id="S3.E21.m1.5">
+                <XMApp xml:id="S3.E22.m1.5">
                   <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                   <XMApp>
                     <XMTok name="underline" role="UNDERACCENT" stretchy="true">¯</XMTok>
@@ -1350,7 +1447,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">s</XMTok>
                 </XMApp>
                 <XMHint name="qquad" role="PUNCT" width="20pt"/>
-                <XMApp xml:id="S3.E21.m1.6">
+                <XMApp xml:id="S3.E22.m1.6">
                   <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                   <XMApp scriptpos="mid">
                     <XMTok name="underbrace" role="UNDERACCENT" stretchy="true">⏟</XMTok>
@@ -1370,21 +1467,21 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
       </equation>
     </para>
     <para xml:id="S3.p6">
-      <equation xml:id="S3.E22">
+      <equation xml:id="S3.E23">
         <tags>
-          <tag>(22)</tag>
-          <tag role="refnum">22</tag>
+          <tag>(23)</tag>
+          <tag role="refnum">23</tag>
         </tags>
-        <Math mode="display" tex="{}_{p}F_{q},\qquad\sideset{{}_{a}^{b}}{{}^{c}_{d}}{\sum}" text="list@(_ p F _ q, (_ a ^ b sum ^ c) _ d)" xml:id="S3.E22.m1">
+        <Math mode="display" tex="{}_{p}F_{q},\qquad\sideset{{}_{a}^{b}}{{}^{c}_{d}}{\sum}" text="list@(_ p F _ q, (_ a ^ b sum ^ c) _ d)" xml:id="S3.E23.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S3.E22.m1.2"/>
-                <XMRef idref="S3.E22.m1.1"/>
+                <XMRef idref="S3.E23.m1.2"/>
+                <XMRef idref="S3.E23.m1.1"/>
               </XMApp>
               <XMWrap>
-                <XMApp xml:id="S3.E22.m1.2">
+                <XMApp xml:id="S3.E23.m1.2">
                   <XMTok role="SUBSCRIPTOP" scriptpos="pre1"/>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
@@ -1394,7 +1491,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">p</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMApp scriptpos="mid1" xml:id="S3.E22.m1.1">
+                <XMApp scriptpos="mid1" xml:id="S3.E23.m1.1">
                   <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
@@ -1432,28 +1529,28 @@ many combinations of row and column spacing and spans
 are not currently tested.</p>
     </para>
     <para xml:id="S4.p2">
-      <equation xml:id="S4.E23">
+      <equation xml:id="S4.E24">
         <tags>
-          <tag>(23)</tag>
-          <tag role="refnum">23</tag>
+          <tag>(24)</tag>
+          <tag role="refnum">24</tag>
         </tags>
-        <Math mode="display" tex="\begin{matrix}-1&amp;3\\&#10;2&amp;-4\end{matrix},\qquad\begin{matrix}[r]-1&amp;3\\&#10;2&amp;-4\end{matrix},\qquad\begin{Vmatrix}-1&amp;3\\&#10;2&amp;-4\end{Vmatrix},\qquad\begin{Vmatrix}[r]-1&amp;3\\&#10;2&amp;-4\end{Vmatrix}" text="list@(matrix@(Array[[- 1, 3], [2, - 4]]), matrix@(Array[[- 1, 3], [2, - 4]]), norm@(matrix@(Array[[- 1, 3], [2, - 4]])), norm@(matrix@(Array[[- 1, 3], [2, - 4]])))" xml:id="S4.E23.m1">
+        <Math mode="display" tex="\begin{matrix}-1&amp;3\\&#10;2&amp;-4\end{matrix},\qquad\begin{matrix}[r]-1&amp;3\\&#10;2&amp;-4\end{matrix},\qquad\begin{Vmatrix}-1&amp;3\\&#10;2&amp;-4\end{Vmatrix},\qquad\begin{Vmatrix}[r]-1&amp;3\\&#10;2&amp;-4\end{Vmatrix}" text="list@(matrix@(Array[[- 1, 3], [2, - 4]]), matrix@(Array[[- 1, 3], [2, - 4]]), norm@(matrix@(Array[[- 1, 3], [2, - 4]])), norm@(matrix@(Array[[- 1, 3], [2, - 4]])))" xml:id="S4.E24.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S4.E23.m1.5"/>
-                <XMRef idref="S4.E23.m1.6"/>
-                <XMRef idref="S4.E23.m1.7"/>
-                <XMRef idref="S4.E23.m1.8"/>
+                <XMRef idref="S4.E24.m1.5"/>
+                <XMRef idref="S4.E24.m1.6"/>
+                <XMRef idref="S4.E24.m1.7"/>
+                <XMRef idref="S4.E24.m1.8"/>
               </XMApp>
               <XMWrap>
-                <XMDual xml:id="S4.E23.m1.5">
+                <XMDual xml:id="S4.E24.m1.5">
                   <XMApp>
                     <XMTok meaning="matrix"/>
-                    <XMRef idref="S4.E23.m1.1"/>
+                    <XMRef idref="S4.E24.m1.1"/>
                   </XMApp>
-                  <XMArray xml:id="S4.E23.m1.1">
+                  <XMArray xml:id="S4.E24.m1.1">
                     <XMRow>
                       <XMCell align="center">
                         <XMApp>
@@ -1479,12 +1576,12 @@ are not currently tested.</p>
                   </XMArray>
                 </XMDual>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMDual xml:id="S4.E23.m1.6">
+                <XMDual xml:id="S4.E24.m1.6">
                   <XMApp>
                     <XMTok meaning="matrix"/>
-                    <XMRef idref="S4.E23.m1.2"/>
+                    <XMRef idref="S4.E24.m1.2"/>
                   </XMApp>
-                  <XMArray xml:id="S4.E23.m1.2">
+                  <XMArray xml:id="S4.E24.m1.2">
                     <XMRow>
                       <XMCell align="right">
                         <XMApp>
@@ -1510,17 +1607,17 @@ are not currently tested.</p>
                   </XMArray>
                 </XMDual>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMDual xml:id="S4.E23.m1.7">
+                <XMDual xml:id="S4.E24.m1.7">
                   <XMApp>
                     <XMTok meaning="norm"/>
                     <XMApp>
                       <XMTok meaning="matrix"/>
-                      <XMRef idref="S4.E23.m1.3"/>
+                      <XMRef idref="S4.E24.m1.3"/>
                     </XMApp>
                   </XMApp>
                   <XMWrap>
                     <XMTok name="||" role="OPEN" stretchy="true">‖</XMTok>
-                    <XMArray xml:id="S4.E23.m1.3">
+                    <XMArray xml:id="S4.E24.m1.3">
                       <XMRow>
                         <XMCell align="center">
                           <XMApp>
@@ -1548,17 +1645,17 @@ are not currently tested.</p>
                   </XMWrap>
                 </XMDual>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMDual xml:id="S4.E23.m1.8">
+                <XMDual xml:id="S4.E24.m1.8">
                   <XMApp>
                     <XMTok meaning="norm"/>
                     <XMApp>
                       <XMTok meaning="matrix"/>
-                      <XMRef idref="S4.E23.m1.4"/>
+                      <XMRef idref="S4.E24.m1.4"/>
                     </XMApp>
                   </XMApp>
                   <XMWrap>
                     <XMTok name="||" role="OPEN" stretchy="true">‖</XMTok>
-                    <XMArray xml:id="S4.E23.m1.4">
+                    <XMArray xml:id="S4.E24.m1.4">
                       <XMRow>
                         <XMCell align="right">
                           <XMApp>
