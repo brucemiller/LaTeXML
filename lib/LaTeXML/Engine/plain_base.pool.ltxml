@@ -422,8 +422,9 @@ DefPrimitive('\hglue Glue', sub {
 
 DefPrimitive('\vglue Glue', undef);
 DefPrimitiveI('\topglue',          undef, undef);
-DefPrimitiveI('\nointerlineskip',  undef, undef);
-DefPrimitiveI('\offinterlineskip', undef, undef);
+DefMacroI('\nointerlineskip',undef,'\prevdepth-1000\p@');
+DefMacroI('\offinterlineskip',undef,
+  '\baselineskip-1000\p@\lineskip\z@ \lineskiplimit\maxdimen');
 
 DefMacroI('\smallskip', undef, '\vskip\smallskipamount');
 DefMacroI('\medskip',   undef, '\vskip\medskipamount');
