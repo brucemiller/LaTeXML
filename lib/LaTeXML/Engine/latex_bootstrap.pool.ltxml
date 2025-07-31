@@ -28,6 +28,7 @@ DefConstructor('\LaTeX',
     . "X"
     . "</ltx:text>",
   sizer => sub { (Dimension('2.6em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  locked => 1,
   enterHorizontal => 1);
 DefConstructor('\LaTeXe',
   "<ltx:text class='ltx_LaTeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.1em'>"
@@ -39,6 +40,7 @@ DefConstructor('\LaTeXe',
     . "\x{2002}2<ltx:text cssstyle='font-style:italic' yoffset='-0.3ex'>\x{03B5}</ltx:text>"
     . "</ltx:text>",
   sizer => sub { (Dimension('3.7em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  locked => 1,
   enterHorizontal => 1);
 
 #======================================================================

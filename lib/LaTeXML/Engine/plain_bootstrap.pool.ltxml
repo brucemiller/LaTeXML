@@ -23,6 +23,7 @@ DefConstructor('\TeX',
     . "X"
     . "</ltx:text>",
   sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); },
+  locked => 1,
   enterHorizontal => 1);
 
 #======================================================================
