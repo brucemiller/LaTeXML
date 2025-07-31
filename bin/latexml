@@ -32,6 +32,7 @@ my $inputencoding;
 my $mode  = undef;
 my @paths = ();
 my (@preload);
+my $initfile = undef;
 GetOptions("destination=s" => \$destination,
   "output=s"        => \$destination,
   "preload=s"       => \@preload,
@@ -46,6 +47,7 @@ GetOptions("destination=s" => \$destination,
   "tex"             => sub { $format = 'tex'; },
   "box"             => sub { $format = 'box'; },
   "bibtex"          => sub { $mode   = 'BibTeX'; },
+  "init=s"          => \$initfile,
   "noparse"         => \$noparse,
   "includestyles"   => \$includestyles,
   "inputencoding=s" => \$inputencoding,
@@ -59,7 +61,7 @@ GetOptions("destination=s" => \$destination,
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 2, -output => \*STDOUT)
   if $help;
 if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
-my $source = shift(@ARGV);
+my $source = ($initfile ? $initfile : shift(@ARGV));
 
 #======================================================================
 # Validate command line before any actual processing
@@ -79,7 +81,6 @@ my $serialized;
 eval {    # Catch errors
   UseLog($logfile);
   Note("$LaTeXML::IDENTITY processing $source");
-
   $latexml = LaTeXML::Core->new(
     preload         => [@preload],
     searchpaths     => [@paths],
@@ -91,27 +92,31 @@ eval {    # Catch errors
     nomathparse     => $noparse);
   # Now do all processing relative to that State, to capture all erros
   $latexml->withState(sub {
-      # ========================================
-      # First read and digest whatever we're given.
-      $digested = $latexml->digestFile($source, mode => $mode,
-        preamble => $preamble, postamble => $postamble);
+      my ($state) = @_;
+      if ($initfile) {
+        $latexml->iniTeX($initfile); }
+      else {
+        # ========================================
+        # First read and digest whatever we're given.
+        $digested = $latexml->digestFile($source, mode => $mode,
+          preamble => $preamble, postamble => $postamble);
 
-      # ========================================
-      # Now, convert to DOM, serialize, encode and output, as appropriate.
-      if ($digested) {
-        if ($format eq 'tex') {
-          $serialized = LaTeXML::Core::Token::UnTeX($digested); }
-        elsif ($format eq 'box') {
-          $serialized = ($verbosity > 0 ? $digested->stringify : $digested->toString); }
-        else {
-          my $dom = $latexml->convertDocument($digested);
-          $serialized = $dom->toString(1); }
-        # NOTE that we are serializing via LaTeXML's Document::serialize_aux
-        # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
-        $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-      }
-      $latexml->showProfile();    # Show profile (if any)
-  }); };
+        # ========================================
+        # Now, convert to DOM, serialize, encode and output, as appropriate.
+        if ($digested) {
+          if ($format eq 'tex') {
+            $serialized = LaTeXML::Core::Token::UnTeX($digested); }
+          elsif ($format eq 'box') {
+            $serialized = ($verbosity > 0 ? $digested->stringify : $digested->toString); }
+          else {
+            my $dom = $latexml->convertDocument($digested);
+            $serialized = $dom->toString(1); }
+          # NOTE that we are serializing via LaTeXML's Document::serialize_aux
+          # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
+          $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
+        }
+        $latexml->showProfile();    # Show profile (if any)
+} }); };
 #======================================================================
 my $exit_message = $@;
 Debug($@) if $@ ne $LaTeXML::Common::Error::DIE_MESSAGE;
@@ -171,7 +176,8 @@ sub validate_args {
       $mode   = 'TeX' unless defined $mode; } }    # Or sniff for bibtex data?
   elsif (pathname_is_literaldata($source)) {
   }
-  elsif (!($pathname = pathname_find($source, types => ['tex', 'bib', ''], paths => ['.', @paths]))
+  elsif (!($pathname = pathname_find($source, types => ['tex', 'bib', ''], paths => ['.', @paths])
+      || ($initfile && pathname_kpsewhich($source, types => ['tex', 'ltx'], paths => ['.', @paths])))
     || !-r $pathname) {
     push(@fails, "Input file '$source' not readable"); }
   else {

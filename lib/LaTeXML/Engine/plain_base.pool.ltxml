@@ -1,0 +1,613 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | plain                                                               | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use charnames ':full';
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#**********************************************************************
+# Plain;  Extracted from Appendix B.
+# Combine with plain_bootstrap & plain_constructs.
+#**********************************************************************
+
+DefRegister('\magnification' => Number(1000));
+
+# Most of these are ignored, but...
+DefMacro('\tracingall',
+  '\tracingonline=1 \tracingcommands=2 \tracingstats=2'
+    . ' \tracingpages=1 \tracingoutput=1 \tracinglostchars=1'
+    . ' \tracingmacros=2 \tracingparagraphs=1 \tracingrestores=1'
+    . ' \showboxbreadth=\maxdimen \showboxdepth=\maxdimen \errorstopmode');
+DefMacroI('\tracingnone', undef, Tokens());
+DefMacroI('\hideoutput',  undef, Tokens());
+
+#======================================================================
+# Special Characters.
+# Try to give them some sense in math...
+DefPrimitive('\#', sub {
+    Box('#', undef, undef, T_CS('\#')); });
+DefPrimitive('\&', sub {
+    Box('&', undef, undef, T_CS('\&'), role => 'ADDOP', meaning => 'and'); });
+DefPrimitive('\%', sub {
+    Box('%', undef, undef, T_CS('\%'), role => 'POSTFIX', meaning => 'percent'); });
+DefPrimitive('\$', sub {
+    Box('$', undef, undef, T_CS('\$'), role => 'OPERATOR', meaning => 'currency-dollar'); });
+
+# Discretionary times; just treat as invisible ?
+DefMathI('\*', undef, "\x{2062}", role => 'MULOP', name => '', meaning => 'times'); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
+
+#======================================================================
+# If an XMWrap (presumably from \mathop, \mathbin, etc)
+# has multiple children, ALL are XMTok, within a restricted set of roles,
+# we want to concatenate the text content into a single XMTok.
+DefMathRewrite(xpath => 'descendant-or-self::ltx:XMWrap['
+    # Only XMWrap's from the above class of operators
+    . '(@role="OP" or @role="BIGOP" or @role="RELOP" '
+    . 'or @role="ADDOP" or @role="MULOP" or @role="BINOP" '
+    . 'or @role="OPEN" or @role="CLOSE")'
+    . ' and count(child::*) > 1 '
+    # with only XMTok as children with the roles in (roughly) the same set
+    . ' and not(child::*[local-name() != "XMTok"])'
+    . ' and not(ltx:XMTok['
+    . '@role !="OP" and @role!="BIGOP" and @role!="RELOP" and @role!="METARELOP" '
+    . 'and @role!="ADDOP" and @role!="MULOP" and @role!="BINOP" '
+    . 'and @role!="OPEN" and @role!="CLOSE"'
+    . '])]',
+  replace => sub {
+    my ($document, $node) = @_;
+    my $replacement = $node->cloneNode(0);
+    my $content     = $node->textContent;
+    $replacement->appendText($content);
+    $replacement->setName('ltx:XMTok');
+    $document->getNode->appendChild($replacement);
+  });
+
+DefPrimitiveI('\i', undef, "\x{0131}", robust => 1);    # LATIN SMALL LETTER DOTLESS I
+DefPrimitiveI('\j', undef, "\x{0237}", robust => 1);
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Alignment code
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+# Low-level bits that appear within alignments or \halign
+
+# "Initialized" alignment; presets spacing, but since we're ignoring it anyway...
+Let('\ialign', '\halign');
+
+# Overlapping alignments ???
+DefMacro('\oalign{}',
+  '\@@oalign{\lx@begin@alignment#1\lx@end@alignment}');
+DefConstructor('\@@oalign{}',
+  '#1',
+  reversion    => '\oalign{#1}',
+  mode         => 'internal_vertical',
+  beforeDigest => sub { alignmentBindings('l'); });
+
+# This is actually different; the lines should lie ontop of each other.
+# How should this be represented?
+DefMacro('\ooalign{}',
+  '\@@ooalign{\lx@begin@alignment#1\lx@end@alignment}');
+DefConstructor('\@@ooalign{}',
+  '#1',
+  reversion    => '\ooalign{#1}',
+  mode         => 'internal_vertical',
+  beforeDigest => sub { alignmentBindings('l'); });
+
+DefConstructor('\buildrel Until:\over {}',
+  "<ltx:XMApp role='RELOP'>"
+    . "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
+    . "<ltx:XMArg>#2</ltx:XMArg>"
+    . "<ltx:XMArg>#1</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } });
+
+DefMacroI('\hidewidth', undef, Tokens());
+
+#======================================================================
+# TeX Book, Appendix B, p. 344
+#======================================================================
+RawTeX('\outer\def^^L{\par}');
+DefMacro('\dospecials', '\do\ \do\\\do\{\do\}\do\$\do\&\do\#\do\^\do\^^K\do\_\do\^^A\do\%\do\~');
+
+#======================================================================
+# TeX Book, Appendix B, p. 345
+
+RawTeX(<<'EoTeX');
+  \chardef\active=13
+  \chardef\@ne=1
+  \chardef\tw@=2
+  \chardef\thr@@=3
+  \chardef\sixt@@n=16
+  \chardef\@cclv=255
+  \mathchardef\@cclvi=256
+  \mathchardef\@m=1000
+  \mathchardef\@M=10000
+  \mathchardef\@MM=20000
+EoTeX
+
+#======================================================================
+# TeX Book, Appendix B, p. 346
+
+RawTeX(<<'EoTeX');
+  \countdef\count@=255
+  \toksdef\toks@=0
+  \skipdef\skip@=0
+  \dimendef\dimen@=0
+  \dimendef\dimen@i=1
+  \dimendef\dimen@ii=2
+\count10=22 % allocates \count registers 23, 24, ...
+\count11=9 % allocates \dimen registers 10, 11, ...
+\count12=9 % allocates \skip registers 10, 11, ...
+\count13=9 % allocates \muskip registers 10, 11, ...
+\count14=9 % allocates \box registers 10, 11, ...
+\count15=9 % allocates \toks registers 10, 11, ...
+\count16=-1 % allocates input streams 0, 1, ...
+\count17=-1 % allocates output streams 0, 1, ...
+\count18=3 % allocates math families 4, 5, ...
+\count19=0 % allocates \language codes 1, 2, ...
+\count20=255 % allocates insertions 254, 253, ...
+\countdef\insc@unt=20
+\countdef\allocationnumber=21
+\countdef\m@ne=22 \m@ne=-1
+EoTeX
+# Various \count's are set; should we?
+
+#======================================================================
+# TeX Book, Appendix B, p. 347
+DefPrimitive('\wlog{}', sub {
+    NoteLog(ToString(Expand($_[1])));
+    return; },
+  locked => 1);
+
+# From plain.tex
+RawTeX(<<'EoTeX');
+\outer\def\newcount{\alloc@0\count\countdef\insc@unt}
+\outer\def\newdimen{\alloc@1\dimen\dimendef\insc@unt}
+\outer\def\newskip{\alloc@2\skip\skipdef\insc@unt}
+\outer\def\newmuskip{\alloc@3\muskip\muskipdef\@cclv}
+\outer\def\newbox{\alloc@4\box\chardef\insc@unt}
+%%\let\newtoks=\relax % we do this to allow plain.tex to be read in twice
+\outer\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
+\outer\def\newtoks{\alloc@5\toks\toksdef\@cclv}
+\outer\def\newread{\alloc@6\read\chardef\sixt@@n}
+\outer\def\newwrite{\alloc@7\write\chardef\sixt@@n}
+\outer\def\newfam{\alloc@8\fam\chardef\sixt@@n}
+\outer\def\newlanguage{\alloc@9\language\chardef\@cclvi}
+EoTeX
+
+# This implementation is quite wrong
+DefPrimitive('\newinsert Token', sub { DefRegisterI($_[1], undef, Number(0)); });
+
+# TeX plain uses \newdimen, etc. for these.
+# Is there any advantage to that?
+DefRegister('\maxdimen',  Dimension(16383.99999 * $UNITY));
+DefRegister('\hideskip',  Glue('-1000pt plus 1fill'));
+DefRegister('\centering', Glue('0pt plus 1000pt minus 1000pt'));
+DefRegister('\p@',        Dimension($UNITY));
+DefRegister('\z@',        Dimension(0));
+DefRegister('\z@skip',    Glue(0, 0, 0));
+
+# Spacing stuff
+DefConstructor('\@', '');
+
+# First approximation. till I figure out \newbox
+RawTeX('\newbox\voidb@x');
+
+#======================================================================
+# TeX Book, Appendix B, p. 349
+# See the section Registers & Parameters, above for setting default values.
+
+# These are originally defined with \newskip, etc
+DefRegister('\smallskipamount'          => Glue('3pt plus 1pt minus 1pt'));
+DefRegister('\medskipamount'            => Glue('6pt plus 2pt minus 2pt'));
+DefRegister('\bigskipamount'            => Glue('12pt plus 4pt minus 4pt'));
+DefRegister('\normalbaselineskip'       => Glue('12pt'));
+DefRegister('\normallineskip'           => Glue('1pt'));
+DefRegister('\normallineskiplimit'      => Dimension('0pt'));
+DefRegister('\jot'                      => Dimension('3pt'));
+DefRegister('\lx@default@jot'           => LookupRegister('\jot'));
+DefRegister('\interdisplaylinepenalty'  => Number(100));
+DefRegister('\interfootnotelinepenalty' => Number(100));
+
+DefMacroI('\magstephalf', undef, '1095');
+our @mags = (1000, 1200, 1440, 1728, 2074, 2488);
+DefMacro('\magstep{}', sub {
+    my $level = ToString($_[1]);
+    $level = ($level =~ /^\d$/) ? int($level) : 0;
+    $level = 0 unless $level >= 0 and $level < 6;
+    Explode($mags[$level]); });
+
+#======================================================================
+# TeX Book, Appendix B, p. 350
+
+# Font stuff ...
+RawTeX(<<'EoTeX');
+ \font\tenrm=cmr10
+ \font\sevenrm=cmr7
+ \font\fiverm=cmr5
+ \font\teni=cmmi10
+ \font\seveni=cmmi7
+ \font\fivei=cmmi7
+ \font\tensy=cmsy10
+ \font\sevensy=cmsy7
+ \font\fivesy=cmsy5
+ \font\tenex=cmex10
+ \font\tenbf=cmbx10
+ \font\sevenbf=cmbx7
+ \font\fivebf=cmbx5
+ \font\tensl=cmsl10
+ \font\tentt=cmtt10
+ \font\tenit=cmti10
+ \newfam\itfam
+ \newfam\slfam
+ \newfam\bffam
+ \newfam\ttfam
+\textfont0=\tenrm\scriptfont0=\sevenrm\scriptscriptfont0=\fiverm
+\textfont1=\teni\scriptfont1=\seveni\scriptscriptfont1=\fivei
+\textfont2=\tensy\scriptfont2=\sevensy\scriptscriptfont2=\fivesy
+\textfont3=\tenex
+\textfont\itfam=\tenit
+\textfont\slfam=\tensl
+\textfont\bffam=\tenbf
+\textfont\ttfam=\tentt
+%\textfont4=\tenit
+%\textfont5=\tensl
+%\textfont6=\tenbf
+%\textfont7=\tentt
+% More for latex?
+%%%\font\tensf=cmss10
+%%%\textfont8=\tensf
+\mathcode`\^^@="2201 % \cdot
+\mathcode`\^^A="3223 % \downarrow
+\mathcode`\^^B="010B % \alpha
+\mathcode`\^^C="010C % \beta
+\mathcode`\^^D="225E % \land
+\mathcode`\^^E="023A % \lnot
+\mathcode`\^^F="3232 % \in
+\mathcode`\^^G="0119 % \pi
+\mathcode`\^^H="0115 % \lambda
+\mathcode`\^^I="010D % \gamma
+\mathcode`\^^J="010E % \delta
+\mathcode`\^^K="3222 % \uparrow
+\mathcode`\^^L="2206 % \pm
+\mathcode`\^^M="2208 % \oplus
+\mathcode`\^^N="0231 % \infty
+\mathcode`\^^O="0140 % \partial
+\mathcode`\^^P="321A % \subset
+\mathcode`\^^Q="321B % \supset
+\mathcode`\^^R="225C % \cap
+\mathcode`\^^S="225B % \cup
+\mathcode`\^^T="0238 % \forall
+\mathcode`\^^U="0239 % \exists
+\mathcode`\^^V="220A % \otimes
+\mathcode`\^^W="3224 % \leftrightarrow
+\mathcode`\^^X="3220 % \leftarrow
+\mathcode`\^^Y="3221 % \rightarrow
+\mathcode`\^^Z="8000 % \ne
+\mathcode`\^^[="2205 % \diamond
+\mathcode`\^^\="3214 % \le
+\mathcode`\^^]="3215 % \ge
+\mathcode`\^^^="3211 % \equiv
+\mathcode`\^^_="225F % \lor
+\mathcode`\ ="8000 % \space
+\mathcode`\!="5021
+\mathcode`\'="8000 % ^\prime
+\mathcode`\(="4028
+\mathcode`\)="5029
+%%%%%\mathcode`\*="2203 % \ast
+\mathcode`\+="202B
+\mathcode`\,="613B
+\mathcode`\-="2200
+\mathcode`\.="013A
+\mathcode`\/="013D
+\mathcode`\:="303A
+\mathcode`\;="603B
+\mathcode`\<="313C
+\mathcode`\=="303D
+\mathcode`\>="313E
+%%%%\mathcode`\?="503F
+\mathcode`\[="405B
+\mathcode`\\="026E % \backslash
+\mathcode`\]="505D
+\mathcode`\_="8000 % \_
+\mathcode`\{="4266
+\mathcode`\|="026A
+\mathcode`\}="5267
+\mathcode`\^^?="1273 % \smallint
+EoTeX
+# Note: \newfam in math should be font switching(?)
+
+#======================================================================
+# TeX Book, Appendix B, p. 351
+
+# Ideally, we should set these sizes from class files
+AssignValue(NOMINAL_FONT_SIZE => 10);
+
+DefPrimitiveI('\mit', undef, undef, requireMath => 1, font => { family => 'italic' });
+
+DefPrimitiveI('\mit', undef, sub {
+    if (LookupValue('IN_MATH')) {
+      MergeFont(family => 'math', shape => 'italic'); }
+    return; });
+
+DefPrimitiveI('\frenchspacing',    undef, undef);
+DefPrimitiveI('\nonfrenchspacing', undef, undef);
+DefMacroI('\normalbaselines', undef,
+  '\lineskip=\normallineskip\baselineskip=\normalbaselineskip\lineskiplimit=\normallineskiplimit');
+DefMacroI('\space', undef, Tokens(T_SPACE));
+DefMacroI('\lq',    undef, "`");
+DefMacroI('\rq',    undef, "'");
+Let('\empty', '\lx@empty');
+DefMacroI('\null', undef, '\hbox{}');
+Let('\bgroup',  T_BEGIN);
+Let('\egroup',  T_END);
+Let('\endgraf', '\par');
+Let('\endline', '\cr');
+
+DefPrimitiveI('\endline', undef, undef);
+
+# Use \r for the newline from TeX!!!
+DefMacroI("\\\r", undef, '\ ');    # \<cr> == \<space> Interesting (see latex.ltx)
+Let(T_ACTIVE("\r"), '\par');       # (or is this just LaTeX?)
+
+Let("\\\t", "\\\r");               # \<tab> == \<space>, also
+
+#======================================================================
+# TeX Book, Appendix B, p. 352
+
+DefPrimitiveI('\obeyspaces', undef, sub {
+    AssignCatcode(" " => 13);
+    Let(T_ACTIVE(" "), '\space');
+    return });
+# Curiously enough, " " (a space) is ALREADY defined to be the same as "\space"
+# EVEN before it is made active. (see p.380)
+Let(T_ACTIVE(" "), '\space');
+
+DefPrimitiveI('\obeylines', undef, sub {
+    AssignCatcode("\r" => 13);
+    Let(T_ACTIVE("\r"), '\@break');    # More appropriate than \par, I think?
+    return });
+
+DefConstructor('\@break', "<ltx:break/>", properties => { isBreak => 1 });
+
+RawTeX(<<'EoTeX');
+\def\loop#1\repeat{\def\body{#1}\iterate}
+\def\iterate{\body \let\next=\iterate \else\let\next=\relax\fi \next}
+\let\repeat=\fi
+EoTeX
+
+DefPrimitiveI('\enskip', undef, sub {
+    Box("\x{2002}", undef, undef, T_CS('\enskip'),
+      name => 'enskip', width => Dimension('0.5em'), isSpace => 1); });
+
+DefPrimitiveI('\enspace', undef, sub {
+    Box("\x{2002}", undef, undef, T_CS('\enspace'),
+      name => 'enskip', width => Dimension('0.5em'), isSpace => 1); });
+
+DefPrimitiveI('\quad', undef, sub {
+    Box("\x{2003}", undef, undef, T_CS('\quad'),
+      name => 'quad', width => Dimension('1em'), isSpace => 1); });
+
+# Conceivably should be treated as punctuation! (but maybe even \quad should !?!)
+DefPrimitiveI('\qquad', undef, sub {
+    Box("\x{2003}\x{2003}", undef, undef, T_CS('\qquad'),
+      name => 'qquad', width => Dimension('2em'), isSpace => 1, asHint => 1); });
+
+DefPrimitiveI('\thinspace', undef, sub {
+    Box("\x{2009}", undef, undef, T_CS('\thinspace'),
+      name => 'thinspace', width => Dimension('0.16667em'), isSpace => 1); });
+
+DefPrimitiveI('\negthinspace', undef, sub {
+    Box("", undef, undef, T_CS('\negthinspace'),
+      name => 'negthinspace', width => Dimension('-0.16667em'), isSpace => 1); });
+
+DefPrimitive('\hglue Glue', sub {
+    my ($stomach, $length) = @_;
+    my $s = DimensionToSpaces($length);
+    return unless defined $s;
+    Box($s, undef, undef, Invocation(T_CS('\hglue'), $length),
+      name => 'hglue', width => $length, isSpace => 1); });
+
+DefPrimitive('\vglue Glue', undef);
+DefPrimitiveI('\topglue',          undef, undef);
+DefMacroI('\nointerlineskip',undef,'\prevdepth-1000\p@');
+DefMacroI('\offinterlineskip',undef,
+  '\baselineskip-1000\p@\lineskip\z@ \lineskiplimit\maxdimen');
+
+DefMacroI('\smallskip', undef, '\vskip\smallskipamount');
+DefMacroI('\medskip',   undef, '\vskip\medskipamount');
+DefMacroI('\bigskip',   undef, '\vskip\bigskipamount');
+
+#======================================================================
+# TeX Book, Appendix B, p. 353
+
+DefPrimitiveI('\break',      undef, undef);
+DefPrimitiveI('\nobreak',    undef, undef);
+
+# Curiously, this must be expandable, else things like \MakeUppercase loop.
+DefMacro(T_ACTIVE("~"), T_CS('\lx@NBSP'));
+
+DefMacroI('\slash', undef, '/');
+DefPrimitiveI('\filbreak', undef, undef);
+DefMacroI('\goodbreak', undef, '\par');
+DefPrimitiveI('\removelastskip', undef, undef);
+DefMacroI('\smallbreak', undef, '\par');
+DefMacroI('\medbreak',   undef, '\par');
+DefMacroI('\bigbreak',   undef, '\par');
+
+DefMacroI('\line', undef, '\hbox to \hsize');
+
+# These should be 0 width, but perhaps also shifted?
+DefMacro('\llap{}', '\hbox to 0pt{\hss#1}');
+DefMacro('\rlap{}', '\hbox to 0pt{#1\hss}');
+
+DefMacroI('\m@th', undef, '\mathsurround=0pt ');
+
+# \strutbox
+DefMacroI('\strut', undef, Tokens());
+RawTeX('\newbox\strutbox');
+
+#======================================================================
+# TeX Book, Appendix B. p. 354
+
+# TODO: Not yet done!!
+# tabbing stuff!!!
+
+DefMacroI('\settabs', undef, undef);
+
+#======================================================================
+# TeX Book, Appendix B. p. 355
+
+# TODO: \item, \itemitem not done!
+# This could probably be adopted from LaTeX, if the <itemize> could auto-open
+# and close!
+DefMacro('\hang',         '\hangindent\parindent');
+DefMacro('\item',         '\par\hang\textindent');
+DefMacro('\itemitem',     '\par\indent \hangindent2\parindent \textindent');
+DefMacro('\textindent{}', '\indent\llap{#1\enspace}\ignorespaces');
+DefMacro('\narrower', '\advance\leftskip by\parindent'
+    . '\advance\rightskip by\parindent');
+#======================================================================
+# TeX Book, Appendix B. p. 356
+
+DefPrimitiveI('\raggedright',   undef, undef);
+DefPrimitiveI('\raggedleft',    undef, undef);    # this is actually LaTeX
+DefPrimitiveI('\ttraggedright', undef, undef);
+DefMacro('\mathhexbox{}{}{}', '\leavevmode\hbox{$\m@th \mathchar"#1#2#3$}');
+
+#----------------------------------------------------------------------
+# Actually from LaTeX; Table 3.2. Non-English Symbols, p.39
+
+# The following shouldn't appear in math.
+DefPrimitiveI('\OE', undef, "\x{0152}");    # LATIN CAPITAL LIGATURE OE
+DefPrimitiveI('\oe', undef, "\x{0153}");    # LATIN SMALL LIGATURE OE
+DefPrimitiveI('\AE', undef, UTF(0xC6));     # LATIN CAPITAL LETTER AE
+DefPrimitiveI('\ae', undef, UTF(0xE6));     # LATIN SMALL LETTER AE
+DefPrimitiveI('\AA', undef, UTF(0xC5));     # LATIN CAPITAL LETTER A WITH RING ABOVE
+DefPrimitiveI('\aa', undef, UTF(0xE5));     # LATIN SMALL LETTER A WITH RING ABOVE
+DefPrimitiveI('\O',  undef, UTF(0xD8));     # LATIN CAPITAL LETTER O WITH STROKE
+DefPrimitiveI('\o',  undef, UTF(0xF8));     # LATIN SMALL LETTER O WITH STROKE
+DefPrimitiveI('\ss', undef, UTF(0xDF));     # LATIN SMALL LETTER SHARP S
+
+#======================================================================
+# Specific accents (see TeX-Character)
+#----------------------------------------------------------------------
+
+DefAccent('\`',           "\x{0300}", UTF(0x60));  # COMBINING GRAVE ACCENT & GRAVE ACCENT
+DefAccent("\\'",          "\x{0301}", UTF(0xB4));  # COMBINING ACUTE ACCENT & ACUTE ACCENT
+DefAccent('\^',           "\x{0302}", "\x{02C6}"); # COMBINING CIRCUMFLEX ACCENT & CIRCUMFLEX ACCENT
+DefAccent('\"',           "\x{0308}", UTF(0xA8));  # COMBINING DIAERESIS & DIAERESIS
+DefAccent('\~',           "\x{0303}", "\x{02DC}"); # COMBINING TILDE
+DefAccent('\=',           "\x{0304}", UTF(0xAF));  # COMBINING MACRON & MACRON
+DefAccent('\.',           "\x{0307}", "\x{02D9}"); # COMBINING DOT ABOVE & DOT ABOVE
+DefAccent('\u',           "\x{0306}", "\x{02D8}"); # COMBINING BREVE & BREVE
+DefAccent('\v',           "\x{030C}", "\x{02C7}"); # COMBINING CARON & CARON
+DefAccent('\@ringaccent', "\x{030A}", "\x{02DA}"); # COMBINING RING ABOVE & non-combining
+DefAccent('\r',           "\x{030A}", "\x{02DA}"); # COMBINING RING ABOVE & non-combining
+DefAccent('\H',           "\x{030B}", "\x{02DD}"); # COMBINING DOUBLE ACUTE ACCENT & non-combining
+# this one's actually defined in mathscinet.sty, but just stick it here!
+DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
+                                                     # I doubt that latter covers multiple chars...?
+    #DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
+
+
+#======================================================================
+# TeX Book, Appendix B. p. 357
+Let('\sp', T_SUPER);
+Let('\sb', T_SUB);
+Let('\:', '\>');
+
+DefPrimitiveI("\\\t", undef, sub {
+    Box(UTF(0xA0), undef, undef, T_CS("\\\t"),
+      isSpace => 1, width => Dimension('1em')); });
+
+
+DefPrimitive('\openup Dimension', undef);
+
+# What should this do? (needs to work with alignments..)
+# see https://www.tug.org/TUGboat/tb07-1/tb14beet.pdf
+# use in arXiv:hep-th/0001208
+DefMacro('\displaylines{}', '\halign{\hbox to\displaywidth{$\hfil\displaystyle##\hfil$}\crcr#1\crcr}');
+
+DefRegister('\pageno'   => Number(0));
+DefRegister('\headline' => Tokens());
+DefRegister('\footline' => Tokens());
+DefMacroI('\folio', undef, "1");    # What else?
+
+DefPrimitiveI('\nopagenumbers', undef, undef);
+DefMacroI('\advancepageno', undef, '\advance\pageno1\relax');
+
+#======================================================================
+# TeX Book, Appendix B. p. 363
+
+DefPrimitive('\raggedbottom', undef);
+DefPrimitive('\normalbottom', undef);
+
+# Until we can do the "v" properly:
+DefMacro('\vfootnote', '\footnote');
+DefMacro('\fo@t',      '\ifcat\bgroup\noexpand\next \let\next\f@@t  \else\let\next\f@t\fi \next');
+DefMacro('\f@@t',      '\bgroup\aftergroup\@foot\let\next');
+DefMacro('\f@t{}',     '#1\@foot');
+DefMacro('\@foot',     '\strut\egroup');
+
+DefPrimitiveI('\footstrut', undef, undef);
+DefRegister('\footins' => Number(0));
+
+DefPrimitiveI('\topinsert',  undef, undef);
+DefPrimitiveI('\midinsert',  undef, undef);
+DefPrimitiveI('\pageinsert', undef, undef);
+DefPrimitiveI('\endinsert',  undef, undef);
+# \topins ?
+
+#======================================================================
+# TeX Book, Appendix B. p. 364
+
+# Let's hope nobody is messing with the output routine...
+
+DefPrimitiveI('\footnoterule', undef, undef);
+
+#======================================================================
+# End of TeX Book definitions.
+#======================================================================
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Stuff that probably doesn't belong here (LaTeX? or nowhere?)
+#DefMacro('\vspace{}', '\vskip#1\relax');
+
+#======================================================================
+# In principle, <ltx:emph> is a nice markup for emphasized.
+# Unfortunately, TeX really just treats it as a font switch.
+# Something like:  \em et.al. \rm more stuff
+# works in TeX, but in our case, since there is no explicit {},
+# the <ltx:emph> stays open!  Ugh!
+# This could still be made to work, but merge font would
+# need to look at any open <ltx:emph>, and then somehow close it!
+DefPrimitiveI('\em', undef, undef,
+  beforeDigest => sub {
+    my $font  = LookupValue('font');
+    my $shape = $font->getShape;
+    AssignValue(font => $font->merge(shape => ($shape eq 'italic' ? 'normal' : 'italic')),
+      'local'); });
+
+# Change math font while still in text!
+DefPrimitiveI('\boldmath', undef, undef,
+  beforeDigest => sub { AssignValue(mathfont => LookupValue('mathfont')->merge(forcebold => 1), 'local'); },
+  forbidMath => 1);
+DefPrimitiveI('\unboldmath', undef, undef,
+  beforeDigest => sub { AssignValue(mathfont => LookupValue('mathfont')->merge(forcebold => 0), 'local'); },
+  forbidMath => 1);
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

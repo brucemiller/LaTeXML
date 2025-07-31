@@ -1,0 +1,301 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | plain_constructs                                                    | #
+# | "Semantic" constructs for plain.tex for LaTeXML                     | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Tag('ltx:text', autoOpen => 1, autoClose => 1);
+#======================================================================
+DefPrimitiveI('\L', undef, "\x{0141}");    # LATIN CAPITAL LETTER L WITH STROKE
+DefPrimitiveI('\l', undef, "\x{0142}");    # LATIN SMALL LETTER L WITH STROKE
+
+# Corrections to accents
+# plain defines as complicated ooalign...
+DefAccent('\c',             "\x{0327}", UTF(0xB8), below => 1);   # COMBINING CEDILLA & CEDILLA
+DefAccent('\@text@daccent', "\x{0323}", '.',       below => 1);   # COMBINING DOT BELOW & DOT (?)
+DefAccent('\@text@baccent', "\x{0331}", '_',       below => 1);   # COMBINING MACRON BELOW  & MACRON
+    # Note that these two apparently work in Math? BUT the argument is treated as text!!!
+DefMacro('\d{}', '\ifmmode\@math@daccent{#1}\else\@text@daccent{#1}\fi');
+DefMacro('\b{}', '\ifmmode\@math@baccent{#1}\else\@text@baccent{#1}\fi');
+DefAccent('\t', "\x{0361}", "\N{NBSP}\x{0361}");
+
+DefConstructor('\@math@daccent {}',
+  "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>\x{22c5}</ltx:XMTok>"
+    . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
+    . "</ltx:XMApp>",
+  mode  => 'restricted_horizontal',
+  alias => '\d',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $arg = $whatsit->getArg(1);
+    if ($arg->isMath) {
+      $whatsit->setProperty(matharg => $arg->getBody); }
+    else {
+      $whatsit->setProperty(textarg => $arg); }
+    return; });
+
+DefConstructor('\@math@baccent {}',
+  "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>" . UTF(0xAF) . "</ltx:XMTok>"
+    . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
+    . "</ltx:XMApp>",
+  mode  => 'restricted_horizontal',
+  alias => '\b',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $arg = $whatsit->getArg(1);
+    if ($arg->isMath) {
+      $whatsit->setProperty(matharg => $arg->getBody); }
+    else {
+      $whatsit->setProperty(textarg => $arg); }
+    return; });
+
+#======================================================================
+DefMacro('\hrulefill', '\leaders\hrule\hfill');
+DefMacro('\dotfill',   '\leaders\hbox{.}\hfill');                   # Not exactly, but...
+DefMath('\leftarrowfill',  "\x{2190}", role => 'ARROW', stretchy => 'true');
+DefMath('\rightarrowfill', "\x{2192}", role => 'ARROW', stretchy => 'true');
+DefMath('\upbracefill',    "\x{23DF}", role => 'ARROW', stretchy => 'true');    # for \underbrace
+DefMath('\downbracefill',  "\x{23DE}", role => 'ARROW', stretchy => 'true');    # for \overbrace
+
+#======================================================================
+# These, since \halign (used in plain.tex) should switch to text mode
+# and also the semantics of the equation number?
+DefMacro('\eqalign{}',
+  '\@@eqalign{\lx@begin@alignment#1\lx@end@alignment}');
+DefConstructor('\@@eqalign{}',
+  '#1',
+  reversion    => '\eqalign{#1}', bounded => 1,
+  beforeDigest => sub { alignmentBindings('rl', 'math',
+      attributes => { vattach => 'baseline' }); });
+DefMacro('\eqalignno{}',
+  '\@@eqalignno{\lx@begin@alignment#1\lx@end@alignment}');
+DefConstructor('\@@eqalignno{}',
+  '#1',
+  reversion    => '\eqalignno{#1}', bounded => 1,
+  beforeDigest => sub { alignmentBindings('rll', 'math',
+      attributes => { vattach => 'baseline' }); });
+
+DefMacro('\leqalignno{}',
+  '\@@leqalignno{\lx@begin@alignment#1\lx@end@alignment}');
+DefConstructor('\@@leqalignno{}',
+  '#1',
+  reversion    => '\leqalignno{#1}', bounded => 1,
+  beforeDigest => sub { alignmentBindings('rll', 'math',
+      attributes => { vattach => 'baseline' }); });
+
+# The fact that we need this suggests something wrong in \halign expansion control?
+# plain.tex has: \def\multispan#1{\omit \mscount#1\relax
+#                  \loop\ifnum\mscount>\@ne \sp@n\repeat}
+DefMacro('\multispan{Number}', sub {
+    my ($gullet, $span) = @_;
+    $span = $span->valueOf;
+    (T_CS('\omit'), map { (T_CS('\span'), T_CS('\omit')) } 1 .. $span - 1); });
+
+## Semantic bits
+DefMacro('\beginsection Until:\par', '\@beginsection{{\bf #1}}');
+
+DefConstructor('\@beginsection {}',
+  "<ltx:section><ltx:title>#1</ltx:title>");
+
+# POSSIBLY #1 is a name or reference number and  #2 is the theoremm TITLE
+#  If so, how do know when the theorem ends?
+DefMacroI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
+  '\@proclaim{{\bf #1}}{{\sl #2}}');
+DefConstructor('\@proclaim{}{}',
+  "<ltx:theorem>"
+    . "<ltx:title font='#titlefont' _force_font='true' >#title</ltx:title>"
+    . "#2",
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+  properties     => sub {
+    my $title = $_[1];
+    (title => $title, titlefont => $title->getFont); });
+# if the mark is not simple, we add it to the content of the note
+# otherwise, to the attribute.
+DefConstructor('\footnote{}{}',
+  "^<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
+  mode         => 'internal_vertical',
+  beforeDigest => sub { neutralizeFont(); },
+  afterDigest  => sub {
+    my ($stomach, $whatsit) = @_;
+    my $mark   = $whatsit->getArg(1);
+    my $change = 0;
+    foreach my $token (Revert($mark)) {
+      unless ($token->getCatcode == CC_LETTER || $token->getCatcode == CC_SPACE ||
+        $token->getCatcode == CC_OTHER) {
+        $change = 1; last; } }
+    $whatsit->setProperty(($change ? 'prenote' : 'mark') => $mark);
+    return; });
+
+DefMacro('\leftline Undigested',   '\lx@leftline{\hbox{#1}}');
+DefMacro('\rightline Undigested',  '\lx@rightline{\hbox{#1}}');
+DefMacro('\centerline Undigested', '\lx@centerline{\hbox{#1}}');
+DefConstructor('\lx@leftline{}', sub {
+    alignLine($_[0], $_[1], 'left'); },
+  alias   => '\leftline',
+  bounded => 1);
+DefConstructor('\lx@rightline{}', sub {
+    alignLine($_[0], $_[1], 'right'); },
+  alias   => '\rightline',
+  bounded => 1);
+DefConstructor('\lx@centerline{}', sub {
+    alignLine($_[0], $_[1], 'center'); },
+  alias   => '\centerline',
+  bounded => 1);
+
+# plain defines these AS MATH (since they're in cmsy?)
+# Otherwise, should just end up as unicode... or rewrite the math?
+DefPrimitiveI('\lx@sectionsign',   undef, UTF(0xa7), alias => '\S');    # SECTION SIGN
+DefPrimitiveI('\lx@paragraphsign', undef, UTF(0xB6), alias => '\P');    # PILCROW SIGN
+DefMacroI('\S', undef, '\lx@sectionsign');
+DefMacroI('\P', undef, '\lx@paragraphsign');
+DefPrimitiveI('\dag',       undef, "\x{2020}");                         # DAGGER
+DefPrimitiveI('\ddag',      undef, "\x{2021}");                         # DOUBLE DAGGER
+DefPrimitiveI('\copyright', undef, UTF(0xA9));                          # COPYRIGHT SIGN
+DefPrimitiveI('\pounds',    undef, UTF(0xA3));                          # POUND SIGN
+
+# These only need to be here to avoid having reversions with \mskip 3.0mu
+DefPrimitiveI('\lx@thinmuskip', undef, sub {
+    Box("\x{2009}", undef, undef, T_CS('\,'),
+      name  => 'thinspace', isSpace => 1,
+      width => LookupRegister('\thinmuskip')); });
+DefPrimitiveI('\lx@thinspace', undef, sub {
+    Box("\x{2009}", undef, undef, T_CS('\,'),
+      name => 'thinspace', width => Dimension('0.16667em'), isSpace => 1); });
+DefMacroI('\,', undef, '\ifmmode\lx@thinmuskip\else\lx@thinspace\fi', protected => 1);
+
+DefPrimitiveI('\!', undef, sub {
+    Box("\x{200B}", undef, undef, T_CS('\!'),    # zero width space
+      name  => 'negthinspace', isSpace => 1,
+      width => LookupRegister('\thinmuskip')->negate); });
+DefPrimitiveI('\>', undef, sub {
+    Box("\x{2005}", undef, undef, T_CS('\>'),
+      name  => 'medspace', isSpace => 1,
+      width => LookupRegister('\medmuskip')); });
+Let('\:', '\>');
+
+DefPrimitiveI('\;', undef, sub {
+    Box("\x{2004}", undef, undef, T_CS('\;'),
+      name  => 'thickspace', isSpace => 1,
+      width => LookupRegister('\thickmuskip')); });
+
+# Simpler definitions work across TeX, LaTeX,... especially for UnTeX
+# don't need \#,\&,\%,\$,
+# BUT: TeX tries to define as an hrule! LaTeX lets as \textunderscore (affecting reversion)
+DefPrimitive('\_', sub {
+    Box('_', undef, undef, T_CS('\_')); });
+# Curiously, this must be expandable, else things like \MakeUppercase loop.
+DefMacro(T_ACTIVE("~"), T_CS('\lx@NBSP'));
+# Math alignments
+DefMacro('\matrix{}',
+  '\lx@gen@plain@matrix{name=matrix,datameaning=matrix}{#1}');
+
+DefMacro('\bordermatrix{}',    # Semantics?
+  '\lx@hack@bordermatrix{\lx@gen@plain@matrix{name=bordermatrix}{#1}}');
+# HACK the newly created border matrix to add columns for the (spanned) parentheses!!!
+# Assume (for now) that there's no XMDual structure here.
+# What is the semantics, anyway?
+DefConstructor('\lx@hack@bordermatrix{}', sub {
+    my ($document, $matrix) = @_;
+    $document->absorb($matrix);
+    my $marray = $document->getNode->lastChild;
+    my @rows   = $document->findnodes('ltx:XMRow', $marray);
+    ## Contrived, since $matrix may be a List or...
+    my ($alignment) = grep { $_ } map { $_->getProperty('alignment') } $matrix->unlist;
+    my $pfont = $STATE->lookupValue('font')->specialize('(');
+    my $em    = $pfont->getEMWidth;
+    my ($h0,$h1, $half, $shift) = ($em, $em, $em, $em);
+    if ($alignment) {
+      my $arrayh     = $alignment->getTotalHeight;
+      my @rowheights = @{$$alignment{rowheights}};
+      $h0    = $rowheights[0];
+      $h1    = $rowheights[1];
+      $half  = $arrayh->subtract($h0)->divide(2);
+      $shift = $rowheights[0]->subtract($half); }
+    foreach my $row (@rows) {                  # Add empty cells for 2nd & last colum
+      $document->openElementAt($row, 'ltx:XMCell', class => 'ltx_nopad');
+      $document->openElementAt($row, 'ltx:XMCell', class => 'ltx_nopad');
+      $row->insertAfter($row->lastChild, $row->firstChild);    # Move to 2nd pos!
+    }
+    my @cols = element_nodes($rows[1]);
+    my $col1 = $cols[1];
+    my $coln = $cols[-1];
+    my $n    = scalar(@rows) - 1;
+    $col1->setAttribute(rowspan => $n);
+    $coln->setAttribute(rowspan => $n);
+    # Pretend ('s row has height of row 1, to avoid shifting baseline.
+    # but shift the centerline to the middle of rows 2--n
+    # Set the (,) in mpadded stretchy w/ space as strut.
+    $document->appendTree($col1,
+      ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
+        ['ltx:XMTok', { role   => 'OPEN', stretchy => 'true', font => $pfont }, '('],
+        ['ltx:XMTok', { height => $half,  depth    => $half,  font => $pfont }, ' ']]);
+    $document->appendTree($coln,
+      ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
+        ['ltx:XMTok', { role   => 'CLOSE', stretchy => 'true', font => $pfont }, ')'],
+        ['ltx:XMTok', { height => $half,   depth    => $half,  font => $pfont }, ' ']]);
+    return; },
+  reversion => '#1');
+
+DefMacro('\pmatrix{}',
+  '\lx@gen@plain@matrix{name=pmatrix,datameaning=matrix,left=\lx@left(,right=\lx@right)}{#1}');
+
+# Note that 2nd column in \cases is in text mode!
+DefMacro('\cases{}',
+  '\lx@gen@plain@cases{meaning=cases,left=\lx@left\{,conditionmode=text,style=\textstyle}{#1}');
+
+#======================================================================
+# Pagination
+DefMacroI('\eject',      undef, '\par\lx@newpage');
+DefMacroI('\supereject', undef, '\par\lx@newpage');
+Let('\newpage', '\eject');
+Let('\end', '\lx@end@document');
+Let('\bye', '\lx@end@document');
+
+#======================================================================
+# These are defined here primarily to get the reversion right
+# There's got to be a better way, but...
+# Otherwise, the whole font & \fam machinery seems to work correctly.
+
+# Note that these, unlike \rmfamily, should set the other attributes to the defaults!
+DefPrimitiveI('\rm', undef, undef,
+  font => { family => 'serif', series => 'medium', shape => 'upright' });
+DefPrimitiveI('\sf', undef, undef,
+  font => { family => 'sansserif', series => 'medium', shape => 'upright' });
+DefPrimitiveI('\bf', undef, undef,
+  font => { series => 'bold', family => 'serif', shape => 'upright' });
+DefPrimitiveI('\it', undef, undef,
+  font => { shape => 'italic', family => 'serif', series => 'medium' });
+DefPrimitiveI('\tt', undef, undef,
+  font => { family => 'typewriter', series => 'medium', shape => 'upright' });
+# No effect in math for the following 2 ?
+DefPrimitiveI('\sl', undef, undef,
+  font => { shape => 'slanted', family => 'serif', series => 'medium' });
+DefPrimitiveI('\sc', undef, undef,
+  font => { shape => 'smallcaps', family => 'serif', series => 'medium' });
+
+DefPrimitiveI('\cal', undef, sub {
+    if (LookupValue('IN_MATH')) {
+      MergeFont(family => 'caligraphic', series => 'medium', shape => 'upright', encoding => 'OMS');
+      return Box(undef, undef, undef, T_CS('\cal'));
+    }
+    return; });
+
+# Primarily for UnTeX
+DefPrimitiveI('\allowbreak', undef, undef);
+
+LoadPool('math_common');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+
