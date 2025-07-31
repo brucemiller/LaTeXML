@@ -5848,6 +5848,77 @@ DefPrimitive('\DeclareUnicodeCharacter Expanded {}', sub {
 # LaTeX now includes textcomp by default.
 RequirePackage('textcomp');
 
+#======================================================================
+# Dubious: LaTeXML is actually capable of using latex.ltx's definitions
+# However, after 2022, these commands were changed to ignore \lccode,\uccode
+# and to not change case of math.
+# Thus, we're redefining them after the texlive definitions to get consistency.
+#
+# NOTE: These ONLY work on robust commands,
+# thus, preceded by \protect, and the CS has a trailing space added!!!
+DefPrimitive('\AddToNoCaseChangeList{DefToken}', sub {
+      my ($stomach, $cs) = @_;
+      # This is analog of \l_text_case_exclude_arg_tl
+      my $protcs = $cs->getString . ' ';    # As if robust!
+      $STATE->assignMapping(text_case_exclude => $protcs => 1); });
+DefMacro('\NoCaseChange{}', '#1', robust => 1);
+RawTeX(<<'EoTeX');
+\AddToNoCaseChangeList{\NoCaseChange}%
+\AddToNoCaseChangeList{\label}%
+\AddToNoCaseChangeList{\ref}%
+\AddToNoCaseChangeList{\cite}%
+\AddToNoCaseChangeList{\ensuremath}%
+\AddToNoCaseChangeList{\thanks}%
+EoTeX
+
+DefMacroI('\@uclclist', undef, '\oe\OE\o\O\ae\AE\dh\DH\dj\DJ\l\L\ng\NG\ss\SS\ij\IJ\th\TH');
+RawTeX(<<'EOL');
+\DeclareRobustCommand{\MakeUppercase}[1]{{%
+  \lx@prepare@case@mapping%
+  \def\({$}\let\)\(%
+  \def\i{I}\def\j{J}%
+  \let\UTF@two@octets@noexpand\@empty
+  \let\UTF@three@octets@noexpand\@empty
+  \let\UTF@four@octets@noexpand\@empty
+  \edef\reserved@a{\lx@latex@changecase{upper}{#1}}%
+  \reserved@a
+   }}
+\DeclareRobustCommand{\MakeLowercase}[1]{{%
+  \lx@prepare@case@mapping%
+  \def\({$}\let\)\(%
+  \let\UTF@two@octets@noexpand\@empty
+  \let\UTF@three@octets@noexpand\@empty
+  \let\UTF@four@octets@noexpand\@empty
+  \edef\reserved@a{\lx@latex@changecase{lower}{#1}}%
+  \reserved@a
+   }}
+\DeclareRobustCommand{\MakeTitlecase}[1]{{%
+  \lx@prepare@case@mapping%
+  \def\({$}\let\)\(%
+  \let\UTF@two@octets@noexpand\@empty
+  \let\UTF@three@octets@noexpand\@empty
+  \let\UTF@four@octets@noexpand\@empty
+  \edef\reserved@a{\lx@latex@changecase{sentence}{#1}}%
+  \reserved@a
+   }}
+
+%\DeclareRobustCommand{\MakeXTitlecase}[1]{{%
+%  \lx@prepare@case@mapping%
+%  \def\({$}\let\)\(%
+%  \let\UTF@two@octets@noexpand\@empty
+%  \let\UTF@three@octets@noexpand\@empty
+%  \let\UTF@four@octets@noexpand\@empty
+%  \edef\reserved@a{\lx@latex@changecase{title}{#1}}%
+%  \reserved@a
+%   }}
+
+% Trickery to avoid losing {} around arg
+\protected@edef\MakeUppercase#1{\MakeUppercase{#1}}
+\protected@edef\MakeLowercase#1{\MakeLowercase{#1}}
+\protected@edef\MakeTitlecase#1{\MakeTitlecase{#1}}
+%\protected@edef\MakeXTitlecase#1{\MakeXTitlecase{#1}}
+EOL
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 
