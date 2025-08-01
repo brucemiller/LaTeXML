@@ -54,6 +54,9 @@ Math_attributes =
   ## a textified representation of the math.
   attribute text { text }?,
 
+  ## intent attribute from MathML 4
+  attribute intent { text }?,
+
   ## preserved grammar-near lexemes for export to external apps
   attribute lexemes { text }?
 
@@ -87,6 +90,12 @@ XMath.attributes =
 
   ## The OpenMath CD for which \attr{meaning} is a symbol.
   attribute omcd { text }?,
+
+  ## intent attribute from MathML 4
+  attribute intent { text }?,
+
+  ## arg attribute from MathML 4
+  attribute arg { text }?,
 
   ## An encoding of the position of sub/superscripts
   ## Before parsing, it takes two forms. On a base token or element,

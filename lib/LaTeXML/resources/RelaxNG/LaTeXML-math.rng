@@ -81,6 +81,11 @@ the content of the \elementref{XMath} element.</a:documentation>
       </attribute>
     </optional>
     <optional>
+      <attribute name="intent">
+        <a:documentation>intent attribute from MathML 4</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="lexemes">
         <a:documentation>preserved grammar-near lexemes for export to external apps</a:documentation>
       </attribute>
@@ -131,6 +136,16 @@ such as the OpenMath name.</a:documentation>
     <optional>
       <attribute name="omcd">
         <a:documentation>The OpenMath CD for which \attr{meaning} is a symbol.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="intent">
+        <a:documentation>intent attribute from MathML 4</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="arg">
+        <a:documentation>arg attribute from MathML 4</a:documentation>
       </attribute>
     </optional>
     <optional>
