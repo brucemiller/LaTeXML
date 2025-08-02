@@ -54,7 +54,6 @@ sub documentSchema {
   return $latexml->withState(sub {
       my $model = $STATE->getModel();
       $model->registerNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
-      $model->registerNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
       $model->registerNamespace(svg   => "http://www.w3.org/2000/svg");
       $model->registerNamespace(xev   => "http://www.w3.org/2001/xml-events");
       $model->registerNamespace(xlink => "http://www.w3.org/1999/xlink");

@@ -1121,8 +1121,6 @@ DefMacro('\lstdefinelanguage []{}',
   '\@ifnextchar[{\@lstdefinelanguage[#1]{#2}}{\@lstdefinelanguage[#1]{#2}[]{}}');
 Let('\lst@definelanguage', '\lstdefinelanguage');
 
-use Data::Dumper;
-
 DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []', sub {
     my ($stomach, $dialect, $language, $base_dialect, $base_language, $keyvals, $aspects) = @_;
     my @base = ();

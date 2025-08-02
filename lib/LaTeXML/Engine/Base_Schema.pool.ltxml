@@ -28,6 +28,8 @@ RegisterNamespace(m     => "http://www.w3.org/1998/Math/MathML");
 RegisterNamespace(xhtml => "http://www.w3.org/1999/xhtml");
 # Namespace for arbitrary data attributes (mapped to data-xxx in html5)
 RegisterNamespace(data => "http://dlmf.nist.gov/LaTeXML/data");
+# ARIA attributes live under aria: (mapped to aria-xxx in html5, except for "role")
+RegisterNamespace(aria => "http://www.w3.org/ns/wai-aria");
 
 # This is used for plain TeX, but needs to be undone for LaTeX (or...)!
 RelaxNGSchema("LaTeXML");

@@ -12,7 +12,7 @@
   | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
   \=========================================================ooo==U==ooo=/
 -->
-<grammar ns="http://www.w3.org/XML/1998/namespace" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar ns="http://www.w3.org/ns/wai-aria" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:aria="http://www.w3.org/ns/wai-aria" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <!-- Basic element classes: -->
   <define name="Inline.class">
     <a:documentation>All strictly inline elements.</a:documentation>
@@ -63,6 +63,7 @@ NOTE: To be narrowed later.</a:documentation>
         <anyName>
           <except>
             <nsName ns=""/>
+            <nsName ns="http://www.w3.org/XML/1998/namespace"/>
             <nsName/>
           </except>
         </anyName>
@@ -79,6 +80,9 @@ NOTE: To be narrowed later.</a:documentation>
        ## provides for namespace declaration.
        attribute xmlns { text }?,
     -->
+    <ref name="ARIA.attributes">
+      <a:documentation>Allow ARIA attributes</a:documentation>
+    </ref>
     <ref name="Foreign.attributes">
       <a:documentation>Allow foreign namespaced attributes</a:documentation>
     </ref>
@@ -534,6 +538,171 @@ to be used instead of the content of the element itself;</a:documentation>
       <attribute name="dataname">
         <a:documentation>the suggested file name of the data</a:documentation>
       </attribute>
+    </optional>
+  </define>
+  <define name="ARIA.attributes">
+    <a:documentation>ARIA namespace attributes</a:documentation>
+    <optional>
+      <attribute name="aria:activedescendant"/>
+    </optional>
+    <optional>
+      <attribute name="aria:atomic"/>
+    </optional>
+    <optional>
+      <attribute name="aria:autocomplete"/>
+    </optional>
+    <optional>
+      <attribute name="aria:braillelabel"/>
+    </optional>
+    <optional>
+      <attribute name="aria:brailleroledescription"/>
+    </optional>
+    <optional>
+      <attribute name="aria:busy"/>
+    </optional>
+    <optional>
+      <attribute name="aria:checked"/>
+    </optional>
+    <optional>
+      <attribute name="aria:colcount"/>
+    </optional>
+    <optional>
+      <attribute name="aria:colindex"/>
+    </optional>
+    <optional>
+      <attribute name="aria:colindextext"/>
+    </optional>
+    <optional>
+      <attribute name="aria:colspan"/>
+    </optional>
+    <optional>
+      <attribute name="aria:controls"/>
+    </optional>
+    <optional>
+      <attribute name="aria:current"/>
+    </optional>
+    <optional>
+      <attribute name="aria:describedby"/>
+    </optional>
+    <optional>
+      <attribute name="aria:description"/>
+    </optional>
+    <optional>
+      <attribute name="aria:details"/>
+    </optional>
+    <optional>
+      <attribute name="aria:disabled"/>
+    </optional>
+    <optional>
+      <attribute name="aria:dropeffectDeprecated"/>
+    </optional>
+    <optional>
+      <attribute name="aria:errormessage"/>
+    </optional>
+    <optional>
+      <attribute name="aria:expanded"/>
+    </optional>
+    <optional>
+      <attribute name="aria:flowto"/>
+    </optional>
+    <optional>
+      <attribute name="aria:grabbedDeprecated"/>
+    </optional>
+    <optional>
+      <attribute name="aria:haspopup"/>
+    </optional>
+    <optional>
+      <attribute name="aria:hidden"/>
+    </optional>
+    <optional>
+      <attribute name="aria:invalid"/>
+    </optional>
+    <optional>
+      <attribute name="aria:keyshortcuts"/>
+    </optional>
+    <optional>
+      <attribute name="aria:label"/>
+    </optional>
+    <optional>
+      <attribute name="aria:labelledby"/>
+    </optional>
+    <optional>
+      <attribute name="aria:level"/>
+    </optional>
+    <optional>
+      <attribute name="aria:live"/>
+    </optional>
+    <optional>
+      <attribute name="aria:modal"/>
+    </optional>
+    <optional>
+      <attribute name="aria:multiline"/>
+    </optional>
+    <optional>
+      <attribute name="aria:multiselectable"/>
+    </optional>
+    <optional>
+      <attribute name="aria:orientation"/>
+    </optional>
+    <optional>
+      <attribute name="aria:owns"/>
+    </optional>
+    <optional>
+      <attribute name="aria:placeholder"/>
+    </optional>
+    <optional>
+      <attribute name="aria:posinset"/>
+    </optional>
+    <optional>
+      <attribute name="aria:pressed"/>
+    </optional>
+    <optional>
+      <attribute name="aria:readonly"/>
+    </optional>
+    <optional>
+      <attribute name="aria:relevant"/>
+    </optional>
+    <optional>
+      <attribute name="aria:required"/>
+    </optional>
+    <optional>
+      <attribute name="aria:role"/>
+    </optional>
+    <optional>
+      <attribute name="aria:roledescription"/>
+    </optional>
+    <optional>
+      <attribute name="aria:rowcount"/>
+    </optional>
+    <optional>
+      <attribute name="aria:rowindex"/>
+    </optional>
+    <optional>
+      <attribute name="aria:rowindextext"/>
+    </optional>
+    <optional>
+      <attribute name="aria:rowspan"/>
+    </optional>
+    <optional>
+      <attribute name="aria:selected"/>
+    </optional>
+    <optional>
+      <attribute name="aria:setsize"/>
+    </optional>
+    <optional>
+      <attribute name="aria:sort"/>
+    </optional>
+    <optional>
+      <attribute name="aria:valuemax"/>
+    </optional>
+    <optional>
+      <attribute name="aria:valuemin"/>
+    </optional>
+    <optional>
+      <attribute name="aria:valuenow"/>
+    </optional>
+    <optional>
+      <attribute name="aria:valuetext"/>
     </optional>
   </define>
 </grammar>

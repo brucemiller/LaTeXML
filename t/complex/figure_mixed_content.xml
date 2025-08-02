@@ -222,24 +222,17 @@
         <listingline xml:id="lstnumberx1"><text class="ltx_lst_space">    </text><text class="ltx_lst_identifier">listing</text></listingline>
       </listing>
       <break class="ltx_break"/>
-      <block class="ltx_figure_panel">
-        <itemize xml:id="S0.I2">
-          <item xml:id="S0.I2.i1">
-            <tags>
-              <tag>•</tag>
-              <tag role="typerefnum">1st item</tag>
-            </tags>
-            <para xml:id="S0.I2.i1.p1">
-              <p>itemize 1</p>
-            </para>
-          </item>
-        </itemize>
-        <note mark="1" role="footnote" xml:id="footnote1"><tags>
-            <tag>1</tag>
-            <tag role="refnum">1</tag>
-            <tag role="typerefnum">footnote 1</tag>
-          </tags>note1</note>
-      </block>
+      <itemize class="ltx_figure_panel" xml:id="S0.I2">
+        <item xml:id="S0.I2.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S0.I2.i1.p1">
+            <p>itemize 1</p>
+          </para>
+        </item>
+      </itemize>
       <break class="ltx_break"/>
       <p class="ltx_figure_panel">.</p>
       <break class="ltx_break"/>
@@ -401,7 +394,11 @@
       <verbatim class="ltx_figure_panel" font="typewriter"> some verbatim $#! stuff 
 </verbatim>
       <toccaption><tag close=" ">4</tag>Highly mixed figure</toccaption>
-      <caption><tag close=": "><text fontsize="90%">Figure 4</text></tag><text fontsize="90%">Highly mixed figure</text></caption>
+      <caption><tag close=": "><text fontsize="90%">Figure 4</text></tag><text fontsize="90%">Highly mixed figure</text><note mark="1" role="footnote" xml:id="footnote1"><tags>
+            <tag>1</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">footnote 1</tag>
+          </tags>note1</note></caption>
     </figure>
     <pagination role="newpage"/>
     <figure inlist="lof" xml:id="S0.F5">
@@ -411,18 +408,15 @@
         <tag role="typerefnum">Figure 5</tag>
       </tags>
       <graphics candidates="../graphics/none.png" class="ltx_figure_panel" graphic="../graphics/none.png" options="width=113.85063pt,keepaspectratio=true" xml:id="S0.F5.g1"/>
-      <block class="ltx_figure_panel">
-        <graphics candidates="../graphics/none.png" graphic="../graphics/none.png" options="width=113.85063pt,keepaspectratio=true" xml:id="S0.F5.g2"/>
-        <note mark="2" role="footnote" xml:id="footnote2"><tags>
-            <tag>2</tag>
-            <tag role="refnum">2</tag>
-            <tag role="typerefnum">footnote 2</tag>
-          </tags>Note</note>
-      </block>
+      <graphics candidates="../graphics/none.png" class="ltx_figure_panel" graphic="../graphics/none.png" options="width=113.85063pt,keepaspectratio=true" xml:id="S0.F5.g2"/>
       <break class="ltx_break"/>
       <p class="ltx_figure_panel">.</p>
       <toccaption><tag close=" ">5</tag>Caption</toccaption>
-      <caption><tag close=": "><text fontsize="90%">Figure 5</text></tag><text fontsize="90%">Caption</text></caption>
+      <caption><tag close=": "><text fontsize="90%">Figure 5</text></tag><text fontsize="90%">Caption</text><note mark="2" role="footnote" xml:id="footnote2"><tags>
+            <tag>2</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">footnote 2</tag>
+          </tags>Note</note></caption>
     </figure>
     <pagination role="newpage"/>
     <figure inlist="lof" xml:id="S0.F6">
