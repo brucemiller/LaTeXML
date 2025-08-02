@@ -13,23 +13,20 @@
       <tag role="typerefnum">Table 1</tag>
     </tags>
     <toccaption><tag close=" ">1</tag>Cap</toccaption>
-    <caption><tag close=": ">Table 1</tag>Cap</caption>
-    <block>
-      <tabular>
-        <thead>
-          <tr>
-            <td align="center" border="tt" thead="column">A</td>
-            <td align="center" border="tt" thead="column">B</td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td align="center" border="b t">A quick and easy sentence.</td>
-            <td align="center" border="b t">Before the page is over.</td>
-          </tr>
-        </tbody>
-      </tabular>
-      <note mark="*" role="footnotetext">A note</note>
-    </block>
+    <caption><tag close=": ">Table 1</tag>Cap<note mark="*" role="footnotetext">A note</note></caption>
+    <tabular>
+      <thead>
+        <tr>
+          <td align="center" border="tt" thead="column">A</td>
+          <td align="center" border="tt" thead="column">B</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="center" border="b t">A quick and easy sentence.</td>
+          <td align="center" border="b t">Before the page is over.</td>
+        </tr>
+      </tbody>
+    </tabular>
   </table>
 </document>
