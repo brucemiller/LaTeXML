@@ -24,6 +24,9 @@ use LaTeXML::Package;
 # Wouldn't it be nice!!
 # We'll just ignore this all for now...
 
+# etoolbox is sometimes used as implied, see arXiv:2507.04590v1
+RequirePackage('etoolbox');
+
 DefMacro('\microtypesetup{}',                            '');
 DefMacro('\DeclareMicrotypeSet OptionalMatch:* []{}{}',  '');
 DefMacro('\UseMicrotypeSet[]{}',                         '');
