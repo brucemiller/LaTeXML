@@ -166,7 +166,7 @@ sub digestFile {
 }
 
 sub iniTeX {
-  my ($self, $request, %options) = @_;
+  my ($self, $request, $destination, %options) = @_;
   my ($dir, $name, $ext);
   my $mode = $options{mode} || 'Base'; # normally, w/o TeX (plain) itself
   if (pathname_is_literaldata($request)) {
@@ -205,7 +205,7 @@ sub iniTeX {
           Tokens(Explode($name))));
       $state->installDefinition(LaTeXML::Core::Definition::Expandable->new(T_CS('\dump'), undef,
           Tokens()));
-      LaTeXML::Package::Pool::DumpFile($request);
+      LaTeXML::Package::Pool::DumpFile($request, $destination);
       $self->finishDigestion;
       ProgressSpindown("Digesting $mode $name");
       return; });

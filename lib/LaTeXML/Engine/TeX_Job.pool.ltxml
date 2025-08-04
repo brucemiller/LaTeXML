@@ -104,8 +104,6 @@ my %IGNORED_SYMBOLS = map { $_ => 1; }
   meaning:\to
   );
 
-my $frozen_types = {};
-
 #======================================================================
 our $DUMP_HEADER = <<'EoCode';
 #======================================================================
@@ -118,7 +116,7 @@ use LaTeXML::Core::Dumper qw(:load);
 EoCode
 
 sub DumpFile {
-  my ($file) = @_;
+  my ($file, $destination) = @_;
   $file = ToString($file);
   my ($dir, $name, $type) = pathname_split($file);
   $type = 'sty' unless $type;
@@ -145,7 +143,7 @@ sub DumpFile {
   Debug("Extracting symbols " . join(',', map { $_ . '=' . scalar(keys %{ $$STATE{$_} }); } @tables));
   my $nsym  = 0;
   my $nlets = 0;
-  $frozen_types = {};
+  my %unchanged=();
   my (@cmds_early, @cmds, @cmds_late);
   foreach my $table_name (sort @tables) {
     my $table = $$STATE{$table_name};
@@ -164,7 +162,7 @@ sub DumpFile {
         ## one of the simple value tables?
         if ($table_name ne 'meaning') {
           if (!(ref $value) || defined $dump) {
-            push(@cmds, "$inst(" . $dkey . ',' . $dump . ")") }
+            push(@cmds, "$inst(" . $dkey . ',' . $dump . ")") } # Assign within table
           else {
             Warn('unexpected', $table_name, undef,
               "Do not know how to dump $table_name for $key : " . Stringify($value)); } }
@@ -172,11 +170,15 @@ sub DumpFile {
         elsif ((!defined $value)    # Value Empty?
           || (!$value->isaDefinition)               # or menaing is non-definition; maybe a token
           || (!($let_cs = $value->getCSName))) {    # Or definition w/NO cs !?!? (can't happen?)
-          push(@cmds, 'Im(' . $dkey . ',' . $dump . ')'); }
-        # Else, some proper kind of definition.
+          push(@cmds, 'Im(' . $dkey . ',' . $dump . ')'); } # Assign meaning
+        ## Else, some proper kind of definition.
         elsif ($key eq $let_cs) {                   # Normal definition
-          push(@cmds, 'I(' . $dump . ')'); }       # the key (the cs!) is already embedded in the dump!!!
-            # \let symbols? Worry about WHICH value of original cs to use? before/after?????
+          if($dump){
+            push(@cmds, 'I(' . $dump . ')'); }       # the key (the cs!) is already embedded in the dump!!!
+          else {
+            Warn('unexpected', $table_name, undef,
+              "Do not know how to dump $table_name for $key : " . Stringify($value)); } }
+        ## \let symbols? Worry about WHICH value of original cs to use? before/after?????
         else {
           $nlets++;
           my $letkey     = LaTeXML::Core::Dumper::Dump($let_cs, $dump_key);
@@ -189,16 +191,18 @@ sub DumpFile {
             ## \let to the current defn; do let assignment after load
             push(@cmds_late, 'Lt(' . $dkey . ',' . $letkey . ')'); }
           else {
-            push(@cmds, 'Im(' . $dkey . ',' . $dump . ')'); }
-  } } } }
+            push(@cmds, 'Im(' . $dkey . ',' . $dump . ')'); } # Assign meaning
+        } }
+      else {
+        $unchanged{$dump_key}++; } } }
   #----------------------------------------------------------------------
   Debug("Found $nsym new symbols; $nlets were \\let");
-  Debug("Froze " . join(', ', map { "$$frozen_types{$_} $_"; } sort keys %$frozen_types));
-  my $dest = '/tmp/' . $name . '_dump.pool.ltxml';
-  Debug("Storing $name in $dest");
+  Debug("There were ".scalar(keys %unchanged)." unchanged symbols");
+  #. join(',', sort keys %unchanged));
+  Debug("Storing $name in $destination");
   my $OUT;
-  open($OUT, '>', $dest)
-    or Fatal('I/O', $dest, "Failed to open format file '$dest': $!");
+  open($OUT, '>', $destination)
+    or Fatal('I/O', $destination, "Failed to open format file '$destination': $!");
   binmode($OUT, ':encoding(UTF-8)');
   print $OUT ('#' x 80) . "\n";
   print $OUT "## Dump of $name\n";
@@ -213,7 +217,7 @@ sub DumpFile {
   print $OUT '#' . ('=' x 80) . "\n";
   print $OUT "1;\n";
   close($OUT);
-  Debug("Stored into $dest");
+  Debug("Stored into $destination");
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -94,7 +94,7 @@ eval {    # Catch errors
   $latexml->withState(sub {
       my ($state) = @_;
       if ($initfile) {
-        $latexml->iniTeX($initfile); }
+        $latexml->iniTeX($initfile, $destination); }
       else {
         # ========================================
         # First read and digest whatever we're given.
@@ -199,6 +199,8 @@ sub validate_args {
       # -w is not about writeability on Windows, see https://perldoc.perl.org/perlport#-X
       if (!(pathname_mkdir($dir) && ($^O eq 'MSWin32' || -w $dir))) {
         push(@fails, "Couldn't create writable destination directory $dir: $!"); } } }
+  if($initfile && !$destination){
+    push(@fails, "No destination for dump of $initfile"); }
   return @fails; }
 
 #**********************************************************************
