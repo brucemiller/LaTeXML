@@ -161,7 +161,7 @@ DefMacro('\input TeXFileName', sub {
       # and load LaTeX.pool if not already
       if (!LookupValue('LaTeX.pool_loaded')) {
         LoadPool("LaTeX"); } }
-    Input($filename, reloadable => 1); });
+    Input($filename); });
 
 #======================================================================
 # Special output
