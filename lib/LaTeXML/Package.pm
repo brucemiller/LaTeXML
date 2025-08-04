@@ -64,7 +64,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &convertLaTeXArgs),
 
   # Class, Package and File loading.
-  qw(&Input &InputContent &InputDefinitions &RequirePackage &LoadClass &LoadPool &FindFile
+  qw(&Input &InputContent &InputDefinitions &RequirePackage &LoadClass &LoadPool &LoadFormat &FindFile
     &DeclareOption &PassOptions &ProcessOptions &ExecuteOptions
     &AddToMacro &AtBeginDocument &AtEndDocument),
 
@@ -2715,16 +2715,35 @@ sub LoadClass {
       return; } } }
 
 sub LoadPool {
-  my ($pool) = @_;
+  my ($pool, %options) = @_;
   $pool = ToString($pool) if ref $pool;
   if (my $success = InputDefinitions($pool, type => 'pool', notex => 1, noerror => 1,
       installation_subdir => 'Engine')) {
     return $success; }
-  else {
+  elsif(! $options{noerror} ) {
     Error('missing_file', "$pool.pool.ltxml", $STATE->getStomach->getGullet,
       "Can't find binding for pool $pool (installation error)",
-      maybeReportSearchPaths());
-    return; } }
+       maybeReportSearchPaths()); }
+  return; }
+
+sub LoadFormat {
+  my ($format) = @_;
+  $format = ToString($format) if ref $format;
+  my $success;
+  if((! $ENV{LATEXML_NODUMP})
+     && FindFile($format . '_dump', type => 'pool', notex => 1,
+      installation_subdir => 'Engine')) { # dump of $format?
+    LoadPool($format . '_bootstrap', noerror => 1);
+    $success = LoadPool($format . '_dump');
+    LoadPool($format . '_constructs', noerror => 1); }
+  elsif(FindFile($format . '_base', type => 'pool', notex => 1,
+      installation_subdir => 'Engine')) { # but prepped for dump?
+    LoadPool($format . '_bootstrap', noerror => 1);
+    $success = LoadPool($format . '_base');
+    LoadPool($format . '_constructs', noerror => 1); }
+##  else {
+##    $success = LoadPool($format); }
+  return $success; }
 
 # Somewhat an act of desperation in contexts like arXiv
 # where we may have a bunch of random styles & classes that load other packages

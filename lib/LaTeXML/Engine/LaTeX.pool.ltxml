@@ -26,11 +26,6 @@ use List::Util qw(min max);
 # Appendix C. Reference Manual
 #**********************************************************************
 LoadPool('TeX');
-LoadPool('latex_bootstrap');
-if ($ENV{LATEXML_USEDUMP}) {
-  LoadPool('/tmp/latex_dump'); }
-else {
-  LoadPool('latex_base'); }
-LoadPool('latex_constructs');
+LoadFormat('latex');
 #**********************************************************************
 1;

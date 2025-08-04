@@ -20,13 +20,7 @@ use LaTeXML::Util::Pathname;
 # Core TeX; Built-in commands.  And plain.tex
 #**********************************************************************
 LoadPool('Base');
-
-LoadPool('plain_bootstrap');
-if ($ENV{LATEXML_USEDUMP}) {
-  LoadPool('/tmp/plain_dump'); }
-else {
-  LoadPool('plain_base'); }
-LoadPool('plain_constructs');
+LoadFormat('plain');
 
 #======================================================================
 # AutoLoad Trigger Hooks for LaTeX, AmSTeX,...
