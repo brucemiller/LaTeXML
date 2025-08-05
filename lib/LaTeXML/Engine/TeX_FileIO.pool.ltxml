@@ -21,6 +21,22 @@ use LaTeXML::Util::Pathname;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # File I/O Family of primitive control sequences
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# This block is technically LaTeX, but Package also does file bookkeeping
+DefMacroI(T_CS('\@currnamestack'), undef, Tokens());
+Let('\@currname', '\lx@empty');
+Let('\@currext',  '\lx@empty');
+
+DefMacro('\lx@pushfilename',
+    '\xdef\@currnamestack{{\@currname}{\@currext}{\the\catcode`\@}\@currnamestack}');
+DefMacro('\lx@popfilename', '\expandafter\lx@p@pfilename\@currnamestack\@nil');
+DefMacro('\lx@p@pfilename {}{}{} Until:\@nil',
+   '\gdef\@currname{#1}%
+    \gdef\@currext{#2}%
+    \catcode`\@#3\relax
+    \gdef\@currnamestack{#4}');
+
 #======================================================================
 # Low-level input
 #----------------------------------------------------------------------
@@ -145,7 +161,7 @@ DefMacro('\input TeXFileName', sub {
       # and load LaTeX.pool if not already
       if (!LookupValue('LaTeX.pool_loaded')) {
         LoadPool("LaTeX"); } }
-    Input($filename, reloadable => 1); });
+    Input($filename); });
 
 #======================================================================
 # Special output
@@ -166,7 +182,7 @@ DefPrimitive('\special XGeneralText', sub {
           push(@kv, T_OTHER($prop), T_OTHER("="), T_OTHER($1)); } }
       @kv = (T_OTHER("["), @kv, T_OTHER("]")) if @kv;
       $stomach->getGullet->unread(
-        T_CS('\ltx@special@graphics'), @kv, T_BEGIN, T_OTHER($graphic), T_END); }
+        T_CS('\lx@special@graphics'), @kv, T_BEGIN, T_OTHER($graphic), T_END); }
     else {
       Info('ignored', 'special', $stomach, 'Unrecognized TeX Special' . ToString($arg)); }
     return; });
@@ -179,7 +195,7 @@ DefKeyVal('SpecialPS', 'hsize',   '');
 DefKeyVal('SpecialPS', 'vsize',   '');
 DefKeyVal('SpecialPS', 'hscale',  '');
 DefKeyVal('SpecialPS', 'vscale',  '');
-DefConstructor('\ltx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
+DefConstructor('\lx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
   "<ltx:graphics graphic='#path' candidates='#candidates' options='#options'/>",
   sizer      => \&image_graphicx_sizer,
   properties => sub {

@@ -18,6 +18,7 @@ use LaTeXML::Package;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Glue Family of primitive control sequences
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DefRegister('\lx@default@jot' => Dimension('3pt'));
 
 #======================================================================
 # Inserting, removing glue
@@ -26,13 +27,14 @@ use LaTeXML::Package;
 # \vskip            c  inserts vertical glue in a vertical list.
 # \unskip           c  removes a glue item from the current list.
 
+# These aren't distringuishing \kern's from \skip's (should they?)
 our @spaces = (    # Spaces to fake spacing, with width in ems, along with the common command
   [0.100, "\x{200A}"],                                # Hair space (thinner than thin space)
   [0.167, "\x{2006}"],                                # six-per-em
   [0.200, "\x{2009}",         T_CS('\thinspace')],    # five-per-em, thin space
   [0.250, "\x{2005}",         T_CS('\>')],            # four-per-em, mid space
   [0.333, "\x{2004}",         T_CS('\;')],            # three-per-em, thick space
-  [0.500, "\x{2002}",         T_CS('\enspace')],      # en-quad, "nut"
+  [0.500, "\x{2002}",         T_CS('\enskip')],       # en-quad, "nut"
   [1.000, "\x{2003}",         T_CS('\quad')],         # em-quad, "mutton"
   [2.000, "\x{2003}\x{2003}", T_CS('\qquad')],
 );

@@ -34,6 +34,10 @@ DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
 # This makes \relax disappear completely after digestion
 # (which seems most TeX like).
 DefPrimitive('\relax', sub { (); });
+
+# This is LaTeX, but by Package.pm for protected definitions
+Let('\protect', '\relax');
+
 ### However, this keeps a box, so it can appear in UnTeX
 ### DefPrimitive('\relax',undef);
 ## But if you do that, you've got to watch out since it usually

@@ -16,9 +16,13 @@ use warnings;
 use LaTeXML::Package;
 
 #**********************************************************************
-
-LoadPool('expl3');
-
+# This really should only be read when processing latex.ltx (for dumping)
+InputDefinitions('expl3', type => 'ltx', noltxml => 1);
+# AND, pretend that we've already loaded expl3.sty; and the lua binding, too, fwiw.
+AssignValue('expl3.sty_loaded'       => 1, 'global');
+AssignValue('expl3.sty.ltxml_loaded' => 1, 'global');
+AssignValue('expl3.lua_loaded'       => 1, 'global');
+AssignValue('expl3.lua.ltxml_loaded' => 1, 'global');
 #**********************************************************************
 
 1;

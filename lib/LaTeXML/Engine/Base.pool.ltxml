@@ -1,0 +1,54 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  TeX                                                                | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use Unicode::Normalize;
+use LaTeXML::Util::Pathname;
+use charnames ':full';
+use List::Util qw(min max);
+
+#======================================================================
+# BASE TeX; Built-in commands.
+#======================================================================
+#LaTeXML::Package::LoadPoolX('foo');
+LoadPool('Base_Schema');
+LoadPool('Base_ParameterTypes');
+LoadPool('Base_Utility');
+LoadPool('Base_XMath');
+LoadPool('TeX_Box');
+LoadPool('TeX_Character');
+LoadPool('TeX_Debugging');
+LoadPool('TeX_FileIO');
+LoadPool('TeX_Fonts');
+LoadPool('TeX_Glue');
+LoadPool('TeX_Hyphenation');
+LoadPool('TeX_Inserts');
+LoadPool('TeX_Job');
+LoadPool('TeX_Kern');
+LoadPool('TeX_Logic');
+LoadPool('TeX_Macro');
+LoadPool('TeX_Marks');
+LoadPool('TeX_Math');
+LoadPool('TeX_Page');
+LoadPool('TeX_Paragraph');
+LoadPool('TeX_Penalties');
+LoadPool('TeX_Registers');
+LoadPool('TeX_Tables');
+LoadPool('eTeX');      # unless.... ?
+LoadPool('pdfTeX');    # unless.... ?
+
+LoadPool('Base_Deprecated');
+#======================================================================
+1;

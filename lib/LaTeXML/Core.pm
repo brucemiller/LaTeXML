@@ -165,6 +165,52 @@ sub digestFile {
       return $list; });
 }
 
+sub iniTeX {
+  my ($self, $request, $destination, %options) = @_;
+  my ($dir, $name, $ext);
+  my $mode = $options{mode} || 'Base'; # normally, w/o TeX (plain) itself
+  if (pathname_is_literaldata($request)) {
+    $dir  = undef; $ext = 'tex';
+    $name = "Anonymous String"; }
+  elsif (pathname_is_url($request)) {
+    $dir  = undef; $ext = 'tex';
+    $name = $request; }
+  else {
+    if (my $pathname = pathname_find($request, types => ['tex','ltx'],
+	paths => $$self{state}->lookupValue('SEARCHPATHS'))
+	|| pathname_kpsewhich($request, types => ['tex','ltx'],
+        paths => $$self{state}->lookupValue('SEARCHPATHS'))) {
+      $request = $pathname;
+      ($dir, $name, $ext) = pathname_split($request); }
+    else {
+      $self->withState(sub {
+          Fatal('missing_file', $request, undef, "Can't find $mode file $request",
+            LaTeXML::Package::maybeReportSearchPaths()
+          ); }); } }
+  return
+    $self->withState(sub {
+      my ($state) = @_;
+      ProgressSpinup("Digesting $mode $name");
+      # Not so sure if preloads are a good idea yet...
+      $self->initializeState($mode . ".pool", @{ $$self{preload} || [] }) unless $options{noinitialize};
+      $state->assignValue(SOURCEFILE      => $request) if (!pathname_is_literaldata($request));
+      $state->assignValue(SOURCEDIRECTORY => $dir)     if defined $dir;
+      $state->unshiftValue(SEARCHPATHS => $dir)
+        if defined $dir && !grep { $_ eq $dir } @{ $state->lookupValue('SEARCHPATHS') };
+      $state->unshiftValue(GRAPHICSPATHS => $dir)
+
+        if defined $dir && !grep { $_ eq $dir } @{ $state->lookupValue('GRAPHICSPATHS') };
+
+      $state->installDefinition(LaTeXML::Core::Definition::Expandable->new(T_CS('\jobname'), undef,
+          Tokens(Explode($name))));
+      $state->installDefinition(LaTeXML::Core::Definition::Expandable->new(T_CS('\dump'), undef,
+          Tokens()));
+      LaTeXML::Package::Pool::DumpFile($request, $destination);
+      $self->finishDigestion;
+      ProgressSpindown("Digesting $mode $name");
+      return; });
+}
+
 sub finishDigestion {
   my ($self)  = @_;
   my $state   = $$self{state};

@@ -811,6 +811,20 @@ sub augmentDelimiterProperties {
     } }
   return; }
 
+# Useful for afterConstruct of delimiter sizing macros (eg. \bigl)
+sub addDelimiterRole {
+  my ($document, $role) = @_;
+  my $current = $document->getNode;
+  my $delim   = $document->getLastChildElement($current) || $current;
+  my $delim_role = (($delim && ($delim->nodeType == XML_ELEMENT_NODE) && $delim->getAttribute('role')) || '<none>');
+  # if there is some delimiter-like role on the "delimiter", switch it, otherwise, leave it alone!
+  if ($delim && ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR|<none>)$/)) {
+    ## Maybe we shouldn't switch VERTBAR ?
+    ## The catch is that occasionally people use a single \Bigl (or whatever)
+    ## where they should have used a \Big
+    $document->setAttribute($delim, role => $role); }
+  return; }
+
 #======================================================================
 # Limit placement
 #----------------------------------------------------------------------

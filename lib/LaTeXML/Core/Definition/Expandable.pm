@@ -44,7 +44,6 @@ sub new {
     isProtected => $traits{protected} || $STATE->getPrefix('protected'),
     isOuter     => $traits{outer}     || $STATE->getPrefix('outer'),
     isLong      => $traits{long}      || $STATE->getPrefix('long'),
-    hasCCARG    => (($type ne 'CODE') && (grep { $$_[1] == CC_ARG; } $expansion->unlist) ? 1 : 0),
     %traits }, $class; }
 
 sub isExpandable {
@@ -91,6 +90,8 @@ sub invoke {
     $result = $expansion; }
   else {
     my @args = $parms->readArguments($gullet, $self);
+    if(! defined $$self{hasCCARG}){ # Lazy caching
+	$$self{hasCCARG} = ((grep { $$_[1] == CC_ARG; } $expansion->unlist) ? 1 : 0); }
     if ($$self{hasCCARG}) {    # Do we actually need to substitute the args in?
       my $r;                   # Make sure they are actually Tokens!
       @args = map { ($_ && ($r = ref $_)

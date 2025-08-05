@@ -203,7 +203,8 @@ sub six_match_keys {
   while (($t = $$tokens[0])
     && grep { scalar(@$tokens) && $t->equals($_) } @tomatch) {
     shift(@$tokens);
-    push(@matched, $t) unless $t->equals(T_SPACE); }
+    push(@matched, $t) unless $t->equals(T_SPACE);
+    push(@matched, T_SPACE) if $t->getCatcode == CC_CS; }
   return (@matched ? Tokens(@matched) : undef); }
 
 sub six_match_sign {
@@ -822,7 +823,7 @@ DefMacro('\ang OptionalKeyVals:SIX {}', sub {
     my $sep2       = six_get('arc-separator');
     my $mulop      = I_wrap({ role => 'MULOP', meaning => 'times' },
       ($sep1->unlist ? $sep1 : T_CS('\lx@InvisibleTimes')));
-    my $addop = I_wrap({ role => 'ADDOP', meaning => 'plus' },
+    my $addop      = I_wrap({ role => 'ADDOP', meaning => 'plus' },
       ($sep2->unlist ? $sep2 : T_CS('\lx@InvisiblePlus')));
     my $above = six_get('angle-symbol-over-decimal');
     my $save  = six_get('copy-decimal-marker');
@@ -832,26 +833,27 @@ DefMacro('\ang OptionalKeyVals:SIX {}', sub {
       $$degrees{decimal} = T_CS('\lx@arcdegreeoverdot'); }
     my $fdegrees = $degrees && six_format_number($degrees);
     if ($fdegrees && $fdegrees->unlist) {
-      push(@punctuated, $fdegrees);
-      push(@punctuated, $mulop, T_CS('\SIUnitSymbolDegree')) unless $above && $$degrees{decimal}; }
+      push(@punctuated,($above && $$degrees{decimal} ? $fdegrees
+                        : I_apply({},$mulop,$fdegrees, T_CS('\SIUnitSymbolDegree')))); }
     # Format minues, if any
     if ($above && $minutes && $$minutes{decimal}) {
       $$minutes{decimal} = T_CS('\lx@arcminuteoverdot'); }
     my $fminutes = $minutes && six_format_number($minutes);
     if ($minutes && $fminutes->unlist) {
-      push(@punctuated, $addop) if @punctuated;
-      push(@punctuated, $fminutes);
-      push(@punctuated, $mulop, T_CS('\SIUnitSymbolArcminute')) unless $above && $$minutes{decimal}; }
+      push(@punctuated,($above && $$minutes{decimal} ? $fminutes
+                        : I_apply({},$mulop,$fminutes, T_CS('\SIUnitSymbolArcminute')))); }
+
     # Format seconds, if any
     if ($above && $seconds && $$seconds{decimal}) {
       $$seconds{decimal} = T_CS('\lx@arcsecondoverdot'); }
     my $fseconds = $seconds && six_format_number($seconds);
     if ($seconds && $fseconds->unlist) {
-      push(@punctuated, $addop) if @punctuated;
-      push(@punctuated, $fseconds);
-      push(@punctuated, $mulop, T_CS('\SIUnitSymbolArcsecond')) unless $above && $$seconds{decimal}; }
+      push(@punctuated,($above && $$seconds{decimal} ? $fseconds
+                        : I_apply({},$mulop,$fseconds,T_CS('\SIUnitSymbolArcsecond')))); }
+    if(scalar(@punctuated) > 1){
+        @punctuated = (I_apply({},$addop,@punctuated)); }
     if ($sign) {    # Finally, prepend the sign
-      unshift(@punctuated, $sign); }
+        @punctuated = I_apply({},$sign,@punctuated); }
     AssignValue('SIX_copy-decimal-marker' => $save);
     my $string = join('',
       ToString($sign),

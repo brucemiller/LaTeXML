@@ -41,6 +41,7 @@ our $MORE_MAKERULES = '';
 record_revision();
 compile_MathGrammar();
 install_TeXStyles();
+dump_formats();
 extra_Tests();
 
 WriteMakefile(NAME => 'LaTeXML',
@@ -265,6 +266,34 @@ uninstall ::
 
 InstallTeXStyles
   }
+  return; }
+
+#======================================================================
+# Create dumps of plain.tex & latex.ltx
+# Ideally, would depend on /<system>/texmf-dist/.../plain.tex & latex.ltx
+# This is still experimental/optional, otherwise should add formats to pure_all target!
+sub dump_formats {
+  $$MORE_MACROS{INST_FMTDIR} = '$(INST_LIB)/LaTeXML/Engine';
+  $MORE_MAKERULES .= <<'DumpFormats';
+
+# Create dump file for format plain.tex, latex.ltx
+formats :: all
+
+formats :: $(INST_FMTDIR)/plain_dump.pool.ltxml
+
+$(INST_FMTDIR)/plain_dump.pool.ltxml:
+	$(PERLRUN) $(INST_SCRIPT)/latexml --init=plain.tex --dest=$(INST_FMTDIR)/plain_dump.pool.ltxml
+	$(NOECHO) $(PERLRUN) -e "exit(1) unless -e '$(INST_FMTDIR)/plain_dump.pool.ltxml'" \
+	|| (echo "LaTeXML FAILED to dump format for plain.tex" && exit 1)
+
+formats :: $(INST_FMTDIR)/latex_dump.pool.ltxml
+
+$(INST_FMTDIR)/latex_dump.pool.ltxml:
+	$(PERLRUN) $(INST_SCRIPT)/latexml --init=latex.ltx --dest=$(INST_FMTDIR)/latex_dump.pool.ltxml
+	$(NOECHO) $(PERLRUN) -e "exit(1) unless -e '$(INST_FMTDIR)/latex_dump.pool.ltxml'" \
+	|| (echo "LaTeXML FAILED to dump format for latex.ltx" && exit 1)
+
+DumpFormats
   return; }
 
 #======================================================================

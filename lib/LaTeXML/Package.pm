@@ -64,7 +64,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &convertLaTeXArgs),
 
   # Class, Package and File loading.
-  qw(&Input &InputContent &InputDefinitions &RequirePackage &LoadClass &LoadPool &FindFile
+  qw(&Input &InputContent &InputDefinitions &RequirePackage &LoadClass &LoadPool &LoadFormat &FindFile
     &DeclareOption &PassOptions &ProcessOptions &ExecuteOptions
     &AddToMacro &AtBeginDocument &AtEndDocument),
 
@@ -2579,9 +2579,11 @@ sub InputDefinitions {
       # These arguments mysteriously appear in \@onefilewith@ptions, MUCH later than \@pushfilename
       # We place the neaded data after \@pushfilename, but since we're Digesting in isolation,
       # they'll disappear if they aren't consumed by expl3.  Whew!
-      Digest(Tokens(T_CS('\@pushfilename'),
-          T_BEGIN, T_END, T_BEGIN, T_END, T_BEGIN, Explode($name), T_END))
-        if $pushpop;
+      if($pushpop){
+        Digest(Tokens(T_CS('\@pushfilename'),
+	  T_BEGIN, T_END, T_BEGIN, T_END, T_BEGIN, Explode($name), T_END)); }
+      else {
+        Digest(T_CS('\lx@pushfilename')); }
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
       if (my $passoptions = $options{withoptions} && $prevname
         && LookupValue('opt@' . $prevname . "." . $prevext)) {
@@ -2627,7 +2629,7 @@ sub InputDefinitions {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
       DefMacroI('\@currname', undef, Tokens(Explode($prevname))) if $prevname;
       DefMacroI('\@currext',  undef, Tokens(Explode($prevext)))  if $prevext;
-      Digest(T_CS('\@popfilename')) if $pushpop;
+      Digest(($pushpop ? T_CS('\@popfilename') : T_CS('\lx@popfilename')));
       resetOptions(); }    # And reset options afterwards, too.
     # Should not end up in horizontal mode (unless initially were!)
     $STATE->getStomach->leaveHorizontal_internal if $mode ne 'horizontal';
@@ -2713,16 +2715,35 @@ sub LoadClass {
       return; } } }
 
 sub LoadPool {
-  my ($pool) = @_;
+  my ($pool, %options) = @_;
   $pool = ToString($pool) if ref $pool;
   if (my $success = InputDefinitions($pool, type => 'pool', notex => 1, noerror => 1,
       installation_subdir => 'Engine')) {
     return $success; }
-  else {
+  elsif(! $options{noerror} ) {
     Error('missing_file', "$pool.pool.ltxml", $STATE->getStomach->getGullet,
       "Can't find binding for pool $pool (installation error)",
-      maybeReportSearchPaths());
-    return; } }
+       maybeReportSearchPaths()); }
+  return; }
+
+sub LoadFormat {
+  my ($format) = @_;
+  $format = ToString($format) if ref $format;
+  my $success;
+  if((! $ENV{LATEXML_NODUMP})
+     && FindFile($format . '_dump', type => 'pool', notex => 1,
+      installation_subdir => 'Engine')) { # dump of $format?
+    LoadPool($format . '_bootstrap', noerror => 1);
+    $success = LoadPool($format . '_dump');
+    LoadPool($format . '_constructs', noerror => 1); }
+  elsif(FindFile($format . '_base', type => 'pool', notex => 1,
+      installation_subdir => 'Engine')) { # but prepped for dump?
+    LoadPool($format . '_bootstrap', noerror => 1);
+    $success = LoadPool($format . '_base');
+    LoadPool($format . '_constructs', noerror => 1); }
+##  else {
+##    $success = LoadPool($format); }
+  return $success; }
 
 # Somewhat an act of desperation in contexts like arXiv
 # where we may have a bunch of random styles & classes that load other packages
