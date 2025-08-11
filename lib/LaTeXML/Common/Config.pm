@@ -220,6 +220,10 @@ sub read {
       $$opts{whatsin} = 'archive'; }
     elsif ($$opts{source} && ($$opts{source} =~ /\/$/)) {
       $$opts{whatsin} = 'directory'; } }
+  # If we are given a directory on input, add it to the searchpaths,
+  # as the actual tex source may be deeper within it (and will lose dir visibility)
+  if (($$opts{whatsin} || '') eq 'directory') {
+    push(@{ $$opts{paths} }, pathname_absolute($$opts{source})); }
   return $getOptions_success;
 }
 
@@ -420,7 +424,7 @@ sub _prepare_options {
       $$opts{whatsout} = 'archive';
     } else {
       $$opts{whatsout} = 'document';
-  } }
+    } }
   if ($$opts{format}) {
     # Lower-case for sanity's sake
     $$opts{format} = lc($$opts{format});
