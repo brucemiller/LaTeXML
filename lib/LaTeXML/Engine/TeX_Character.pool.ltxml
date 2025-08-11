@@ -26,7 +26,7 @@ use LaTeXML::Util::Unicode;
 #----------------------------------------------------------------------
 DefPrimitiveI('\ ', undef, sub {
   $_[0]->enterHorizontal;
-  Box(UTF(0xA0), undef, undef, T_CS('\ '),
+  Box(' ', undef, undef, T_CS('\ '),
     name => 'space', isSpace => 1, width => Dimension('0.5em')); });
 
 DefPrimitive('\char Number', sub {
