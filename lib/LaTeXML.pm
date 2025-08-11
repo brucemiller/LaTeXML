@@ -616,7 +616,7 @@ sub convert_post {
 
   # Finalize by arranging any manifests and packaging the output.
   # If our format requires a manifest, create one
-  if (($$opts{whatsout} =~ /^archive/) && ($format !~ /^x?html|xml/)) {
+  if (($$opts{whatsout} =~ /^archive/) && ($format !~ /^x?html|xml|jats/)) {
     require LaTeXML::Post::Manifest;
     my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, log => $$opts{log}, %PostOPS);
     $manifest_maker->process(@postdocs); }
