@@ -13,6 +13,7 @@
 default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 namespace nonamespace = ""
+namespace aria = "http://www.w3.org/ns/wai-aria"
 
 # Basic element classes:
 
@@ -53,7 +54,7 @@ Color.type = text
 
 ## Attributes in foreign namespaces
 Foreign.attributes =
-  attribute * - (nonamespace:* | xml:*) { text } *
+  attribute * - (nonamespace:* | xml:* | aria:*) { text } *
 # Oddly, we have to exclude xml, else we allow xml:id everywhere!
 # Alternatively, we have to exclude every specific xml attribute!!!
 
@@ -62,7 +63,8 @@ Common.attributes =
 
 #  ## provides for namespace declaration.
 #  attribute xmlns { text }?,
-
+  ## Allow ARIA attributes
+  ARIA.attributes,
   ## Allow foreign namespaced attributes
   Foreign.attributes,
 
@@ -360,3 +362,60 @@ Data.attributes =
 
   ## the suggested file name of the data
   attribute dataname { text }?
+
+## ARIA namespace attributes
+ARIA.attributes =
+  attribute aria:activedescendant { text }?,
+  attribute aria:atomic { text }?,
+  attribute aria:autocomplete { text }?,
+  attribute aria:braillelabel { text }?,
+  attribute aria:brailleroledescription { text }?,
+  attribute aria:busy { text }?,
+  attribute aria:checked { text }?,
+  attribute aria:colcount { text }?,
+  attribute aria:colindex { text }?,
+  attribute aria:colindextext { text }?,
+  attribute aria:colspan { text }?,
+  attribute aria:controls { text }?,
+  attribute aria:current { text }?,
+  attribute aria:describedby { text }?,
+  attribute aria:description { text }?,
+  attribute aria:details { text }?,
+  attribute aria:disabled { text }?,
+  attribute aria:dropeffectDeprecated { text }?,
+  attribute aria:errormessage { text }?,
+  attribute aria:expanded { text }?,
+  attribute aria:flowto { text }?,
+  attribute aria:grabbedDeprecated { text }?,
+  attribute aria:haspopup { text }?,
+  attribute aria:hidden { text }?,
+  attribute aria:invalid { text }?,
+  attribute aria:keyshortcuts { text }?,
+  attribute aria:label { text }?,
+  attribute aria:labelledby { text }?,
+  attribute aria:level { text }?,
+  attribute aria:live { text }?,
+  attribute aria:modal { text }?,
+  attribute aria:multiline { text }?,
+  attribute aria:multiselectable { text }?,
+  attribute aria:orientation { text }?,
+  attribute aria:owns { text }?,
+  attribute aria:placeholder { text }?,
+  attribute aria:posinset { text }?,
+  attribute aria:pressed { text }?,
+  attribute aria:readonly { text }?,
+  attribute aria:relevant { text }?,
+  attribute aria:required { text }?,
+  attribute aria:role { text }?,
+  attribute aria:roledescription { text }?,
+  attribute aria:rowcount { text }?,
+  attribute aria:rowindex { text }?,
+  attribute aria:rowindextext { text }?,
+  attribute aria:rowspan { text }?,
+  attribute aria:selected { text }?,
+  attribute aria:setsize { text }?,
+  attribute aria:sort { text }?,
+  attribute aria:valuemax { text }?,
+  attribute aria:valuemin { text }?,
+  attribute aria:valuenow { text }?,
+  attribute aria:valuetext { text }?

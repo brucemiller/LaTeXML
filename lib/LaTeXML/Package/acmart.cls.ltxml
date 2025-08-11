@@ -73,6 +73,17 @@ DefMacro('\subtitle{}',            '\@add@frontmatter{ltx:subtitle}{#1}');
 DefMacro('\keywords{}',            '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\terms{}',               '\@add@frontmatter{ltx:keywords}{#1}');
 
+# Accessible figure descriptions
+NewCounter('acmlabel');
+DefConstructor('\Description[]{}', '^^<ltx:note xml:id="#id" class="ltx_nodisplay">#1</ltx:note>',
+  properties => sub { ('width' => Dimension(0), 'height' => Dimension(0), RefStepCounter('acmlabel')) },
+  beforeConstruct => sub {
+    my ($document, $whatsit) = @_;
+    # TODO: Is there something useful to do with the short description in our schema?
+    my $figure = $document->getNode;
+    $document->setAttribute($figure, 'aria:labelledby', $whatsit->getProperty('id'));
+    return; });
+
 # Use multiple style, repeating \author, \orcid, \affiliation, \email as needed.
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
 DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');

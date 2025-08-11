@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="acmart" options="acmsmall"?>
+<?latexml package="subfigure"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:aria="http://www.w3.org/ns/wai-aria" class="ltx_leqno">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <resource src="ltx-amsart.css" type="text/css"/>
+  <figure aria:labelledby="acmlabel1" inlist="lof" labels="LABEL:fig:one" xml:id="S0.F1">
+    <tags>
+      <tag>Figure 1</tag>
+      <tag role="autoref">Figure 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Figure 1</tag>
+    </tags>
+    <figure class="ltx_figure_panel" xml:id="S0.F1.fig1">
+      <p>example-a</p>
+    </figure>
+    <figure class="ltx_figure_panel" xml:id="S0.F1.fig2">
+      <p>example-b</p>
+    </figure>
+    <toccaption><tag close=" ">1</tag>caption text</toccaption>
+    <caption><tag close=". ">Figure 1</tag>caption text<note class="ltx_nodisplay" xml:id="acmlabel1">Fly 1 and Fly 2 look identical</note></caption>
+  </figure>
+</document>

@@ -20,6 +20,7 @@
     xmlns:date  = "http://exslt.org/dates-and-times"
     xmlns:func  = "http://exslt.org/functions"
     xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:aria  = "http://www.w3.org/ns/wai-aria"
     xmlns:xhtml = "http://www.w3.org/1999/xhtml"
     extension-element-prefixes="func f exsl string date"
     exclude-result-prefixes = "ltx f func string">
@@ -403,6 +404,21 @@
   <xsl:template match="@*[(namespace-uri() != '') and (namespace-uri() != 'http://www.w3.org/XML/1998/namespace')]" mode='copy-attribute'>
     <xsl:variable name="prefix"><xsl:value-of select="substring-before(name(),':')"/></xsl:variable>
     <xsl:choose>
+      <xsl:when test="$USE_HTML5='true' and $prefix = 'aria'">
+        <!-- ARIA attributes are copied along into the HTML5 convention -->
+        <xsl:choose>
+          <xsl:when test="local-name() = 'role'">
+            <xsl:attribute name="role">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="{concat('aria-',local-name())}">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
       <xsl:when test="$USE_DATA_ATTRIBUTES != 'true'">
         <!-- TRY to use the same namespace prefix -->
         <xsl:call-template name="add_namespace">
