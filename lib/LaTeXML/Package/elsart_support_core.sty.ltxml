@@ -62,8 +62,9 @@ DefMacro('\runtitle{}',  Tokens());
 
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 
-DefMacro('\ead Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\ead Optional:email Semiverbatim',
+ '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{#2}}');
+DefConstructor('\@@@email{}{}', "^ <ltx:contact role='#1'>#2</ltx:contact>");
 
 DefMacro('\sep', '\unskip,\space');
 
@@ -140,13 +141,13 @@ DefMacro('\keyword', sub {
     (T_CS('\@keyword'), $arg->unlist, T_CS('\@keyword@cut')); });
 DefMacro('\endkeyword', '\@keyword@cut');
 DefMacro('\PACS',       '\@keyword@cut\@PACS');
-DefMacro('\MSC',        '\@keyword@cut\@MSC');
+DefMacro('\MSC []',     '\@keyword@cut\@MSC{#1}');
 DefMacro('\JEL',        '\@keyword@cut\@JEL');
 DefMacro('\UK',         '\@keyword@cut\@UK');
 
 DefMacro('\@keyword XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=keywords]{#1}');
 DefMacro('\@PACS    XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=PACS]{#1}');
-DefMacro('\@MSC     XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=MSC]{#1}');
+DefMacro('\@MSC {} XUntil:\@keyword@cut',  '\@add@frontmatter{ltx:classification}[scheme={#1 MSC}]{#2}');
 DefMacro('\@JEL     XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=JEL]{#1}');
 DefMacro('\@UK      XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=UK]{#1}');
 DefConstructor('\@keyword@cut', '');
