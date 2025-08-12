@@ -1661,7 +1661,8 @@ sub setNodeBox {
     # Could get string for $box when copying nodes; should already be internned
     Warn('internal', 'nonbox', $self,
       "setNodeBox recording unknown source box: $box"); }
-  return $node->setAttribute(_box => $boxid); }
+  $node->setAttribute(_box => $boxid) if $node && ($node->nodeType == XML_ELEMENT_NODE);
+  return $boxid; }
 
 sub getNodeBox {
   my ($self, $node) = @_;
