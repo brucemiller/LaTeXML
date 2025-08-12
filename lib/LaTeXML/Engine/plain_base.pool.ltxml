@@ -506,7 +506,7 @@ DefPrimitiveI('\ss', undef, UTF(0xDF));     # LATIN SMALL LETTER SHARP S
 #----------------------------------------------------------------------
 
 DefAccent('\`',           "\x{0300}", UTF(0x60));  # COMBINING GRAVE ACCENT & GRAVE ACCENT
-DefAccent("\\'",          "\x{0301}", UTF(0xB4));  # COMBINING ACUTE ACCENT & ACUTE ACCENT
+#DefAccent("\\'",          "\x{0301}", UTF(0xB4));  # COMBINING ACUTE ACCENT & ACUTE ACCENT
 DefAccent('\^',           "\x{0302}", "\x{02C6}"); # COMBINING CIRCUMFLEX ACCENT & CIRCUMFLEX ACCENT
 DefAccent('\"',           "\x{0308}", UTF(0xA8));  # COMBINING DIAERESIS & DIAERESIS
 DefAccent('\~',           "\x{0303}", "\x{02DC}"); # COMBINING TILDE

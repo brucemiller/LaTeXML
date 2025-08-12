@@ -21,6 +21,8 @@ DefPrimitiveI('\L', undef, "\x{0141}");    # LATIN CAPITAL LETTER L WITH STROKE
 DefPrimitiveI('\l', undef, "\x{0142}");    # LATIN SMALL LETTER L WITH STROKE
 
 # Corrections to accents
+# Somehow, the dumped version works weirdly(?)
+DefAccent("\\'",          "\x{0301}", UTF(0xB4));  # COMBINING ACUTE ACCENT & ACUTE ACCENT
 # plain defines as complicated ooalign...
 DefAccent('\c',             "\x{0327}", UTF(0xB8), below => 1);   # COMBINING CEDILLA & CEDILLA
 DefAccent('\@text@daccent', "\x{0323}", '.',       below => 1);   # COMBINING DOT BELOW & DOT (?)
