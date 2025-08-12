@@ -854,10 +854,14 @@ sub RefStepID {
   my ($type) = @_;
   my $ctr    = LookupMapping('counter_for_type', $type) || $type;
   my $unctr  = "UN$ctr";
+  my $unctrcmd = '\c@' . $unctr;
+  my $defn;
+  if (! ($defn = $STATE->lookupDefinition(T_CS($unctrcmd))) || !$defn->isRegister) {
+    NewCounter($ctr); }         # Avoid fatals...
   StepCounter($unctr);
   maybePreemptRefnum($ctr, 1);
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef,
-    Tokens(T_OTHER('x'), Explode(LookupValue('\c@' . $unctr)->valueOf)),
+    Tokens(T_OTHER('x'), Explode(LookupValue($unctrcmd)->valueOf)),
     scope => 'global');
   DefMacroI(T_CS('\@currentID'), undef, T_CS("\\the$ctr\@ID"));
   my $id = CleanID(ToString(DigestLiteral(T_CS("\\the$ctr\@ID"))));
