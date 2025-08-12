@@ -116,7 +116,7 @@ DefMacro('\tablerefs{}', sub {
       TokenizeInternal('\let\email\@@email')->unlist()); });
 DefMacro('\@tableref{}', '\par
  \vspace*{3ex}%
- {\parbox{\textwidth}{\hskip1em\rmfamily References. --- #1}\par}}');
+ {\parbox{\textwidth}{\hskip1em\rmfamily References. --- #1}\par}');
 DefMacro('\tablecomments{}', sub {
     AddToMacro(T_CS('\tblnote@list'),
       Invocation(T_CS('\@tablecom'), $_[1])->unlist());
