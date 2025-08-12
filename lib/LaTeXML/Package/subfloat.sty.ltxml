@@ -29,6 +29,9 @@ DefMacro('\thesubfloattable',  '\themaintable\alph{subfloattable}');
 DefMacroI('\subfloatfigurename', undef, 'Figure');
 DefMacroI('\subfloattablename',  undef, 'Table');
 
+Let('\ext@subfloatfigure', '\ext@figure');
+Let('\ext@subfloattable',  '\ext@table');
+
 #DefMacro('\thesubfigure', '\alph{subfigure}');
 #DefMacro('\thesubtable',  '\alph{subtable}');
 
@@ -42,7 +45,7 @@ DefEnvironment('{subfigures}',
   properties   => sub { RefStepCounter('figure'); },    # No caption (?)
   beforeDigest => sub {
     Let('\themainfigure', '\thefigure');
-    beforeFigure('figure');
+    beforeFloat('figure');
     # redefine figure!
     DefEnvironment('{figure}[]',
       "<ltx:figure xml:id='#id' ?#1(placement='#1')>"    # NO inlist for subfigures!(?)
@@ -72,7 +75,7 @@ DefEnvironment('{subtables}',
   properties   => sub { RefStepCounter('table'); },    # No caption (?)
   beforeDigest => sub {
     Let('\themaintable', '\thetable');
-    beforeFigure('table');
+    beforeFloat('table');
     # redefine table!
     DefEnvironment('{table}[]',
       "<ltx:table xml:id='#id' ?#1(placement='#1')>"    # NO inlist for subtables! (?)
