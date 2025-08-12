@@ -907,7 +907,8 @@ DefPrimitiveI('\@unknownoptionerror', undef, sub {
 DefPrimitive('\ExecuteOptions{}', sub {
     my ($gullet, $options) = @_;
     my @options = TrimmedCommaList(Expand($options));
-    ExecuteOptions(@options) if @options; });
+    ExecuteOptions(@options) if @options;
+    return; });
 
 DefPrimitive('\ProcessOptions OptionalMatch:*', sub {
     my ($stomach, $star) = @_;
