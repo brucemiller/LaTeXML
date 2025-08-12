@@ -493,7 +493,7 @@ DefConstructor('\aas@@fstack Undigested {}',
     . "<ltx:XMWrap>#2</ltx:XMWrap>"
     . "</ltx:XMApp>",
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
-  mode       => 'math', font => { shape => 'upright' }, bounded => 1, reversion => '#1');
+  font => { shape => 'upright' }, bounded => 1, reversion => '#1', sizer=>'#2');
 DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
 
 DefMacro('\fd',    '\ensuremath{\@fd}');
