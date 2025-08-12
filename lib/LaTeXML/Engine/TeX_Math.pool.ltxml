@@ -794,7 +794,8 @@ sub augmentDelimiterProperties {
   my $delim   = $document->getLastChildElement($current) || $current;
   my $char    = $delim && $delim->textContent;
   $document->setNodeBox($delim, $whatsit);
-  if (! $whatsit->getProperty('hint')) {
+  if (! $whatsit->getProperty('hint')
+      && $delim && ($delim->nodeType == XML_ELEMENT_NODE)) {
     $delim->setAttribute(stretchy => 'true') if $stretchy;
     if (my $entry = $DELIMITER_MAP{$char}) {
       my $newrole = $role && $$entry{ ($role eq 'OPEN' ? 'lrole' : 'rrole') } || $role;
