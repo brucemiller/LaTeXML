@@ -2229,8 +2229,10 @@ DefConditionalI('\if@in@firstcolumn', undef, sub {
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
-'\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\lx@begin@inline@math \displaystyle #1\\lx@end@inline@math\mbox{}}'
-    . '\else\rlap{\lx@begin@inline@math\displaystyle #1\\lx@end@inline@math}\fi');
+         '\ifx&#1&\else'        # Ignore empty!
+         .'\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\lx@begin@inline@math \displaystyle #1\\lx@end@inline@math\mbox{}}'
+    . '\else\rlap{\lx@begin@inline@math\displaystyle #1\\lx@end@inline@math}\fi\fi');
+
 # \intertext (in amsmath)
 
 Let('\displ@y', '\displaystyle');    # good enough?
