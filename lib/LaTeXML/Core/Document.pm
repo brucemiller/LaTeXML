@@ -1653,15 +1653,22 @@ sub collapseXMDual {
 # $box should be a Box/List/Whatsit object; else a previously recorded string
 sub setNodeBox {
   my ($self, $node, $box) = @_;
-  return unless $box;
-  my $boxid = "$box";    # Effectively the address
-  if (ref $box) {
-    $$self{node_boxes}{$boxid} = $box; }
-  elsif (!$$self{node_boxes}{$box}) {
+  return unless $box && $node && ($node->nodeType == XML_ELEMENT_NODE);
+  my $boxid     = "$box";    # Effectively the address
+  my $prevboxid = $node->getAttribute('_box');
+  if (!(ref $box) && !$$self{node_boxes}{$box}) { # $box not a ref, nor recorded Box?
     # Could get string for $box when copying nodes; should already be internned
     Warn('internal', 'nonbox', $self,
-      "setNodeBox recording unknown source box: $box"); }
-  $node->setAttribute(_box => $boxid) if $node && ($node->nodeType == XML_ELEMENT_NODE);
+      "setNodeBox recording unknown source box: $box");
+    return; }
+  if (ref $box) {               # Record the box.
+    $$self{node_boxes}{$boxid} = $box; }
+  if($prevboxid){               # Cleanup previous box (if any)
+    $$self{node_boxes_refs}{$prevboxid}--;
+    if(($prevboxid ne $boxid) && ! $$self{node_boxes_refs}{$prevboxid}){
+      delete $$self{node_boxes}{$prevboxid}; } }
+  $$self{node_boxes_refs}{$boxid}++;
+  $node->setAttribute(_box => $boxid);
   return $boxid; }
 
 sub getNodeBox {
