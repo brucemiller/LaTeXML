@@ -46,7 +46,14 @@ RequireResource('ltx-report.css');
 # for derived classes with multiple lines, map this to undef and add ltx_authors_multiline
 AddToMacro(T_CS('\maketitle'), T_CS('\ltx@authors@oneline'));
 
-DefMacro('\@ptsize', '0');    # should depend on options...
+DefMacro('\@ptsize',    '0');    # should depend on options...
+DefMacro('\@pnumwidth', '1.55em');
+DefMacro('\@tocrmarg',  '2.55em');
+DefMacro('\@dotsep',    '4.5');
+DefRegister('\abovecaptionskip' => Glue(0));
+DefRegister('\belowcaptionskip' => Glue(0));
+DefRegister('\bibindent'        => Dimension(0));
+
 RawTeX(<<'EOTeX');
 \newif\if@restonecol
 \newif\if@titlepage

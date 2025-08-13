@@ -42,6 +42,8 @@ LoadPool('math_common');
 DefAccent('\k', "\x{0328}", "\x{02DB}");
 DefAccent('\r', "\x{030A}", "\x{02DA}");    # COMBINING RING ABOVE & non-combining
 
+NewCounter('page');
+SetCounter(page => Number(1));
 Let('\newpage',      '\eject');
 Let('\nobreakspace', '\lx@nobreakspace');
 #======================================================================
@@ -109,6 +111,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
 #
 # EXCEPTION: of course there is an exception. Older arXiv articles use \documentstyle{aipproc}
 # to load a different aipproc.sty than the later evolved aipproc.cls. And of course we need to support that.
+    compatDefinitions();
     if (FindFile($class, type => 'sty', notex => !LookupValue('INCLUDE_CLASSES'))) {
       InputDefinitions('article', type => 'cls', noerror => 1,
         handleoptions => 1, options => $options);
@@ -124,6 +127,12 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
       RequirePackage($class, options => $options, as_class => 1); }
     $stomach->leaveHorizontal_internal;
     return; });
+
+# And some extra definitions from LaTeX 2.09, if we're trying to be compatible
+sub compatDefinitions {
+  DefRegister('\@maxsep'         => Dimension(0));
+  DefRegister('\@dblmaxsep'      => Dimension(0));
+  return; }
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {
     my $name       = ToString(Expand(T_CS('\@currname')));
