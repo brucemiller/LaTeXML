@@ -277,7 +277,7 @@ sub dump_formats {
   $MORE_MAKERULES .= <<'DumpFormats';
 
 # Create dump file for format plain.tex, latex.ltx
-formats :: all
+formats :: all formats-clean
 
 formats :: $(INST_FMTDIR)/plain_dump.pool.ltxml
 
@@ -292,6 +292,11 @@ $(INST_FMTDIR)/latex_dump.pool.ltxml:
 	$(PERLRUN) $(INST_SCRIPT)/latexml --init=latex.ltx --dest=$(INST_FMTDIR)/latex_dump.pool.ltxml
 	$(NOECHO) $(PERLRUN) -e "exit(1) unless -e '$(INST_FMTDIR)/latex_dump.pool.ltxml'" \
 	|| (echo "LaTeXML FAILED to dump format for latex.ltx" && exit 1)
+
+formats-clean ::
+	$(RM_F) \
+	$(INST_FMTDIR)/plain_dump.pool.ltxml \
+	$(INST_FMTDIR)/latex_dump.pool.ltxml
 
 DumpFormats
   return; }
