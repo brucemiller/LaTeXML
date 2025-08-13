@@ -276,7 +276,7 @@ sub graphicS_options {
 sub graphicX_options {
   my ($starred, $kv) = @_;
   my @options = ();
-  my @kv      = $kv->getPairs;
+  my @kv      = ($kv ? $kv->getPairs : ());
   push(@options, 'clip=true') if $starred;
   #  my $keepaspect;
   my ($saw_w, $saw_h);
