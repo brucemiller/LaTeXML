@@ -2238,7 +2238,7 @@ DefConditionalI('\if@in@firstcolumn', undef, sub {
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
-         '\ifx&#1&\else'        # Ignore empty!
+         '\ifx.#1.\else'        # Ignore empty!
          .'\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\lx@begin@inline@math \displaystyle #1\\lx@end@inline@math\mbox{}}'
     . '\else\rlap{\lx@begin@inline@math\displaystyle #1\\lx@end@inline@math}\fi\fi');
 
@@ -4666,9 +4666,10 @@ DefMacroI('\width',       undef, '0pt');
 
 DefConstructor('\mbox {}',
   "<ltx:text _noautoclose='1'>#1</ltx:text>",
-  mode   => 'restricted_horizontal',
-  sizer  => '#1',
-  robust => 1);
+  mode    => 'restricted_horizontal',
+  bounded => 1,  beforeDigest => sub { Let(T_MATH,T_CS('\lx@dollar@default')); },
+  sizer   => '#1',
+  robust  => 1);
 
 our %makebox_alignment = (l => 'left', r => 'right', s => 'justified');
 DefMacro('\makebox', '\@ifnextchar(\pic@makebox\@makebox', robust => 1);
