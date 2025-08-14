@@ -18,7 +18,7 @@ use LaTeXML::Package;
 #======================================================================
 # Leverage the BibTeX implementation
 #======================================================================
-RequirePackage('BibTeX', type => 'pool');
+LoadPool('BibTeX');
 
 # \bib{key}{type}{keyval pairs}
 
