@@ -46,8 +46,11 @@ DefMacro('\endmathletters', '\lx@equationgroup@subnumbering@end');
 #======================================================================
 # Apparently, you can use single $ within equations to switch back to text
 
-DefMacro('\lx@dollar@in@oldrevtex', '\bgroup\hbox\bgroup\let$\@eegroup');
-DefMacro('\@eegroup',               '\egroup\egroup');
+RawTeX(<<'EoTeX');
+{ \catcode`\$=13\gdef\revtex@hack@end@dollar{\catcode`\$=13\let$\egroup} }
+EoTeX
+DefMacro('\lx@dollar@in@oldrevtex',
+ '\@ifnext{$}{\@gobble}{\hbox\bgroup\revtex@hack@end@dollar}');
 DefEnvironment('{equation}',
   "<ltx:equation xml:id='#id'>"
     . "#tags"
