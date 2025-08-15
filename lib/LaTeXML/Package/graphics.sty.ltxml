@@ -17,6 +17,7 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::Image;
+use URI::file;
 
 #======================================================================
 # (See  LaTeXML::Post::Graphics for suggested postprocessing)
@@ -297,6 +298,7 @@ DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim',
     my ($stomach, $starred, $op1, $op2, $graphic) = @_;
     my $options = graphicS_options($starred, $op1, $op2);
     my ($path, @candidates) = image_candidates(ToString($graphic));
+    @candidates = map { URI::file->new($_) } @candidates;
     (graphic => $path,
       candidates => join(',', @candidates),
       options    => $options); },
