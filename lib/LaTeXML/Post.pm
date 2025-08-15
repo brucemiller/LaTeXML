@@ -907,6 +907,14 @@ sub getSiteDirectory {
   my ($self) = @_;
   return $$self{siteDirectory}; }
 
+sub findGraphicsPaths {
+  my ($self) = @_;
+  my @paths = ();
+  foreach my $pi ($self->findnodes('.//processing-instruction("latexml")')) {
+    if ($pi->textContent =~ /^\s*graphicspath\s*=\s*([\"\'])(.*?)\1\s*$/) {
+      push(@paths, $2); } }
+  return @paths; }
+
 # Given an absolute pathname in the document destination directory,
 # return the corresponding pathname relative to the site directory (they maybe different!).
 sub siteRelativePathname {
