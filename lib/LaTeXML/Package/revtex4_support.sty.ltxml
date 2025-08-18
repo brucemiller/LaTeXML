@@ -163,7 +163,9 @@ DefConstructor('\text{}', "<ltx:text _noautoclose='true'>#1</ltx:text>",
 
 # RevTeX3 (obsolete in RevTeX4)
 DefConstructor('\bm{}',   '#1', bounded => 1, requireMath => 1, font => { forcebold => 1 });
-DefConstructor('\bbox{}', '#1', bounded => 1, requireMath => 1, font => { forcebold => 1 });
+DefConstructor('\bbox{}', '#1',
+  bounded => 1, requireMath => 1, font => { forcebold => 1 },
+  locked => 1);
 DefConstructor('\pmb{}', '#1', bounded => 1, requireMath => 1,
   font => { forcebold => 1, family => 'blackboard',
     series => 'medium', shape => 'upright' });
