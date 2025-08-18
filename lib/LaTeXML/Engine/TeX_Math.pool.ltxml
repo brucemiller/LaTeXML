@@ -355,6 +355,7 @@ sub scriptHandler {
   my ($stomach, $op) = @_;
   my $gullet = $stomach->getGullet;
   $gullet->skipSpaces;
+  my $mode     = LookupValue('MODE');
   my $font     = LookupValue('font');
   my $style    = $font->getMathstyle;
   my @putback  = ();
@@ -410,7 +411,7 @@ sub scriptHandler {
     unshift(@stuff,
       LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
         locator     => $gullet->getLocator,
-        font        => $script->getFont, isMath => 1,
+        font        => $script->getFont, isMath => 1, mode => $mode,
         level       => $stomach->getBoxingLevel,
         scriptlevel => $stomach->getScriptLevel,
         base        => $base,                      # for sizing/positioning
