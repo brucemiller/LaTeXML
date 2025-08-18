@@ -72,7 +72,7 @@ DefRegister('\eTeXversion' => Number($ETEX_VERSION[0]));
 # \currentgrouplevel
 DefRegister('\currentgrouplevel', Number(0),
   readonly => 1,
-  getter   => sub { $STATE->getFrameDepth; });
+  getter   => sub { Number($STATE->getFrameDepth); });
 
 # \currentgrouptype returns group types from 0..16 ; but what IS a "group type"?
 DefRegister('\currentgrouptype', Number(0), readonly => 1);
