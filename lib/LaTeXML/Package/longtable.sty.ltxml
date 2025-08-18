@@ -55,12 +55,12 @@ DefConstructor('\@@longtable [] Undigested DigestedBody',
       my ($toccaption, $caption) = @$captions;
       $whatsit->setProperty(footcaption    => $caption)    if $caption;
       $whatsit->setProperty(foottoccaption => $toccaption) if $toccaption; }
-    my $alignment = LookupValue('Alignment');
-    # Reinsert the head and foot into the alignment.
-    if (my $head = LookupValue('LONGTABLE_HEAD')) {
-      $alignment->prependRows(@{$head}); }
-    if (my $foot = LookupValue('LONGTABLE_FOOT')) {
-      $alignment->appendRows(@{$foot}); }
+    if (my $alignment = LookupValue('Alignment')) {
+      # Reinsert the head and foot into the alignment.
+      if (my $head = LookupValue('LONGTABLE_HEAD')) {
+        $alignment->prependRows(@{$head}); }
+      if (my $foot = LookupValue('LONGTABLE_FOOT')) {
+        $alignment->appendRows(@{$foot}); } }
     return; },
   mode => 'restricted_horizontal');
 
