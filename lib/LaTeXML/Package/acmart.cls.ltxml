@@ -80,7 +80,7 @@ DefConstructor('\Description[]{}', '^^<ltx:note xml:id="#id" class="ltx_nodispla
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     # TODO: Is there something useful to do with the short description in our schema?
-    my $figure = $document->getNode;
+    my $figure = $document->getElement;
     $document->setAttribute($figure, 'aria:labelledby', $whatsit->getProperty('id'));
     return; });
 
