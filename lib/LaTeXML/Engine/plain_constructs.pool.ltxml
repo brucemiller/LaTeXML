@@ -250,22 +250,22 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
       $row->insertAfter($row->lastChild, $row->firstChild);    # Move to 2nd pos!
     }
     my @cols = element_nodes($rows[1]);
-    my $col1 = $cols[1];
-    my $coln = $cols[-1];
     my $n    = scalar(@rows) - 1;
-    $col1->setAttribute(rowspan => $n);
-    $coln->setAttribute(rowspan => $n);
     # Pretend ('s row has height of row 1, to avoid shifting baseline.
     # but shift the centerline to the middle of rows 2--n
     # Set the (,) in mpadded stretchy w/ space as strut.
-    $document->appendTree($col1,
-      ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
-        ['ltx:XMTok', { role   => 'OPEN', stretchy => 'true', font => $pfont }, '('],
-        ['ltx:XMTok', { height => $half,  depth    => $half,  font => $pfont }, ' ']]);
-    $document->appendTree($coln,
-      ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
-        ['ltx:XMTok', { role   => 'CLOSE', stretchy => 'true', font => $pfont }, ')'],
-        ['ltx:XMTok', { height => $half,   depth    => $half,  font => $pfont }, ' ']]);
+    if (my $col1 = $cols[1]) {
+      $col1->setAttribute(rowspan => $n);
+      $document->appendTree($col1,
+        ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
+          ['ltx:XMTok', { role   => 'OPEN', stretchy => 'true', font => $pfont }, '('],
+          ['ltx:XMTok', { height => $half,  depth    => $half,  font => $pfont }, ' ']]); }
+    if (my $coln = $cols[-1]) {
+      $coln->setAttribute(rowspan => $n);
+      $document->appendTree($coln,
+        ['ltx:XMWrap', { height=>Dimension($h1), yoffset=>$shift},
+          ['ltx:XMTok', { role   => 'CLOSE', stretchy => 'true', font => $pfont }, ')'],
+          ['ltx:XMTok', { height => $half,   depth    => $half,  font => $pfont }, ' ']]); }
     return; },
   reversion => '#1');
 
