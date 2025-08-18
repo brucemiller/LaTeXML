@@ -43,7 +43,10 @@ DefParameterType('FontDef', sub {
       $token = LookupValue('current_FontDef') || T_CS('\tenrm'); }
     if (my $defn = $token && $STATE->lookupDefinition($token)) {
       return $defn->isFontDef; }
-    return; });
+    return; },
+  reversion => sub {
+    my ($fontinfo) = $_[0];
+    return ($fontinfo && $$fontinfo{cs} || ()); });
 
 # Nominal font parameters; A mashup of text/math parameters.
 # We'll want to get proper ones from font files!
@@ -95,6 +98,7 @@ DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileNa
     $gullet->skipSpaces;
     my $fontinfo = LookupValue($key);
     if (!$fontinfo) {    # If we haven't already defined & stored this font
+      $props{cs}         = $cs;
       $props{key}        = $key;
       $props{skewchar}   = LookupRegister('\defaultskewchar');
       $props{hyphenchar} = LookupRegister('\defaulthyphenchar');
