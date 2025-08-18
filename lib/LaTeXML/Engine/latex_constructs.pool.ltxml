@@ -1307,6 +1307,10 @@ DefConstructorI('\@add@flushright', undef,
 DefConstructorI('\@add@flushleft', undef,
   sub { applyAligningContext($_[0], 'left', 'ltx_align_left'); });
 
+# Redefine these so they work both as environments, and as single commands
+Let('\flushright', '\raggedleft');
+Let('\flushleft',  '\raggedright');
+
 #======================================================================-
 # C.6.1 Quotations and Verse
 #======================================================================-
@@ -2778,6 +2782,7 @@ RawTeX(<<'EoTeX');
 \DeclareSymbolFont{letters}     {OML}{cmm} {m}{it}
 \DeclareSymbolFont{symbols}     {OMS}{cmsy}{m}{n}
 \DeclareSymbolFont{largesymbols}{OMX}{cmex}{m}{n}
+\def\glb@settings{}%
 EoTeX
 
 # not sure what these should be, related to \nullfont...
@@ -4778,7 +4783,7 @@ DefMacroI('\@parboxrestore', undef, Tokens());
 
 DefConditional('\if@minipage');
 DefMacro('\@setminipage', '');
-DefEnvironment('{minipage}[][][]{Dimension}', sub {
+DefEnvironment('{minipage}[] OptionalUndigested [] {Dimension}', sub {
     my ($document, $attachment, $b, $c, $width, %props) = @_;
     my $vattach = translateAttachment($attachment);
     insertBlock($document, $props{body},
@@ -5542,7 +5547,7 @@ sub latexChangeCase {
         elsif ($tok->equals(T_CS('\protect'))) {
           my $next = $gullet->readToken(0);    # DONT expand this (yet)
           ## but check if we're supposed to exclude arg from case change
-          my $string = $next->getString;
+          my $string = $next && $next->getString;
           if ($STATE->lookupMapping('text_case_exclude', $string)) {
             my $opt = $gullet->readOptional;
             my $arg = $gullet->readArg;
