@@ -130,11 +130,11 @@ DefConstructorI('\lx@begin@display@math', undef,
     . "</ltx:Math>"
     . "</ltx:equation>",
   reversion    => Tokens(T_MATH, T_MATH),
-  beforeDigest => sub { 
+  beforeDigest => sub {
     $_[0]->enterHorizontal;
     $_[0]->beginMode('display_math'); },
-  properties   => {mode=>'display_math'},
-  captureBody  => 1);
+  properties  => { mode => 'display_math' },
+  captureBody => 1);
 DefConstructorI('\lx@end@display@math', undef, "",
   reversion    => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->endMode('display_math'); });
@@ -149,8 +149,8 @@ DefConstructorI('\lx@begin@inline@math', undef,
   beforeDigest => sub {
     $_[0]->enterHorizontal;
     $_[0]->beginMode('inline_math'); },
-  properties   => {mode=>'inline_math'},
-  captureBody  => 1);
+  properties  => { mode => 'inline_math' },
+  captureBody => 1);
 DefConstructorI('\\lx@end@inline@math', undef, "",
   reversion    => Tokens(T_MATH),
   beforeDigest => sub { $_[0]->endMode('inline_math'); });
@@ -300,7 +300,7 @@ sub cleanup_XMText {
             $document->replaceNode($m, map { $_->childNodes } $m->childNodes); }
           else {                                           # Otherwise, wrap whatever it is in an XMText
             $document->wrapNodes('ltx:XMText', $m); }
-    } } }
+        } } }
     # And now we don't need the XMText any more.
     foreach my $attr ($textnode->attributes) {    # Copy the child's attributes (should Merge!!)
       $table->setAttribute($attr->nodeName => $attr->getValue); }
@@ -423,7 +423,7 @@ sub scriptHandler {
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
     Error('unexpected', $c, $stomach, "Script $c can only appear in math mode");
     return Box($c, undef, undef, (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
-} }
+  } }
 
 DefPrimitiveI(T_SUPER, undef, sub { scriptHandler($_[0], 'SUPERSCRIPT'); });
 DefPrimitiveI(T_SUB,   undef, sub { scriptHandler($_[0], 'SUBSCRIPT'); });
@@ -458,10 +458,11 @@ sub revertScript {
 #  * subscript needs to shift down if superscript (rule 18e)
 #  * should italic correction be omitted in deep subscripts?
 sub scriptSizer {
+  no warnings 'recursion';
   my ($script, $base, $prev, $op, $pos) = @_;
-  my $bfont  = $base   && $base->getFont;
-  my $style  = $base   && $bfont->getMathstyle || 'text';
-  my $syfont = 'cmsy'.($bfont && $bfont->getSize || 10);
+  my $bfont  = $base && $base->getFont;
+  my $style  = $base && $bfont->getMathstyle || 'text';
+  my $syfont = 'cmsy' . ($bfont && $bfont->getSize || 10);
   my ($ws, $hs, $ds) = map { $_->valueOf } $script->getSize;
   my ($wb, $hb, $db) = map { $_->valueOf } ($base ? $base->getSize
     : LookupValue('font')->getNominalSize);
@@ -476,18 +477,18 @@ sub scriptSizer {
     else {
       $d = $db + $hs + $ds; } }
   else {
-    my $wp = ($prev && $prev->getWidth) || 0;    # as if max of width & prev script's width
-    my $xheight  = getFontDimen($syfont, 5);
-    my $space    = LookupRegister('\scriptspace')->valueOf;
+    my $wp      = ($prev && $prev->getWidth) || 0;           # as if max of width & prev script's width
+    my $xheight = getFontDimen($syfont, 5);
+    my $space   = LookupRegister('\scriptspace')->valueOf;
     $ws += $space;
     $w = max(0, $ws - $wp);
     if ($op eq 'SUPERSCRIPT') {
-      my $supshift = getFontDimen($syfont, # displaystyle:13, cramped:15, else 14;
+      my $supshift = getFontDimen($syfont,                   # displaystyle:13, cramped:15, else 14;
         ($style eq 'display' ? 13 : ($style eq 'scriptscript' ? 15 : 14)));
-      $h = max($hb, $hs + max($ds + $xheight/4, $supshift)); }
+      $h = max($hb, $hs + max($ds + $xheight / 4, $supshift)); }
     else {
       my $subshift = getFontDimen($syfont, 16);
-      $d = max($db, $ds + max($hs - $xheight*0.8, $subshift)); } }
+      $d = max($db, $ds + max($hs - $xheight * 0.8, $subshift)); } }
   $w = Dimension($w); $h = Dimension($h); $d = Dimension($d);
   return ($w, $h, $d); }
 
@@ -543,7 +544,7 @@ DefRewrite(xpath => 'descendant::ltx:Math[child::ltx:XMath[child::ltx:XMApp[' .
             elsif ($role eq 'FLOATSUBSCRIPT') {
               $document->insertElement('ltx:sub', $text);
               return; }
-    } } } }
+          } } } }
     # should never happen, but just in case:
     Info("rewrite", "footnotemark", "Failed to find floating node in: " . $math->toString(1));
     $document->getNode->appendChild($math);
@@ -706,24 +707,24 @@ DefConstructor('\mathinner Digested', sub { adjustMathRole('ATOM',  @_); });
 # but we don't actually restrict to those.
 # Note that \big expands into \left, unwrapping {} once; only the first atom gets big.
 DefParameterType('TeXDelimiter', sub {
-  no warnings 'recursion';
-  my ($gullet) = @_;
-  $gullet->skipFiller;          # Skip spaces and \relax
-  my $token = $gullet->readXToken(0);
-  if ($token && $token->getCatcode == CC_BEGIN) { # Unwrap once; re-read token
-    $gullet->unread($gullet->readBalanced(1));
-    $gullet->skipFiller;
-    $token = $gullet->readXToken(0); }
-  # Replace "." by special hint.
-  $token = T_CS('\lx@delimiterdot') if (! defined $token) || (ToString($token) eq '.');
-  my ($delim) = $STATE->getStomach->invokeToken($token);
-  return $delim; },
-  undigested => 1,                         # since _already_ digested.
-  reversion  => sub { Revert($_[0]); });   # shouldn't need braces
+    no warnings 'recursion';
+    my ($gullet) = @_;
+    $gullet->skipFiller;                               # Skip spaces and \relax
+    my $token = $gullet->readXToken(0);
+    if ($token && $token->getCatcode == CC_BEGIN) {    # Unwrap once; re-read token
+      $gullet->unread($gullet->readBalanced(1));
+      $gullet->skipFiller;
+      $token = $gullet->readXToken(0); }
+    # Replace "." by special hint.
+    $token = T_CS('\lx@delimiterdot') if (!defined $token) || (ToString($token) eq '.');
+    my ($delim) = $STATE->getStomach->invokeToken($token);
+    return $delim; },
+  undigested => 1,                          # since _already_ digested.
+  reversion  => sub { Revert($_[0]); });    # shouldn't need braces
 
 DefConstructor('\lx@delimiterdot', "<ltx:XMHint/>",
-  alias => '.',
-  properties => {hint => 1});
+  alias      => '.',
+  properties => { hint => 1 });
 
 # This duplicates in slightly different way what DefMath has put together.
 # [duplication seems like a bad idea!]
@@ -795,12 +796,12 @@ sub augmentDelimiterProperties {
   my $delim   = $document->getLastChildElement($current) || $current;
   my $char    = $delim && $delim->textContent;
   $document->setNodeBox($delim, $whatsit);
-  if (! $whatsit->getProperty('hint')
-      && $delim && ($delim->nodeType == XML_ELEMENT_NODE)) {
+  if (!$whatsit->getProperty('hint')
+    && $delim && ($delim->nodeType == XML_ELEMENT_NODE)) {
     $delim->setAttribute(stretchy => 'true') if $stretchy;
     if (my $entry = $DELIMITER_MAP{$char}) {
       my $newrole = $role && $$entry{ ($role eq 'OPEN' ? 'lrole' : 'rrole') } || $role;
-      $delim->setAttribute(role => $newrole) if $newrole;
+      $delim->setAttribute(role => $newrole)      if $newrole;
       $delim->setAttribute(name => $$entry{name}) if $$entry{name};
       if (exists $$entry{meaning}) {
         if (my $meaning = $$entry{meaning}) {
