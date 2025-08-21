@@ -327,9 +327,14 @@ sub bgroup {
 
 sub egroup {
   my ($self) = @_;
-  if (    ##$STATE->isValueBound('MODE', 0) ||    # Last stack frame was a mode switch!?!?!
-    $STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \begingroup
-    Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self, "Attempt to close boxing group",
+  if ($STATE->isValueBound('BOUND_MODE', 0)) { # Last stack frame was a mode switch!?!?!
+    # Don't pop if there's an error; maybe we'll recover?
+    Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self,
+      "Attempt to close a group that switched to mode ".$STATE->lookupValue('MODE'),
+      currentFrameMessage($self)); }
+  elsif ($STATE->lookupValue('groupNonBoxing')) { # or group was opened with \begingroup
+    Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self,
+      "Attempt to close boxing group",
       currentFrameMessage($self)); }
   else {                                        # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 0); }
@@ -342,9 +347,14 @@ sub begingroup {
 
 sub endgroup {
   my ($self) = @_;
-  if (    ##$STATE->isValueBound('MODE', 0) ||    # Last stack frame was a mode switch!?!?!
-    !$STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \bgroup
-    Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self, "Attempt to close non-boxing group",
+  if ($STATE->isValueBound('BOUND_MODE', 0)) { # Last stack frame was a mode switch!?!?!
+    # Don't pop if there's an error; maybe we'll recover?
+    Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self,
+      "Attempt to close a group that switched to mode ".$STATE->lookupValue('MODE'),
+      currentFrameMessage($self)); }
+  elsif (!$STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \bgroup
+    Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self,
+      "Attempt to close non-boxing group",
       currentFrameMessage($self)); }
   else {                                         # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 1); }
