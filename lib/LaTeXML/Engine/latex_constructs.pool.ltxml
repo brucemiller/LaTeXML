@@ -2313,7 +2313,7 @@ sub eqnarrayBindings {
   Let('\lx@intercol',             '\lx@math@intercol');
   Let('\lx@alignment@row@before', '\eqnarray@row@before');
   Let('\lx@alignment@row@after',  '\eqnarray@row@after');
-  Let('\lx@eqnarray@save@label',  '\label');
+  Let('\lx@eqnarray@save@label',  '\lx@label');
   Let('\label',                   '\lx@eqnarray@label');
   return; }
 
@@ -2324,7 +2324,8 @@ DefMacro('\lx@eqnarray@label Semiverbatim',
 DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
   '#1',
   beforeDigest   => sub { $_[0]->bgroup; },
-  afterConstruct => sub { rearrangeEqnarray($_[0], $_[0]->getNode->lastChild); });
+  afterConstruct => sub { rearrangeEqnarray($_[0], $_[0]->getNode->lastChild); },
+  mode   => 'restricted_horizontal', enterHorizontal => 1);
 DefPrimitiveI('\end@eqnarray', undef, sub { $_[0]->egroup; });
 
 # ========================================
@@ -3815,7 +3816,7 @@ DefPrimitive('\nofiles', undef);
 # \label attaches a label to the nearest parent that can accept a labels attribute
 # but only those that have an xml:id (but should this require a refnum and/or title ???)
 # Note that latex essentially allows redundant labels, but we can record only one!!!
-DefConstructor('\label Semiverbatim', sub {
+DefConstructor('\lx@label Semiverbatim', sub {
     my ($document, $olabel, %props) = @_;
     my $label = $props{label};
     if (my $savenode = $document->floatToLabel) {
@@ -3838,6 +3839,7 @@ DefConstructor('\label Semiverbatim', sub {
       AssignValue('LABEL@' . $label, Digest(T_CS('\@currentlabel')), 'global');
       $_[0]->endMode('restricted_horizontal'); }
     return; });
+Let('\label','\lx@label');
 
 # If a node has been labeled, but still  hasn't yet got an id by afterClose:late,
 # we'd better generate an id for it.
