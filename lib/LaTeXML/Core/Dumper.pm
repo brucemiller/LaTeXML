@@ -320,23 +320,27 @@ sub dump_parameters {
 sub E {
   my ($cs, $parameters, $expansion, %traits) = @_;
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
+    locator => $LaTeXML::LOCATOR,
     %traits }, 'LaTeXML::Core::Definition::Expandable'; }
 
 sub FD {
   my ($cs, $fontID) = @_;
-  return LaTeXML::Core::Definition::FontDef->new($cs, $fontID); }
+  return LaTeXML::Core::Definition::FontDef->new($cs, $fontID,
+     locator => $LaTeXML::LOCATOR); }
 
 sub CD {
   my ($cs, $mode, $value) = @_;
   return bless { cs => $cs, parameters => undef,
     mode         => $mode,    value    => $value,
     registerType => 'Number', readonly => 1,
+    locator      => $LaTeXML::LOCATOR,
   }, 'LaTeXML::Core::Definition::CharDef'; }
 
 sub R {
   my ($cs, $parameters, %traits) = @_;
   $traits{address} = ToString($cs) unless defined $traits{address};
   return bless { cs => $cs, parameters => $parameters,
+    locator => $LaTeXML::LOCATOR,
     %traits }, 'LaTeXML::Core::Definition::Register'; }
 
 sub dump_expandable {
