@@ -44,13 +44,23 @@ DefMacro('\mathletters',    '\lx@equationgroup@subnumbering@begin');
 DefMacro('\endmathletters', '\lx@equationgroup@subnumbering@end');
 
 #======================================================================
-# Apparently, you can use single $ within equations to switch back to text
-
-RawTeX(<<'EoTeX');
-{ \catcode`\$=13\gdef\revtex@hack@end@dollar{\catcode`\$=13\let$\egroup} }
-EoTeX
+# Revtex perversely defines {equation} (roughly) to be a block $\displaymath ...$,
+# rather than $$...$$ ! Thus you can use $ within it to switch BACK to text!!!
+# we could do similar (eg. with mode=>'inline_math'), but we'd end up with alternating
+# ltx:Math & text to be re-combined(?) rather than XMText within.
+# So, let's get tricky with rebinding $ to a magic decoding ring to decipher
+# when a $ means to Start or End either math or embedded text.
+DefConditional('\if@lx@revtex@faketext@');
+DefConditional('\if@lx@revtex@nestmath@');
+DefMacro('\lx@revtex@faketext','\@lx@revtex@faketext@true\hbox\bgroup');
+DefMacro('\lx@revtex@nestmath','\@lx@revtex@nestmath@true\lx@dollar@default');
 DefMacro('\lx@dollar@in@oldrevtex',
- '\@ifnext{$}{\@gobble}{\hbox\bgroup\revtex@hack@end@dollar}');
+ '\ifmmode
+   \if@lx@revtex@nestmath@\let\@next\lx@dollar@default\else\let\@next\lx@revtex@faketext\fi
+  \else
+     \if@lx@revtex@faketext@\let\@next\egroup\else\let\@next\lx@revtex@nestmath\fi
+  \fi\@next');
+
 DefEnvironment('{equation}',
   "<ltx:equation xml:id='#id'>"
     . "#tags"
@@ -64,6 +74,7 @@ DefEnvironment('{equation}',
   beforeDigest => sub { Let(T_MATH, '\lx@dollar@in@oldrevtex'); },
   properties   => sub { RefStepCounter('equation'); },
   locked       => 1);
+
 DefEnvironment('{equation*}',
   "<ltx:equation xml:id='#id'>"
     . "<ltx:Math mode='display'>"
