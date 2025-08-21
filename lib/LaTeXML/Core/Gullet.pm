@@ -168,13 +168,11 @@ sub getSourceMouth {
 sub showUnexpected {
   my ($self) = @_;
   my $message = "Input is empty";
-  if (my $token = readToken($self)) {
-    my @pb = @{ $$self{pushback} };
+  if (my $token = peekToken($self)) {
+    my @pb = @{ $$self{pushback} }[1..-1];
     $message = "Next token is " . Stringify($token)
       . " ( == " . Stringify($STATE->lookupMeaning($token)) . ")"
-      . (@pb ? " more: " . ToString(TokensI(@pb)) : '');
-    unshift(@{ $$self{pushback} }, $token);
-  }
+        . (@pb ? " more: " . ToString(TokensI(@pb)) : ''); }
   return $message; }
 
 sub show_pushback {
@@ -306,6 +304,18 @@ sub readToken {
     elsif ($cc == CC_END)   { $LaTeXML::ALIGN_STATE--; }
   }
   return $token; }
+
+# This is useful when you want to see what the next available token is,
+# BUT you don't want it to trigger any Alignment behaviours;
+# ESPECIALLY if it sees a T_BEGIN within an alignment.
+# This might be needed in more places?
+sub peekToken {
+  my ($self) = @_;
+  local $LaTeXML::ALIGN_STATE = 1000000; # Inhibit readToken from processing {}!!!
+  if (my $token = readToken($self)) {
+    unshift(@{ $$self{pushback} }, $token);
+    return $token; }
+  return; }
 
 # Unread tokens are assumed to be not-yet expanded.
 sub unread {
