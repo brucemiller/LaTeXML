@@ -333,7 +333,6 @@ sub CD {
   return bless { cs => $cs, parameters => undef,
     mode         => $mode,    value    => $value,
     registerType => 'Number', readonly => 1,
-    locator      => $LaTeXML::LOCATOR,
   }, 'LaTeXML::Core::Definition::CharDef'; }
 
 sub R {
