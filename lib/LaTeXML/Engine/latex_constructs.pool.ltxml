@@ -2556,9 +2556,19 @@ DefPrimitiveI('\operator@font', undef, undef,
 # C.8.1 Defining Commands
 #======================================================================
 
+# Is a cs definable in LaTeX,
+# AND in particular, not (accidentally) inheritted from the preloaded plain bindings/dump.
+# Probably this could be avoided by a more rigorous autoload or format detection.
+sub isDefinableLaTeX {
+  my ($cs) = @_;
+  return 1 if isDefinable($cs);
+  my $prev = LookupDefinition($cs);
+  my $prevloc = $prev && $prev->getLocator;
+  return $prevloc && ($prevloc->getShortSource =~ /^plain/); }
+
 DefPrimitive('\newcommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-    if (!isDefinable($cs)) {
+    if (!isDefinableLaTeX($cs)) {
       Info('ignore', $cs, $stomach,
         "Ignoring redefinition (\\newcommand) of '" . ToString($cs) . "'")
         unless LookupValue(ToString($cs) . ':locked');
@@ -2588,7 +2598,7 @@ DefPrimitive('\@reargdef DefToken []{}', sub {
 
 DefPrimitive('\providecommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-    return unless isDefinable($cs);
+    return unless isDefinableLaTeX($cs);
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
 # Crazy; define \cs in terms of \cs[space] !!!
@@ -2639,7 +2649,7 @@ DefPrimitive('\ProvideTextCommand DefToken {}[Number][]{}', sub {
     my ($gullet, $cs, $encoding, $nargs, $opt, $expansion) = @_;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
-    if (isDefinable($cs)) {    # If not already defined...
+    if (isDefinableLaTeX($cs)) {    # If not already defined...
       DefMacroI($cs, undef,
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
@@ -2655,7 +2665,7 @@ DefPrimitive('\DeclareTextSymbol DefToken {}{Number}', sub {
     my ($stomach, $cs, $encoding, $code) = @_;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
-    if (isDefinable($cs)) {    # If not already defined...
+    if (isDefinableLaTeX($cs)) {    # If not already defined...
       DefMacroI($cs, undef,
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
@@ -5464,7 +5474,7 @@ Let('\@begindocumenthook', '\@empty');
 DefMacroI('\@preamblecmds', undef, Tokens());
 DefMacro('\@ifdefinable DefToken {}', sub {
     my ($gullet, $token, $if) = @_;
-    if (isDefinable($token)) {
+    if (isDefinableLaTeX($token)) {
       return $if->unlist }
     else {
       my ($slash, @s) = ExplodeText($token->toString);
