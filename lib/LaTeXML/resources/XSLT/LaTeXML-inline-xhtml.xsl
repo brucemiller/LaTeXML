@@ -199,9 +199,10 @@
     <xsl:choose>
       <xsl:when test="@color">
         <xsl:value-of select="concat('background:',@color,';display:inline-block;')"/>
+        <xsl:value-of select="concat('--inline-bg-color:',@color,';')"/>
       </xsl:when>
       <!-- Note: width doesn't affect an inline element, but we don't want to be a block -->
-      <xsl:otherwise>background:black;display:inline-block;</xsl:otherwise>
+      <xsl:otherwise>background:black;display:inline-block;--inline-bg-color:black;</xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
