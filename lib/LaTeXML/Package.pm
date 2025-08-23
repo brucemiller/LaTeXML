@@ -395,7 +395,7 @@ sub Digest {
   my $stomach = $STATE->getStomach;
   my $value   = $stomach->digest(Tokens(map { (ref $_ ? $_ : TokenizeInternal($_)) } @stuff));
 
-  my $nmode   = $STATE->lookupValue('MODE');
+  my $nmode = $STATE->lookupValue('MODE');
   $stomach->leaveHorizontal_internal if ($mode ne $nmode) && ($nmode eq 'horizontal');
   return $value; }
 
@@ -851,13 +851,13 @@ sub deactivateCounterScope {
 
 # For UN-numbered units
 sub RefStepID {
-  my ($type) = @_;
-  my $ctr    = LookupMapping('counter_for_type', $type) || $type;
-  my $unctr  = "UN$ctr";
+  my ($type)   = @_;
+  my $ctr      = LookupMapping('counter_for_type', $type) || $type;
+  my $unctr    = "UN$ctr";
   my $unctrcmd = '\c@' . $unctr;
   my $defn;
-  if (! ($defn = $STATE->lookupDefinition(T_CS($unctrcmd))) || !$defn->isRegister) {
-    NewCounter($ctr); }         # Avoid fatals...
+  if (!($defn = $STATE->lookupDefinition(T_CS($unctrcmd))) || !$defn->isRegister) {
+    NewCounter($ctr); }    # Avoid fatals...
   StepCounter($unctr);
   maybePreemptRefnum($ctr, 1);
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef,
@@ -1268,7 +1268,7 @@ sub SetCondition {
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
 my $primitive_options = {    # [CONSTANT]
-  isPrefix     => 1, scope           => 1, font => 1,
+  isPrefix     => 1, scope           => 1, font            => 1,
   mode         => 1, enterHorizontal => 1, leaveHorizontal => 1,
   requireMath  => 1, forbidMath      => 1,
   beforeDigest => 1, afterDigest     => 1,
@@ -1295,10 +1295,10 @@ sub DefPrimitiveI {
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
       ->new($defcs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
-        ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
+        ($options{forbidMath}      ? (sub { forbidMath($cs); }) : ()),
         ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
         ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
-        ($mode                ? (sub { $_[0]->beginMode($mode); })
+        ($mode                     ? (sub { $_[0]->beginMode($mode); })
           : ($bounded ? (sub { $_[0]->bgroup; }) : ())),
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
@@ -1413,13 +1413,13 @@ sub flatten {
 #   properties      : a hashref listing default values of properties to assign to the Whatsit.
 #                     These properties can be used in the constructor.
 my $constructor_options = {    # [CONSTANT]
-  mode         => 1, requireMath   => 1, forbidMath => 1, font       => 1,
+  mode            => 1, requireMath     => 1, forbidMath => 1, font => 1,
   enterHorizontal => 1, leaveHorizontal => 1,
-  alias        => 1, reversion     => 1, sizer      => 1, properties => 1,
-  nargs        => 1, attributeForm => 1,
-  beforeDigest => 1, afterDigest   => 1, beforeConstruct => 1, afterConstruct => 1,
-  captureBody  => 1, scope         => 1, bounded         => 1, locked         => 1,
-  outer        => 1, long          => 1, robust          => 1 };
+  alias           => 1, reversion       => 1, sizer => 1, properties => 1,
+  nargs           => 1, attributeForm   => 1,
+  beforeDigest    => 1, afterDigest     => 1, beforeConstruct => 1, afterConstruct => 1,
+  captureBody     => 1, scope           => 1, bounded         => 1, locked         => 1,
+  outer           => 1, long            => 1, robust          => 1 };
 
 sub inferSizer {
   my ($sizer, $reversion) = @_;
@@ -1447,10 +1447,10 @@ sub DefConstructorI {
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new($defcs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
-        ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
+        ($options{forbidMath}      ? (sub { forbidMath($cs); }) : ()),
         ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
         ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
-        ($mode                ? (sub { $_[0]->beginMode($mode); })
+        ($mode                     ? (sub { $_[0]->beginMode($mode); })
           : ($bounded ? (sub { $_[0]->bgroup; }) : ())),
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
@@ -1806,9 +1806,9 @@ sub defmath_prim {
         my $locator    = $stomach->getGullet->getLocator;
         my %properties = %options;
         my $font       = LookupValue('font')->merge(%$reqfont)->specialize($string);
-#        my $mode       = (LookupValue('IN_MATH')  ? 'math'                    : 'text');
-        my $mode       = LookupValue('MODE');
-        my $alias      = (defined $options{alias} ? coerceCS($options{alias}) : undef);
+        #        my $mode       = (LookupValue('IN_MATH')  ? 'math'                    : 'text');
+        my $mode  = LookupValue('MODE');
+        my $alias = (defined $options{alias} ? coerceCS($options{alias}) : undef);
         my $reversion =
           ((!defined $options{reversion}) && (($options{revert_as} || '') eq 'presentation')
           ? $presentation : $alias // $cs);
@@ -1863,7 +1863,7 @@ sub defmath_cons {
 my $environment_options = {    # [CONSTANT]
   mode             => 1, requireMath     => 1, forbidMath => 1,
   enterHorizontal  => 1, leaveHorizontal => 1,
-  properties       => 1, nargs           => 1, font       => 1,
+  properties       => 1, nargs           => 1, font => 1,
   beforeDigest     => 1, afterDigest     => 1,
   afterDigestBegin => 1, beforeDigestEnd => 1, afterDigestBody => 1,
   beforeConstruct  => 1, afterConstruct  => 1,
@@ -1882,7 +1882,7 @@ sub DefEnvironment {
 sub DefEnvironmentI {
   my ($name, $paramlist, $replacement, %options) = @_;
   my $mode = $options{mode};
-  $mode    = 'restricted_horizontal' if !$mode || ($mode eq 'text');
+  $mode      = 'restricted_horizontal'            if !$mode || ($mode eq 'text');
   $name      = ToString($name)                    if ref $name;
   $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
   # Magic form: CS with name \begin{env} bypasses some LaTeX
@@ -1902,9 +1902,9 @@ sub DefEnvironmentI {
         sub { $_[0]->bgroup; },
         sub { my $b = LookupValue('@environment@' . $name . '@atbegin');
           ($b ? Digest(@$b) : ()); },
-        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
-        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
-        ($mode                ? (sub { $_[0]->beginMode($mode); }) : () ),
+        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; })  : ()),
+        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; })  : ()),
+        ($mode                     ? (sub { $_[0]->beginMode($mode); }) : ()),
         sub { AssignValue(current_environment => $name);
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1948,11 +1948,11 @@ sub DefEnvironmentI {
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\$name"), $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($name); }) : ()),
-        ($options{forbidMath} ? (sub { forbidMath($name); })              : ()),
-        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
-        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
-        ($mode                ? (sub { $_[0]->beginMode($mode); })        : ()),
-        ($options{font}       ? (sub { MergeFont(%{ $options{font} }); }) : ()),
+        ($options{forbidMath}      ? (sub { forbidMath($name); })              : ()),
+        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; })         : ()),
+        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; })         : ()),
+        ($mode                     ? (sub { $_[0]->beginMode($mode); })        : ()),
+        ($options{font}            ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
       afterDigest     => flatten($options{afterDigestBegin}),
       afterDigestBody => flatten($options{afterDigestBody}),
@@ -2583,9 +2583,9 @@ sub InputDefinitions {
       # These arguments mysteriously appear in \@onefilewith@ptions, MUCH later than \@pushfilename
       # We place the neaded data after \@pushfilename, but since we're Digesting in isolation,
       # they'll disappear if they aren't consumed by expl3.  Whew!
-      if($pushpop){
+      if ($pushpop) {
         Digest(Tokens(T_CS('\@pushfilename'),
-	  T_BEGIN, T_END, T_BEGIN, T_END, T_BEGIN, Explode($name), T_END)); }
+            T_BEGIN, T_END, T_BEGIN, T_END, T_BEGIN, Explode($name), T_END)); }
       else {
         Digest(T_CS('\lx@pushfilename')); }
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
@@ -2635,7 +2635,7 @@ sub InputDefinitions {
       DefMacroI('\@currext',  undef, Tokens(Explode($prevext)))  if $prevext;
       Digest(($pushpop ? T_CS('\@popfilename') : T_CS('\lx@popfilename')));
       resetOptions(); }    # And reset options afterwards, too.
-    # Should not end up in horizontal mode (unless initially were!)
+                           # Should not end up in horizontal mode (unless initially were!)
     $STATE->getStomach->leaveHorizontal_internal if $mode ne 'horizontal';
     return $file; }
   elsif (!$options{noerror}) {
@@ -2724,25 +2724,25 @@ sub LoadPool {
   if (my $success = InputDefinitions($pool, type => 'pool', notex => 1, noerror => 1,
       installation_subdir => 'Engine')) {
     return $success; }
-  elsif(! $options{noerror} ) {
+  elsif (!$options{noerror}) {
     Error('missing_file', "$pool.pool.ltxml", $STATE->getStomach->getGullet,
       "Can't find binding for pool $pool (installation error)",
-       maybeReportSearchPaths()); }
+      maybeReportSearchPaths()); }
   return; }
 
 sub LoadFormat {
   my ($format) = @_;
   $format = ToString($format) if ref $format;
   my $success;
-  if((! $ENV{LATEXML_NODUMP})
-     && FindFile($format . '_dump', type => 'pool', notex => 1,
-      installation_subdir => 'Engine')) { # dump of $format?
+  if ((!$ENV{LATEXML_NODUMP})
+    && FindFile($format . '_dump', type => 'pool', notex => 1,
+      installation_subdir => 'Engine')) {    # dump of $format?
     LoadPool($format . '_bootstrap', noerror => 1);
-    local $LaTeXML::LOCATOR = LaTeXML::Common::Locator->new($format,0,0,0,0);
+    local $LaTeXML::LOCATOR = LaTeXML::Common::Locator->new($format, 0, 0, 0, 0);
     $success = LoadPool($format . '_dump');
     LoadPool($format . '_constructs', noerror => 1); }
-  elsif(FindFile($format . '_base', type => 'pool', notex => 1,
-      installation_subdir => 'Engine')) { # but prepped for dump?
+  elsif (FindFile($format . '_base', type => 'pool', notex => 1,
+      installation_subdir => 'Engine')) {    # but prepped for dump?
     LoadPool($format . '_bootstrap', noerror => 1);
     $success = LoadPool($format . '_base');
     LoadPool($format . '_constructs', noerror => 1); }
@@ -2952,9 +2952,15 @@ sub decodeMathChar {
       elsif ($fontdef = LookupValue('textfont_' . $fam))         { $downsize = 2; } }
     my $defn = $STATE->lookupDefinition($fontdef);
     $fontinfo = $defn && $defn->isFontDef;
-    if ($fontinfo && ($$basefontinfo{size} != $curfont->getSize)) { # If we've gotten an explicit font SIZE change; Adjust!
+    if ($fontinfo && (ref $fontinfo eq 'HASH') && ($$basefontinfo{size} != $curfont->getSize)) {
+      # If we've gotten an explicit font SIZE change; Adjust!
       $fontinfo = {%$fontinfo}; $$fontinfo{size} = $curfont->getSize; } }
-  my $font = $curfont->merge(%$fontinfo);
+  my $font = $curfont;
+  if (ref $fontinfo ne 'HASH') {
+    Warn("unexpected", "fontinfo", undef, "At mathcode $mathcode; got $fontinfo"); }
+  else {
+    $font = $font->merge(%$fontinfo); }
+
   if ($downsize > 0) { $font = $curfont->merge(scripted => 1); }
   if ($downsize > 1) { $font = $curfont->merge(scripted => 1); }
 
