@@ -2952,7 +2952,11 @@ sub decodeMathChar {
       elsif ($fontdef = LookupValue('textfont_' . $fam))         { $downsize = 2; } }
     my $defn = $STATE->lookupDefinition($fontdef);
     $fontinfo = $defn && $defn->isFontDef;
-    if ($fontinfo && (ref $fontinfo eq 'HASH') && ($$basefontinfo{size} != $curfont->getSize)) {
+    if(! $fontinfo) {
+      $defn = $STATE->lookupDefinition(T_CS('\lx@default@font'));
+      $fontinfo = $defn && $defn->isFontDef; }
+    if ($fontinfo && (ref $fontinfo eq 'HASH')
+        && $basefontinfo && ($$basefontinfo{size} != $curfont->getSize)) {
       # If we've gotten an explicit font SIZE change; Adjust!
       $fontinfo = {%$fontinfo}; $$fontinfo{size} = $curfont->getSize; } }
   my $font = $curfont;

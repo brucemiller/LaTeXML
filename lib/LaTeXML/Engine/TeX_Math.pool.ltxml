@@ -1201,8 +1201,6 @@ DefRegister('\skewchar FontDef' => Number(0),
       $$fontinfo{skewchar} = $value; } }
 );
 
-DefRegister('\defaultskewchar' => Number(-1));
-
 # Dimen registers; TeXBook p. 274
 DefRegister('\delimitershortfall' => Dimension('5pt'));
 DefRegister('\nulldelimiterspace' => Dimension('1.2pt'));
