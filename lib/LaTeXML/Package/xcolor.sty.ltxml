@@ -248,7 +248,7 @@ sub ParseXColor {
   else {
     $color = DecodeColor($specs); }
   # And finally convert to the target model, if requested.
-  return ($tomodel ? $color->convert($tomodel) : $color); }
+  return ($color ? ($tomodel ? $color->convert($tomodel) : $color) : Black()); }
 
 #======================================================================
 # Given a <colorexpr>
@@ -356,7 +356,7 @@ sub DecodeColor {
 
 sub LookupXColor {
   my ($name) = @_;
-  if ($name =~ /^(-*)([^-].*)$/) {
+  if ($name && ($name =~ /^(-*)([^-].*)$/)) {
     return (length($1) % 2 ? LookupColor($2)->complement : LookupColor($2)); } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
