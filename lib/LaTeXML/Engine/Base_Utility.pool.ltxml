@@ -24,10 +24,10 @@ DefMacro('\lx@ifundefined{}{}{}', sub {
     my ($gullet, $name, $if, $else) = @_;
     my $cs = T_CS('\\' . ToString(Expand($name)));
     if (IsDefined($cs)) {
-      return $else->unlist; }
+      return ($else ? $else->unlist : ()); }
     else {
       $STATE->assignMeaning($cs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssign
-      return $if->unlist; } },
+      return ($if ? $if->unlist : ()); } },
   locked => 1);
 
 sub isDefinable {
