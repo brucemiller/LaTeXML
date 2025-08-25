@@ -328,9 +328,10 @@ DefParameterType('MoveableBox', sub {
     my ($gullet) = @_;
     $gullet->skipSpaces;
     my ($box, @stuff) = $STATE->getStomach->invokeToken($gullet->readXToken);
-    Error('expected', '<box>', $gullet,
-      "A <box> was supposed to be here", "Got " . Stringify($box))
-      unless $box;
+    if(! $box) {
+      Error('expected', '<box>', $gullet,
+            "A <box> was supposed to be here", "Got " . Stringify($box));
+      $box = Box(); }
 ####      && $box->isa('LaTeXML::Core::Whatsit')
 ####      && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
     $box; });
