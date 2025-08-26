@@ -313,6 +313,8 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     DefMacroI('\@currenvir', undef, 'document');
     AssignValue(current_environment => 'document');
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
+    Let('\@nodocument', '\relax', 'global');
+    AssignRegister('\everypar',Tokens(), 'global');
     my @boxes = ();
     if (my $ops = LookupValue('@document@preamble@atend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
@@ -1226,6 +1228,7 @@ DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
     AddToMacro(T_CS('\maketitle'), T_CS('\unwind@titlepage'));
     DefEnvironmentI('abstract', undef,
       '<ltx:abstract>#body</ltx:abstract>');
+    Let('\abstract', '\abstract@onearg');
     Info('unexpected', 'titlepage', $_[0],
       "When using titlepage, Frontmatter will not be well-structured");
     return; },
