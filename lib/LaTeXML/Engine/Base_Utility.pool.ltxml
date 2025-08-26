@@ -201,7 +201,7 @@ DefPrimitive('\@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals {}', sub 
     push(@{ $$frontmatter{$tag} }, $entry);
     if ($attr) {
       $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
-    $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END));
+    $$entry[2] = DigestText(Tokens($tokens));
     AssignValue(inPreamble => $inpreamble);
     return; },
   bounded => 1);
@@ -225,7 +225,7 @@ DefPrimitive('\@add@to@frontmatter@now {} [] {}', sub {
 
     my $inpreamble = LookupValue('inPreamble');
     AssignValue(inPreamble => 0);
-    my $datum = Digest(Tokens(T_BEGIN, $tokens, T_END));
+    my $datum = DigestText(Tokens($tokens));
     AssignValue(inPreamble => $inpreamble);
     if ($label) {
       my $entry;

@@ -389,6 +389,7 @@ sub Let {
   AfterAssignment();
   return; }
 
+# Digest the stuff, allowing side-effects, mode changes, etc!
 sub Digest {
   my (@stuff) = @_;
   my $mode    = $STATE->lookupValue('MODE');
@@ -399,6 +400,8 @@ sub Digest {
   $stomach->leaveHorizontal_internal if ($mode ne $nmode) && ($nmode eq 'horizontal');
   return $value; }
 
+# Digest the stuff as if it were an \hbox, in restricted_horixonatal mode,
+# so no local side-effects
 sub DigestText {
   my (@stuff) = @_;
   my $stomach = $STATE->getStomach;
@@ -407,7 +410,7 @@ sub DigestText {
   $stomach->endMode('restricted_horizontal');
   return $result; }
 
-# probably need to export this, as well?
+# Digest stuff, w/o mode changes or side-effects like DigestText, but returning perl string
 sub DigestLiteral {
   my (@stuff) = @_;
 # Perhaps should do StartSemiverbatim, but is it safe to push a frame? (we might cover over valid changes of state!)
@@ -418,7 +421,7 @@ sub DigestLiteral {
   my $value = $STATE->getStomach->digest(Tokens(map { (ref $_ ? $_ : Tokenize($_)) } @stuff));
   AssignValue(font => $font);
   $stomach->endMode('restricted_horizontal');
-  return $value; }
+  return ToString($value); }
 
 sub DigestIf {
   my ($token) = @_;
@@ -761,7 +764,7 @@ sub RefStepCounter {
   DefMacroI(T_CS('\@currentlabel'), undef, T_CS("\\the$ctr"),     scope => 'global');
   DefMacroI(T_CS('\@currentID'),    undef, T_CS("\\the$ctr\@ID"), scope => 'global') if $has_id;
 
-  my $id = $has_id && CleanID(ToString(DigestLiteral(T_CS("\\the$ctr\@ID"))));
+  my $id = $has_id && CleanID(DigestLiteral(T_CS("\\the$ctr\@ID")));
 
   my $refnum = DigestText(T_CS("\\the$ctr"));
   my $tags   = Digest(Invocation(T_CS('\lx@make@tags'), $type));
@@ -864,7 +867,7 @@ sub RefStepID {
     Tokens(T_OTHER('x'), Explode(LookupValue($unctrcmd)->valueOf)),
     scope => 'global');
   DefMacroI(T_CS('\@currentID'), undef, T_CS("\\the$ctr\@ID"));
-  my $id = CleanID(ToString(DigestLiteral(T_CS("\\the$ctr\@ID"))));
+  my $id = CleanID(DigestLiteral(T_CS("\\the$ctr\@ID")));
   return (id => $id); }
 
 # For UN-numbered units, recycle the last ID without incrementing
@@ -872,7 +875,7 @@ sub RefStepID {
 sub RefCurrentID {
   my ($type) = @_;
   my $ctr    = LookupMapping('counter_for_type', $type) || $type;
-  my $id     = CleanID(ToString(DigestLiteral(T_CS("\\the$ctr\@ID"))));
+  my $id     = CleanID(DigestLiteral(T_CS("\\the$ctr\@ID")));
   return (id => $id);
 }
 
@@ -4652,6 +4655,15 @@ Expands the given C<$tokens> according to current definitions.
 X<Digest>
 Processes and digestes the C<$tokens>.  Any arguments needed by
 control sequences in C<$tokens> must be contained within the C<$tokens> itself.
+This allows side-effects and mode changes.
+
+X<DigestText>
+Processes and digestes the C<$tokens> as if within an C<\hbox>,
+so mode changes and side-dffects do not leak out.
+
+X<DigestLiteral>
+Processes and digestes the C<$tokens> returning a Perl string,
+Like C<DigestText>, neither mode changes nor side-dffects leak out.
 
 =item C<< @tokens = Invocation($cs,@args); >>
 
