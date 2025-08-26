@@ -1701,12 +1701,11 @@ DefMacro('\endlist', '\endlx@list');
 # Start an anonymous list (often misused)
 DefConstructor('\lx@list',
   "<ltx:itemize>",
-  mode         => 'internal_vertical',
-  beforeDigest => sub { $_[0]->bgroup; });
+  beforeDigest => sub { $_[0]->beginMode('internal_vertical'); });
 # Close the anonymous list if we're still within one.
 DefConstructor('\endlx@list', sub {
     $_[0]->maybeCloseElement('ltx:itemize'); },
-  beforeDigest => sub { $_[0]->egroup; });
+  beforeDigest => sub { $_[0]->endMode('internal_vertical'); });
 
 DefConstructor('\list@item OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>#tags",
