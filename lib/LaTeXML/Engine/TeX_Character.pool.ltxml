@@ -61,6 +61,7 @@ my %typewriter_accents = ("\x{02DC}" => "~", "\x{02C6}" => "^");
 
 sub applyAccent {
   my ($stomach, $letter, $combiningchar, $standalonechar, $reversion) = @_;
+  return unless $letter;
   my $box     = $stomach->digest($letter);
   my $locator = $box->getLocator;
   my $font    = $box->getFont;

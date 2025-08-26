@@ -65,7 +65,6 @@ DefRegister('\hyphenchar FontDef' => Number(ord('-')),
       $$fontinfo{hyphenchar} = $value; } }
 );
 
-DefRegister('\defaulthyphenchar' => Number(ord('-')));
 DefRegister('\lefthyphenmin'     => Number(0));
 DefRegister('\righthyphenmin'    => Number(0));
 DefRegister('\uchyph'            => Number(1));

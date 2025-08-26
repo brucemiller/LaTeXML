@@ -406,7 +406,7 @@ sub enterHorizontal {
   my($self) = @_;
   my $mode  = $STATE->lookupValue('MODE');
   if($mode =~ /vertical$/){
-    Debug("MODE entering $mode => horizontal, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+    Debug("MODE enter horizontal, from $mode, for ".Stringify($LaTeXML::CURRENT_TOKEN))
         if $LaTeXML::DEBUG{modes};
     $STATE->assignValue(MODE => 'horizontal', 'inplace'); } # SAME frame as BOUND_MODE!
   elsif (($mode =~ /horizontal$/) || ($mode =~ /math$/)) { } # ignorable?
@@ -424,6 +424,8 @@ sub leaveHorizontal {
   # BUT still allow user defined \par !
   if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
     local $LaTeXML::INTERNAL_PAR = 1;
+    Debug("MODE leaving $mode via \\par (within $bound), for ".Stringify($LaTeXML::CURRENT_TOKEN))
+        if $LaTeXML::DEBUG{modes};
     push(@LaTeXML::LIST, $self->invokeToken(T_CS('\par'))); }
   return; }
 
@@ -455,7 +457,7 @@ sub leaveHorizontal_internal {
   # This needs to be an invisible, and slightly gentler, \par (see \lx@normal@par)
   # BUT still allow user defined \par !
   if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
-    Debug("MODE leaving $mode => $bound, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+    Debug("MODE leave $mode, resuming $bound, for ".Stringify($LaTeXML::CURRENT_TOKEN))
         if $LaTeXML::DEBUG{modes};
     repackHorizontal($self);
     $STATE->assignValue(MODE => $bound, 'inplace'); }
@@ -464,17 +466,20 @@ sub leaveHorizontal_internal {
 sub beginMode {
   my ($self, $umode) = @_;
   if (my $mode = $bindable_mode{$umode}) {
-    my $prevmode = $STATE->lookupValue('BOUND_MODE');
-    my $ismath   = $mode =~ /math$/;
-    my $wasmath  = $prevmode =~ /math$/;
+    my $prevmode  = $STATE->lookupValue('MODE');
+    my $prevbound = $STATE->lookupValue('BOUND_MODE');
+    my $ismath    = $mode =~ /math$/;
+    my $wasmath   = $prevmode =~ /math$/;
     pushStackFrame($self);    # Effectively bgroup
     $STATE->assignValue(BOUND_MODE => $mode,   'local'); # New value within this frame!
     $STATE->assignValue(MODE       => $mode,   'local');
     $STATE->assignValue(IN_MATH    => $ismath, 'local');
-    Debug("MODE binding $prevmode => $mode, due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+    Debug("MODE bind $mode, from $prevmode "
+          .($prevbound eq $prevmode ? '' : "(in $prevbound) ")
+          .", for ".Stringify($LaTeXML::CURRENT_TOKEN))
         if $LaTeXML::DEBUG{modes};
     my $curfont = $STATE->lookupValue('font');
-    if    ($mode eq $prevmode) { }
+    if    ($mode eq $prevbound) { }
     elsif ($ismath) {
       # When entering math mode, we set the font to the default math font,
       # and save the text font for any embedded text.
@@ -514,7 +519,7 @@ sub endMode {
     else {
       leaveHorizontal_internal($self) if $mode =~ /vertical$/; # nopar version!
       popStackFrame($self);        # Effectively egroup.
-      Debug("MODE unbinding $mode => ".$STATE->lookupValue('MODE').", due to ".Stringify($LaTeXML::CURRENT_TOKEN))
+      Debug("MODE unbind $mode, resume ".$STATE->lookupValue('MODE').", for ".Stringify($LaTeXML::CURRENT_TOKEN))
           if $LaTeXML::DEBUG{modes};
     }}
   else {

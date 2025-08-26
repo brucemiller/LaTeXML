@@ -269,7 +269,7 @@ DefMacro('\the', sub {
         ? ($value ? $value->unlist : ()) : Explode(ToString($value))); }
     elsif ($defn->getCSName eq '\font') {
       # HACK to get the \fontcmd that would have selected the current font (see FontDef)
-      return $STATE->lookupValue('current_FontDef') || T_CS('\tenrm'); }    # ????
+      return $STATE->lookupValue('current_FontDef') || T_CS('\lx@default@font'); }    # ????
     elsif ($defn->isFontDef) {    # Or a propert TeX \fontcmd defined by \font
       return $defn->getCS; }
     # If we fall through to here, whatever $token is shouln't have been used with \the

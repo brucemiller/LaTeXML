@@ -24,10 +24,10 @@ DefMacro('\lx@ifundefined{}{}{}', sub {
     my ($gullet, $name, $if, $else) = @_;
     my $cs = T_CS('\\' . ToString(Expand($name)));
     if (IsDefined($cs)) {
-      return $else->unlist; }
+      return ($else ? $else->unlist : ()); }
     else {
       $STATE->assignMeaning($cs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssign
-      return $if->unlist; } },
+      return ($if ? $if->unlist : ()); } },
   locked => 1);
 
 sub isDefinable {
@@ -201,7 +201,7 @@ DefPrimitive('\@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals {}', sub 
     push(@{ $$frontmatter{$tag} }, $entry);
     if ($attr) {
       $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
-    $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END));
+    $$entry[2] = DigestText(Tokens($tokens));
     AssignValue(inPreamble => $inpreamble);
     return; },
   bounded => 1);
@@ -225,7 +225,7 @@ DefPrimitive('\@add@to@frontmatter@now {} [] {}', sub {
 
     my $inpreamble = LookupValue('inPreamble');
     AssignValue(inPreamble => 0);
-    my $datum = Digest(Tokens(T_BEGIN, $tokens, T_END));
+    my $datum = DigestText(Tokens($tokens));
     AssignValue(inPreamble => $inpreamble);
     if ($label) {
       my $entry;
@@ -361,7 +361,7 @@ sub removeEmptyElement {
 # \lx@tag[open][close]{stuff}
 DefConstructor('\lx@tag[][][]{}',
   "<ltx:tag open='#1' close='#2'>#4</ltx:tag>",
-  mode           => 'restricted_horizontal',   enterHorizontal => 1,
+  mode           => 'restricted_horizontal',
   afterConstruct => \&removeEmptyElement);
 
 # \lx@tag@intags{role}{stuff}

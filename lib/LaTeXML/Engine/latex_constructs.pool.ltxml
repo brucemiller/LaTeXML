@@ -313,6 +313,8 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     DefMacroI('\@currenvir', undef, 'document');
     AssignValue(current_environment => 'document');
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
+    Let('\@nodocument', '\relax', 'global');
+    AssignRegister('\everypar',Tokens(), 'global');
     my @boxes = ();
     if (my $ops = LookupValue('@document@preamble@atend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
@@ -471,7 +473,7 @@ DefConstructor('\lx@notetext[]{}[]{}',
   mode       => 'internal_vertical',
   properties => sub {
     my $type = ToString($_[2]);
-    (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || Digest(T_CS('\the' . $type)))); },
+    (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || DigestText(T_CS('\the' . $type)))); },
   reversion => '');
 
 DefMacro('\footnote',      '\lx@note{footnote}',     locked => 1);
@@ -721,17 +723,17 @@ DefConstructorI('\tableofcontents', undef,
     @s  = map { $s[$_] } 0 .. $td;
     push(@s, (qw(ltx:appendix ltx:index ltx:bibliography))) if @s;
     (select => join(' | ', @s),
-      name => Digest(T_CS('\contentsname'))); });
+      name => DigestText(T_CS('\contentsname'))); });
 
 #DefMacroI('\listfigurename', undef, 'List of Figures');
 DefConstructorI('\listoffigures', undef,
   "<ltx:TOC lists='lof' scope='global'><ltx:title>#name</ltx:title></ltx:TOC>",
-  properties => sub { (name => Digest(T_CS('\listfigurename'))); });
+  properties => sub { (name => DigestText(T_CS('\listfigurename'))); });
 
 #DefMacroI('\listtablename', undef, 'List of Tables');
 DefConstructorI('\listoftables', undef,
   "<ltx:TOC lists='lot' scope='global'><ltx:title>#name</ltx:title></ltx:TOC>",
-  properties => sub { (name => Digest(T_CS('\listtablename'))); });
+  properties => sub { (name => DigestText(T_CS('\listtablename'))); });
 
 DefPrimitive('\numberline{}{}',    undef);
 DefPrimitive('\addtocontents{}{}', undef);
@@ -1102,9 +1104,9 @@ DefConstructor('\lx@author@prefix', sub {
     my $i          = scalar(@{ $document->findnodes('//ltx:creator[@role="author"]') });
     if    ($i <= 1) { }
     elsif ($i == $nauthors) {
-      $document->setAttribute($node, before => Digest(T_CS('\lx@author@conj'))); }
+      $document->setAttribute($node, before => DigestText(T_CS('\lx@author@conj'))); }
     else {
-      $document->setAttribute($node, before => Digest(T_CS('\lx@author@sep'))); }
+      $document->setAttribute($node, before => DigestText(T_CS('\lx@author@sep'))); }
 });
 
 DefMacro('\@author',                 '\@empty');
@@ -1226,6 +1228,7 @@ DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
     AddToMacro(T_CS('\maketitle'), T_CS('\unwind@titlepage'));
     DefEnvironmentI('abstract', undef,
       '<ltx:abstract>#body</ltx:abstract>');
+    Let('\abstract', '\abstract@onearg');
     Info('unexpected', 'titlepage', $_[0],
       "When using titlepage, Frontmatter will not be well-structured");
     return; },
@@ -1698,11 +1701,11 @@ DefMacro('\endlist', '\endlx@list');
 # Start an anonymous list (often misused)
 DefConstructor('\lx@list',
   "<ltx:itemize>",
-  beforeDigest => sub { $_[0]->bgroup; });
+  beforeDigest => sub { $_[0]->beginMode('internal_vertical'); });
 # Close the anonymous list if we're still within one.
 DefConstructor('\endlx@list', sub {
     $_[0]->maybeCloseElement('ltx:itemize'); },
-  beforeDigest => sub { $_[0]->egroup; });
+  beforeDigest => sub { $_[0]->endMode('internal_vertical'); });
 
 DefConstructor('\list@item OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>#tags",
@@ -1713,6 +1716,7 @@ DefConstructor('\list@item OptionalUndigested',
 # reduce it to an ltx:p ??
 DefConstructor('\trivlist',
   "<ltx:itemize _autoclose='1'>",
+  mode       => 'internal_vertical',
   properties => sub { beginItemize('trivlist'); });
 DefConstructor('\endtrivlist', sub {
     $_[0]->maybeCloseElement('ltx:itemize'); },
@@ -2941,7 +2945,7 @@ sub defineNewTheorem {
   $listname =~ s/\#/hash/g;
   $otherthmset = $otherthmset && ToString($otherthmset);
   $type        = undef if IsEmpty($type);
-  $within      = $within ? ToString(Digest($within)) : undef;
+  $within      = $within ? DigestLiteral($within) : undef;
 
   my $counter = $otherthmset || $thmset;
   $counter =~ s/\s+/./;    # convert spaces to period?
@@ -3027,7 +3031,7 @@ sub defineNewTheorem {
           } }
         else {
           %ctr = RefStepCounter($thmset); } }
-      my $title = Digest(Tokens(T_BEGIN,
+      my $title = DigestText(Tokens(T_BEGIN,
           T_CS('\the'), T_CS('\thm@headstyling'),
           T_CS('\format@title@' . $thmset),    #T_END,
           T_BEGIN, ($_[1] ? $_[1]->unlist : ()), T_END,
@@ -3241,10 +3245,10 @@ DefMacro('\@caption@@@{}{}{}',
 
 # Note that the counters only get incremented by \caption, NOT by \table, \figure, etc.
 DefPrimitive('\@@add@caption@counters', sub {
-    my $captype = ToString(Digest(T_CS('\@captype')));
+    my $captype = DigestLiteral(T_CS('\@captype'));
     my $pre     = LookupValue('PREINCREMENTED_' . $captype);    # If pre-incremented by beforeFloat
     my %props   = ($pre ? %$pre : RefStepCounter($captype));
-    my $inlist  = ToString(Digest(T_CS('\ext@' . $captype)));
+    my $inlist  = DigestLiteral(T_CS('\ext@' . $captype));
     AssignValue('PREINCREMENTED_' . $captype => undef,        'global');
     AssignValue($captype . "_tags"           => $props{tags}, 'global');
     AssignValue($captype . "_id"             => $props{id},   'global');
@@ -3414,9 +3418,11 @@ Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
 DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>",
-  sizer => 0, mode => 'restricted_horizontal', leaveHorizontal => 1);
+  sizer => 0, mode => 'restricted_horizontal',
+);
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
-  sizer => 0, mode => 'restricted_horizontal', leaveHorizontal => 1);
+  sizer => 0, mode => 'restricted_horizontal',
+);
 
 sub beforeFloat {
   my ($type, %options) = @_;
@@ -3846,7 +3852,7 @@ DefConstructor('\lx@label Semiverbatim', sub {
       unshift(@{ LookupValue('scopes_for_counter:' . $ctr) }, $scope);
       $STATE->activateScope($scope);
       $_[0]->beginMode('restricted_horizontal');
-      AssignValue('LABEL@' . $label, Digest(T_CS('\@currentlabel')), 'global');
+      AssignValue('LABEL@' . $label, DigestText(T_CS('\@currentlabel')), 'global');
       $_[0]->endMode('restricted_horizontal'); }
     return; });
 Let('\label','\lx@label');
@@ -4232,8 +4238,8 @@ DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
     . " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
   enterHorizontal => 1,
   properties      => sub { (bibrefs => CleanBibKey($_[2]),
-      separator   => Digest(LookupValue('CITE_SEPARATOR')),
-      yyseparator => Digest(LookupValue('CITE_YY_SEPARATOR')),
+      separator   => DigestText(LookupValue('CITE_SEPARATOR')),
+      yyseparator => DigestText(LookupValue('CITE_YY_SEPARATOR')),
       bibunit     => LookupValue('CITE_UNIT')); });
 
 # Simple container for any phrases used in the bibref

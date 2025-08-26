@@ -40,7 +40,7 @@ DefParameterType('FontDef', sub {
         $token = LookupValue($type . 'font_' . $fam->valueOf); } }
     # Need the cs that selected the current font! (which we don't have!)
     if ($token && ($token->toString eq '\font')) { # Current font ??? Return last pure TeX font used (HACK)
-      $token = LookupValue('current_FontDef') || T_CS('\tenrm'); }
+      $token = LookupValue('current_FontDef') || T_CS('\lx@default@font'); }
     if (my $defn = $token && $STATE->lookupDefinition($token)) {
       return $defn->isFontDef; }
     return; },
@@ -74,6 +74,9 @@ my $nominal_fontinfo = [
   1.01,        # delimiter 2
   0.25,        # math axis height
 ];
+DefRegister('\defaultskewchar'   => Number(-1));
+DefRegister('\defaulthyphenchar' => Number(ord('-')));
+
 # This should eventually actually load the font metrics,
 # and tie-in to LaTeXML::Common::Font, as well as any FontMetrics data used by Font.
 DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileName', sub {
@@ -115,6 +118,9 @@ DefPrimitive('\font SkipSpaces Token SkipSpaces SkipMatch:= SkipSpaces TeXFileNa
     # The font $cs should select the font
     $STATE->installDefinition(LaTeXML::Core::Definition::FontDef->new($cs, $key));
     return; });
+
+# Establish a safe, default, font, that wont be redefined dubiously.
+Digest('\font\lx@default@font=cmr10');
 
 DefMacro('\fontname FontDef', sub {
     my ($gullet, $fontinfo) = @_;
