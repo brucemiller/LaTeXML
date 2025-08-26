@@ -151,6 +151,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
         . "#tags"
         . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
         . "#body",
+      mode           => 'internal_vertical',
       afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
       beforeDigest   => sub {
         my $stylecmd = T_CS('\th@' . $style);

@@ -361,7 +361,7 @@ sub removeEmptyElement {
 # \lx@tag[open][close]{stuff}
 DefConstructor('\lx@tag[][][]{}',
   "<ltx:tag open='#1' close='#2'>#4</ltx:tag>",
-  mode           => 'restricted_horizontal',   enterHorizontal => 1,
+  mode           => 'restricted_horizontal',
   afterConstruct => \&removeEmptyElement);
 
 # \lx@tag@intags{role}{stuff}

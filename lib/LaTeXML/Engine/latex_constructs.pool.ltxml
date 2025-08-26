@@ -1701,6 +1701,7 @@ DefMacro('\endlist', '\endlx@list');
 # Start an anonymous list (often misused)
 DefConstructor('\lx@list',
   "<ltx:itemize>",
+  mode         => 'internal_vertical',
   beforeDigest => sub { $_[0]->bgroup; });
 # Close the anonymous list if we're still within one.
 DefConstructor('\endlx@list', sub {
@@ -1716,6 +1717,7 @@ DefConstructor('\list@item OptionalUndigested',
 # reduce it to an ltx:p ??
 DefConstructor('\trivlist',
   "<ltx:itemize _autoclose='1'>",
+  mode       => 'internal_vertical',
   properties => sub { beginItemize('trivlist'); });
 DefConstructor('\endtrivlist', sub {
     $_[0]->maybeCloseElement('ltx:itemize'); },
@@ -3417,9 +3419,11 @@ Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
 DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>",
-  sizer => 0, mode => 'restricted_horizontal', leaveHorizontal => 1);
+  sizer => 0, mode => 'restricted_horizontal',
+);
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
-  sizer => 0, mode => 'restricted_horizontal', leaveHorizontal => 1);
+  sizer => 0, mode => 'restricted_horizontal',
+);
 
 sub beforeFloat {
   my ($type, %options) = @_;
