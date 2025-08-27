@@ -107,9 +107,9 @@ sub toString {
 
 # Methods for overloaded operators
 my %mode_abbrev = (
-  vertical    => 'V',  internal_vertical     => 'iV',
-  horizontal  => 'H',  restricted_horizontal => 'rH',
-  inline_math => 'iM', display_math          => 'dM');
+  vertical   => 'V', internal_vertical     => 'iV',
+  horizontal => 'H', restricted_horizontal => 'rH',
+  math       => 'M', display_math          => 'dM');
 
 sub _stringify {
   my ($self) = @_;

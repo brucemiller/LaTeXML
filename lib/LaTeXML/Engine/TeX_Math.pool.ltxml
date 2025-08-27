@@ -59,7 +59,7 @@ DefPrimitiveI('\lx@dollar@default', undef, sub {
           "Missing \$ closing display math.",
           "Ignoring; expect to be in wrong math/text mode.");
         $op = undef; } }
-    elsif ($mode eq 'inline_math') {
+    elsif ($mode eq 'math') {
       $op = '\\lx@end@inline@math'; }
     # Only check for 2nd $ when within a vertical mode
     elsif (($bound =~ /vertical$/) && ($gullet->ifNext(T_MATH))) {
@@ -148,12 +148,12 @@ DefConstructorI('\lx@begin@inline@math', undef,
   reversion    => Tokens(T_MATH),
   beforeDigest => sub {
     $_[0]->enterHorizontal;
-    $_[0]->beginMode('inline_math'); },
-  properties  => { mode => 'inline_math' },
+    $_[0]->beginMode('math'); },
+  properties  => { mode => 'math' },
   captureBody => 1);
 DefConstructorI('\\lx@end@inline@math', undef, "",
   reversion    => Tokens(T_MATH),
-  beforeDigest => sub { $_[0]->endMode('inline_math'); });
+  beforeDigest => sub { $_[0]->endMode('math'); });
 
 #======================================================================
 # Add the TeX code from the object that created this node,

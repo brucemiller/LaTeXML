@@ -46,7 +46,7 @@ DefMacro('\endmathletters', '\lx@equationgroup@subnumbering@end');
 #======================================================================
 # Revtex perversely defines {equation} (roughly) to be a block $\displaymath ...$,
 # rather than $$...$$ ! Thus you can use $ within it to switch BACK to text!!!
-# we could do similar (eg. with mode=>'inline_math'), but we'd end up with alternating
+# we could do similar (eg. with mode=>'math'), but we'd end up with alternating
 # ltx:Math & text to be re-combined(?) rather than XMText within.
 # So, let's get tricky with rebinding $ to a magic decoding ring to decipher
 # when a $ means to Start or End either math or embedded text.
