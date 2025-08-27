@@ -267,7 +267,7 @@ sub DecodeColor {
   # So we only allow a few extras for the "actually" - at, dot, underscore, star and inner space.
   my $prefix_re      = qr/-/;                 #
                                               # [ <name> = . ==> current color; <name> = '' ==> white]
-  my $name_S         = qr/[a-zA-Z0-9@\*_.]/;
+  my $name_S         = qr/[a-zA-Z0-9@\*_.']/;
   my $ne_name_re     = qr/[-]*$name_S(?:[ ]|$name_S)*|$name_S(?:[ -]|$name_S)*/;
   my $name_re        = qr/|$ne_name_re/;
   my $pct_re         = qr/(?:\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
@@ -874,7 +874,7 @@ DefPrimitive('\rrshift Variable', sub {
 DefConstructor('\fcolorbox[]{}{} Undigested',
   "<ltx:text framed='rectangle' framecolor='#framecolor'"
     . " _noautoclose='1'>#text</ltx:text>",
-  mode => 'internal_vertical',  enterHorizontal => 1,
+  mode        => 'internal_vertical', enterHorizontal => 1,
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;
