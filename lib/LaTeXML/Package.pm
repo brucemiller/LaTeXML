@@ -667,7 +667,8 @@ sub NewCounter {
   }
   else {
     Warn('unexpected', $cs, undef,
-      "Counter " . ToString($cs) . " was already defined as $prevdefn; redefining") if $prevdefn;
+      "Counter " . ToString($cs) . " was already defined as $prevdefn; redefining")
+      if $prevdefn && ($prevdefn ne LookupMeaning(T_CS('\relax')));
     DefRegisterI($cs, undef, Number(0), allocate => '\count'); }
   AfterAssignment();
   AssignValue("\\cl\@$ctr" => Tokens(), 'global') unless LookupValue("\\cl\@$ctr");
