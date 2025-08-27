@@ -671,7 +671,7 @@
           <tag role="refnum">4a</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle\sqrt{c+id}=0w=0 (case )" text="square-root@(c + i * d) = 0 * w = 0 * [ (case ] * [)]" xml:id="S0.E4.1.m4">
+          <Math tex="\displaystyle\sqrt{c+id}=0w=0 (case \ref{wzero})" text="square-root@(c + i * d) = 0 * w = 0 * [ (case ] * [] * [)]" xml:id="S0.E4.1.m4">
             <XMath>
               <XMApp>
                 <XMTok meaning="multirelation"/>
@@ -698,6 +698,7 @@
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok meaning="0" role="NUMBER">0</XMTok>
                   <XMText> (case </XMText>
+                  <XMText><ref labelref="LABEL:wzero"/></XMText>
                   <XMText>)</XMText>
                 </XMApp>
               </XMApp>
