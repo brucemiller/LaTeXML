@@ -879,8 +879,11 @@ sub addColumnToMathFork {
       $box = Box($string); }
     elsif ($type eq '#Comment') { }
     else {
-      Warn('unexpected', $type, $cell,
-        "Don't know how to synthesize equation with $type in column"); }
+      # Hopefully, we can stuff whatever this thing is into an XMText
+      my $txt = $document->openElementAt($document->getFirstChildElement($mainfork), 'ltx:XMText');
+      $document->appendClone($txt, $node);
+      $document->closeElementAt($txt);
+      $box = $document->getNodeBox($node); }
     # Add the boxes from this cell to the previously collected ones in the main branch.
     if ($box) {
       my $composed = MathWhatsit($document->getNodeBox($mainfork)->getBody, $box);
