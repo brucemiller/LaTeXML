@@ -400,7 +400,8 @@ sub setCitationStyle {
     elsif ($key eq 'yysep')     { AssignValue(CITE_YY_SEPARATOR   => $value); }
     elsif ($key eq 'notesep')   { AssignValue(CITE_NOTE_SEPARATOR => $value); }
     else {
-      Warn('unexpected', $key, undef, "Unexpected Citation Style keyword '$key'"); } }
+      AssignValue(CITE_STYLE => 'authoryear');
+      Info('unexpected', $key, undef, "Unexpected Citation Style keyword '$key' using authoryear"); } }
   return; }
 
 DefPrimitive('\setcitestyle RequiredKeyVals:natbib', sub {
