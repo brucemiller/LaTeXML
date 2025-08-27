@@ -385,7 +385,7 @@ sub endgroup {
 #     This is a bound mode set by \hbox.
 #     It is the default mode for digesting Whatsit arguments, although they
 #     may be absorbed into paragraphs where line-breaks occur.
-#  inline_math : math within a horizontal mode. A bound mode.
+#  math : math within a horizontal mode. A bound mode.
 #  display_math : math within a vertical mode. A bound mode.
 #     Should be illegal in restricted_horizontal mode;
 #     Should leaveHorizontal if in horizontal mode.
@@ -396,7 +396,8 @@ our %bindable_mode = (
     restricted_horizontal => 'restricted_horizontal',
     vertical              => 'internal_vertical',
     internal_vertical     => 'internal_vertical',
-    inline_math           => 'inline_math',
+    math                  => 'math',
+    inline_math           => 'math',
     display_math          => 'display_math');
 
 # Switch to horizontal mode, w/o stacking the mode
@@ -441,7 +442,7 @@ sub repackHorizontal {
   while(@LaTeXML::LIST
         && ($item = $LaTeXML::LIST[-1])
         && (($mode = ($item->getProperty('mode')||'horizontal'))
-            =~ /^(?:horizontal|restricted_horizontal|inline_math)$/)) {
+            =~ /^(?:horizontal|restricted_horizontal|math)$/)) {
     # if ONLY horizontal mode spaces, we can prune them; it just makes an empty ltx:p
     $keep = 1 if ($mode ne 'horizontal') || ! $item->getProperty('isSpace');
     unshift(@para,pop(@LaTeXML::LIST)); }

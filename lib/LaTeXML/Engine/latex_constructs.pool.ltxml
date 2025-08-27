@@ -1957,7 +1957,7 @@ DefEnvironment('{math}',
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  mode => 'inline_math');
+  mode => 'math');
 
 Let('\curr@math@size', '\@empty');
 

@@ -120,7 +120,7 @@ DefConditionalI('\ifvmode', undef, sub {
 DefConditionalI('\ifhmode', undef, sub {
   LookupValue('MODE') =~ /horizontal$/; });
 DefConditionalI('\ifinner', undef, sub {
-  LookupValue('MODE') =~ /^(?:restricted_horizontal|internal_vertical|inline_math)$/; });
+  LookupValue('MODE') =~ /^(?:restricted_horizontal|internal_vertical|math)$/; });
 DefConditionalI('\ifmmode', undef, sub {
   LookupValue('MODE') =~ /math$/; });
 

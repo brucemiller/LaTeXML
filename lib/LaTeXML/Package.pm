@@ -3581,7 +3581,7 @@ DefPrimitive options are
 
 See L</"Common Options">.
 
-=item C<mode=E<gt> ('restricted_horizontal' | 'internal_vertical' | 'display_math' | 'inline_math')>
+=item C<mode=E<gt> ('restricted_horizontal' | 'internal_vertical' | 'display_math' | 'math')>
 
 Binds to this mode during digestion, with grouping.
 

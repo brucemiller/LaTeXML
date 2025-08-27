@@ -890,7 +890,7 @@ DefConstructor('\boxed@text{}',
     . "#1"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  mode         => 'inline_math', bounded => 1,
+  mode         => 'math', bounded => 1,
   beforeDigest => sub {
     Let("\\\\", '\lx@newline'); },
   alias => '\boxed');
