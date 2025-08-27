@@ -1266,7 +1266,9 @@ sub MorphVertbar {
       %attrib = map { (getQName($_) => $_->getValue) }
         grep { $_->nodeType == XML_ATTRIBUTE_NODE } $node->attributes; }
     $attrib{role} = $role;
-    $newnode = [getQName($node), {%attrib}, $char]; }
+    my $tag       = getQName($node);
+    $newnode      = ($tag eq 'ltx:XMRef'
+                     ? [$tag, {%attrib}] : [$tag, {%attrib}, $char]); }
   return $newnode; }
 
 # ================================================================================
