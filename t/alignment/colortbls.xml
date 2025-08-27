@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
+<?latexml package="xcolor"?>
 <?latexml package="colortbl"?>
 <?latexml package="dcolumn,longtable,hhline"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
@@ -278,7 +279,7 @@ or by adding some negative space (in a ”“noalign” between rows.</text></p>
         </tbody>
       </tabular>
     </para>
-    <para class="ltx_noindent" xml:id="S3.p4">
+    <para xml:id="S3.p4">
       <tabular class="ltx_guessed_headers" vattach="middle">
         <tbody>
           <tr>
@@ -288,6 +289,14 @@ or by adding some negative space (in a ”“noalign” between rows.</text></p>
           <tr backgroundcolor="#FF0000">
             <td align="left" border="l r" thead="row"><text backgroundcolor="#FF0000">three</text></td>
             <td align="center" backgroundcolor="#00FF00" border="r"><text backgroundcolor="#00FF00">four</text></td>
+          </tr>
+          <tr backgroundcolor="#FFEAE8">
+            <td align="left" border="l r" thead="row"><text backgroundcolor="#FFEAE8">five</text></td>
+            <td align="center" border="r"><text backgroundcolor="#FFEAE8">six</text></td>
+          </tr>
+          <tr backgroundcolor="#FF0000">
+            <td align="left" backgroundcolor="#FFEAE8" border="l r" thead="row"><text backgroundcolor="#FFEAE8">seven</text></td>
+            <td align="center" border="r"><text backgroundcolor="#FF0000">eight</text></td>
           </tr>
         </tbody>
       </tabular>
