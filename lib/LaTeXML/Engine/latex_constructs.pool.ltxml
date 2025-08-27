@@ -3193,20 +3193,20 @@ DefMacro('\format@title@font@figure', '\format@title@font@float');
 DefMacro('\format@title@font@table',  '\format@title@font@float');
 
 # stubs for the latex float internals
-DefEnvironmentI('@float', '[]{}',
-  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
+DefEnvironmentI('@float', '{}[]',
+  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#2') class='ltx_float_#1'>"
     . "#body"
     . "</ltx:float>",
-  mode              => 'internal_vertical',
-  beforeDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(2))); },
-  afterDigest       => sub { afterFloat($_[1]); });
-DefEnvironmentI('@dblfloat', '[]{}',
-  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
+  mode             => 'internal_vertical',
+  afterDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(1))); },
+  afterDigest      => sub { afterFloat($_[1]); });
+DefEnvironmentI('@dblfloat', '{}[]',
+  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#2') class='ltx_float_#1'>"
     . "#body"
     . "</ltx:float>",
-  mode              => 'internal_vertical',
-  beforeDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(2)), double => 1); },
-  afterDigest       => sub { afterFloat($_[1]); });
+  mode             => 'internal_vertical',
+  afterDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(1)), double => 1); },
+  afterDigest      => sub { afterFloat($_[1]); });
 
 # Could perhaps parameterize further with a separator?
 DefMacro('\format@title@figure{}', '\lx@tag[][: ]{\lx@fnum@@{figure}}#1');
