@@ -610,15 +610,15 @@
     <xsl:if test="@yoffset">
       <xsl:value-of select="concat('position:relative; bottom:',@yoffset,';')"/>
     </xsl:if>
-    <xsl:if test="@color"><xsl:value-of select="concat('color:',@color,';')"/></xsl:if>
+    <xsl:if test="@color">
+      <xsl:value-of select="concat('--inline-color:',@color,';color:var(--inline-color);')"/>
+    </xsl:if>
     <xsl:if test="@backgroundcolor">
-      <xsl:value-of select="concat('background-color:',@backgroundcolor,';')"/>
+      <xsl:value-of select="concat('--inline-bg-color:',@backgroundcolor,';background-color:var(--inline-bg-color);')"/>
     </xsl:if>
     <xsl:if test="@opacity"><xsl:value-of select="concat('opacity:',@opacity,';')"/></xsl:if>
     <xsl:if test="@framecolor">
-      <xsl:value-of select="'border-color: '"/>
-      <xsl:value-of select="@framecolor"/>
-      <xsl:value-of select="';'"/>
+      <xsl:value-of select="concat('--inline-border-color:',@framecolor,';border-color:var(--inline-border-color);')"/>
     </xsl:if>
     <xsl:if test="@cssstyle"><xsl:value-of select="concat(@cssstyle,';')"/></xsl:if>
   </xsl:template>
