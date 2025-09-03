@@ -642,19 +642,19 @@ cite                 { font-style: normal; }
         hsl(from var(--inline-text-decoration-color)
           h s calc(100 - l));
       --fn-inline-fill-color-to-dark-mode:
-        hsl(from var(--inline-fill)
+        hsl(from var(--inline-fill-color)
           h s calc(100 - l));
       --fn-inline-stroke-color-to-dark-mode:
-        hsl(from var(--inline-stroke)
+        hsl(from var(--inline-stroke-color)
           h s calc(100 - l));
       --fn-inline-stop-color-to-dark-mode:
-        hsl(from var(--inline-stop)
+        hsl(from var(--inline-stop-color)
           h s calc(100 - l));
       --fn-inline-flood-color-to-dark-mode:
-        hsl(from var(--inline-flood)
+        hsl(from var(--inline-flood-color)
           h s calc(100 - l));
       --fn-inline-lighting-color-to-dark-mode:
-        hsl(from var(--inline-lighting)
+        hsl(from var(--inline-lighting-color)
           h s calc(100 - l)); }
 
     /* Apply the function to the correct color property in context: */
@@ -674,6 +674,9 @@ cite                 { font-style: normal; }
     }
     [style*="--inline-stroke-color:"] {
       stroke: var(--fn-inline-stroke-color-to-dark-mode);
+      & .ltx_foreignobject_container {
+        color: var(--fn-inline-color-to-dark-mode, var(--fn-inline-stroke-color-to-dark-mode));
+      }
     }
     [style*="--inline-stop-color:"] {
       stop-color: var(--fn-inline-stop-color-to-dark-mode);
