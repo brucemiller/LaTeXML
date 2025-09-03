@@ -536,12 +536,12 @@ sub pmml_maybe_resize {
   my $xoff   = $node->getAttribute('xoffset') || ($parent && $parent->getAttribute('xoffset'));
   my $yoff   = $node->getAttribute('yoffset') || ($parent && $parent->getAttribute('yoffset'));
   my $role   = $node->getAttribute('role')    || ($parent && $parent->getAttribute('role'));
-  my $class  = $node->getAttribute('class')    || ($parent && $parent->getAttribute('class'));
+  my $class  = $node->getAttribute('class')   || ($parent && $parent->getAttribute('class'));
 
   # First, special case hack for stretchy arrows, with specified width
   # Stretchiness (currently) only has effect within munder/mover!!!!!
   if ($width && (($role || '') eq 'ARROW')
-     && (($class||'') =~ /\bltx_horizontally_stretchy\b/)) {    # SPECIAL CASE HACK
+    && (($class || '') =~ /\bltx_horizontally_stretchy\b/)) {    # SPECIAL CASE HACK
     $result = ['m:mover', {}, $result, ['m:mspace', { width => $width }]]; }
   elsif ($width || $height || $depth || $xoff || $yoff) {
     if    ($$result[0] eq 'm:mpadded') { }
@@ -759,7 +759,10 @@ sub stylizeContent {
 
   if ($opacity) {
     $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
-
+  if ($color) {
+    $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "--inline-color:$color"; }
+  if ($bgcolor) {
+    $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "--inline-bg-color:$bgcolor"; }
   # Now, look up any OperatorDictionary properties
   my %props = ($tag eq 'm:mo' ? opdict_lookup($text, $role) : ());
 
@@ -796,7 +799,6 @@ sub stylizeContent {
         $stretchy = 1; }                                         # so, pretend we asked for stretchy
       elsif ($tag eq 'm:mo') {
         $stretchy = undef; } } }    # Conversely, if size specifically set, don't stretch it!
-
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
     ($size    ? ($stretchyhack
@@ -1196,11 +1198,11 @@ our $atomtype_form = {
 # (use negative for spacing only in display & text style;  use 0 for * which means "shouldn't happen")
 # THUS, we'll need to know which style!!!
 our $atompair_spacing = {
-  Ord => { Ord => 0,  Op => 1, Bin => -2, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
-  Op  => { Ord => 1,  Op => 1, Bin => 0,  Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
+  Ord => { Ord =>  0, Op => 1, Bin => -2, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
+  Op  => { Ord =>  1, Op => 1, Bin =>  0, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
   Bin => { Ord => -2, Op => -2, Bin => 0, Rel => 0, Open => -2, Close => 0, Punct => 0, Inner => -2 },
   Rel => { Ord => -3, Op => -3, Bin => 0, Rel => 0, Open => -3, Close => 0, Punct => 0, Inner => -3 },
-  Open  => { Ord => 0, Op => 0, Bin => 0,  Rel => 0,  Open => 0, Close => 0, Punct => 0, Inner => 0 },
+  Open  => { Ord => 0, Op => 0, Bin =>  0, Rel =>  0, Open => 0, Close => 0, Punct => 0, Inner => 0 },
   Close => { Ord => 0, Op => 1, Bin => -2, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
   Punct => { Ord => -1, Op => -1, Bin => 0, Rel => -1, Open => -1, Close => -1, Punct => -1, Inner => -1 },
   Inner => { Ord => -1, Op => 1, Bin => -2, Rel => -3, Open => -1, Close => 0, Punct => -1, Inner => -1 },

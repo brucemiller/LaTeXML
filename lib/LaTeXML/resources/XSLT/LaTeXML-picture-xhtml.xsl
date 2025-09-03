@@ -109,6 +109,32 @@
 
   <xsl:template match="svg:*">
     <xsl:element name="{local-name()}" namespace="{$svg_ns}">
+      <!-- prepare style attribute first -->
+      <xsl:if test="@style or (@stroke and @stroke!='none') or (@fill and @fill!='none') or @color or @stroke or @stop-color or @flood-color or @lightness-color">
+        <xsl:attribute name="style">
+          <xsl:if test="@stroke and @stroke!='none'">
+            <xsl:value-of select="concat('--inline-stroke-color:',@stroke,';')"/>
+          </xsl:if>
+          <xsl:if test="@fill and @fill!='none'">
+            <xsl:value-of select="concat('--inline-fill-color:',@fill,';')"/>
+          </xsl:if>
+          <xsl:if test="@color">
+            <xsl:value-of select="concat('--inline-color:',@color,';')"/>
+          </xsl:if>
+          <xsl:if test="@stop-color">
+            <xsl:value-of select="concat('--inline-stop-color:',@stop-color,';')"/>
+          </xsl:if>
+          <xsl:if test="@flood-color">
+            <xsl:value-of select="concat('--inline-flood-color:',@flood-color,';')"/>
+          </xsl:if>
+          <xsl:if test="@lightness-color">
+            <xsl:value-of select="concat('--inline-lightness-color:',@lightness-color,';')"/>
+          </xsl:if>
+          <xsl:if test="@style">
+            <xsl:value-of select="@style"/>
+          </xsl:if>
+        </xsl:attribute>
+      </xsl:if>
       <xsl:for-each select="@*">
         <xsl:choose>
           <!--  Apparently no "xml:" is OK, and preferred in ePub ?
@@ -124,6 +150,8 @@
               <xsl:value-of select="f:url(.)"/>
             </xsl:attribute>
           </xsl:when>
+          <!-- ignore style attribute here, handled separately -->
+          <xsl:when test="name() = 'style'"></xsl:when>
           <!-- Apparently, these attributes SHOULD have the xlink prefix, even in HTML5
           <xsl:when test="name()='xlink:href' or name()='xlink:role' or name()='xlink:arcrole'">
             <xsl:attribute name="{local-name()}"
