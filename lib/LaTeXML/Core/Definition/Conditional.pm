@@ -83,7 +83,9 @@ sub invoke_conditional {
   # If there's no test, it must be the Special Case, \ifcase
   else {
     my $num = $args[0]->valueOf;
-    if ($num > 0) {
+    # Note: num == 0 takes the 1st branch, no need to skip
+    # num < 0 should skip all \or & end up on the \else
+    if ($num != 0) {
       my $to = skipConditionalBody($gullet, $num);
       Debug("{$num} [skipped to " . ToString($to) . "]") if $tracing; } }
   return; }
