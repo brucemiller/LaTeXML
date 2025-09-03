@@ -890,7 +890,7 @@ sub readNormalInteger {
     return Number(hex(readDigits($self, '0-9A-F', 1))); }
   elsif ($token->equals(T_OTHER("`"))) {                             # Read Charcode
     my $next = readToken($self);
-    my $s    = ($next && $$next[0]) || '';
+    my $s    = ($next && $$next[0]) // '';
     $s =~ s/^\\//;
     skip1Space($self, 1);
     return Number(ord($s)); }    # Only a character token!!! NOT expanded!!!!
