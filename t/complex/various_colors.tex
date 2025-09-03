@@ -1,0 +1,222 @@
+\documentclass{article}
+\usepackage[table]{xcolor}
+\usepackage{colortbl}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{multirow}
+\usepackage{tcolorbox}
+\definecolor{mygreen}{rgb}{0.89, 0.93, 0.85}
+\definecolor{whitesmoke}{rgb}{0.96, 0.96, 0.96}
+\definecolor{timberwolf}{rgb}{0.86, 0.84, 0.82}
+\definecolor{light-gray}{gray}{0.95}
+\definecolor{incorrect-color}{HTML}{D22B2B}
+\definecolor{pal-orange}{HTML}{FFA756}
+\definecolor{LightGreen}{rgb}{0.67, 0.88, 0.69}
+\definecolor{DarkGreen}{HTML}{06402B}
+\definecolor{StnColour}{rgb}{1,0.85,0.87}
+\definecolor{OptColour}{rgb}{0.99,1,0.85}
+\definecolor{EffColour}{rgb}{0.85,1,0.85}
+\definecolor{SupColour}{rgb}{0.85,0.88,1}
+\definecolor{GreyColour}{rgb}{0.94,0.94,0.94}
+
+\lstdefinelanguage{calyx}{
+  keywords={invoke, else, static, import, if, while, par, seq, prim, wires, cells, group, with, control, component, ->, go, done, ?, primitive, verilog, external, repeat},
+  keywordstyle=\color{darkgray}\bfseries,
+  alsoletter=/->,
+  sensitive=false,
+  comment=[l]{//},
+}
+
+\lstdefinelanguage{calyxNoBold}{
+  keywords={},
+  keywordstyle=\color{darkgray}\bfseries,
+  alsoletter=/->,
+  sensitive=false,
+  comment=[l]{//},
+}
+\lstdefinelanguage{calyxspec}{
+  keywords=[1]{else, import, if, while, par, seq, prim, wires, cells, group, with, control, component, ->, go, done, ?, primitive, verilog, external},
+  keywordstyle=[1]\color{darkgray}\bfseries,
+  keywords=[2]{static},
+  keywordstyle=[2]\color{red}\bfseries,
+  % otherkeywordstyle=\color{red}\bfseries,
+  alsoletter=/->,
+  sensitive=false,
+  comment=[l]{//},
+  moredelim=**[is][\color{red}]{@}{@},
+  escapeinside={(*}{*)},
+}
+\lstset{%
+    basicstyle=\linespread{1.1}\ttfamily,
+    backgroundcolor=\color{light-gray},
+    frame=tlbr,
+    framesep=0.1cm,
+    framerule=0pt,
+    aboveskip=0.8\medskipamount,
+    belowskip=0.5\medskipamount,
+    keywordstyle=\bfseries,
+    commentstyle=\color{gray},
+    basicstyle=\ttfamily\footnotesize, % the size of the fonts that are used for the code
+    breakatwhitespace=false, % sets if automatic breaks should only happen at whitespace
+    breaklines=true, % sets automatic line breaking
+    captionpos=b, % sets the caption-position to bottom
+    language=calyx, % the language of the code
+    numbers=none, % where to put the line-numbers; possible values are (none, left, right)
+    tabsize=2, % sets default tabsize to 2 spaces
+    mathescape=true, % allow $x$ in listings
+    % escapechar=$,
+    upquote=true,
+    xrightmargin=0.1cm,
+    xleftmargin=0.1cm,
+}
+
+
+\color{black}
+\begin{document}
+Some color variation, \textcolor{red}{needing treatment} in \textcolor{teal}{dark mode themes}:
+
+A black number on mint green background: \colorbox{LightGreen}{33.35}
+
+\section{Tabular}
+
+\begin{tabular}{ll}
+\rowcolor{gray!12} Gray 12 &  \hspace{10cm} \\
+\rowcolor{gray!6} Gray 6 &  \hspace{10cm} \\
+\rowcolor{gray!0} Gray 0 &  \hspace{10cm} \\
+\rowcolor{mygreen} My Green &  \hspace{10cm} \\
+\rowcolor{whitesmoke} White smoke &  \hspace{10cm} \\
+\rowcolor{timberwolf} Timberwolf &  \hspace{10cm} \\
+\end{tabular}
+
+
+\hspace{-3cm}\begin{tabular}{clrrrccccc}
+  Dataset & Att. & $h$ & $d_m$ & \# Param. & Epoch Time & Acc. (\%) & Loss  & Val Acc. (\%) & Val Loss\\
+   \rowcolor{StnColour}
+   & Stn. & 4 & 32 & 4,224 (4) & 0.315 (4) & 95.70 (4) & 0.086 (3) & 77.62 (4) & 0.474 (4) \\
+
+   \rowcolor{OptColour}
+   & Opt. & 4 & 32 & 3,168 (2) & 0.305 (3) & 96.31 (3) & 0.095 (4) & 77.85 (2) & 0.472 (2) \\
+
+   \rowcolor{EffColour}
+  & Eff. & 4 & 32 & \textbf{2,112 (1)} & \textbf{0.280 (1)} & 96.41 (2) & \textbf{0.064 (1)} & 77.77 (3) & \textbf{0.468 (1)} \\
+  
+   \rowcolor{SupColour}
+  \multirow{-4}{*}{{IMDB}} & Sup. & 4 & 32 & 3,168 (2) & 0.299 (2) & \textbf{97.45 (1)} & 0.070 (2) & \textbf{78.34 (1)} & 0.472 (2)\\
+     
+   \rowcolor{StnColour}
+   & Stn. & 4 & 128 & 66,048 (4) & 66.97 (4) & 88.49 (3) & 0.25 (3) & 65.55 (4) & 0.77 (3)\\
+
+   \rowcolor{OptColour}
+   & Opt. & 4 & 128 & 49,536 (3) & 61.75 (3) & \textbf{89.56 (1)} & \textbf{0.23 (1)} & 65.67 (2) & 0.75 (2) \\
+
+   \rowcolor{EffColour}
+   & Eff. & 4 & 128 & \textbf{33,024 (1)} & \textbf{56.44 (1)} & 86.63 (4) &  0.29 (4) & 65.58 (3) & 0.77 (3) \\
+
+   \rowcolor{SupColour}
+  \multirow{-4}{*}{{Amazon}} & Sup. & 4 & 128 & 42,336 (2) & 59.86 (2) & 88.56 (2) & 0.24 (2)  & \textbf{68.10 (1)} & \textbf{0.71 (1)} \\
+\end{tabular}%
+
+\section{Math}
+
+\[ {\color{DarkGreen}x} + {\color{black}\sqrt{y}} = 0 \]
+
+${\color{DarkGreen}x} + {\colorbox{pal-orange}{\color{black}y}} = 0$ and {\color{black}black text \color{blue}blue text.}
+
+\begin{equation}\label{eq:smp}
+  \fcolorbox{red}{white}{$
+  \begin{array}{lcl}
+  \kappa^\star := & \inf\limits_{w \in Y} & \langle T ,  w \rangle \\
+  &  & A \, w - g \in C(X)_+
+  \end{array}
+  $}
+\end{equation}
+
+\section{Listings}
+
+\begin{lstlisting}[language=calyxspec,numbers=left, belowskip=-0.8\baselineskip]
+  component expr(a:32,b:32,c:32,d:32)->(out:32) {
+    cells {
+      add = std_add(32);   // 32-bit adder
+      mult = std_mult(32); // 32-bit multiplier
+      div = std_div(32);   // 32-bit divider
+    }
+    wires {
+      @static<1>@ group do_add {
+        add.left = @%[0:1]@ ? a;
+        add.right = @%[0:1]@ ? b;
+        (*{\color{red}//}*) do_add[done] = add.done;
+      }
+      @static<3>@ group do_mult {
+        mult.left = @%[0:3]@ ? add.out;
+        mult.right = c; // implicit %[0:3] guard
+        (*{\color{red}//}*) do_mult[done] = mult.done;
+      }
+      group do_div {
+        div.go = 1'd1;
+        div.left = mult.out;
+        div.right = d;
+        do_div[done] = div.done;
+      }
+      out = div.out;
+    }
+    control {
+      seq { @static@ seq { do_add; do_mult; }
+            do_div;
+      }
+    }
+  }%
+\end{lstlisting}
+
+\definecolor{codeblue}{rgb}{0.25,0.5,0.5}
+\definecolor{codeblue2}{rgb}{0,0,1}
+\lstset{
+  backgroundcolor=\color{white},
+  basicstyle=\fontsize{10pt}{10pt}\ttfamily\selectfont,
+  columns=fullflexible,
+  breaklines=true,
+  captionpos=b,
+  commentstyle=\fontsize{8pt}{8pt}\color{codeblue},
+  keywordstyle=\fontsize{8pt}{8pt}\color{codeblue2},
+%  frame=tb,
+}
+
+\begin{algorithm}[!h]
+  \caption{\large Pytorch code} 
+\begin{lstlisting}[language=Python]
+
+  class Matryoshka_CE_Loss(nn.Module):
+      def __init__(self, relative_importance, **kwargs):
+      super(Matryoshka_CE_Loss, self).__init__()
+      self.criterion = nn.CrossEntropyLoss(**kwargs)
+      self.relative_importance = relative_importance # usually set to all ones
+  
+    def forward(self, output, target):
+      loss=0
+      for i in range(len(output)):
+        loss+= self.relative_importance[i] * self.criterion(output[i], target)
+      return loss
+\end{lstlisting}
+\end{algorithm}
+
+\begin{tcolorbox}[colback=white, title = \textbf{Table C.5}: Prompt to Choose Representative Landmarks for Each Cluster ,colframe=black, sharp corners]
+  You have been provided with a set of similar documents, each indexed by a number. Your task is to identify the most representative example from this cluster of documents. Please carefully analyze the given documents and select one document that best captures the common essence and characteristics of the samples. The selection should emphasize the representativeness and relevance of the chosen sample to the category, so that it can serve as a reference for labeling the entire cluster.\\
+  
+  Documents in the cluster:\\
+  
+  1-. \{Document 1\}...... \\
+  
+  2-. \{Document 2\}......\\
+    
+  3-. \{Document 3\}......\\
+    
+  4-. \{Document 4\}......\\
+   
+   $\vdots$\\
+   
+  Please choose one document that could best serve as a reference for labeling the entire cluster, and return only the index number of your selection, in format such as [0], [1], etc.\\
+  
+  Answer:\\
+\end{tcolorbox}
+  
+
+\end{document}
