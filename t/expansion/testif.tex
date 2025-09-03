@@ -31,7 +31,7 @@ ifx does NOT expand conditional tokens (fooFalse): \ifx\iftrue\testA True\else\t
 
 else is NOT expandable while expanding the test clause
 
-\section{Testing numerics}
+\section{Testing numerics ifnum and ifcase}
 \newcount\c\c=1
 OK OK :
 \ifnum\c>2\else OK \fi
@@ -42,6 +42,17 @@ OK :
 \c=1\relax\ifnum\oneorten>5\else OK \fi
 \c=2\relax\ifnum\oneorten>5\else NOT OK\fi
 
+
+\newcount\negone\negone=-1\relax
+\newcount\zero\zero=0\relax
+\newcount\one\one=1\relax
+\newcount\two\two=2\relax
+\newcount\many\many=99\relax
+negone is \ifcase\negone zero\or one\or two\or three\else other\fi.
+zero is \ifcase\zero zero\or one\or two\or three\else other\fi.
+one is \ifcase\one zero\or one\or two\or three\else other\fi.
+two is \ifcase\two zero\or one\or two\or three\else other\fi.
+many is \ifcase\many zero\or one\or two\or three\else other\fi.
 
 \section{Testing if}
 Test plain if, as well;
