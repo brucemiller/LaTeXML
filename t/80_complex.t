@@ -12,7 +12,7 @@ latexml_tests("t/complex",
       packages => ['algorithm.sty','algorithmic.sty','graphicx.sty','ifthen.sty','keyval.sty'], 
       texlive_min => 2021},
     various_colors => { packages => ['algorithm.sty','colortbl.sty','listings.sty','tcolorbox.sty'],
-      texlive_min => 2021 },
+      texlive_min => 2023 },
     si => {
       env=>'CI', # only runs in continuous integration
       packages => 'siunitx.sty', texlive_min => 2015 } });
