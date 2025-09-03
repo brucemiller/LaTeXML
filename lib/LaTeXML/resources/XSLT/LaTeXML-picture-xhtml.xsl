@@ -110,7 +110,7 @@
   <xsl:template match="svg:*">
     <xsl:element name="{local-name()}" namespace="{$svg_ns}">
       <!-- prepare style attribute first -->
-      <xsl:if test="@style or (@stroke and @stroke!='none') or (@fill and @fill!='none') or @color or @stroke or @stop-color or @flood-color or @lightness-color">
+      <xsl:if test="@style or (@stroke and @stroke!='none') or (@fill and @fill!='none') or @color or @stroke or @stop-color or @flood-color or @lighting-color">
         <xsl:attribute name="style">
           <xsl:if test="@stroke and @stroke!='none'">
             <xsl:value-of select="concat('--inline-stroke-color:',@stroke,';')"/>
@@ -127,8 +127,8 @@
           <xsl:if test="@flood-color">
             <xsl:value-of select="concat('--inline-flood-color:',@flood-color,';')"/>
           </xsl:if>
-          <xsl:if test="@lightness-color">
-            <xsl:value-of select="concat('--inline-lightness-color:',@lightness-color,';')"/>
+          <xsl:if test="@lighting-color">
+            <xsl:value-of select="concat('--inline-lighting-color:',@lighting-color,';')"/>
           </xsl:if>
           <xsl:if test="@style">
             <xsl:value-of select="@style"/>
