@@ -25,13 +25,44 @@ use charnames ':full';
 DefRegister('\magnification' => Number(1000));
 
 # Most of these are ignored, but...
-DefMacro('\tracingall',
-  '\tracingonline=1 \tracingcommands=2 \tracingstats=2'
-    . ' \tracingpages=1 \tracingoutput=1 \tracinglostchars=1'
-    . ' \tracingmacros=2 \tracingparagraphs=1 \tracingrestores=1'
-    . ' \showboxbreadth=\maxdimen \showboxdepth=\maxdimen \errorstopmode');
-DefMacroI('\tracingnone', undef, Tokens());
+# Actually, latex.ltx's definition...
 DefMacroI('\hideoutput',  undef, Tokens());
+DefMacro('\loggingall',
+ '\tracingstats\tw@
+  \tracingpages\@ne
+  \tracinglostchars\thr@@
+  \tracingparagraphs\@ne
+  \tracinggroups\@ne
+  \tracingifs\@ne
+  \tracingscantokens\@ne
+  \tracingnesting\@ne
+  \errorcontextlines\maxdimen
+  \ifdefined\tracingstacklevels \tracingstacklevels\maxdimen \fi
+  \noexpand \loggingoutput
+  \tracingmacros\tw@
+  \tracingcommands\thr@@
+  \tracingrestores\@ne
+  \tracingassigns\@ne');
+DefMacro('\tracingall','\showoverfull\loggingall');
+DefMacro('\tracingnone',
+ '\tracingassigns\z@
+  \tracingrestores\z@
+  \tracingonline\z@
+  \tracingcommands\z@
+  \showboxdepth\m@ne
+  \showboxbreadth\m@ne
+  \tracingoutput\z@
+  \errorcontextlines\m@ne
+  \ifdefined\tracingstacklevels \tracingstacklevels\z@ \fi
+  \tracingnesting\z@
+  \tracingscantokens\z@
+  \tracingifs\z@
+  \tracinggroups\z@
+  \tracingparagraphs\z@
+  \tracingmacros\z@
+  \tracinglostchars\@ne
+  \tracingpages\z@
+  \tracingstats\z@');
 
 #======================================================================
 # Special Characters.
