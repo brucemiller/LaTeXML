@@ -85,8 +85,10 @@ sub new {
         "Missing " . ($mu ? "MuGlue" : "Glue") . " specification assuming 0pt"); }
     return bless [0, 0, 0, 0, 0], $class; } }
 
-#sub getStretch { $_[0]->[1]; }
-#sub getShrink  { $_[0]->[2]; }
+sub getStretch      { return Dimension($_[0]->[1]); }
+sub getShrink       { return Dimension($_[0]->[3]); }
+sub getStretchOrder { return Number($_[0]->[2]); }
+sub getShrinkOrder  { return Number($_[0]->[4]); }
 
 sub toString {
   my ($self) = @_;
