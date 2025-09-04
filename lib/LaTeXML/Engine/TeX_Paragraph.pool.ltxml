@@ -115,6 +115,8 @@ DefConstructorI('\lx@normal@par', undef, sub {
           if $LaTeXML::DEBUG{modes};
       $stomach->repackHorizontal;
       $STATE->assignValue(MODE => $bound, 'inplace'); }
+    $STATE->assignValue(parshape => undef); # These are cleared by \par!
+    $STATE->assignValue(interlinepenalties => undef);
   return; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -197,14 +199,22 @@ Tag('ltx:p', autoClose => 1, autoOpen => 1, afterClose => \&trimNodeWhitespace);
 # Paragraph Shape
 #----------------------------------------------------------------------
 # \parshape               iq specifies an arbitrary paragraph shape.
-# \parshape !?!??
-DefPrimitive('\parshape SkipSpaces SkipMatch:= Number', sub {
-    my ($stomach, $n) = @_;
-    $n = $n->valueOf;
-    my $gullet = $stomach->getGullet;
+# \parshape acts like a Number Register being the current parshape's number of lines.
+# When read as value, returns the current number of lines.
+# Assigning reads the number of lines and ALSO that many pairs of Dimensions!
+DefRegister('\parshape', Number(0),
+  getter => sub {
+    my $shape = LookupValue('parshape');
+    return $shape && Number(scalar(@$shape)/2) || Number(0); },
+  setter => sub {
+    my ($n) = @_;               # As if assigned to $n !!!
+    my $gullet = $STATE->getStomach->getGullet;
+    $n = $n->valueOf; $n = 0 if $n < 0;
+    my @parshape = ();
     for (my $i = 0 ; $i < $n ; $i++) {
-      $gullet->readDimension; $gullet->readDimension; }
-    # we _could_ conceivably store this somewhere for some attempt at stylistic purpose...
+      push(@parshape, $gullet->readDimension);
+      push(@parshape, $gullet->readDimension); }
+    $STATE->assignValue(parshape => ($n ? [@parshape] : undef));
     return; });
 
 #======================================================================
