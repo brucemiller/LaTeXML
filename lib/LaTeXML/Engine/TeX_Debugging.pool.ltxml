@@ -54,7 +54,7 @@ sub writableTokens {
   my @tokens = $tokens->unlist;
   @tokens = map {
     my $cc = $$_[1];
-    if    ($cc == CC_CS)    { ($_, T_SPACE); }
+    if    ($cc == CC_CS)    { ($$_[0] =~ /^\\[a-zA-Z]+$/ ? ($_, T_SPACE) : ($_)); }
     elsif ($cc == CC_SPACE) { (T_SPACE); }
     elsif ($cc == CC_PARAM) { ($_, $_); }
     elsif ($cc == CC_ARG)   { (T_PARAM, T_OTHER($$_[0])); }
