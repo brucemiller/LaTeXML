@@ -122,6 +122,11 @@ sub stringify {
   my ($self) = @_;
   return "Number[" . $$self[0] . "]"; }
 
+sub getStretch      { return Dimension(0); }
+sub getShrink       { return Dimension(0); }
+sub getStretchOrder { return Number(0); }
+sub getShrinkOrder  { return Number(0); }
+
 #======================================================================
 1;
 
