@@ -15,116 +15,32 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# See http://tex.loria.fr/moteurs/etex_ref.html
-# Or better yet, see the full manual
+# See the manual
 # http://texdoc.net/texmf-dist/doc/etex/base/etex_man.pdf
-# Section 3. The new features
+# This binding has been rearranged to follow the March 2024 document
 
 #======================================================================
-# 3.1 Additional control over expansion
-# \protected associates with the next defn
-# (note that it isn't actually used anywhere).
-DefPrimitiveI('\protected', undef, sub {
-    $STATE->setPrefix('protected'); return; }, isPrefix => 1);
-
-# \detokenize
-DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1])); });
-
-# When building an expanded token list, the tokens resulting from the expansion
-# of \unexpanded are not expanded further (this is the same behaviour as is
-# exhibited by the tokens resulting from the expansion of
-# \the〈token variable〉in both TEX and ε-TEX).
-DefMacro('\unexpanded GeneralText', '#1');
+# Section 3. e-TeX Extensions
+#======================================================================
 
 #======================================================================
-# 3.2. Provision for re-scanning already read text
+# 3.1 Compatibility and Extended Mode
 
-# \readline; like \read, but only spaces & other
-DefMacro('\readline Number SkipKeyword:to SkipSpaces Token', sub {
-    my ($gullet, $port, $token) = @_;
-    $port = ToString($port);
-    if (my $mouth = LookupValue('input_file:' . $port)) {
-      my $line_string = ($mouth->readRawLine || '');
-      # DG: Can't we do this \endlinechar check in readRawLine ?!
-      # DG:  and can't we make it *faster* ?
-      if (my $eol = $STATE->lookupDefinition(T_CS('\endlinechar'))) {
-        my $eol   = $eol->valueOf()->valueOf;
-        my $eolch = (($eol > 0) && ($eol <= 255) ? chr($eol) : undef);
-        if ($eolch) {
-          $line_string .= $eolch; } }
-      else {
-        $line_string .= "\r"; }
-      DefMacroI($token, undef, Tokens(Explode($line_string))); }
-    return; });
-
-DefMacro('\scantokens GeneralText', sub {
-    my ($gullet, $generaltext) = @_;
-    $gullet->openMouth(LaTeXML::Core::Mouth->new(writableTokens($generaltext)), 0);
-    return; });
+# [See Section 3.3 below]
 
 #======================================================================
-# 3.3 Environmental enquiries
-
-our @ETEX_VERSION = (qw(2 .2));
-DefMacro('\eTeXrevision', sub { Explode($ETEX_VERSION[1]); });
-DefRegister('\eTeXversion' => Number($ETEX_VERSION[0]));
-
-# \currentgrouplevel
-DefRegister('\currentgrouplevel', Number(0),
-  readonly => 1,
-  getter   => sub { Number($STATE->getFrameDepth); });
-
-# \currentgrouptype returns group types from 0..16 ; but what IS a "group type"?
-DefRegister('\currentgrouptype', Number(0), readonly => 1);
-
-# \ifcsname stuff \endcsname
-DefConditional('\ifcsname CSName', sub { defined LookupMeaning($_[1]); });
-
-# \ifdefined <token>
-DefConditional('\ifdefined Token', sub { defined LookupMeaning($_[1]); });
-
-# ???
-DefRegister('\lastnodetype', Number(0));
+# 3.2 Optimization
+# Likely nothing to do here
 
 #======================================================================
-# 3.4 Generalization of the \mark concept: a class of \marks
-# but since we don't manage Pages...
+# 3.3 Tracing and Diagnostics
 
-DefPrimitive('\marks Number GeneralText', undef);
-DefMacroI('\topmarks Number',        undef, Tokens());
-DefMacroI('\firstmarks Number',      undef, Tokens());
-DefMacroI('\botmarks Number',        undef, Tokens());
-DefMacroI('\splitfirstmarks Number', undef, Tokens());
-DefMacroI('\splitbotmarks Number',   undef, Tokens());
-
-#======================================================================
-# 3.5 Bi-directional typesetting: the TeX--XeT primitives
-
-# Should these simply ouput some unicode direction changers,
-# [Things like:
-#  202A;LEFT-TO-RIGHT EMBEDDING;Cf;0;LRE;;;;;N;;;;;
-#  202B;RIGHT-TO-LEFT EMBEDDING;Cf;0;RLE;;;;;N;;;;;
-#  202C;POP DIRECTIONAL FORMATTING;Cf;0;PDF;;;;;N;;;;;
-#  202D;LEFT-TO-RIGHT OVERRIDE;Cf;0;LRO;;;;;N;;;;;
-#  202E;RIGHT-TO-LEFT OVERRIDE;Cf;0;RLO;;;;;N;;;;;
-# ]
-# or do we need to do some more intelligent tracking of modes
-# and directionality?
-# Presumably we can't rely on the material itself being directional.
-
-# By leaving this 0, we're saying "Don't use these features"!
-DefRegister('\TeXXeTstate' => Number(0));
-
-DefMacroI('\beginL', undef, '');
-DefMacroI('\beginR', undef, '');
-DefMacroI('\endL',   undef, '');
-DefMacroI('\endR',   undef, '');
-
-DefRegister('\predisplaydirection' => Number(0));    # ???
-
-#======================================================================
-# 3.6 Additional debugging features
-DefRegister('\interactionmode' => Number(0));
+# Mostly have no effect, but could.
+DefRegister('\tracingassigns'    => Number(0));    # ???
+DefRegister('\tracinggroups'     => Number(0));
+DefRegister('\tracingifs'        => Number(0));    # ???
+DefRegister('\tracingscantokens' => Number(0));
+DefRegister('\tracingnesting'    => Number(0));
 
 # Should show all open groups & their type.
 DefPrimitive('\showgroups', undef);
@@ -135,41 +51,100 @@ DefPrimitive('\showtokens GeneralText', sub {
     Note($_[0]->getLocator->toString());
     return; });
 
-DefRegister('\tracingassigns'    => Number(0));    # ???
-DefRegister('\tracinggroups'     => Number(0));
-DefRegister('\tracingifs'        => Number(0));    # ???
-DefRegister('\tracingscantokens' => Number(0));
-DefRegister('\tracingnesting'    => Number(0));
-DefRegister('\savingvdiscards'   => Number(0));
-DefRegister('\savinghyphcodes'   => Number(0));
 #======================================================================
-# 3.7 Miscellaneous primitives
+# 3.4 Status Enquiries
 
-# \everyeof
-# NOTE: These tokens are NOT used anywhere (yet?)
-DefRegister('\everyeof', Tokens());
+our @ETEX_VERSION = (qw(2 .6));
+DefMacro('\eTeXrevision', sub { Explode($ETEX_VERSION[1]); });
+DefRegister('\eTeXversion' => Number($ETEX_VERSION[0]));
 
-DefConstructor('\middle Token', '#1',
-  afterConstruct => sub {
-    my ($document) = @_;
-    my $current    = $document->getNode;
-    my $delim      = $document->getLastChildElement($current) || $current;
-    $document->setAttribute($delim, role     => 'MIDDLE');
-    $document->setAttribute($delim, stretchy => 'true');
-    return; });
+DefRegister('\interactionmode' => Number(0));
 
-# \unless someif
-DefConditional('\unless Token', sub {
-    my ($gullet, $if) = @_;
-    my ($defn, $test);
-    if (($defn = LookupDefinition($if)) && (($$defn{conditional_type} || '') eq 'if')
-      && ($test = $defn->getTest)) {
-      # Invert the if's test!
-      !&$test($gullet, $defn->readArguments($gullet)); }
-    else {
-      Error('unexpected', $if, "\\unless should not be followed by " . Stringify($if)); } });
+# Conditional almost tracks this information, but not quite in the needed form. Punt!
+# \currentiflevel
+# \currentifbranch
+# \currentiftype
+DefRegister('\currentiflevel',  Number(0), readonly => 1);
+DefRegister('\currentifbranch', Number(0), readonly => 1);
+DefRegister('\currentiftype',   Number(0), readonly => 1);
+
+# \currentgrouplevel
+DefRegister('\currentgrouplevel', Number(0),
+  readonly => 1,
+  getter   => sub { Number($STATE->getFrameDepth); });
+
+# \currentgrouptype returns group types from 0..16 ; but we're not tracking them yet
+DefRegister('\currentgrouptype', Number(0), readonly => 1);
+
+# ???
+DefRegister('\lastnodetype', Number(0));
+
+# \fontcharht <font><8bit>
+# \fontcharwd <font><8bit>
+# \fontchardp <font><8bit>
+# \fontcharic <font><8bit>
+DefRegister('\fontcharht FontDef Number', Dimension(0),
+  readonly => 1,
+  getter => sub {
+    my ($fontinfo, $code) =@_;
+    my $font = $STATE->lookupValue('font')->merge(%$fontinfo);
+    my ($w, $h, $d, $c) = $font->computeStringSize($code && chr($code->valueOf));
+    return $h || Dimension(0); } );
+DefRegister('\fontcharwd FontDef Number', Dimension(0),
+  readonly => 1,
+  getter => sub {
+    my ($fontinfo, $code) =@_;
+    my $font = $STATE->lookupValue('font')->merge(%$fontinfo);
+    my ($w, $h, $d, $c) = $font->computeStringSize($code && chr($code->valueOf));
+    return $w || Dimension(0); } );
+DefRegister('\fontchardp FontDef Number', Dimension(0),
+  readonly => 1,
+  getter => sub {
+    my ($fontinfo, $code) =@_;
+    my $font = $STATE->lookupValue('font')->merge(%$fontinfo);
+    my ($w, $h, $d, $c) = $font->computeStringSize($code && chr($code->valueOf));
+    return $d || Dimension(0); } );
+DefRegister('\fontcharic FontDef Number', Dimension(0),
+  readonly => 1,
+  getter => sub {
+    my ($fontinfo, $code) =@_;
+    my $font = $STATE->lookupValue('font')->merge(%$fontinfo);
+    my ($w, $h, $d, $c) = $font->computeStringSize($code && chr($code->valueOf));
+    return $c || Dimension(0); } ); # Not actually computed here (yet)
+
+
+# Assuming parshape is stored as an even list of [indentation, length, ...]
+# [See TeX_Paragraph for \parshape]
+# These access the indentation or length of the n-th (1-based) line, or last line.
+DefRegister('\parshapeindent Number', Dimension(0),
+  readonly => 1,
+  getter   => sub {
+    my ($n) = @_;
+    $n = $n && $n->valueOf || 0; $n = 0 if $n < 0;
+    my $shape = LookupValue('parshape');
+    return $shape && $n && ($$shape[2*$n - 2] || $$shape[-2]) || Dimension(0); });
+
+DefRegister('\parshapelength Number', Number(0),
+  readonly => 1,
+  getter   => sub {
+    my ($n) = @_;
+    $n = $n && $n->valueOf || 0; $n = 0 if $n < 0;
+    my $shape = LookupValue('parshape');
+    return $shape && $n && ($$shape[2*$n - 1] || $$shape[-1]) || Dimension(0); });
+
+DefRegister('\parshapedimen Number',  Dimension(0),
+  readonly => 1,
+  getter   => sub {
+    my ($n) = @_;
+    $n = $n && $n->valueOf || 0; $n = 0 if $n < 0;
+    my $shape = LookupValue('parshape');
+    return $shape && $n && ($$shape[$n - 1] || $$shape[(($n-1) % 2) - 2])
+        || Dimension(0); });
 
 #======================================================================
+# 3.5 Expressions
+
+#______________________________________________________________________
 # \numexpr, \dimexpr, \gluexpr, \muexpr
 # These read tokens doing simple parsing until \relax or the parse fails.
 # since we don't know where it ends, we can't easily use Parse::RecDescent.
@@ -227,6 +202,200 @@ DefRegister('\dimexpr DimExpr',   Dimension(0), getter => sub { $_[0]; });
 DefRegister('\glueexpr GlueExpr', Glue(0),      getter => sub { $_[0]; });
 DefRegister('\muexpr MuExpr',     MuGlue(0),    getter => sub { $_[0]; });
 
+#______________________________________________________________________
+# Parts of Glue
+DefRegister('\gluestretchorder Glue', Number(0),
+  getter => sub { $_[0]->getStretchOrder; });
+DefRegister('\glueshrinkorder Glue', Number(0),
+  getter => sub { $_[0]->getShrinkOrder; });
+DefRegister('\gluestretch Glue', Dimension(0),
+  getter => sub { $_[0]->getStretch; });
+DefRegister('\glueshrink Glue', Dimension(0),
+  getter => sub { $_[0]->getShrink; });
+
+#======================================================================
+# 3.6 Additional Registers and Marks
+
+# \marks <class> <number>  [\marks0 == \mark]
+# \firstmarks <Number> [\firstmarks0 == \firstmark]
+DefPrimitive('\marks Number GeneralText', undef);
+DefMacroI('\topmarks Number',        undef, Tokens());
+DefMacroI('\firstmarks Number',      undef, Tokens());
+DefMacroI('\botmarks Number',        undef, Tokens());
+DefMacroI('\splitfirstmarks Number', undef, Tokens());
+DefMacroI('\splitbotmarks Number',   undef, Tokens());
+
+#======================================================================
+# 3.7 Input Handling
+
+# \readline <number> to <control sequence>
+# like \read, but only spaces & other
+DefMacro('\readline Number SkipKeyword:to SkipSpaces Token', sub {
+    my ($gullet, $port, $token) = @_;
+    $port = ToString($port);
+    if (my $mouth = LookupValue('input_file:' . $port)) {
+      my $line_string = ($mouth->readRawLine || '');
+      # DG: Can't we do this \endlinechar check in readRawLine ?!
+      # DG:  and can't we make it *faster* ?
+      if (my $eol = $STATE->lookupDefinition(T_CS('\endlinechar'))) {
+        my $eol   = $eol->valueOf()->valueOf;
+        my $eolch = (($eol > 0) && ($eol <= 255) ? chr($eol) : undef);
+        if ($eolch) {
+          $line_string .= $eolch; } }
+      else {
+        $line_string .= "\r"; }
+      DefMacroI($token, undef, Tokens(Explode($line_string))); }
+    return; });
+
+# \scantokens{...}
+DefMacro('\scantokens GeneralText', sub {
+    my ($gullet, $generaltext) = @_;
+    $gullet->openMouth(LaTeXML::Core::Mouth->new(writableTokens($generaltext)), 0);
+    return; });
+
+# \everyeof
+# NOTE: These tokens are NOT used anywhere (yet?)
+DefRegister('\everyeof', Tokens());
+
+#======================================================================
+# 3.8 Breaking Paragraphs into Lines
+
+# \lastlinefit
+DefRegister('\lastlinefit',Number(0));
+
+# Weird Array versions if \interlinepenalty, etc
+# \interlinepenalties
+# \clubpenalties
+# \widowpenalties
+# \displaywidowpenalties
+# Somewhat like \parshape, they also act like perverse registers
+# The getter returns the $n'th penaltie, the setter ALSO reads & stores the $n values
+# Note that \interlinepenalties gets reset by \par, like \parshape.
+
+sub eTeXPenaltiesGetter {
+  my ($name) = @_;
+  my $gullet = $STATE->getStomach->getGullet;
+  my $n = $gullet->readNumber;
+  my $p = LookupValue($name);
+  $n = $n->valueOf; $n = 0 if $n < 0;
+  return $p && $n && ($$p[$n-1] || $$p[-1]) || Number(0); }
+sub eTeXPenaltiesSetter {
+  my ($name, $n) = @_;              # As if assigned to $n !!!
+  $n = $n->valueOf; $n = 0 if $n < 0;
+  my $gullet = $STATE->getStomach->getGullet;
+  my @p = map { $gullet->readNumber; } 1..$n;
+  $STATE->assignValue($name => ($n ? [@p] : undef));
+  return; }
+
+DefRegister('\interlinepenalties', Number(0),
+  getter => sub { eTeXPenaltiesGetter('interlinepenalties'); },
+  setter => sub { eTeXPenaltiesSetter('interlinepenalties', @_); });
+DefRegister('\clubpenalties', Number(0),
+  getter => sub { eTeXPenaltiesGetter('clubpenalties'); },
+  setter => sub { eTeXPenaltiesSetter('clubpenalties', @_); });
+DefRegister('\widowpenalties', Number(0),
+  getter => sub { eTeXPenaltiesGetter('widowpenalties'); },
+  setter => sub { eTeXPenaltiesSetter('widowpenalties', @_); });
+DefRegister('\displaywidowpenalties', Number(0),
+  getter => sub { eTeXPenaltiesGetter('displaywidowpenalties'); },
+  setter => sub { eTeXPenaltiesSetter('displaywidowpenalties', @_); });
+
+#======================================================================
+# 3.9 Math Formulas
+
+DefConstructor('\middle Token', '#1',
+  afterConstruct => sub {
+    my ($document) = @_;
+    my $current    = $document->getNode;
+    my $delim      = $document->getLastChildElement($current) || $current;
+    $document->setAttribute($delim, role     => 'MIDDLE');
+    $document->setAttribute($delim, stretchy => 'true');
+    return; });
+
+#======================================================================
+# 3.10 Hyphenation
+
+DefRegister('\savinghyphcodes'   => Number(0));
+#======================================================================
+# 3.11 Discarded Items
+
+DefRegister('\savingvdiscards'   => Number(0));
+DefPrimitive('\pagediscards',  undef);
+DefPrimitive('\splitdiscards', undef);
+
+#======================================================================
+# 3.12 Expandable Commands
+
+# \ifdefined <token>
+DefConditional('\ifdefined Token', sub { defined LookupMeaning($_[1]); });
+
+# \ifcsname stuff \endcsname
+DefConditional('\ifcsname CSName', sub { defined LookupMeaning($_[1]); });
+
+# \iffontchar <font><8bit>
+
+# \unless someif
+DefConditional('\unless Token', sub {
+    my ($gullet, $if) = @_;
+    my ($defn, $test);
+    if (($defn = LookupDefinition($if)) && (($$defn{conditional_type} || '') eq 'if')
+      && ($test = $defn->getTest)) {
+      # Invert the if's test!
+      !&$test($gullet, $defn->readArguments($gullet)); }
+    else {
+      Error('unexpected', $if, "\\unless should not be followed by " . Stringify($if)); } });
+
+# [See Section 3.6 for registers about marks]
+
+# When building an expanded token list, the tokens resulting from the expansion
+# of \unexpanded are not expanded further (this is the same behaviour as is
+# exhibited by the tokens resulting from the expansion of
+# \the〈token variable〉in both TEX and ε-TEX).
+DefMacro('\unexpanded GeneralText', '#1');
+
+# \detokenize
+DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1])); });
+
+# \scantokens  [see Section 3.7 above]
+
+#======================================================================
+# 4 e-TeX Enhancements
+#======================================================================
+# 4.1 Mixed-Direction Typesetting
+
+# By leaving this 0, we're saying "Don't use these features"!
+DefRegister('\TeXXeTstate' => Number(0));
+
+DefMacroI('\beginL', undef, '');
+DefMacroI('\beginR', undef, '');
+DefMacroI('\endL',   undef, '');
+DefMacroI('\endR',   undef, '');
+
+# Should these simply ouput some unicode direction changers,
+# [Things like:
+#  202A;LEFT-TO-RIGHT EMBEDDING;Cf;0;LRE;;;;;N;;;;;
+#  202B;RIGHT-TO-LEFT EMBEDDING;Cf;0;RLE;;;;;N;;;;;
+#  202C;POP DIRECTIONAL FORMATTING;Cf;0;PDF;;;;;N;;;;;
+#  202D;LEFT-TO-RIGHT OVERRIDE;Cf;0;LRO;;;;;N;;;;;
+#  202E;RIGHT-TO-LEFT OVERRIDE;Cf;0;RLO;;;;;N;;;;;
+# ]
+# or do we need to do some more intelligent tracking of modes
+# and directionality?
+# Presumably we can't rely on the material itself being directional.
+
+DefRegister('\predisplaydirection' => Number(0));    # ???
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+# 3.1 Additional control over expansion
+# \protected associates with the next defn
+# (note that it isn't actually used anywhere).
+DefPrimitiveI('\protected', undef, sub {
+    $STATE->setPrefix('protected'); return; }, isPrefix => 1);
+
+#======================================================================
+# X.X Orphans or Obsolete???
+
 DefPrimitive('\pdftexcmds@directlua{}', undef);
 # babel tests would fail if we had this enabled:
 #DefPrimitive('\directlua{}',            undef);
@@ -236,5 +405,6 @@ DefRegister('\synctex', Number(0));
 
 # Presumably obsolete...
 DefMacro('\reserveinserts{}', '');
+
 #======================================================================
 1;

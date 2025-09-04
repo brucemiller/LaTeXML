@@ -103,8 +103,8 @@ Width:\the\mydima
 \mydimb\protectedmywidth
 Width:\the\mydimb
 
-\input{etex-mydim}\mywidth
-Width:\the\mydima
+%\input{etex-mydim}\mywidth
+%Width:\the\mydima
 
 \def\mypts{pt}
 \def\myminus{-}
@@ -120,5 +120,84 @@ Width:\the\mydima
 \mydima\protectedmyminus\protectedmyone\protectedmytwo\protectedmypts\relax
 Width:\the\mydima
 
-\end{document}
+\subsection{Parshape}
+Parshape is sorta like a register
+\newcount\mynum
+\parshape 2 1pt 2pt 3pt 4pt
+\mynum=\parshape\relax \the\mynum lines:
+Indents:\the\parshapeindent-1\relax,
+\the\parshapeindent1\relax,
+\the\parshapeindent2\relax,
+\the\parshapeindent3\relax;
+Lengths:\the\parshapelength-1\relax,
+\the\parshapelength1\relax,
+\the\parshapelength2\relax,
+\the\parshapelength3\relax;
+Dimens:
+\the\parshapedimen-2\relax,
+\the\parshapedimen-1\relax,
+\the\parshapedimen1\relax,
+\the\parshapedimen2\relax,
+\the\parshapedimen3\relax,
+\the\parshapedimen4\relax;
+\the\parshapedimen5\relax;
+\the\parshapedimen6\relax;
+
+\subsection{Penalties}
+\interlinepenalties 2 10 20
+Interline penalties:
+ \mynum=\interlinepenalties 1\relax \the\mynum,
+ \mynum=\interlinepenalties 2\relax \the\mynum,
+ \mynum=\interlinepenalties 3\relax \the\mynum.
+
+Interline penalties:
+ \mynum=\interlinepenalties 1\relax \the\mynum.
+
+\interlinepenalties 2 10 20
+\interlinepenalties 0
+Interline penalties:
+ \mynum=\interlinepenalties 1\relax \the\mynum.
+
+ \clubpenalties 2 10 20
+Club penalties:
+ \mynum=\clubpenalties 1\relax \the\mynum,
+ \mynum=\clubpenalties 2\relax \the\mynum,
+ \mynum=\clubpenalties 3\relax \the\mynum.
+ 
+ Club penalties:
+ \mynum=\clubpenalties 1\relax \the\mynum.
+
+\clubpenalties 0
+Club penalties:
+ \mynum=\clubpenalties 1\relax \the\mynum.
+
+widowpenalties, displaywidowpenalties should behave the similarly.
+
+\section{Glue}
+\def\showskip#1{
+  \the#1 : stretch \the\gluestretch#1\ \the\gluestretchorder#1 ;
+ shrink \the\glueshrink#1\ \the\glueshrinkorder#1.}
+\newskip\myskip
+
+\myskip=10pt plus 1fil\relax
+\showskip\myskip
+
+\myskip=10pt minus 2fill\relax
+\showskip\myskip
+
+\myskip=10pt plus 1pt minus 2pt\relax
+\showskip\myskip
+
+
+\section{Char sizes}
+\def\charsize#1#2{
+  \the\fontcharwd#1 `#2
+\ x \the\fontcharht#1 `#2
+\ + \the\fontchardp#1 `#2
+\ c \the\fontcharic#1 `#2}
+
+\font\tenrm=cmr10
+Size of x: \charsize\tenrm x.
+Size of X: \charsize\tenrm X.
+
 \end{document}

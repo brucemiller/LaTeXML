@@ -12,7 +12,7 @@
     </tags>
     <title><tag close=" ">1</tag>Version</title>
     <para xml:id="S1.p1">
-      <p>Running eTeX version 2.2.</p>
+      <p>Running eTeX version 2.6.</p>
     </para>
   </section>
   <section inlist="toc" xml:id="S2">
@@ -143,13 +143,112 @@ INVERT False should never be true .</p>
       <p>Width:46.66675pt</p>
     </para>
     <para xml:id="S7.p4">
-      <p>Width:46.66675pt</p>
+      <p>Width:-12.0pt</p>
     </para>
     <para xml:id="S7.p5">
       <p>Width:-12.0pt</p>
     </para>
-    <para xml:id="S7.p6">
-      <p>Width:-12.0pt</p>
+    <subsection inlist="toc" xml:id="S7.SS1">
+      <tags>
+        <tag>7.1</tag>
+        <tag role="refnum">7.1</tag>
+        <tag role="typerefnum">§7.1</tag>
+      </tags>
+      <title><tag close=" ">7.1</tag>Parshape</title>
+      <para xml:id="S7.SS1.p1">
+        <p>Parshape is sorta like a register
+2lines:
+Indents:0.0pt,
+1.0pt,
+3.0pt,
+3.0pt;
+Lengths:0.0pt,
+2.0pt,
+4.0pt,
+4.0pt;
+Dimens:
+0.0pt,
+0.0pt,
+1.0pt,
+2.0pt,
+3.0pt,
+4.0pt;
+3.0pt;
+4.0pt;</p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S7.SS2">
+      <tags>
+        <tag>7.2</tag>
+        <tag role="refnum">7.2</tag>
+        <tag role="typerefnum">§7.2</tag>
+      </tags>
+      <title><tag close=" ">7.2</tag>Penalties</title>
+      <para xml:id="S7.SS2.p1">
+        <p>Interline penalties:
+10,
+20,
+20.</p>
+      </para>
+      <para xml:id="S7.SS2.p2">
+        <p>Interline penalties:
+0.</p>
+      </para>
+      <para xml:id="S7.SS2.p3">
+        <p>Interline penalties:
+0.</p>
+      </para>
+      <para xml:id="S7.SS2.p4">
+        <p>Club penalties:
+10,
+20,
+20.</p>
+      </para>
+      <para xml:id="S7.SS2.p5">
+        <p>Club penalties:
+10.</p>
+      </para>
+      <para xml:id="S7.SS2.p6">
+        <p>Club penalties:
+0.</p>
+      </para>
+      <para xml:id="S7.SS2.p7">
+        <p>widowpenalties, displaywidowpenalties should behave the similarly.</p>
+      </para>
+    </subsection>
+  </section>
+  <section inlist="toc" xml:id="S8">
+    <tags>
+      <tag>8</tag>
+      <tag role="refnum">8</tag>
+      <tag role="typerefnum">§8</tag>
+    </tags>
+    <title><tag close=" ">8</tag>Glue</title>
+    <para xml:id="S8.p1">
+      <p>10.0pt plus 1.0fil : stretch 1.0pt 1 ;
+shrink 0.0pt 0.</p>
+    </para>
+    <para xml:id="S8.p2">
+      <p>10.0pt minus 2.0fill : stretch 0.0pt 0 ;
+shrink 2.0pt 2.</p>
+    </para>
+    <para xml:id="S8.p3">
+      <p>10.0pt plus 1.0pt minus 2.0pt : stretch 1.0pt 0 ;
+shrink 2.0pt 0.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S9">
+    <tags>
+      <tag>9</tag>
+      <tag role="refnum">9</tag>
+      <tag role="typerefnum">§9</tag>
+    </tags>
+    <title><tag close=" ">9</tag>Char sizes</title>
+    <para xml:id="S9.p1">
+      <p>Size of x: 
+5.2778pt x 4.30554pt + 0.0pt c 0.0pt.
+Size of X: 
+7.50002pt x 6.83331pt + 0.0pt c 0.0pt.</p>
     </para>
   </section>
 </document>
