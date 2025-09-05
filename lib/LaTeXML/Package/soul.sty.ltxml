@@ -30,8 +30,8 @@ DefPrimitive('\sodef DefToken {} {Dimension}{Dimension}{Dimension}', sub {
     DefConstructorI($cs, '{}',
       "<ltx:text cssstyle='letter-spacing:#spacing;' _noautoclose='1'>#1</ltx:text>",
       enterHorizontal => 1,
-      properties => { spacing => $letterspace->pxValue . 'px' },
-      bounded    => 1, beforeDigest => sub { Digest($font); });
+      properties      => { spacing => $letterspace->pxValue . 'px' },
+      bounded         => 1, beforeDigest => sub { Digest($font); });
     return; });
 
 RawTeX(<<'EoTeX');
@@ -69,7 +69,7 @@ sub getSOULcolor {
 DefConstructor('\textul{}',
   "<ltx:text framed='underline' framecolor='#framecolor'_noautoclose='1'>#1</ltx:text>",
   enterHorizontal => 1,
-  properties => { framecolor => sub { getSOULcolor('soul_ul_color'); } });
+  properties      => { framecolor => sub { getSOULcolor('soul_ul_color'); } });
 
 # Customizing underlines
 DefPrimitive('\setulcolor{}', sub { AssignValue(soul_ul_color => ToString($_[1])); });
@@ -84,9 +84,11 @@ DefMacro('\setuloverlap{Dimension}',     undef);
 # Hmm... Ideally, this would be framed=linethrough (or something), which in css=>text-decoration
 # but then how to make framecolor end up as text-decoration-color?
 DefConstructor('\textst{}',
-"<ltx:text cssstyle='text-decoration:line-through; text-decoration-color:#framecolor'_noautoclose='1'>#1</ltx:text>",
+  "<ltx:text cssstyle='text-decoration:line-through;#framecolor' _noautoclose='1'>#1</ltx:text>",
   enterHorizontal => 1,
-  properties => { framecolor => sub { getSOULcolor('soul_strike_color'); } });
+  properties      => { framecolor => sub {
+      my $framecolor = getSOULcolor('soul_strike_color');
+      return $framecolor ? "text-decoration-color:" . ($framecolor->toAttribute()) . ";" : ""; } });
 # Customizing strikeout
 DefPrimitive('\setstcolor{}', sub { AssignValue(soul_strike_color => $_[1]); });
 
