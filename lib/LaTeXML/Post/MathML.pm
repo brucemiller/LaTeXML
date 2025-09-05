@@ -759,10 +759,6 @@ sub stylizeContent {
 
   if ($opacity) {
     $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
-  if ($color) {
-    $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "--inline-color:$color"; }
-  if ($bgcolor) {
-    $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "--inline-bg-color:$bgcolor"; }
   # Now, look up any OperatorDictionary properties
   my %props = ($tag eq 'm:mo' ? opdict_lookup($text, $role) : ());
 

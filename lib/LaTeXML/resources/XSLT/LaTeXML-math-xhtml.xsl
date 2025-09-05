@@ -123,6 +123,7 @@
   <!-- Copy MathML, as is -->
   <xsl:template match="m:*">
     <xsl:element name="{local-name()}" namespace="{$mml_ns}">
+      <xsl:call-template name="add_style"/>
       <xsl:for-each select="@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
