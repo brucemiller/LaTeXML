@@ -84,14 +84,11 @@ DefMacro('\setuloverlap{Dimension}',     undef);
 # Hmm... Ideally, this would be framed=linethrough (or something), which in css=>text-decoration
 # but then how to make framecolor end up as text-decoration-color?
 DefConstructor('\textst{}',
-  "<ltx:text cssstyle='text-decoration:line-through;#framespec' _noautoclose='1'>#1</ltx:text>",
+  "<ltx:text cssstyle='text-decoration:line-through;#framecolor' _noautoclose='1'>#1</ltx:text>",
   enterHorizontal => 1,
-  properties      => { framespec => sub {
-      my $framespec;
-      if (my $framecolor = getSOULcolor('soul_strike_color')) {
-        $framespec = "--inline-text-decoration-color:" . ToString($framecolor) .
-          "; text-decoration-color:var(--inline-text-decoration-color);"; }
-      return $framespec; } });
+  properties      => { framecolor => sub {
+      my $framecolor = getSOULcolor('soul_strike_color');
+      return $framecolor ? "text-decoration-color:" . ($framecolor->toAttribute()) . ";" : ""; } });
 # Customizing strikeout
 DefPrimitive('\setstcolor{}', sub { AssignValue(soul_strike_color => $_[1]); });
 
