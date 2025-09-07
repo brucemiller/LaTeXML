@@ -29,10 +29,10 @@ Let('\@currname', '\lx@empty');
 Let('\@currext',  '\lx@empty');
 
 DefMacro('\lx@pushfilename',
-    '\xdef\@currnamestack{{\@currname}{\@currext}{\the\catcode`\@}\@currnamestack}');
+  '\xdef\@currnamestack{{\@currname}{\@currext}{\the\catcode`\@}\@currnamestack}');
 DefMacro('\lx@popfilename', '\expandafter\lx@p@pfilename\@currnamestack\@nil');
 DefMacro('\lx@p@pfilename {}{}{} Until:\@nil',
-   '\gdef\@currname{#1}%
+  '\gdef\@currname{#1}%
     \gdef\@currext{#2}%
     \catcode`\@#3\relax
     \gdef\@currnamestack{#4}');
@@ -88,7 +88,7 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
         $level-- if $cc == CC_END;
         last     if !$level && $mouth->isEOL; }
       $stomach->egroup;
-      DefMacroI($token, undef, Tokens(@tokens), nopackParameters => 1); }
+      DefMacroI($token, undef, Tokens(@tokens), allowUnbalanced => 1, nopackParameters => 1); }
     return; });
 
 # Note that TeX doesn't actually close the mouth;

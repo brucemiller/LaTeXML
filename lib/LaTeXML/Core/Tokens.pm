@@ -102,6 +102,24 @@ sub isBalanced {
       last if $level < 0; } }
   return $level == 0; }
 
+sub toBalanced {
+  my ($self) = @_;
+  my $level  = 0;
+  my @toks   = ();
+  foreach my $t (@$self) {
+    push(@toks, $t);
+    my $cc = $$t[1];    # INLINE
+    $level++ if $cc == CC_BEGIN;
+    if ($cc == CC_END) {
+      $level--;
+      # Return upto unbalanced token
+      if ($level < 0) {
+        pop(@toks);
+        return Tokens(@toks);
+      } } }
+  # Already balanced, return as-is
+  return $self; }
+
 # NOTE: Assumes each arg either undef or also Tokens
 # Using inline accessors on those assumptions
 sub substituteParameters {
