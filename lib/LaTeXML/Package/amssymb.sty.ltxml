@@ -31,7 +31,7 @@ DefMath('\gimel',  "\x{2137}");    # GIMEL SYMBOL
 #======================================================================
 # Miscellaneous
 # \hbar  in LaTeX
-DefMath('\hslash', "\x{210F}", role => 'ID', meaning => 'Planck-constant-over-2-pi');
+DefMath('\hslash',       "\x{210F}", role => 'ID', meaning => 'Planck-constant-over-2-pi');
 DefMath('\vartriangle',  "\x{25B3}");
 DefMath('\triangledown', "\x{25BD}");
 # \square, \lozenge in amsfonts
@@ -51,14 +51,14 @@ DefMath('\blacksquare',       "\x{25A0}");
 DefMath('\blacklozenge',      "\x{25C6}");
 DefMath('\bigstar',           "\x{2605}");
 DefMath('\sphericalangle',    "\x{2222}");
-DefMath('\complement', "\x{2201}", meaning => 'complement');
-DefMath('\eth',        UTF(0xF0));
-DefMath('\diagup',     "\x{2571}");
-DefMath('\diagdown',   "\x{2572}");
+DefMath('\complement',        "\x{2201}", meaning => 'complement');
+DefMath('\eth',               UTF(0xF0));
+DefMath('\diagup',            "\x{2571}");
+DefMath('\diagdown',          "\x{2572}");
 
 #======================================================================
 # Binary operators
-DefMath('\dotplus',        "\x{2214}", role => 'ADDOP');                                  # DOT PLUS
+DefMath('\dotplus',        "\x{2214}", role => 'ADDOP');     # DOT PLUS
 DefMath('\smallsetminus',  "\x{2216}", role => 'ADDOP', meaning => 'set-minus');
 DefMath('\Cap',            "\x{22D2}", role => 'ADDOP', meaning => 'double-intersection');
 DefMath('\doublecap',      "\x{22D2}", role => 'ADDOP', meaning => 'double-intersection');
@@ -67,22 +67,22 @@ DefMath('\doublecup',      "\x{22D3}", role => 'ADDOP', meaning => 'double-union
 DefMath('\barwedge',       "\x{22BC}", role => 'ADDOP', meaning => 'not-and');
 DefMath('\veebar',         "\x{22BB}", role => 'ADDOP', meaning => 'exclusive-or');
 DefMath('\doublebarwedge', "\x{2A5E}", role => 'ADDOP');
-DefMath('\boxminus',      "\x{229F}", role => 'ADDOP');    # SQUARED MINUS
-DefMath('\boxtimes',      "\x{22A0}", role => 'MULOP');    # SQUARED TIMES
-DefMath('\boxdot',        "\x{22A1}", role => 'MULOP');    # SQUARED DOT OPERATOR
-DefMath('\boxplus',       "\x{229E}", role => 'ADDOP');    # SQUARED PLUS
-DefMath('\divideontimes', "\x{22C7}", role => 'MULOP');    # DIVISION TIMES
+DefMath('\boxminus',       "\x{229F}", role => 'ADDOP');     # SQUARED MINUS
+DefMath('\boxtimes',       "\x{22A0}", role => 'MULOP');     # SQUARED TIMES
+DefMath('\boxdot',         "\x{22A1}", role => 'MULOP');     # SQUARED DOT OPERATOR
+DefMath('\boxplus',        "\x{229E}", role => 'ADDOP');     # SQUARED PLUS
+DefMath('\divideontimes',  "\x{22C7}", role => 'MULOP');     # DIVISION TIMES
 DefMath('\ltimes', "\x{22C9}", role => 'MULOP', meaning => 'left-normal-factor-semidirect-product');
 DefMath('\rtimes', "\x{22CA}", role => 'MULOP', meaning => 'right-normal-factor-semidirect-product');
 DefMath('\leftthreetimes',  "\x{22CB}", role => 'MULOP', meaning => 'left-semidirect-product');
 DefMath('\rightthreetimes', "\x{22CC}", role => 'MULOP', meaning => 'right-semidirect-product');
 DefMath('\curlywedge',      "\x{22CF}", role => 'ADDOP', meaning => 'and');
 DefMath('\curlyvee',        "\x{22CE}", role => 'ADDOP', meaning => 'or');
-DefMath('\circleddash', "\x{229D}", role => 'ADDOP');      # CIRCLED DASH
-DefMath('\circledast',  "\x{229B}", role => 'MULOP');      # CIRCLED ASTERISK OPERATOR
-DefMath('\circledcirc', "\x{229A}", role => 'MULOP');      # CIRCLED RING OPERATOR
-DefMath('\centerdot',   "\x{2219}", role => 'MULOP');      # CIRCLED DOT OPERATOR
-DefMath('\intercal',    "\x{22BA}", role => 'ADDOP');      # INTERCALATE
+DefMath('\circleddash',     "\x{229D}", role => 'ADDOP');    # CIRCLED DASH
+DefMath('\circledast',      "\x{229B}", role => 'MULOP');    # CIRCLED ASTERISK OPERATOR
+DefMath('\circledcirc',     "\x{229A}", role => 'MULOP');    # CIRCLED RING OPERATOR
+DefMath('\centerdot',       "\x{2219}", role => 'MULOP');    # CIRCLED DOT OPERATOR
+DefMath('\intercal',        "\x{22BA}", role => 'ADDOP');    # INTERCALATE
 
 #======================================================================
 # Binary relations
@@ -118,7 +118,8 @@ DefMath('\risingdotseq', "\x{2253}", role => 'RELOP',
 DefMath('\fallingdotseq', "\x{2252}", role => 'RELOP',
   meaning => 'approximately-equals-or-image-of');
 DefMath('\backsim', "\x{223D}", role => 'RELOP');    # REVERSED TILDE
-DefMath('\backsimeq', "\x{224C}", role => 'RELOP'); # ALL EQUAL TO; Note: this has double rather than single bar!!!
+# Note: \backsimeq may have been double rather than single bar in the past? (issue #2618)
+DefMath('\backsimeq', "\x{22CD}", role => 'RELOP');    # REVERSED TILDE EQUALS;
 DefMath('\subseteqq', "\x{2AC5}", role => 'RELOP',
   meaning => 'subset-of-or-equals');
 DefMath('\Subset', "\x{22D0}", role => 'RELOP',
@@ -326,17 +327,17 @@ DefMath('\twoheadleftarrow', "\x{219E}", role => 'ARROW');   # LEFTWARDS TWHO HE
 DefMath('\leftarrowtail',    "\x{21A2}", role => 'ARROW');   # LEFTWARDS ARROW WITH TAIL
 DefMath('\looparrowleft',    "\x{21AB}", role => 'ARROW');   # leftwards arrow with loop
 DefMath('\leftrightharpoons', "\x{21CB}", role => 'ARROW'); # LEFTWARDS HARPOON OVER RIGHTWARDS HARPOON
-DefMath('\curvearrowleft',    "\x{21B6}", role => 'ARROW'); # ANTICLOCKWISE TOP SEMICIRCLE ARROW
-DefMath('\circlearrowleft',   "\x{21BA}", role => 'ARROW'); # ANTICLOCKWISE OPEN CIRCLE ARROW
-DefMath('\Lsh',               "\x{21B0}", role => 'ARROW'); # UPWAARDS ARROW WITH TIP LEFTWARDS
-DefMath('\upuparrows',        "\x{21C8}", role => 'ARROW'); # UPWARDS PAIRED ARROWS
-DefMath('\upharpoonleft',     "\x{21BF}", role => 'ARROW'); # UPWARDS HARPOON WITH BARB LEFTWARDS
-DefMath('\rightrightarrows',  "\x{21C9}", role => 'ARROW'); # RIGHTWARDS PAIRED ARROWS
-DefMath('\rightleftarrows',   "\x{21C4}", role => 'ARROW'); # RIGHTWARDS ARROW OVER LEFTWARD ARROW
-DefMath('\Rrightarrow',       "\x{21DB}", role => 'ARROW'); # RIGHTWARDS TRIPLE ARROW
-DefMath('\twoheadrightarrow', "\x{21A0}", role => 'ARROW'); # RIGHTWARDS TWO HEADED ARROW
-DefMath('\rightarrowtail',    "\x{21A3}", role => 'ARROW'); # RIGHTWARDS ARROW WITH TAIL
-DefMath('\looparrowright',    "\x{21AC}", role => 'ARROW'); # RIGHTWARDS ARROW WITH LOOP
+DefMath('\curvearrowleft',    "\x{21B6}", role => 'ARROW');   # ANTICLOCKWISE TOP SEMICIRCLE ARROW
+DefMath('\circlearrowleft',   "\x{21BA}", role => 'ARROW');   # ANTICLOCKWISE OPEN CIRCLE ARROW
+DefMath('\Lsh',               "\x{21B0}", role => 'ARROW');   # UPWAARDS ARROW WITH TIP LEFTWARDS
+DefMath('\upuparrows',        "\x{21C8}", role => 'ARROW');   # UPWARDS PAIRED ARROWS
+DefMath('\upharpoonleft',     "\x{21BF}", role => 'ARROW');   # UPWARDS HARPOON WITH BARB LEFTWARDS
+DefMath('\rightrightarrows',  "\x{21C9}", role => 'ARROW');   # RIGHTWARDS PAIRED ARROWS
+DefMath('\rightleftarrows',   "\x{21C4}", role => 'ARROW');   # RIGHTWARDS ARROW OVER LEFTWARD ARROW
+DefMath('\Rrightarrow',       "\x{21DB}", role => 'ARROW');   # RIGHTWARDS TRIPLE ARROW
+DefMath('\twoheadrightarrow', "\x{21A0}", role => 'ARROW');   # RIGHTWARDS TWO HEADED ARROW
+DefMath('\rightarrowtail',    "\x{21A3}", role => 'ARROW');   # RIGHTWARDS ARROW WITH TAIL
+DefMath('\looparrowright',    "\x{21AC}", role => 'ARROW');   # RIGHTWARDS ARROW WITH LOOP
 # \rightleftharpoons  21CC # RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON ; in amsfonts
 DefMath('\curvearrowright',  "\x{21B7}", role => 'ARROW');   # CLOCKWISE TOP SEMICIRCLE ARROW
 DefMath('\circlearrowright', "\x{21BB}", role => 'ARROW');   # CLOCKWISE OPEN CIRCLE ARROW
