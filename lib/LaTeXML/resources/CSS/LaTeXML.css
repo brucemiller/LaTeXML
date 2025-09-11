@@ -1,5 +1,6 @@
 /*======================================================================
  Core CSS for LaTeXML documents converted to (X)HTML */
+
 /* Generic Page layout */
 .ltx_page_header,
 .ltx_page_footer { font-size:0.8em; }
@@ -194,7 +195,7 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 .ltx_inline-logical-block { display:inline-block; text-indent:0px; }
 
 /* tabbing is always a standalone paragraph-level construct */
-.ltx_tabular.ltx_tabbing { 
+.ltx_tabular.ltx_tabbing {
   display: table; }
 
 /* avoid padding when aligning adjacent columns, e.g. for split decimals */
@@ -534,3 +535,73 @@ cite                 { font-style: normal; }
 
 .ltx_overlay {position:relative; }
 .ltx_overlay > span:nth-child(2) {position:absolute; left:0; }
+
+/* Apply light/dark color mode themes */
+@media (prefers-color-scheme: light) {
+  [style*="--ltx-fg-color:"] {
+    color: var(--ltx-fg-color);
+  }
+  [style*="--ltx-bg-color:"] {
+    background-color: var(--ltx-bg-color);
+  }
+  [style*="--ltx-border-color:"] {
+    border-color: var(--ltx-border-color);
+  }
+  [style*="--ltx-fill-color:"] {
+    fill: var(--ltx-fill-color);
+  }
+  [style*="--ltx-stroke-color:"] {
+    stroke: var(--ltx-stroke-color);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    background-color: black;
+    color: white;
+  }
+  /* The :root rule does not appear to propagate color: into SVG foreignObject */
+  .ltx_foreignobject_content {
+    color: var(--fn-fg-color-to-dark-mode, white);
+  }
+  /* We eventually want to cover the full range of possible attributes where color
+      customization is expected in latexml's HTML format. This will be easier once
+      CSS @function becomes widely available in browsers.
+
+    Emulate a "function" via a custom property, declared on each node of interest.
+    Note that we may have multiple color properties set at the same time, for example
+    both foreground and background color, which could lead to a var naming collision.
+    So we are carefully using different variable names. */ 
+  [style*="color:"] {
+    --fn-fg-color-to-dark-mode:
+      hsl(from var(--ltx-fg-color)
+        h s calc(100 - l));
+    --fn-bg-color-to-dark-mode:
+      hsl(from var(--ltx-bg-color)
+        h s calc(100 - l));
+    --fn-border-color-to-dark-mode:
+      hsl(from var(--ltx-border-color)
+        h s calc(100 - l));
+    --fn-fill-color-to-dark-mode:
+      hsl(from var(--ltx-fill-color)
+        h s calc(100 - l));
+    --fn-stroke-color-to-dark-mode:
+      hsl(from var(--ltx-stroke-color)
+        h s calc(100 - l));
+  }
+  /* Apply the function to the correct color property in context: */
+  [style*="--ltx-fg-color:"] {
+    color: var(--fn-fg-color-to-dark-mode); 
+  }
+  [style*="--ltx-bg-color:"] {
+    background-color: var(--fn-bg-color-to-dark-mode);
+  }
+  [style*="--ltx-border-color:"] {
+    border-color: var(--fn-border-color-to-dark-mode);
+  }
+  [style*="--ltx-fill-color:"] {
+    fill: var(--fn-fill-color-to-dark-mode);
+  }
+  [style*="--ltx-stroke-color:"] {
+    stroke: var(--fn-stroke-color-to-dark-mode);
+  }
+}
