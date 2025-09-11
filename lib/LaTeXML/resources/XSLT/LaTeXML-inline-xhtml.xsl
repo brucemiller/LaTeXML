@@ -198,11 +198,11 @@
     <xsl:apply-templates select="." mode="base-styling"/>
     <xsl:choose>
       <xsl:when test="@color">
-        <xsl:value-of select="concat('--inline-bg-color:',@color,
-            ';background-color:var(--inline-bg-color);display:inline-block;')"/>
+        <xsl:value-of select="concat('--ltx-bg-color:',@color,
+            ';background-color:var(--ltx-bg-color);display:inline-block;')"/>
       </xsl:when>
       <!-- Note: width doesn't affect an inline element, but we don't want to be a block -->
-      <xsl:otherwise>--inline-bg-color:black;background-color:var(--inline-bg-color);display:inline-block;</xsl:otherwise>
+      <xsl:otherwise>--ltx-bg-color:black;background-color:var(--ltx-bg-color);display:inline-block;</xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 

@@ -611,20 +611,20 @@
       <xsl:value-of select="concat('position:relative; bottom:',@yoffset,';')"/>
     </xsl:if>
     <xsl:if test="@color">
-      <xsl:value-of select="concat('--inline-color:',@color,';')"/>
+      <xsl:value-of select="concat('--ltx-fg-color:',@color,';')"/>
     </xsl:if>
     <xsl:if test="@mathcolor">
-      <xsl:value-of select="concat('--inline-color:',@mathcolor,';')"/>
+      <xsl:value-of select="concat('--ltx-fg-color:',@mathcolor,';')"/>
     </xsl:if>
     <xsl:if test="@backgroundcolor">
-      <xsl:value-of select="concat('--inline-bg-color:',@backgroundcolor,';')"/>
+      <xsl:value-of select="concat('--ltx-bg-color:',@backgroundcolor,';')"/>
     </xsl:if>
     <xsl:if test="@mathbackground">
-      <xsl:value-of select="concat('--inline-bg-color:',@mathbackground,';')"/>
+      <xsl:value-of select="concat('--ltx-bg-color:',@mathbackground,';')"/>
     </xsl:if>
     <xsl:if test="@opacity"><xsl:value-of select="concat('opacity:',@opacity,';')"/></xsl:if>
     <xsl:if test="@framecolor">
-      <xsl:value-of select="concat('border-color:',@framecolor,';')"/>
+      <xsl:value-of select="concat('--ltx-border-color:',@framecolor,';')"/>
     </xsl:if>
     <xsl:if test="@cssstyle"><xsl:value-of select="concat(@cssstyle,';')"/></xsl:if>
   </xsl:template>
