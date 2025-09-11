@@ -29,10 +29,10 @@ Let('\@currname', '\lx@empty');
 Let('\@currext',  '\lx@empty');
 
 DefMacro('\lx@pushfilename',
-    '\xdef\@currnamestack{{\@currname}{\@currext}{\the\catcode`\@}\@currnamestack}');
+  '\xdef\@currnamestack{{\@currname}{\@currext}{\the\catcode`\@}\@currnamestack}');
 DefMacro('\lx@popfilename', '\expandafter\lx@p@pfilename\@currnamestack\@nil');
 DefMacro('\lx@p@pfilename {}{}{} Until:\@nil',
-   '\gdef\@currname{#1}%
+  '\gdef\@currname{#1}%
     \gdef\@currext{#2}%
     \catcode`\@#3\relax
     \gdef\@currnamestack{#4}');
@@ -80,13 +80,14 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
       AssignValue(PRESERVE_NEWLINES => 2);    # Special EOL/EOF treatment for \read
       AssignValue(INCLUDE_COMMENTS  => 0);
       my @tokens = ();
-      my ($t, $level) = (undef, 0);
+      my ($t, $level, $skip) = (undef, 0, undef);
       while ($t = $mouth->readToken) {
         my $cc = $t->getCatcode;
-        push(@tokens, $t) unless $cc == CC_MARKER;    # End of line marker
-        $level++ if $cc == CC_BEGIN;
-        $level-- if $cc == CC_END;
-        last     if !$level && $mouth->isEOL; }
+        $level++  if $cc == CC_BEGIN;
+        $level--  if $cc == CC_END;
+        $skip = 1 if $level < 0;
+        push(@tokens, $t) unless $skip || ($cc == CC_MARKER);    # End of line marker
+        last if ($skip || !$level) && $mouth->isEOL; }
       $stomach->egroup;
       DefMacroI($token, undef, Tokens(@tokens), nopackParameters => 1); }
     return; });
