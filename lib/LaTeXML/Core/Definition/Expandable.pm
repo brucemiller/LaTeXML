@@ -32,15 +32,8 @@ sub new {
   elsif ($type eq 'LaTeXML::Core::Token') {
     $expansion = TokensI($expansion); }
   elsif ($type eq 'LaTeXML::Core::Tokens') {
-    if (!$expansion->isBalanced) {
-      if ($traits{allowUnbalanced}) {
-        my $balanced = $expansion->toBalanced;
-        Error('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
-          "Expansion is: " . ToString($expansion), "Using trimmed balanced instead: " . ToString($balanced));
-        $expansion = $balanced; }
-      else {
-        Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
-          "Expansion is: " . ToString($expansion)); } }
+    Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
+      "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
     $expansion = $expansion->packParameters unless $traits{nopackParameters}; }
   elsif ($type ne 'CODE') {
     Error('misdefined', $cs, $source,
@@ -97,10 +90,10 @@ sub invoke {
     $result = $expansion; }
   else {
     my @args = $parms->readArguments($gullet, $self);
-    if (!defined $$self{hasCCARG}) {    # Lazy caching
-      $$self{hasCCARG} = ((grep { $$_[1] == CC_ARG; } $expansion->unlist) ? 1 : 0); }
-    if ($$self{hasCCARG}) {             # Do we actually need to substitute the args in?
-      my $r;                            # Make sure they are actually Tokens!
+    if(! defined $$self{hasCCARG}){ # Lazy caching
+	$$self{hasCCARG} = ((grep { $$_[1] == CC_ARG; } $expansion->unlist) ? 1 : 0); }
+    if ($$self{hasCCARG}) {    # Do we actually need to substitute the args in?
+      my $r;                   # Make sure they are actually Tokens!
       @args = map { ($_ && ($r = ref $_)
             && (($r eq 'LaTeXML::Core::Token') || ($r eq 'LaTeXML::Core::Tokens'))
           ? $_ : Tokens(Revert($_))); } @args;

@@ -85,32 +85,33 @@ DefRegister('\lastnodetype', Number(0));
 # \fontcharic <font><8bit>
 DefRegister('\fontcharht FontDef Number', Dimension(0),
   readonly => 1,
-  getter   => sub {
-    my ($fontinfo, $code) = @_;
+  getter => sub {
+    my ($fontinfo, $code) =@_;
     my $font = $STATE->lookupValue('font')->merge(%$fontinfo);
     my ($w, $h, $d, $c) = $font->computeStringSize($code && chr($code->valueOf));
-    return $h || Dimension(0); });
+    return $h || Dimension(0); } );
 DefRegister('\fontcharwd FontDef Number', Dimension(0),
   readonly => 1,
-  getter   => sub {
-    my ($fontinfo, $code) = @_;
+  getter => sub {
+    my ($fontinfo, $code) =@_;
     my $font = $STATE->lookupValue('font')->merge(%$fontinfo);
     my ($w, $h, $d, $c) = $font->computeStringSize($code && chr($code->valueOf));
-    return $w || Dimension(0); });
+    return $w || Dimension(0); } );
 DefRegister('\fontchardp FontDef Number', Dimension(0),
   readonly => 1,
-  getter   => sub {
-    my ($fontinfo, $code) = @_;
+  getter => sub {
+    my ($fontinfo, $code) =@_;
     my $font = $STATE->lookupValue('font')->merge(%$fontinfo);
     my ($w, $h, $d, $c) = $font->computeStringSize($code && chr($code->valueOf));
-    return $d || Dimension(0); });
+    return $d || Dimension(0); } );
 DefRegister('\fontcharic FontDef Number', Dimension(0),
   readonly => 1,
-  getter   => sub {
-    my ($fontinfo, $code) = @_;
+  getter => sub {
+    my ($fontinfo, $code) =@_;
     my $font = $STATE->lookupValue('font')->merge(%$fontinfo);
     my ($w, $h, $d, $c) = $font->computeStringSize($code && chr($code->valueOf));
-    return $c || Dimension(0); });    # Not actually computed here (yet)
+    return $c || Dimension(0); } ); # Not actually computed here (yet)
+
 
 # Assuming parshape is stored as an even list of [indentation, length, ...]
 # [See TeX_Paragraph for \parshape]
@@ -121,7 +122,7 @@ DefRegister('\parshapeindent Number', Dimension(0),
     my ($n) = @_;
     $n = $n && $n->valueOf || 0; $n = 0 if $n < 0;
     my $shape = LookupValue('parshape');
-    return $shape && $n && ($$shape[2 * $n - 2] || $$shape[-2]) || Dimension(0); });
+    return $shape && $n && ($$shape[2*$n - 2] || $$shape[-2]) || Dimension(0); });
 
 DefRegister('\parshapelength Number', Number(0),
   readonly => 1,
@@ -129,16 +130,16 @@ DefRegister('\parshapelength Number', Number(0),
     my ($n) = @_;
     $n = $n && $n->valueOf || 0; $n = 0 if $n < 0;
     my $shape = LookupValue('parshape');
-    return $shape && $n && ($$shape[2 * $n - 1] || $$shape[-1]) || Dimension(0); });
+    return $shape && $n && ($$shape[2*$n - 1] || $$shape[-1]) || Dimension(0); });
 
-DefRegister('\parshapedimen Number', Dimension(0),
+DefRegister('\parshapedimen Number',  Dimension(0),
   readonly => 1,
   getter   => sub {
     my ($n) = @_;
     $n = $n && $n->valueOf || 0; $n = 0 if $n < 0;
     my $shape = LookupValue('parshape');
-    return $shape && $n && ($$shape[$n - 1] || $$shape[(($n - 1) % 2) - 2])
-      || Dimension(0); });
+    return $shape && $n && ($$shape[$n - 1] || $$shape[(($n-1) % 2) - 2])
+        || Dimension(0); });
 
 #======================================================================
 # 3.5 Expressions
@@ -243,7 +244,7 @@ DefMacro('\readline Number SkipKeyword:to SkipSpaces Token', sub {
           $line_string .= $eolch; } }
       else {
         $line_string .= "\r"; }
-      DefMacroI($token, undef, Tokens(Explode($line_string)), allowUnbalanced => 1); }
+      DefMacroI($token, undef, Tokens(Explode($line_string))); }
     return; });
 
 # \scantokens{...}
@@ -260,7 +261,7 @@ DefRegister('\everyeof', Tokens());
 # 3.8 Breaking Paragraphs into Lines
 
 # \lastlinefit
-DefRegister('\lastlinefit', Number(0));
+DefRegister('\lastlinefit',Number(0));
 
 # Weird Array versions if \interlinepenalty, etc
 # \interlinepenalties
@@ -274,16 +275,15 @@ DefRegister('\lastlinefit', Number(0));
 sub eTeXPenaltiesGetter {
   my ($name) = @_;
   my $gullet = $STATE->getStomach->getGullet;
-  my $n      = $gullet->readNumber;
-  my $p      = LookupValue($name);
+  my $n = $gullet->readNumber;
+  my $p = LookupValue($name);
   $n = $n->valueOf; $n = 0 if $n < 0;
-  return $p && $n && ($$p[$n - 1] || $$p[-1]) || Number(0); }
-
+  return $p && $n && ($$p[$n-1] || $$p[-1]) || Number(0); }
 sub eTeXPenaltiesSetter {
-  my ($name, $n) = @_;    # As if assigned to $n !!!
+  my ($name, $n) = @_;              # As if assigned to $n !!!
   $n = $n->valueOf; $n = 0 if $n < 0;
   my $gullet = $STATE->getStomach->getGullet;
-  my @p      = map { $gullet->readNumber; } 1 .. $n;
+  my @p = map { $gullet->readNumber; } 1..$n;
   $STATE->assignValue($name => ($n ? [@p] : undef));
   return; }
 
@@ -315,11 +315,11 @@ DefConstructor('\middle Token', '#1',
 #======================================================================
 # 3.10 Hyphenation
 
-DefRegister('\savinghyphcodes' => Number(0));
+DefRegister('\savinghyphcodes'   => Number(0));
 #======================================================================
 # 3.11 Discarded Items
 
-DefRegister('\savingvdiscards' => Number(0));
+DefRegister('\savingvdiscards'   => Number(0));
 DefPrimitive('\pagediscards',  undef);
 DefPrimitive('\splitdiscards', undef);
 
