@@ -44,6 +44,7 @@ face cr on next line</p>
     <para xml:id="S0.SS0.SSS0.Px2.p4">
       <p>line  in brackets
 still  continues
+line  with extra   silently discards 
 line with par</p>
     </para>
     <para xml:id="S0.SS0.SSS0.Px2.p5">
@@ -130,6 +131,8 @@ Line: “line  in brackets
 still  continues
 ”<break/>
 
+Line: “line  with extra  ”<break/>
+
 Line: “line with par</p>
     </para>
     <para xml:id="S0.SS0.SSS0.Px3.p5">
@@ -212,6 +215,8 @@ Line (no EOL): “</p>
 
 Line (no EOL): “line  in bracketsstill  continues”<break/>
 
+Line (no EOL): “line  with extra  ”<break/>
+
 Line (no EOL): “line with par</p>
     </para>
     <para xml:id="S0.SS0.SSS0.Px4.p3">
@@ -288,6 +293,8 @@ Line (EOL=0): “</p>
 
 Line (EOL=0): “line  in brackets0still  continues0”<break/>
 
+Line (EOL=0): “line  with extra  ”<break/>
+
 Line (EOL=0): “line with par</p>
     </para>
     <para xml:id="S0.SS0.SSS0.Px5.p3">
@@ -354,6 +361,8 @@ Line (eTeX): “ˆˆMﬂ”<break/>
 Line (eTeX): “line – in bracketsﬂ”<break/>
 
 Line (eTeX): “still ˝ continuesﬂ”<break/>
+
+Line (eTeX): “line – with extra ˝ ˝ silently discards ˝ﬂ”<break/>
 
 Line (eTeX): “line with par “par inside.ﬂ”<break/>
 
