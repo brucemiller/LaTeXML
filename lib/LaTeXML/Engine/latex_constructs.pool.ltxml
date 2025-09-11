@@ -4320,7 +4320,7 @@ DefConstructorI(T_CS("\\begin{filecontents}"), "Semiverbatim",
         "%%");
       my $line;
       $gullet->readRawLine; # discard remainder of \begin{filecontents} line!
-      while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents}')) {
+      while (defined($line = $gullet->readRawLine) && ($line !~ /\s*\\end\{filecontents\}/)) {
         push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
       NoteLog("Cached filecontents for $filename (" . scalar(@lines) . " lines)"); }]);
@@ -4338,7 +4338,7 @@ DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
         "%% from source `$job' on YYYY/MM/DD.");
       my $line;
       $gullet->readRawLine; # discard remainder of \begin{filecontents} line!
-      while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents*}')) {
+      while (defined($line = $gullet->readRawLine) && ($line !~ /\s*\\end\{filecontents\*\}/)) {
         push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
       NoteLog("Cached filecontents* for $filename (" . scalar(@lines) . " lines)"); }]);
