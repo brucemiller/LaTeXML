@@ -36,6 +36,13 @@ use base qw(Exporter);
 our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_make &pathname_canonical
   &pathname_split &pathname_directory &pathname_name &pathname_type
+  &pathname_r &pathname_w &pathname_x &pathname_o
+  &pathname_R &pathname_W &pathname_X &pathname_O
+  &pathname_e &pathname_z &pathname_s
+  &pathname_f &pathname_d &pathname_l &pathname_p &pathname_S &pathname_b &pathname_c
+  &pathname_u &pathname_g &pathname_k
+  &pathname_T &pathname_B
+  &pathname_M &pathname_A &pathname_C
   &pathname_timestamp
   &pathname_concat
   &pathname_relative &pathname_absolute &pathname_to_url
@@ -222,6 +229,41 @@ sub pathname_to_url {
 
 #======================================================================
 # Actual file system operations.
+
+# prototype (_) to make pathname_X, -X have the same precedence
+sub pathname_r(_) { return -r $_[0]; }
+sub pathname_w(_) { return -w $_[0]; }
+sub pathname_x(_) { return -x $_[0]; }
+sub pathname_o(_) { return -o $_[0]; }
+
+sub pathname_R(_) { return -R $_[0]; }
+sub pathname_W(_) { return -W $_[0]; }
+sub pathname_X(_) { return -X $_[0]; }
+sub pathname_O(_) { return -O $_[0]; }
+
+sub pathname_e(_) { return -e $_[0]; }
+sub pathname_z(_) { return -z $_[0]; }
+sub pathname_s(_) { return -s $_[0]; }
+
+sub pathname_f(_) { return -f $_[0]; }
+sub pathname_d(_) { return -d $_[0]; }
+sub pathname_l(_) { return -l $_[0]; }
+sub pathname_p(_) { return -p $_[0]; }
+sub pathname_S(_) { return -S $_[0]; }
+sub pathname_b(_) { return -b $_[0]; }
+sub pathname_c(_) { return -c $_[0]; }
+
+sub pathname_u(_) { return -u $_[0]; }
+sub pathname_g(_) { return -g $_[0]; }
+sub pathname_k(_) { return -k $_[0]; }
+
+sub pathname_T(_) { return -T $_[0]; }
+sub pathname_B(_) { return -B $_[0]; }
+
+sub pathname_M(_) { return -M $_[0]; }
+sub pathname_A(_) { return -A $_[0]; }
+sub pathname_C(_) { return -C $_[0]; }
+
 sub pathname_timestamp {
   my ($pathname) = @_;
   return -f $pathname ? (stat($pathname))[9] : 0; }
