@@ -43,7 +43,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_u &pathname_g &pathname_k
   &pathname_T &pathname_B
   &pathname_M &pathname_A &pathname_C
-  &pathname_open &pathname_stat &pathname_unlink &pathname_openfile
+  &pathname_open &pathname_stat &pathname_unlink &pathname_openfile &pathname_opendir
   &pathname_timestamp
   &pathname_concat
   &pathname_relative &pathname_absolute &pathname_to_url
@@ -273,6 +273,10 @@ sub pathname_unlink(@) { return unlink(@_); }
 sub pathname_openfile(\$$$) {
   my ($fhref, $mode, $file) = @_;
   return open($$fhref, $mode, $file); }
+
+sub pathname_opendir(\$$) {
+  my ($dhref, $dir) = @_;
+  return opendir($$dhref, $dir); }
 
 sub pathname_timestamp {
   my ($pathname) = @_;
