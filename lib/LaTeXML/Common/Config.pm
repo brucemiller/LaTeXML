@@ -633,7 +633,7 @@ sub _read_options_file {
   my $OPT;
 #### Now can we report status to right places before we've gotten configuration??? (verbosity, logfile...)
 ####  ProgressSpinup("Loading profile $file");
-  unless (open($OPT, "<", $file)) {
+  unless (pathname_openfile($OPT, "<", $file)) {
     Error('expected', $file, "Could not open options file '$file'");
     return; }
   while (my $line = <$OPT>) {

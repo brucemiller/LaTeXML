@@ -96,7 +96,7 @@ sub get_archive {
     local $/ = undef;
     my $FH;
     my $pathname = pathname_concat($directory, $file);
-    open $FH, "<", $pathname
+    pathname_openfile($FH, "<", $pathname)
       # TODO: Switch to Error API
       #or Fatal('I/O', $pathname, undef, "File $pathname is not readable.");
       or (print STDERR "Fatal:I/O:$pathname File $pathname is not readable.");

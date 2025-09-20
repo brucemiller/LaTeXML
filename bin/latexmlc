@@ -185,7 +185,7 @@ if ($result) {
   # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if ($destination) {
     my $output_handle;
-    open($output_handle, ">", $destination) or die("Fatal:I/O:forbidden Couldn't open output file " . $destination . ": $!");
+    pathname_openfile($output_handle, ">", $destination) or die("Fatal:I/O:forbidden Couldn't open output file " . $destination . ": $!");
     if ($whatsout eq 'archive') {
       binmode($output_handle, ':raw');
     }

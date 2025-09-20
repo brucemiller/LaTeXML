@@ -255,7 +255,7 @@ sub generateImages {
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir => $workdir, name => $jobname, type => 'tex');
     my $TEX;
-    if (!open($TEX, '>', $texfile)) {
+    if (!pathname_openfile($TEX, '>', $texfile)) {
       Error('I/O', $texfile, undef, "Cant write to '$texfile'", "Response was: $!");
       return $doc; }
     my ($pre_preamble, $add_to_body) = $self->pre_preamble($doc);
@@ -302,7 +302,7 @@ sub generateImages {
     # Extract dimensions (width x height+depth) from each image from log file.
     my @dimensions = ();
     my $LOG;
-    if (open($LOG, '<', "$workdir/$jobname.log")) {
+    if (pathname_openfile($LOG, '<', "$workdir/$jobname.log")) {
       while (<$LOG>) {
         if (/^\s*LXIMAGE\s*(\d+)\s*=\s*([\+\-\d\.]+)pt\s*x\s*([\+\-\d\.]+)pt\s*\+\s*([\+\-\d\.]+)pt\s*$/) {
           $dimensions[$1] = [$2, $3, $4]; } }
