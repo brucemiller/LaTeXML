@@ -294,7 +294,7 @@ sub pathname_mkdir {
   my (@dirs) = (File::Spec->splitdir($dirs), $last);
   for (my $i = 0 ; $i <= $#dirs ; $i++) {
     my $dir = File::Spec->catpath($volume, File::Spec->catdir(@dirs[0 .. $i]), '');
-    if (!-d $dir) {
+    if (!pathname_d $dir) {
       mkdir($dir) or return; } }
   return $directory; }
 
@@ -338,7 +338,7 @@ sub pathname_copy {
 #    was installed, by appending it to the paths.
 
 # This is presumably daemon safe...
-my @INSTALLDIRS = grep { (pathname_f "$_.pm") && (-d $_) }
+my @INSTALLDIRS = grep { (pathname_f "$_.pm") && (pathname_d $_) }
   map { pathname_canonical($_ . $SEP . 'LaTeXML') } @INC;    # [CONSTANT]
 
 sub pathname_installation {
@@ -476,7 +476,7 @@ sub build_kpse_cache {
   my @filters = ();    # Really shouldn't end up empty.
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
-    push(@filters, $path) if -d $path; }
+    push(@filters, $path) if pathname_d $path; }
   my $filterre = scalar(@filters) && '(?:' . join('|', map { "\Q$_\E"; } @filters) . ')';
   $texmf =~ s/^["']//; $texmf =~ s/["']$//;
   $texmf =~ s/^\s*\\\{(.+?)}\s*$/$1/s;
