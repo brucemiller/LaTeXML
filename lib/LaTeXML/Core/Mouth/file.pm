@@ -32,6 +32,7 @@ sub new {
 sub openFile {
   my ($self, $pathname) = @_;
   my $IN;
+  RecordInput($pathname);
   if (!-r $pathname) {
     Error('I/O', 'unreadable', $self, "File $pathname is not readable. Ignoring."); }
   elsif ((!-z $pathname) && (-B $pathname)) {
