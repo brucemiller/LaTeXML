@@ -31,7 +31,7 @@ sub latexml_tests {
   if ($options{texlive_min} && (texlive_version() < $options{texlive_min})) {
     plan skip_all => "Requirement minimal texlive $options{texlive_min} not met.";
     return done_testing(); }
-  if (!opendir($DIR, $directory)) {
+  if (!pathname_opendir($DIR, $directory)) {
     # Can't read directory? Fail (assumed single) test.
     return do_fail($directory, "Couldn't read directory $directory:$!"); }
   else {
