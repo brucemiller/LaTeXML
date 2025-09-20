@@ -34,7 +34,7 @@ sub openFile {
   my $IN;
   if (!-r $pathname) {
     Error('I/O', 'unreadable', $self, "File $pathname is not readable. Ignoring."); }
-  elsif ((!pathname_z $pathname) && (-B $pathname)) {
+  elsif ((!pathname_z $pathname) && (pathname_B $pathname)) {
     Error('invalid', 'binary', $self, "Input file $pathname appears to be binary. Ignoring."); }
   elsif (open($IN, '<:raw', $pathname)) { }
   else {
