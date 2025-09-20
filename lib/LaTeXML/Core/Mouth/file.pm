@@ -32,7 +32,7 @@ sub new {
 sub openFile {
   my ($self, $pathname) = @_;
   my $IN;
-  if (!-r $pathname) {
+  if (!pathname_r $pathname) {
     Error('I/O', 'unreadable', $self, "File $pathname is not readable. Ignoring."); }
   elsif ((!pathname_z $pathname) && (pathname_B $pathname)) {
     Error('invalid', 'binary', $self, "Input file $pathname appears to be binary. Ignoring."); }
