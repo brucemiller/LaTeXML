@@ -350,6 +350,9 @@ sub parse_rec {
           $attr{font} = $font->specialize($content); } }
       else {
         delete $attr{_font}; }
+      # Don't copy _box (as string!) from $node if $result already has _box recorded.
+      if (exists $attr{_box} && p_getAttribute($result,'_box')) {
+        delete $attr{_box}; }
       foreach my $key (keys %attr) {
         next unless ($key =~ /^_/) || $document->canHaveAttribute($rtag, $key);
         my $value = $attr{$key};
