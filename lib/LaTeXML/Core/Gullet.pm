@@ -115,8 +115,12 @@ sub readingFromMouth {
   elsif ($sourcetype =~ /^LaTeXML::Core::Tokens?$/) { # Tokens will be unread into Mouth
     $mouth = LaTeXML::Core::Mouth->new();
     $intokens = $source; }
+  elsif (! $source->isa('LaTeXML::Core::Mouth')) {
+    Error('expected','Mouth', $self,
+      "Input source was not a string, Tokens or Mouth: $source; ignoring it.");
+    $mouth = LaTeXML::Core::Mouth->new(); }
   else {
-    $mouth = $source; }         # Hopefully is a Mouth.
+    $mouth = $source; }
   openMouth($self, $mouth, 1);    # only allow mouth to be explicitly closed here.
   $self->unread($intokens) if $intokens; # Preload the mouth
   my ($result, @result);
