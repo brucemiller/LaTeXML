@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
 <?latexml package="calc"?>
+<?latexml package="graphicx"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -109,6 +110,27 @@
     </para>
     <para xml:id="S5.p2">
       <p>Count 3*maxof(4+5)(3*4) =36.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S6">
+    <tags>
+      <tag>6</tag>
+      <tag role="refnum">6</tag>
+      <tag role="typerefnum">§6</tag>
+    </tags>
+    <title><tag close=" ">6</tag>Magical Redefinition</title>
+    <para xml:id="S6.p1">
+      <p>All but 1st 2 would fail in stock LaTeX:
+Foo
+<text width="72.3pt">Foo</text>
+<text width="72.3pt">Foo</text>
+<text width="72.3pt">Foo</text>
+<text width="72.3pt">Foo</text></p>
+    </para>
+    <para xml:id="S6.p2">
+      <graphics candidates="none.png" graphic="none" xml:id="S6.p2.g1"/>
+      <graphics candidates="none.png" graphic="none" options="width=144.5pt,keepaspectratio=true" xml:id="S6.p2.g2"/>
+      <graphics candidates="none.png" graphic="none" options="width=144.5pt,keepaspectratio=true" xml:id="S6.p2.g3"/>
     </para>
   </section>
 </document>
