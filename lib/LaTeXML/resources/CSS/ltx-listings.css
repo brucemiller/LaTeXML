@@ -1,5 +1,56 @@
-
 .ltx_listing_data {
-  float:right; }  
+  float: right;
+}
 .ltx_listing_data a {
-  text-decoration:none; }
+  text-decoration: none;
+}
+.ltx_listing_copy2clip {
+  position: absolute;
+}
+.ltx_listing_button {
+  appearance: none;
+  background-color: #FAFBFC;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+  box-sizing: border-box;
+  color: #24292E;
+  cursor: pointer;
+  height: 36px;
+  padding: 6px;
+  position: relative;
+  overflow: hidden;
+  width: 36px
+}
+.ltx_listing_button::before,
+.ltx_listing_button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 60%;
+  transition: opacity 0.6s ease-in-out;
+}
+.ltx_listing_button::before {
+  opacity: 1;
+  /* copy icon */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 359 444' fill='none'><defs><clipPath id='clip1'><path d='M0 0h359v444H0zM37 97v310h225V97z'/></clipPath><clipPath id='clip2'><path d='M0 0h359v444H0zM97 37v310h225V37z'/></clipPath></defs><rect x='37' y='97' width='225' height='310' fill='white'/><rect x='37' y='97' width='225' height='310' fill='none' stroke='gray' stroke-linecap='round' stroke-linejoin='round' stroke-width='72' clip-path='url(%23clip1)'/><rect x='97' y='37' width='225' height='310' fill='white'/><rect x='97' y='37' width='225' height='310' fill='none' stroke='gray' stroke-linecap='round' stroke-linejoin='round' stroke-width='72' clip-path='url(%23clip2)'/></svg>");
+}
+.ltx_listing_button::after {
+  opacity: 0;
+}
+.ltx_listing_button.success::after {
+  opacity: 1;
+  /* success icon */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 359 444'><circle cx='179.5' cy='222' r='178.3' fill='%2300a337'/><path d='M235.3 109.5 L123.6 308.2 L155.7 305.4 L110.7 245.6 L96.7 227.7 L65.8 267.7 L80.5 283.0 L125.3 340.5 L143.7 364.9 L158.5 338.1 L270.2 138.8 L281.8 117.8 L247.0 87.9 Z' fill='white'/></svg>");
+}
+.ltx_listing_button.error::after {
+  opacity: 1;
+  /* error icon */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 359 444'><circle cx='179.5' cy='222' r='178.3' fill='%23c33641'/><line x1='110.3' y1='138.3' x2='245.6' y2='305.4' stroke='white' stroke-linecap='square' stroke-width='56.1'/><line x1='247.0' y1='136.0' x2='111.6' y2='303.7' stroke='white' stroke-linecap='square' stroke-width='56.1'/></svg>");
+}
+.ltx_listing_button.success::before,
+.ltx_listing_button.error::before {
+  opacity: 0;
+}
