@@ -127,9 +127,7 @@ sub digest {
   no warnings 'recursion';
   return unless defined $tokens;
   return
-    $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-      my ($gullet) = @_;
-      $gullet->unread($tokens);
+    $$self{gullet}->readingFromMouth($tokens, sub {
       $STATE->clearPrefixes;    # prefixes shouldn't apply here.
       my $mode      = $STATE->lookupValue('MODE');
       my $ismath    = $STATE->lookupValue('IN_MATH');

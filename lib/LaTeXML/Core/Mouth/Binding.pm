@@ -16,6 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Locator;
 use LaTeXML::Common::Error;
 use LaTeXML::Util::Pathname;
+use base qw(LaTeXML::Core::Mouth);
 
 # This is a fake mouth, used for processing *.ltxml, *.latexml files
 # It exists primarily for the purposes of

@@ -56,10 +56,8 @@ DefMacro('\multidostop', '\multidocount=\multido@count');
 #   Number are fixed point (and print that way!)
 # concievably variables can be redefined in middle of loop?
 DefMacro('\multido@@initvars@@{}', sub {
-    my ($ogullet, $variables) = @_;
-    $ogullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-        my ($gullet) = @_;
-        $gullet->unread($variables);
+    my ($gullet, $variables) = @_;
+    $gullet->readingFromMouth($variables, sub {
         my @inits = ();
         my @steps = ();
         $gullet->skipSpaces;

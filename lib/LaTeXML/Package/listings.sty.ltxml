@@ -1102,16 +1102,15 @@ DefKeyVal('LST', 'morefvcmdparams', '');
 DefMacro('\lst@@literate OptionalMatch:* Until:\end', sub {
     my ($gullet, $star, $patterns) = @_;
     # * means do not replace within strings, comments,...
-    $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-        my ($igullet) = @_;
-        $igullet->unread($patterns);
+    $gullet->readingFromMouth($patterns, sub {
         while (1) {    # $patterns is repeated triples:
           my ($pattern, $replacement, $length)
-            = ($igullet->readArg, $igullet->readArg, $igullet->readArg);
+            = ($gullet->readArg, $gullet->readArg, $gullet->readArg);
           last unless defined $pattern;
           UnshiftValue(LST_LITERATE
               => [ToString($pattern), $replacement, ($star ? 1 : 0), $length]); } });
     return; });
+
 #======================================================================
 # 4.17 Language definitions
 #======================================================================

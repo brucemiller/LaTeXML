@@ -5552,8 +5552,7 @@ sub latexChangeCase {
   my ($gullet, $reqcase, $tokens) = @_;
   my $case = $reqcase;
   $case = 'upper' if $reqcase eq 'sentence' or $reqcase eq 'title';
-  return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-      $gullet->unread($tokens);
+  return $gullet->readingFromMouth($tokens, sub {
       my @toks   = ();
       my $inmath = 0;
       ## Read while expanding, but careful not to expand \dont_expand'd tokens!

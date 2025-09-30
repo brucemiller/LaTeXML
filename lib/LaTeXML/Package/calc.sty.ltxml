@@ -112,10 +112,8 @@ DefPrimitive('\settototalheight{Variable} HBoxContents', sub {
 # Here, type = Number, Glue
 
 sub readExpression {
-  my ($ogullet, $type, $tokens) = @_;
-  return $ogullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-      my ($gullet) = @_;
-      $gullet->unread($tokens);    # Really so weird?
+  my ($gullet, $type, $tokens) = @_;
+  return $gullet->readingFromMouth($tokens, sub {
       my $term = readTerm($gullet, $type);
       while (my $op = $gullet->readKeyword('+', '-')) {
         my $term2 = readTerm($gullet, $type);
@@ -161,11 +159,9 @@ sub readValue {
   # Evaluate <Real> values
   elsif (Equals($peek, T_CS('\real'))) {
     my $arg = $gullet->readArg;
-    return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-        my ($igullet) = @_;
-        $igullet->unread($arg);    # Really so weird?
-                                   # Make a Float, but round it AS-IF it had been a fixpoint number
-        return Float(kround($igullet->readFloat()->valueOf * $UNITY) / $UNITY); }); }
+    return $gullet->readingFromMouth($arg, sub {
+      # Make a Float, but round it AS-IF it had been a fixpoint number
+      return Float(kround($gullet->readFloat()->valueOf * $UNITY) / $UNITY); }); }
   elsif (Equals($peek, T_CS('\ratio'))) {
     my $x    = readExpression($gullet, 'Glue', $gullet->readArg);
     my $y    = readExpression($gullet, 'Glue', $gullet->readArg);
