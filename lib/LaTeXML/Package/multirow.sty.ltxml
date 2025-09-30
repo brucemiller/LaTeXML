@@ -20,7 +20,7 @@ DefPrimitive('\multirow[]{Float}[Number]{}[Dimension]{}', sub {
     my ($stomach, $attachment, $nrows, $bigstruts, $width, $fixup, $content) = @_;
     if (my $alignment = LookupValue('Alignment')) {
       my $colspec = $alignment->currentColumn;
-      my $rowspan = $nrows->valueOf;
+      my $rowspan = $nrows ? $nrows->valueOf : 1;
       if ($rowspan < 0) {
         # Example from arXiv:2210.15835
         # \multirow{-8.2}{*}{\includegraphics[width=0.398\linewidth]{figures/NoPredict0msDelayRef}}
@@ -34,6 +34,7 @@ DefPrimitive('\multirow[]{Float}[Number]{}[Dimension]{}', sub {
       $$colspec{rowspan} = $rowspan;
       $$colspec{vattach} = translateAttachment($attachment) if $attachment;
     }
+    $content = Tokens() unless $content;
     Digest(Tokens(T_CS('\hbox'), T_BEGIN, T_CS('\multirowsetup'), $content->unlist, T_END)); });
 
 #**********************************************************************
