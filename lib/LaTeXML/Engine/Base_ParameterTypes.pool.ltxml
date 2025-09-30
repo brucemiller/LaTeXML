@@ -96,6 +96,44 @@ DefParameterType('XToken', sub { $_[0]->readXToken; });
 # Read a number
 DefParameterType('Number', sub { $_[0]->readNumber; });
 
+# Note that LaTeX defines several utilities, fairly heavily used,
+#   \setcounter, \setlength, along with \addtocounter,\addtolength
+# which basically just assign a register to a Number or Dimension.
+# These are typically defined in LaTeXML as {Number}, {Dimension}, or [Number],[Dimension]
+# since they are read as a normal arg, but then reparsed as Number or Dimension.
+# The calc package REDEFINES these to support a bit of arithmetic, or extra braces.
+# Thus MANY commands suddenly accept a much wider range of expressions!
+# Note also that calc actually accepts Glue expressions for Dimensions.
+# [We could have calc redefine the ParameterTypes, but the internal data has already
+# been incorporated into definition's Parameters objects; Thus the current hackery:]
+
+# Read a regular arg, but content should be Number,
+# or extended calc syntax if calc.sty is loaded.
+DefParameterType('{Number}', sub {
+    my ($gullet) = @_;
+    my $value = $gullet->readArg();
+    return $gullet->readingFromMouth($value, sub {
+      (LookupValue('calc.sty.ltxml_loaded')
+       ? readCalcExpression($gullet, 'Number')
+       : $gullet->readNumber()); }); },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+# Similar to {Number}, but for optional
+DefParameterType('[Number]', sub {
+    my ($gullet) = @_;
+    my $value = $gullet->readOptional;
+    return unless $value;
+    return $gullet->readingFromMouth($value, sub {
+      (LookupValue('calc.sty.ltxml_loaded')
+       ? readCalcExpression($gullet, 'Number')
+       : $gullet->readNumber()); }); },
+  optional  => 1,
+  reversion => sub {
+    my ($arg) = @_;
+    return ($arg ? (T_OTHER('['), Revert($arg), T_OTHER(']')) : ()); });
+
 # Read a floating point number
 DefParameterType('Float', sub { $_[0]->readFloat; });
 
@@ -107,8 +145,60 @@ sub ReadFloat {
 # Read a dimension
 DefParameterType('Dimension', sub { $_[0]->readDimension; });
 
+# This expects a TeX dimension, but wrapped in {}; redefinable by calc.sty
+DefParameterType('{Dimension}', sub {
+    my ($gullet) = @_;
+    my $value = $gullet->readArg();
+    return $gullet->readingFromMouth($value, sub {
+      (LookupValue('calc.sty.ltxml_loaded')
+       ? readCalcExpression($gullet, 'Glue') # Yes, calc parses a Glue for Dimensions!
+       : $gullet->readDimension()); }); },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+# Similar to {Dimension}, but for optional
+DefParameterType('[Dimension]', sub {
+    my ($gullet) = @_;
+    my $value = $gullet->readOptional;
+    return unless $value;
+    return $gullet->readingFromMouth($value, sub {
+      (LookupValue('calc.sty.ltxml_loaded')
+       ? readCalcExpression($gullet, 'Glue')
+       : $gullet->readDimension()); }); },
+  optional  => 1,
+  reversion => sub {
+    my ($arg) = @_;
+    return ($arg ? (T_OTHER('['), Revert($arg), T_OTHER(']')) : ()); });
+
 # Read a Glue (aka skip)
 DefParameterType('Glue', sub { $_[0]->readGlue; });
+
+# This expects a TeX Glue, but wrapped in {};  redefinable by calc.sty
+DefParameterType('{Glue}', sub {
+    my ($gullet) = @_;
+    my $value = $gullet->readArg();
+    return $gullet->readingFromMouth($value, sub {
+      (LookupValue('calc.sty.ltxml_loaded')
+       ? readCalcExpression($gullet, 'Glue')
+       : $gullet->readGlue()); }); },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+# Similar to {Glue}, but for optional
+DefParameterType('[Glue]', sub {
+    my ($gullet) = @_;
+    my $value = $gullet->readOptional;
+    return unless $value;
+    return $gullet->readingFromMouth($value, sub {
+      (LookupValue('calc.sty.ltxml_loaded')
+       ? readCalcExpression($gullet, 'Glue')
+       : $gullet->readGlue()); }); },
+  optional  => 1,
+  reversion => sub {
+    my ($arg) = @_;
+    return ($arg ? (T_OTHER('['), Revert($arg), T_OTHER(']')) : ()); });
 
 # Read a MuDimension (math)
 DefParameterType('MuDimension', sub { $_[0]->readMuDimension; });
