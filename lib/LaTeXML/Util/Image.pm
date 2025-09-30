@@ -448,6 +448,8 @@ sub image_read {
   if (!$source) {
     Error('imageprocessing', 'read', undef, "No image source given"); return; }
   return unless $source;
+  # read first page by default
+  $source .= '[0]';
   my $image = image_object();
   # Just in case this is pdf, set this option; ImageMagick defaults to MediaBox (Wrong!!!)
   image_internalop($image, 'Set',  option => 'pdf:use-cropbox=true') or return;
