@@ -12,8 +12,8 @@ name: Windows
 # To manually evict the cache, simply change the hash to something else.
 # Something like the output of `date | md5` usually works well.
 env:
-  PERL_CACHE_HASH: 8b135ad7213a28240f3986acefc8b77a
-  MIKTEX_CACHE_HASH: 618f448423191db4b246ef5de4d5ff88
+  PERL_CACHE_HASH: a2430e36618422e079d87ca2137bfb98
+  MIKTEX_CACHE_HASH: a2430e36618422e079d87ca2137bfb98
 
 on: [push, pull_request]
 
