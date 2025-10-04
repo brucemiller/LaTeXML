@@ -36,6 +36,14 @@ use base qw(Exporter);
 our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_make &pathname_canonical
   &pathname_split &pathname_directory &pathname_name &pathname_type
+  &pathname_r &pathname_w &pathname_x &pathname_o
+  &pathname_R &pathname_W &pathname_X &pathname_O
+  &pathname_e &pathname_z &pathname_s
+  &pathname_f &pathname_d &pathname_l &pathname_p &pathname_S &pathname_b &pathname_c
+  &pathname_u &pathname_g &pathname_k
+  &pathname_T &pathname_B
+  &pathname_M &pathname_A &pathname_C
+  &pathname_open &pathname_stat &pathname_unlink &pathname_openfile &pathname_opendir
   &pathname_timestamp
   &pathname_concat
   &pathname_relative &pathname_absolute &pathname_to_url
@@ -222,9 +230,57 @@ sub pathname_to_url {
 
 #======================================================================
 # Actual file system operations.
+
+# prototype (_) to make pathname_X, -X have the same precedence
+sub pathname_r(_) { return -r $_[0]; }
+sub pathname_w(_) { return -w $_[0]; }
+sub pathname_x(_) { return -x $_[0]; }
+sub pathname_o(_) { return -o $_[0]; }
+
+sub pathname_R(_) { return -R $_[0]; }
+sub pathname_W(_) { return -W $_[0]; }
+sub pathname_X(_) { return -X $_[0]; }
+sub pathname_O(_) { return -O $_[0]; }
+
+sub pathname_e(_) { return -e $_[0]; }
+sub pathname_z(_) { return -z $_[0]; }
+sub pathname_s(_) { return -s $_[0]; }
+
+sub pathname_f(_) { return -f $_[0]; }
+sub pathname_d(_) { return -d $_[0]; }
+sub pathname_l(_) { return -l $_[0]; }
+sub pathname_p(_) { return -p $_[0]; }
+sub pathname_S(_) { return -S $_[0]; }
+sub pathname_b(_) { return -b $_[0]; }
+sub pathname_c(_) { return -c $_[0]; }
+
+sub pathname_u(_) { return -u $_[0]; }
+sub pathname_g(_) { return -g $_[0]; }
+sub pathname_k(_) { return -k $_[0]; }
+
+sub pathname_T(_) { return -T $_[0]; }
+sub pathname_B(_) { return -B $_[0]; }
+
+sub pathname_M(_) { return -M $_[0]; }
+sub pathname_A(_) { return -A $_[0]; }
+sub pathname_C(_) { return -C $_[0]; }
+
+sub pathname_stat(_) { return stat $_[0]; }
+
+sub pathname_unlink(@) { return unlink(@_); }
+
+# prototype allows pathname_openfile(my $fh, ...)
+sub pathname_openfile(\$$$) {
+  my ($fhref, $mode, $file) = @_;
+  return open($$fhref, $mode, $file); }
+
+sub pathname_opendir(\$$) {
+  my ($dhref, $dir) = @_;
+  return opendir($$dhref, $dir); }
+
 sub pathname_timestamp {
   my ($pathname) = @_;
-  return -f $pathname ? (stat($pathname))[9] : 0; }
+  return pathname_f $pathname ? (pathname_stat($pathname))[9] : 0; }
 
 our $CWD = undef;
 # DO NOT use pathname_cwd, unless you also use pathname_chdir to change dirs!!!
@@ -252,7 +308,7 @@ sub pathname_mkdir {
   my (@dirs) = (File::Spec->splitdir($dirs), $last);
   for (my $i = 0 ; $i <= $#dirs ; $i++) {
     my $dir = File::Spec->catpath($volume, File::Spec->catdir(@dirs[0 .. $i]), '');
-    if (!-d $dir) {
+    if (!pathname_d $dir) {
       mkdir($dir) or return; } }
   return $directory; }
 
@@ -263,7 +319,7 @@ sub pathname_copy {
   # If it _needs_ to be copied:
   $source      = pathname_canonical($source);
   $destination = pathname_canonical($destination);
-  if ((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))) {
+  if ((!pathname_f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))) {
     if (my $destdir = pathname_directory($destination)) {
       pathname_mkdir($destdir) or return; }
 ###    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
@@ -273,7 +329,7 @@ sub pathname_copy {
 ###      system("cp --preserve=timestamps $source $destination")==0 or return; }
     # Hopefully this portably copies, preserving timestamp.
     copy($source, $destination) or return;
-    my ($atime, $mtime) = (stat($source))[8, 9];
+    my ($atime, $mtime) = (pathname_stat($source))[8, 9];
     utime $atime, $mtime, $destination;    # And set the modification time
   }
   return $destination; }
@@ -296,7 +352,7 @@ sub pathname_copy {
 #    was installed, by appending it to the paths.
 
 # This is presumably daemon safe...
-my @INSTALLDIRS = grep { (-f "$_.pm") && (-d $_) }
+my @INSTALLDIRS = grep { (pathname_f "$_.pm") && (pathname_d $_) }
   map { pathname_canonical($_ . $SEP . 'LaTeXML') } @INC;    # [CONSTANT]
 
 sub pathname_installation {
@@ -374,7 +430,7 @@ sub candidate_pathnames {
           qr/^\Q$name\E\Q$ext\E$/]); } }
   # Now, combine; precedence to leading directories.
   foreach my $dir (@dirs) {
-    opendir(my $dir_handle, $dir) or next;
+    pathname_opendir(my $dir_handle, $dir) or next;
     my @dir_files = readdir($dir_handle);
     closedir($dir_handle);
     for my $local_file (@dir_files) {
@@ -434,7 +490,7 @@ sub build_kpse_cache {
   my @filters = ();    # Really shouldn't end up empty.
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
-    push(@filters, $path) if -d $path; }
+    push(@filters, $path) if pathname_d $path; }
   my $filterre = scalar(@filters) && '(?:' . join('|', map { "\Q$_\E"; } @filters) . ')';
   $texmf =~ s/^["']//; $texmf =~ s/["']$//;
   $texmf =~ s/^\s*\\\{(.+?)}\s*$/$1/s;
@@ -443,11 +499,11 @@ sub build_kpse_cache {
   foreach my $dir (@dirs) {
     $dir =~ s/^!!//;
     # Presumably if no ls-R, we can ignore the directory?
-    if (-f "$dir/ls-R") {
+    if (pathname_f "$dir/ls-R") {
       my $LSR;
       my $subdir;
       my $skip = 0;    # whether to skip entries in the current subdirectory.
-      open($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
+      pathname_openfile($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
       while (<$LSR>) {
         chop;
         next if !$_ || (substr($_, 0, 1) eq '%');
