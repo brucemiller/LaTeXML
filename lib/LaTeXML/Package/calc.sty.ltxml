@@ -27,30 +27,12 @@ DefPrimitive('\heightof', '');
 DefPrimitive('\ratio',    '');
 DefPrimitive('\real',     '');
 
-# \setcounter{<ctr>}{<integer expression>}
-DefPrimitive('\setcounter{}{}', sub {
-    my ($stomach, $ctr, $arg) = @_;
-    SetCounter($ctr, readExpression($stomach->getGullet, 'Number', $arg));
-    return; });
-
-# \addtocounter{<ctr>}{<integer expression>}
-DefPrimitive('\addtocounter{}{}', sub {
-    my ($stomach, $ctr, $arg) = @_;
-    AddToCounter($ctr, readExpression($stomach->getGullet, 'Number', $arg));
-    return; });
-
-DefPrimitive('\setlength{Variable}{}', sub {
-    my ($stomach, $var, $arg) = @_;
-    my ($defn, @args) = @$var;
-    return unless $defn && ($defn ne 'missing');
-    $defn->setValue(readExpression($stomach->getGullet, 'Glue', $arg), undef, @args); });
-
-DefPrimitive('\addtolength{Variable}{}', sub {
-    my ($stomach, $var, $arg) = @_;
-    my ($defn, @args) = @$var;
-    return unless $defn && ($defn ne 'missing');
-    $defn->setValue($defn->valueOf(@args)->add(readExpression($stomach->getGullet, 'Glue', $arg)),
-      undef, @args); });
+# These don't need to be redefined (from latex), since they get extended via
+# the {Number},{Dimension} parameter types.
+# \setcounter{<reg>}{<integer expression>}
+# \addtocounter{<reg>}{<integer expression>}
+# \setlength{<reg}{<glue expression>}
+# \addtolength{<reg}{<glue expression>}
 
 DefPrimitive('\settowidth{Variable} HBoxContents', sub {
     my ($stomach, $var, $box) = @_;
@@ -120,6 +102,14 @@ sub readExpression {
         $term = ($op eq '+' ? $term->add($term2) : $term->subtract($term2)); }
       return $term; }); }
 
+sub readCalcExpression {
+  my ($gullet, $type) = @_;
+  my $term = readTerm($gullet, $type);
+  while (my $op = $gullet->readKeyword('+', '-')) {
+    my $term2 = readTerm($gullet, $type);
+    $term = ($op eq '+' ? $term->add($term2) : $term->subtract($term2)); }
+  return $term; }
+
 sub readTerm {
   my ($gullet, $type) = @_;
   $gullet->skipSpaces;
@@ -182,6 +172,9 @@ sub readValue {
   # Read & Evaluate parenthesized subexpressions
   elsif (Equals($peek, T_OTHER('('))) {
     return readExpression($gullet, $type, $gullet->readUntil(T_OTHER(')'))); }
+  elsif (Equals($peek, T_BEGIN)) {
+    $gullet->unread($gullet->readBalanced); # Effectively strip the brace.
+    return readValue($gullet, $type); }     # then retry
   # Else read literal values.
   else {
     $gullet->unread($peek);
