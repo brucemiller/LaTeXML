@@ -20,6 +20,30 @@
       <p>example-b</p>
     </figure>
     <toccaption><tag close=" ">1</tag>caption text</toccaption>
-    <caption><tag close=". ">Figure 1</tag>caption text<note class="ltx_nodisplay" xml:id="acmlabel1">Fly 1 and Fly 2 look identical</note></caption>
+    <caption><tag close=". ">Figure 1</tag>caption text<note class="ltx_nodisplay" xml:id="acmlabel1">Fly 1 and fly 2 comparison shows identical length, wingspan, and overall bodily structure.</note></caption>
+  </figure>
+  <pagination role="newpage"/>
+  <figure aria:labelledby="acmlabel2" inlist="lof" xml:id="S0.F2">
+    <tags>
+      <tag>Figure 2</tag>
+      <tag role="autoref">Figure 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">Figure 2</tag>
+    </tags>
+    <graphics candidates="../graphics/none.png" graphic="../graphics/none.png" options="scale=0.4" xml:id="S0.F2.g1"/>
+    <toccaption><tag close=" ">2</tag>Caption text</toccaption>
+    <caption><tag close=". ">Figure 2</tag>Caption text<note class="ltx_nodisplay" labels="LABEL:fig:stroke_styles" xml:id="acmlabel2">Description text</note></caption>
+  </figure>
+  <pagination role="newpage"/>
+  <figure aria:labelledby="acmlabel3" inlist="lof" placement="htbp" xml:id="S0.F3">
+    <tags>
+      <tag>Figure 3</tag>
+      <tag role="autoref">Figure 3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">Figure 3</tag>
+    </tags>
+    <graphics candidates="../graphics/none.png" class="ltx_centering" graphic="../graphics/none.png" options="width=433.62pt,keepaspectratio=true" xml:id="S0.F3.g1"/>
+    <toccaption class="ltx_centering"><tag close=" ">3</tag>Caption text</toccaption>
+    <caption class="ltx_centering"><tag close=". ">Figure 3</tag>Caption text<note class="ltx_centering ltx_nodisplay" labels="LABEL:pic:2405" xml:id="acmlabel3">Description text</note></caption>
   </figure>
 </document>

@@ -75,11 +75,12 @@ DefMacro('\terms{}',               '\@add@frontmatter{ltx:keywords}{#1}');
 
 # Accessible figure descriptions
 NewCounter('acmlabel');
-DefConstructor('\Description[]{}', '^^<ltx:note xml:id="#id" class="ltx_nodisplay">#1</ltx:note>',
+DefConstructor('\Description[]{}', '^^<ltx:note xml:id="#id" class="ltx_nodisplay">#2</ltx:note>',
   properties => sub { ('width' => Dimension(0), 'height' => Dimension(0), RefStepCounter('acmlabel')) },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     # TODO: Is there something useful to do with the short description in our schema?
+    #       For now we only use the long description.
     my $figure = $document->getElement;
     $document->setAttribute($figure, 'aria:labelledby', $whatsit->getProperty('id'));
     return; });
