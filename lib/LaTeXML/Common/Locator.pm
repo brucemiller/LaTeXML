@@ -146,7 +146,7 @@ case of an anonymous string. C<$fromLine> and C<$fromCol> should be integers
 containing the line and column numbers of the start of the range in the source
 file, or undef if unknown. C<$toLine> and C<$toCol> should be the integers
 containing the line and column numbers of the end of the range, or undef 
-if a point is being referred to. 
+if a point is being referred to. Lines and columns should be 1-indexed.
 
 =item C<< $locator = LaTeXML::Common::Locator->newRange($from, $to); >>
 
