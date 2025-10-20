@@ -114,15 +114,15 @@ DefMacro('\leftrightarrowfill@ {}', '\lx@amscd@leftrightarrow');
 
 # These are stretchy, widenned version; should be \minCDarrowsidth or \minaw@ wide
 DefPrimitive('\lx@amscd@leftarrow', sub {
-    Box("\x{2190}", undef, undef, '\leftarrow',
+    Box("\x{2190}", undef, undef, T_CS('\leftarrow'),
       role => 'ARROW', stretchy => 'true', meaning => 'leftarrow',
       class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
 DefPrimitive('\lx@amscd@rightarrow', sub {
-    Box("\x{2192}", undef, undef, '\rightarrow',
+    Box("\x{2192}", undef, undef, T_CS('\rightarrow'),
       role => 'ARROW', stretchy => 'true', meaning => 'rightarrow',
       class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
 DefPrimitive('\lx@amscd@leftrightarrow', sub {
-    Box("\x{2194}", undef, undef, '\leftrightarrow',
+    Box("\x{2194}", undef, undef, T_CS('\leftrightarrow'),
       role => 'ARROW', stretchy => 'true', meaning => 'leftrightarrow',
       class=>'ltx_horizontally_stretchy',  width => Dimension('30pt')); });
 DefPrimitive('\lx@amscd@equals', sub {

@@ -80,14 +80,20 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
       AssignValue(PRESERVE_NEWLINES => 2);    # Special EOL/EOF treatment for \read
       AssignValue(INCLUDE_COMMENTS  => 0);
       my @tokens = ();
-      my ($t, $level) = (undef, 0);
+      my ($t, $level, $discard) = (undef, 0, 0);
       while ($t = $mouth->readToken) {
         my $cc = $t->getCatcode;
-        push(@tokens, $t) unless $cc == CC_MARKER;    # End of line marker
-        $level++ if $cc == CC_BEGIN;
-        $level-- if $cc == CC_END;
-        last     if !$level && $mouth->isEOL; }
+        $level++     if $cc == CC_BEGIN;
+        $level--     if $cc == CC_END;
+        $discard = 1 if $level < 0;            # SILENTLY discard extra } & read till EOL
+        push(@tokens, $t) unless $discard || ($cc == CC_MARKER); # End of line marker
+        last         if (!$level || $discard) && $mouth->isEOL; }
       $stomach->egroup;
+      if ($level > 0) {
+        Error('unexpected','unbalanced', $stomach,
+          "Runaway definition? File ended within \\read with unbalanced {",
+          "Got ".ToString(Tokens(@tokens)));
+        push(@tokens, map { T_END; } 1.. $level); } # Patch to avoid Fatal! (non-TeX!)
       DefMacroI($token, undef, Tokens(@tokens), nopackParameters => 1); }
     return; });
 

@@ -7,6 +7,12 @@
 \def\Aaa#1{sa#1aa}
 \def\b{bb}
 \def\c a#1b#2c{one#1c#2}
+\edef\foo{%
+  \csname A\endcsname%
+  \csname expl:n\endcsname%
+  \csname B\endcsname%
+  \csname *\endcsname%
+  \csname C\endcsname}
 
 \meaning A 
 
@@ -56,5 +62,7 @@
 \meaning }
 
 \meaning $
+
+\meaning\foo
 
 \end{document}

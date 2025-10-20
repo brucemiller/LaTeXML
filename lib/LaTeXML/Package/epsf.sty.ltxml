@@ -44,9 +44,9 @@ DefPrimitive('\epsfclipoff', sub { AssignValue(epsf_clip => 0); return; });
 
 DefConstructor('\epsfbox[] Semiverbatim',
   "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",
-  sizer      => \&image_graphicx_sizer,
+  sizer           => \&image_graphicx_sizer,
   enterHorizontal => 1,
-  properties => sub {
+  properties      => sub {
     my ($document, $bb, $graphic) = @_;
     my $clip    = LookupValue('epsf_clip');
     my $options = ($clip ? ($bb ? "viewport=" . ToString($bb) . ", clip" : "clip") : '');

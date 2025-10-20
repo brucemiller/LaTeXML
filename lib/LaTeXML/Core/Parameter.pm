@@ -113,17 +113,8 @@ sub reparse {
   elsif ($$self{semiverbatim}) {                            # Needs neutralization
     return $tokens->neutralize(@{ $$self{semiverbatim} }); }    # but maybe specific to catcodes
   else {
-    return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {    # start with empty mouth
-        my ($gulletx) = @_;
-        my @tokens = $tokens->unlist;
-        if (@tokens    # Strip outer braces from dimensions & friends
-          && ($$self{type} =~ /^(?:Number|Dimension|Glue|MuDimension|MuGlue)$/)
-          && ($tokens[0]->getCatcode == CC_BEGIN) && ($tokens[-1]->getCatcode == CC_END)) {
-          shift(@tokens); pop(@tokens); }
-        $gulletx->unread(@tokens);    # but put back tokens to be read
-        my $value = $self->read($gulletx);
-        $gulletx->skipSpaces;
-        return $value; }); } }
+    return $gullet->readingFromMouth($tokens, sub {
+      $self->read($gullet); }); } }
 
 sub digest {
   no warnings 'recursion';
@@ -133,14 +124,12 @@ sub digest {
   if ($$self{semiverbatim}) {
     $STATE->beginSemiverbatim(@{ $$self{semiverbatim} });
     if ((ref $value eq 'LaTeXML::Core::Token') || (ref $value eq 'LaTeXML::Core::Tokens')) {
-      $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-          my ($igullet) = @_;
-          $igullet->unread($value);
-          my @tokens = ();
-          while (defined(my $token = $igullet->getPendingComment || $igullet->readXToken(1))) {
-            push(@tokens, $token); }
-          $value = Tokens(@tokens);
-          $value = $value->neutralize; }); } }
+      $stomach->getGullet->readingFromMouth($value, sub {
+        my ($gullet) = @_;
+        my @tokens = ();
+        while (defined(my $token = $gullet->getPendingComment || $gullet->readXToken(1))) {
+          push(@tokens, $token); }
+        $value = Tokens(@tokens)->neutralize; }); } }
   if (my $pre = $$self{beforeDigest}) {    # Done for effect only.
     &$pre($stomach); }                     # maybe pass extras?
   $value = $value->beDigested($stomach) if (ref $value) && !$$self{undigested};

@@ -951,18 +951,16 @@ sub Expand {
   my (@tokens) = @_;
   return () unless @tokens;
   my $gullet = $STATE->getStomach->getGullet;
-  return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-      $gullet->unread(T_BEGIN, @tokens, T_END);
-      return $gullet->readBalanced(2, 0, 1); }); }
+  return $gullet->readingFromMouth(Tokens(T_BEGIN, @tokens, T_END), sub {
+    $gullet->readBalanced(2, 0, 1); }); }
 
 # Return $tokens, partially expanded (defer protected, and results of \the)
 sub ExpandPartially {
   my (@tokens) = @_;
   return () unless @tokens;
   my $gullet = $STATE->getStomach->getGullet;
-  return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-      $gullet->unread(T_BEGIN, @tokens, T_END);
-      return $gullet->readBalanced(1, 0, 1); }); }
+  return $gullet->readingFromMouth(Tokens(T_BEGIN, @tokens, T_END), sub {
+    $gullet->readBalanced(1, 0, 1); }); }
 
 sub Invocation {
   my ($token, @args) = @_;
@@ -1372,10 +1370,8 @@ sub LookupDimension {
     if ($defn->isRegister) {    # Easy (and proper) case.
       return $defn->valueOf; }
     else {
-      $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub { # start with empty mouth
-          my ($gullet) = @_;
-          $gullet->unread($cs);    # but put back tokens to be read
-          return $gullet->readDimension; }); } }
+      return $STATE->getStomach->getGullet->readingFromMouth($cs, sub {
+        $_[0]->readDimension; }); } }
   else {
     Warn('expected', 'register', $STATE->getStomach,
       "The control sequence " . ToString($cs) . " is not a register"); }

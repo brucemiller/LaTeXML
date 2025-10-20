@@ -101,17 +101,34 @@ sub flush {
   $$self{mouthstack} = [];
   return; }
 
-# Do something, while reading stuff from a specific Mouth.
+# Do something, while reading stuff from a specific source Mouth.
+# If $source is a string or Tokens, a Mouth will be created to process it.
 # This reads ONLY from that mouth (or any mouth openned by code in that source),
 # and the mouth should end up empty afterwards, and only be closed here.
 sub readingFromMouth {
-  my ($self, $mouth, $closure) = @_;
+  my ($self, $source, $closure) = @_;
+  my $mouth;
+  my $intokens;
+  my $sourcetype = ref $source;
+  if (! $sourcetype) {          # for a string, create Mouth to read its content
+    $mouth = LaTeXML::Core::Mouth->new($source); }
+  elsif ($sourcetype =~ /^LaTeXML::Core::Tokens?$/) { # Tokens will be unread into Mouth
+    $mouth = LaTeXML::Core::Mouth->new();
+    $intokens = $source; }
+  elsif (! $source->isa('LaTeXML::Core::Mouth')) {
+    Error('expected','Mouth', $self,
+      "Input source was not a string, Tokens or Mouth: $source; ignoring it.");
+    $mouth = LaTeXML::Core::Mouth->new(); }
+  else {
+    $mouth = $source; }
   openMouth($self, $mouth, 1);    # only allow mouth to be explicitly closed here.
+  $self->unread($intokens) if $intokens; # Preload the mouth
   my ($result, @result);
   if (wantarray) {
     @result = &$closure($self); }
   else {
     $result = &$closure($self); }
+  $self->skipSpaces;            # Skip any remaining spaces on input.
   # $mouth must still be open, with (at worst) empty autoclosable mouths in front of it
   while (1) {
     if ($$self{mouth} eq $mouth) {
@@ -716,9 +733,8 @@ sub readArg {
     return readBalanced($self, $expanded, 0, 0); }
   else {
     if ($expanded) {
-      return $self->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-          $self->unread(T_BEGIN, $token, T_END);
-          return $self->readBalanced($expanded, 0, 1); }); }
+      return $self->readingFromMouth(Tokens(T_BEGIN, $token, T_END), sub {
+         readBalanced($self, $expanded, 0, 1); } ); }
     else {
       return Tokens($token); } } }
 

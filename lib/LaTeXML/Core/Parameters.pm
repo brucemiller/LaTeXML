@@ -78,13 +78,9 @@ sub readArgumentsAndDigest {
 sub reparseArgument {
   my ($self, $gullet, $tokens) = @_;
   if (defined $tokens) {
-    return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {    # start with empty mouth
+    return $gullet->readingFromMouth($tokens, sub {
         no warnings 'recursion';
-        my ($gulletx) = @_;
-        $gulletx->unread($tokens);                                         # but put back tokens to be read
-        my @values = $self->readArguments($gulletx);
-        $gulletx->skipSpaces;
-        return @values; }); }
+        $self->readArguments($gullet); }); }
   else {
     return (); } }
 

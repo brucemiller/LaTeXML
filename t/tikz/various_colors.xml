@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="xcolor" options="table"?>
+<?latexml package="colortbl"?>
+<?latexml package="listings"?>
+<?latexml package="algorithm"?>
+<?latexml package="multirow"?>
+<?latexml package="tcolorbox"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:svg="http://www.w3.org/2000/svg">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <resource src="ltx-listings.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><text color="#000000">Some color variation, </text><text color="#FF0000">needing treatment</text><text color="#000000"> in </text><text color="#008080">dark mode themes</text><text color="#000000">:</text></p>
+  </para>
+  <para xml:id="p2">
+    <p><text color="#000000">A black number on mint green background: </text><text backgroundcolor="#ABE0B0" color="#000000">33.35</text><text color="#000000"></text></p>
+  </para>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title color="#000000"><tag close=" ">1</tag>Tabular</title>
+    <para xml:id="S1.p1">
+      <tabular vattach="middle">
+        <tbody>
+          <tr backgroundcolor="#F0F0F0">
+            <td align="left"><text backgroundcolor="#F0F0F0" color="#000000">Gray 12</text></td>
+            <td/>
+          </tr>
+          <tr backgroundcolor="#F7F7F7">
+            <td align="left"><text backgroundcolor="#F7F7F7" color="#000000">Gray 6</text></td>
+            <td/>
+          </tr>
+          <tr backgroundcolor="#FFFFFF">
+            <td align="left"><text backgroundcolor="#FFFFFF" color="#000000">Gray 0</text></td>
+            <td/>
+          </tr>
+          <tr backgroundcolor="#E3EDD9">
+            <td align="left"><text backgroundcolor="#E3EDD9" color="#000000">My Green</text></td>
+            <td/>
+          </tr>
+          <tr backgroundcolor="#F5F5F5">
+            <td align="left"><text backgroundcolor="#F5F5F5" color="#000000">White smoke</text></td>
+            <td/>
+          </tr>
+          <tr backgroundcolor="#DBD6D1">
+            <td align="left"><text backgroundcolor="#DBD6D1" color="#000000">Timberwolf</text></td>
+            <td/>
+          </tr>
+        </tbody>
+      </tabular>
+    </para>
+    <para xml:id="S1.p2">
+      <tabular vattach="middle">
+        <tbody>
+          <tr>
+            <td align="center"><text color="#000000">Dataset</text></td>
+            <td align="left"><text color="#000000">Att.</text></td>
+            <td align="right"><Math mode="inline" tex="h" text="h" xml:id="S1.p2.m1">
+                <XMath>
+                  <XMTok color="#000000" font="italic" role="UNKNOWN">h</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="right"><Math mode="inline" tex="d_{m}" text="d _ m" xml:id="S1.p2.m2">
+                <XMath>
+                  <XMApp color="#000000">
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                    <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">m</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="right"><text color="#000000"># Param.</text></td>
+            <td align="center"><text color="#000000">Epoch Time</text></td>
+            <td align="center"><text color="#000000">Acc. (%)</text></td>
+            <td align="center"><text color="#000000">Loss</text></td>
+            <td align="center"><text color="#000000">Val Acc. (%)</text></td>
+            <td align="center"><text color="#000000">Val Loss</text></td>
+          </tr>
+          <tr>
+            <td/>
+            <td align="left"><text backgroundcolor="#FFD9DE" color="#000000">Stn.</text></td>
+            <td align="right"><text backgroundcolor="#FFD9DE" color="#000000">4</text></td>
+            <td align="right"><text backgroundcolor="#FFD9DE" color="#000000">32</text></td>
+            <td align="right"><text backgroundcolor="#FFD9DE" color="#000000">4,224 (4)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">0.315 (4)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">95.70 (4)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">0.086 (3)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">77.62 (4)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">0.474 (4)</text></td>
+          </tr>
+          <tr>
+            <td/>
+            <td align="left"><text backgroundcolor="#FCFFD9" color="#000000">Opt.</text></td>
+            <td align="right"><text backgroundcolor="#FCFFD9" color="#000000">4</text></td>
+            <td align="right"><text backgroundcolor="#FCFFD9" color="#000000">32</text></td>
+            <td align="right"><text backgroundcolor="#FCFFD9" color="#000000">3,168 (2)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000">0.305 (3)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000">96.31 (3)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000">0.095 (4)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000">77.85 (2)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000">0.472 (2)</text></td>
+          </tr>
+          <tr>
+            <td/>
+            <td align="left"><text backgroundcolor="#D9FFD9" color="#000000">Eff.</text></td>
+            <td align="right"><text backgroundcolor="#D9FFD9" color="#000000">4</text></td>
+            <td align="right"><text backgroundcolor="#D9FFD9" color="#000000">32</text></td>
+            <td align="right"><text backgroundcolor="#D9FFD9" color="#000000" font="bold">2,112 (1)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000" font="bold">0.280 (1)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000">96.41 (2)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000" font="bold">0.064 (1)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000">77.77 (3)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000" font="bold">0.468 (1)</text></td>
+          </tr>
+          <tr backgroundcolor="#D9E0FF">
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000">IMDB</text></td>
+            <td align="left"><text backgroundcolor="#D9E0FF" color="#000000">Sup.</text></td>
+            <td align="right"><text backgroundcolor="#D9E0FF" color="#000000">4</text></td>
+            <td align="right"><text backgroundcolor="#D9E0FF" color="#000000">32</text></td>
+            <td align="right"><text backgroundcolor="#D9E0FF" color="#000000">3,168 (2)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000">0.299 (2)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000" font="bold">97.45 (1)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000">0.070 (2)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000" font="bold">78.34 (1)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000">0.472 (2)</text></td>
+          </tr>
+          <tr>
+            <td/>
+            <td align="left"><text backgroundcolor="#FFD9DE" color="#000000">Stn.</text></td>
+            <td align="right"><text backgroundcolor="#FFD9DE" color="#000000">4</text></td>
+            <td align="right"><text backgroundcolor="#FFD9DE" color="#000000">128</text></td>
+            <td align="right"><text backgroundcolor="#FFD9DE" color="#000000">66,048 (4)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">66.97 (4)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">88.49 (3)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">0.25 (3)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">65.55 (4)</text></td>
+            <td align="center"><text backgroundcolor="#FFD9DE" color="#000000">0.77 (3)</text></td>
+          </tr>
+          <tr>
+            <td/>
+            <td align="left"><text backgroundcolor="#FCFFD9" color="#000000">Opt.</text></td>
+            <td align="right"><text backgroundcolor="#FCFFD9" color="#000000">4</text></td>
+            <td align="right"><text backgroundcolor="#FCFFD9" color="#000000">128</text></td>
+            <td align="right"><text backgroundcolor="#FCFFD9" color="#000000">49,536 (3)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000">61.75 (3)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000" font="bold">89.56 (1)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000" font="bold">0.23 (1)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000">65.67 (2)</text></td>
+            <td align="center"><text backgroundcolor="#FCFFD9" color="#000000">0.75 (2)</text></td>
+          </tr>
+          <tr>
+            <td/>
+            <td align="left"><text backgroundcolor="#D9FFD9" color="#000000">Eff.</text></td>
+            <td align="right"><text backgroundcolor="#D9FFD9" color="#000000">4</text></td>
+            <td align="right"><text backgroundcolor="#D9FFD9" color="#000000">128</text></td>
+            <td align="right"><text backgroundcolor="#D9FFD9" color="#000000" font="bold">33,024 (1)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000" font="bold">56.44 (1)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000">86.63 (4)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000">0.29 (4)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000">65.58 (3)</text></td>
+            <td align="center"><text backgroundcolor="#D9FFD9" color="#000000">0.77 (3)</text></td>
+          </tr>
+          <tr backgroundcolor="#D9E0FF">
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000">Amazon</text></td>
+            <td align="left"><text backgroundcolor="#D9E0FF" color="#000000">Sup.</text></td>
+            <td align="right"><text backgroundcolor="#D9E0FF" color="#000000">4</text></td>
+            <td align="right"><text backgroundcolor="#D9E0FF" color="#000000">128</text></td>
+            <td align="right"><text backgroundcolor="#D9E0FF" color="#000000">42,336 (2)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000">59.86 (2)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000">88.56 (2)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000">0.24 (2)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000" font="bold">68.10 (1)</text></td>
+            <td align="center"><text backgroundcolor="#D9E0FF" color="#000000" font="bold">0.71 (1)</text></td>
+          </tr>
+        </tbody>
+      </tabular>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title color="#000000"><tag close=" ">2</tag>Math</title>
+    <para xml:id="S2.p1">
+      <equation xml:id="S2.Ex1">
+        <Math mode="display" tex="{\color[rgb]{0.0234375,0.25,0.16796875}\definecolor[named]{pgfstrokecolor}{rgb%&#10;}{0.0234375,0.25,0.16796875}x}+{\color[rgb]{0,0,0}\definecolor[named]{%&#10;pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@gray@stroke{0}\pgfsys@color@gray@fill%&#10;{0}\sqrt{y}}=0" text="x + square-root@(y) = 0" xml:id="S2.Ex1.m1">
+          <XMath>
+            <XMApp color="#000000">
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok color="#06402B" font="italic" role="UNKNOWN">x</XMTok>
+                <XMApp>
+                  <XMTok meaning="square-root"/>
+                  <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMTok meaning="0" role="NUMBER">0</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para xml:id="S2.p2">
+      <p><Math mode="inline" tex="{\color[rgb]{0.0234375,0.25,0.16796875}\definecolor[named]{pgfstrokecolor}{rgb%&#10;}{0.0234375,0.25,0.16796875}x}+{\hbox{\pagecolor{pal-orange}\color[rgb]{0,0,0}%&#10;\definecolor[named]{pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@gray@stroke{0}%&#10;\pgfsys@color@gray@fill{0}y}}=0" text="x + [y] = 0" xml:id="S2.p2.m1">
+          <XMath>
+            <XMApp color="#000000">
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok color="#06402B" font="italic" role="UNKNOWN">x</XMTok>
+                <XMText backgroundcolor="#FFA756">y</XMText>
+              </XMApp>
+              <XMTok meaning="0" role="NUMBER">0</XMTok>
+            </XMApp>
+          </XMath>
+        </Math><text color="#000000"> and black text </text><text color="#0000FF">blue text.</text><text color="#000000"></text></p>
+    </para>
+    <para xml:id="S2.p3">
+      <equation labels="LABEL:eq:smp" xml:id="S2.E1">
+        <tags>
+          <tag>(1)</tag>
+          <tag role="refnum">1</tag>
+        </tags>
+        <text class="ltx_markedasmath" color="#000000" framecolor="#460000" framed="rectangle"><Math backgroundcolor="#FFFFFF" mode="inline" tex="\begin{array}[]{lcl}\kappa^{\star}:=&amp;\inf\limits_{w\in Y}&amp;\langle T,w\rangle\\&#10;&amp;&amp;A\,w-g\in C(X)_{+}\end{array}" text="Array[[kappa ^ star assign absent, infimum _ (w element-of Y), list@(T, w)], [, , A * w - g element-of C * X _ +]]" xml:id="S2.E1.m1.m1">
+            <XMath>
+              <XMArray role="ARRAY" vattach="middle">
+                <XMRow>
+                  <XMCell align="left">
+                    <XMApp>
+                      <XMTok meaning="assign" role="RELOP">:=</XMTok>
+                      <XMApp>
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="post5"/>
+                        <XMTok font="italic" name="kappa" role="UNKNOWN">κ</XMTok>
+                        <XMTok fontsize="70%" name="star" role="MULOP">⋆</XMTok>
+                      </XMApp>
+                      <XMTok meaning="absent"/>
+                    </XMApp>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="mid5"/>
+                      <XMTok meaning="infimum" role="LIMITOP" scriptpos="mid5">inf</XMTok>
+                      <XMApp>
+                        <XMTok fontsize="70%" meaning="element-of" name="in" role="RELOP">∈</XMTok>
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">w</XMTok>
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">Y</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMCell>
+                  <XMCell align="left">
+                    <XMDual>
+                      <XMApp>
+                        <XMTok meaning="list"/>
+                        <XMRef idref="S2.E1.m1.m1.1"/>
+                        <XMRef idref="S2.E1.m1.m1.2"/>
+                      </XMApp>
+                      <XMWrap>
+                        <XMTok name="langle" role="OPEN" stretchy="false">⟨</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S2.E1.m1.m1.1">T</XMTok>
+                        <XMTok role="PUNCT">,</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S2.E1.m1.m1.2">w</XMTok>
+                        <XMTok name="rangle" role="CLOSE" stretchy="false">⟩</XMTok>
+                      </XMWrap>
+                    </XMDual>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell/>
+                  <XMCell/>
+                  <XMCell align="left">
+                    <XMApp>
+                      <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
+                      <XMApp>
+                        <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                        <XMApp>
+                          <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">A</XMTok>
+                          <XMTok font="italic" role="UNKNOWN">w</XMTok>
+                        </XMApp>
+                        <XMTok font="italic" role="UNKNOWN">g</XMTok>
+                      </XMApp>
+                      <XMApp>
+                        <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post5"/>
+                          <XMDual>
+                            <XMRef idref="S2.E1.m1.m1.3"/>
+                            <XMWrap>
+                              <XMTok role="OPEN" stretchy="false">(</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S2.E1.m1.m1.3">X</XMTok>
+                              <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                            </XMWrap>
+                          </XMDual>
+                          <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                        </XMApp>
+                      </XMApp>
+                    </XMApp>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+            </XMath>
+          </Math></text>
+      </equation>
+    </para>
+    <rule color="#000000" height="1px" width="100%"/>
+    <para xml:id="S2.p4">
+      <p><text color="#000000">2mm</text></p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title color="#000000"><tag close=" ">3</tag>Listings</title>
+    <para xml:id="S3.p1">
+      <listing backgroundcolor="#F2F2F2" class="ltx_lst_language_calyxspec ltx_lst_numbers_left ltx_lstlisting" data="ICBjb21wb25lbnQgZXhwcihhOjMyLGI6MzIsYzozMixkOjMyKS0+KG91dDozMikgewogICAgY2VsbHMgewogICAgICBhZGQgPSBzdGRfYWRkKDMyKTsgICAvLyAzMi1iaXQgYWRkZXIKICAgICAgbXVsdCA9IHN0ZF9tdWx0KDMyKTsgLy8gMzItYml0IG11bHRpcGxpZXIKICAgICAgZGl2ID0gc3RkX2RpdigzMik7ICAgLy8gMzItYml0IGRpdmlkZXIKICAgIH0KICAgIHdpcmVzIHsKICAgICAgQHN0YXRpYzwxPkAgZ3JvdXAgZG9fYWRkIHsKICAgICAgICBhZGQubGVmdCA9IEAlWzA6MV1AID8gYTsKICAgICAgICBhZGQucmlnaHQgPSBAJVswOjFdQCA/IGI7CiAgICAgICAgKCp7XGNvbG9ye3JlZH0vL30qKSBkb19hZGRbZG9uZV0gPSBhZGQuZG9uZTsKICAgICAgfQogICAgICBAc3RhdGljPDM+QCBncm91cCBkb19tdWx0IHsKICAgICAgICBtdWx0LmxlZnQgPSBAJVswOjNdQCA/IGFkZC5vdXQ7CiAgICAgICAgbXVsdC5yaWdodCA9IGM7IC8vIGltcGxpY2l0ICVbMDozXSBndWFyZAogICAgICAgICgqe1xjb2xvcntyZWR9Ly99KikgZG9fbXVsdFtkb25lXSA9IG11bHQuZG9uZTsKICAgICAgfQogICAgICBncm91cCBkb19kaXYgewogICAgICAgIGRpdi5nbyA9IDEnZDE7CiAgICAgICAgZGl2LmxlZnQgPSBtdWx0Lm91dDsKICAgICAgICBkaXYucmlnaHQgPSBkOwogICAgICAgIGRvX2Rpdltkb25lXSA9IGRpdi5kb25lOwogICAgICB9CiAgICAgIG91dCA9IGRpdi5vdXQ7CiAgICB9CiAgICBjb250cm9sIHsKICAgICAgc2VxIHsgQHN0YXRpY0Agc2VxIHsgZG9fYWRkOyBkb19tdWx0OyB9CiAgICAgICAgICAgIGRvX2RpdjsKICAgICAgfQogICAgfQogIH0l" dataencoding="base64" datamimetype="text/plain">
+        <listingline xml:id="lstnumberx1"><tags>
+            <tag>1</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">line 1</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">  </text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">component</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">expr</text><text color="#000000" font="typewriter" fontsize="80%">(</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">a</text><text color="#000000" font="typewriter" fontsize="80%">:32,</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">b</text><text color="#000000" font="typewriter" fontsize="80%">:32,</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">c</text><text color="#000000" font="typewriter" fontsize="80%">:32,</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">d</text><text color="#000000" font="typewriter" fontsize="80%">:32)</text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">-&gt;</text><text color="#000000" font="typewriter" fontsize="80%">(</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">out</text><text color="#000000" font="typewriter" fontsize="80%">:32)</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">{</text></listingline>
+        <listingline xml:id="lstnumberx2"><tags>
+            <tag>2</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">line 2</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">    </text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">cells</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">{</text></listingline>
+        <listingline xml:id="lstnumberx3"><tags>
+            <tag>3</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">line 3</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">      </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">add</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">std_add</text><text color="#000000" font="typewriter" fontsize="80%">(32);</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">   </text><text class="ltx_lst_comment" color="#808080" font="typewriter" fontsize="80%">//<text class="ltx_lst_space"> </text>32-bit<text class="ltx_lst_space"> </text>adder</text></listingline>
+        <listingline xml:id="lstnumberx4"><tags>
+            <tag>4</tag>
+            <tag role="refnum">4</tag>
+            <tag role="typerefnum">line 4</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">      </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">mult</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">std_mult</text><text color="#000000" font="typewriter" fontsize="80%">(32);</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_comment" color="#808080" font="typewriter" fontsize="80%">//<text class="ltx_lst_space"> </text>32-bit<text class="ltx_lst_space"> </text>multiplier</text></listingline>
+        <listingline xml:id="lstnumberx5"><tags>
+            <tag>5</tag>
+            <tag role="refnum">5</tag>
+            <tag role="typerefnum">line 5</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">      </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">div</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">std_div</text><text color="#000000" font="typewriter" fontsize="80%">(32);</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">   </text><text class="ltx_lst_comment" color="#808080" font="typewriter" fontsize="80%">//<text class="ltx_lst_space"> </text>32-bit<text class="ltx_lst_space"> </text>divider</text></listingline>
+        <listingline xml:id="lstnumberx6"><tags>
+            <tag>6</tag>
+            <tag role="refnum">6</tag>
+            <tag role="typerefnum">line 6</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">    </text><text color="#000000" font="typewriter" fontsize="80%">}</text></listingline>
+        <listingline xml:id="lstnumberx7"><tags>
+            <tag>7</tag>
+            <tag role="refnum">7</tag>
+            <tag role="typerefnum">line 7</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">    </text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">wires</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">{</text></listingline>
+        <listingline xml:id="lstnumberx8"><tags>
+            <tag>8</tag>
+            <tag role="refnum">8</tag>
+            <tag role="typerefnum">line 8</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">      </text><text color="#FF0000" font="typewriter" fontsize="80%">static&lt;1&gt;@<text class="ltx_lst_space"> </text>group<text class="ltx_lst_space"> </text>do_add<text class="ltx_lst_space"> </text>{</text></listingline>
+        <listingline xml:id="lstnumberx9"><tags>
+            <tag>9</tag>
+            <tag role="refnum">9</tag>
+            <tag role="typerefnum">line 9</tag>
+          </tags><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%">        </text><text color="#FF0000" font="typewriter" fontsize="80%">add.left</text><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%"> </text><text color="#FF0000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">%[0:1]<text class="ltx_lst_space" color="#FF0000"> </text></text><text color="#FF0000" font="typewriter" fontsize="80%">?</text><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%"> </text><text color="#FF0000" font="typewriter" fontsize="80%">a;</text></listingline>
+        <listingline xml:id="lstnumberx10"><tags>
+            <tag>10</tag>
+            <tag role="refnum">10</tag>
+            <tag role="typerefnum">line 10</tag>
+          </tags><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%">        </text><text color="#FF0000" font="typewriter" fontsize="80%">add.right</text><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%"> </text><text color="#FF0000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">%[0:1]<text class="ltx_lst_space" color="#FF0000"> </text></text><text color="#FF0000" font="typewriter" fontsize="80%">?</text><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%"> </text><text color="#FF0000" font="typewriter" fontsize="80%">b;</text></listingline>
+        <listingline xml:id="lstnumberx11"><tags>
+            <tag>11</tag>
+            <tag role="refnum">11</tag>
+            <tag role="typerefnum">line 11</tag>
+          </tags><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%">        </text><text color="#FF0000" font="typewriter" fontsize="80%">//</text><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%"> </text><text color="#FF0000" font="typewriter" fontsize="80%">do_add[done]</text><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%"> </text><text color="#FF0000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%"> </text><text color="#FF0000" font="typewriter" fontsize="80%">add.done;</text></listingline>
+        <listingline xml:id="lstnumberx12"><tags>
+            <tag>12</tag>
+            <tag role="refnum">12</tag>
+            <tag role="typerefnum">line 12</tag>
+          </tags><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%">      </text><text color="#FF0000" font="typewriter" fontsize="80%">}</text></listingline>
+        <listingline xml:id="lstnumberx13"><tags>
+            <tag>13</tag>
+            <tag role="refnum">13</tag>
+            <tag role="typerefnum">line 13</tag>
+          </tags><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%">      </text><text class="ltx_lst_keywords2"/><text color="#FF0000" font="typewriter bold" fontsize="80%">static</text><text color="#000000" font="typewriter" fontsize="80%">&lt;3<text class="ltx_lst_identifier">&gt;@</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" color="#404040" font="bold">group</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do_mult</text><text class="ltx_lst_space"> </text>{</text></listingline>
+        <listingline xml:id="lstnumberx14"><tags>
+            <tag>14</tag>
+            <tag role="refnum">14</tag>
+            <tag role="typerefnum">line 14</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">        </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">mult</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">left</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#FF0000" font="typewriter" fontsize="80%">%[0:3]</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">?</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">add</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">out</text><text color="#000000" font="typewriter" fontsize="80%">;</text></listingline>
+        <listingline xml:id="lstnumberx15"><tags>
+            <tag>15</tag>
+            <tag role="refnum">15</tag>
+            <tag role="typerefnum">line 15</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">        </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">mult</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">right</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">c</text><text color="#000000" font="typewriter" fontsize="80%">;</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_comment" color="#808080" font="typewriter" fontsize="80%">//<text class="ltx_lst_space"> </text>implicit<text class="ltx_lst_space"> </text>%[0:3]<text class="ltx_lst_space"> </text>guard</text></listingline>
+        <listingline xml:id="lstnumberx16"><tags>
+            <tag>16</tag>
+            <tag role="refnum">16</tag>
+            <tag role="typerefnum">line 16</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">        </text><text color="#FF0000" font="typewriter" fontsize="80%">//</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">do_mult</text><text color="#000000" font="typewriter" fontsize="80%">[</text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">done</text><text color="#000000" font="typewriter" fontsize="80%">]</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">mult</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">done</text><text color="#000000" font="typewriter" fontsize="80%">;</text></listingline>
+        <listingline xml:id="lstnumberx17"><tags>
+            <tag>17</tag>
+            <tag role="refnum">17</tag>
+            <tag role="typerefnum">line 17</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">      </text><text color="#000000" font="typewriter" fontsize="80%">}</text></listingline>
+        <listingline xml:id="lstnumberx18"><tags>
+            <tag>18</tag>
+            <tag role="refnum">18</tag>
+            <tag role="typerefnum">line 18</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">      </text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">group</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">do_div</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">{</text></listingline>
+        <listingline xml:id="lstnumberx19"><tags>
+            <tag>19</tag>
+            <tag role="refnum">19</tag>
+            <tag role="typerefnum">line 19</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">        </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">div</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">go</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">1'</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">d1</text><text color="#000000" font="typewriter" fontsize="80%">;</text></listingline>
+        <listingline xml:id="lstnumberx20"><tags>
+            <tag>20</tag>
+            <tag role="refnum">20</tag>
+            <tag role="typerefnum">line 20</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">        </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">div</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">left</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">mult</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">out</text><text color="#000000" font="typewriter" fontsize="80%">;</text></listingline>
+        <listingline xml:id="lstnumberx21"><tags>
+            <tag>21</tag>
+            <tag role="refnum">21</tag>
+            <tag role="typerefnum">line 21</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">        </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">div</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">right</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">d</text><text color="#000000" font="typewriter" fontsize="80%">;</text></listingline>
+        <listingline xml:id="lstnumberx22"><tags>
+            <tag>22</tag>
+            <tag role="refnum">22</tag>
+            <tag role="typerefnum">line 22</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">        </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">do_div</text><text color="#000000" font="typewriter" fontsize="80%">[</text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">done</text><text color="#000000" font="typewriter" fontsize="80%">]</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">div</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">done</text><text color="#000000" font="typewriter" fontsize="80%">;</text></listingline>
+        <listingline xml:id="lstnumberx23"><tags>
+            <tag>23</tag>
+            <tag role="refnum">23</tag>
+            <tag role="typerefnum">line 23</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">      </text><text color="#000000" font="typewriter" fontsize="80%">}</text></listingline>
+        <listingline xml:id="lstnumberx24"><tags>
+            <tag>24</tag>
+            <tag role="refnum">24</tag>
+            <tag role="typerefnum">line 24</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">      </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">out</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">=</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">div</text><text color="#000000" font="typewriter" fontsize="80%">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter" fontsize="80%">out</text><text color="#000000" font="typewriter" fontsize="80%">;</text></listingline>
+        <listingline xml:id="lstnumberx25"><tags>
+            <tag>25</tag>
+            <tag role="refnum">25</tag>
+            <tag role="typerefnum">line 25</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">    </text><text color="#000000" font="typewriter" fontsize="80%">}</text></listingline>
+        <listingline xml:id="lstnumberx26"><tags>
+            <tag>26</tag>
+            <tag role="refnum">26</tag>
+            <tag role="typerefnum">line 26</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">    </text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">control</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">{</text></listingline>
+        <listingline xml:id="lstnumberx27"><tags>
+            <tag>27</tag>
+            <tag role="refnum">27</tag>
+            <tag role="typerefnum">line 27</tag>
+          </tags><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%">      </text><text class="ltx_lst_keyword" color="#404040" font="typewriter bold" fontsize="80%">seq</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#000000" font="typewriter" fontsize="80%">{</text><text class="ltx_lst_space" color="#000000" font="typewriter" fontsize="80%"> </text><text color="#FF0000" font="typewriter" fontsize="80%">static@<text class="ltx_lst_space"> </text>seq<text class="ltx_lst_space"> </text>{<text class="ltx_lst_space"> </text>do_add;<text class="ltx_lst_space"> </text>do_mult;<text class="ltx_lst_space"> </text>}</text></listingline>
+        <listingline xml:id="lstnumberx28"><tags>
+            <tag>28</tag>
+            <tag role="refnum">28</tag>
+            <tag role="typerefnum">line 28</tag>
+          </tags><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%">            </text><text color="#FF0000" font="typewriter" fontsize="80%">do_div;</text></listingline>
+        <listingline xml:id="lstnumberx29"><tags>
+            <tag>29</tag>
+            <tag role="refnum">29</tag>
+            <tag role="typerefnum">line 29</tag>
+          </tags><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%">      </text><text color="#FF0000" font="typewriter" fontsize="80%">}</text></listingline>
+        <listingline xml:id="lstnumberx30"><tags>
+            <tag>30</tag>
+            <tag role="refnum">30</tag>
+            <tag role="typerefnum">line 30</tag>
+          </tags><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%">    </text><text color="#FF0000" font="typewriter" fontsize="80%">}</text></listingline>
+        <listingline xml:id="lstnumberx31"><tags>
+            <tag>31</tag>
+            <tag role="refnum">31</tag>
+            <tag role="typerefnum">line 31</tag>
+          </tags><text class="ltx_lst_space" color="#FF0000" font="typewriter" fontsize="80%">  </text><text color="#FF0000" font="typewriter" fontsize="80%">}%</text></listingline>
+      </listing>
+    </para>
+    <float class="ltx_float_algorithm" framed="top" inlist="loa" placement="!h" xml:id="algorithm1">
+      <tags>
+        <tag><text font="bold">Algorithm 1</text></tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Algorithm 1</tag>
+      </tags>
+      <toccaption><tag close=" "><text color="#000000">1</text></tag><text color="#000000" fontsize="120%">Pytorch code</text></toccaption>
+      <caption color="#000000"><tag close=" "><text font="bold">Algorithm 1</text></tag> <text fontsize="120%">Pytorch code</text></caption>
+      <listing backgroundcolor="#FFFFFF" class="ltx_lst_language_Python ltx_lstlisting" data="CiAgY2xhc3MgTWF0cnlvc2hrYV9DRV9Mb3NzKG5uLk1vZHVsZSk6CiAgICAgIGRlZiBfX2luaXRfXyhzZWxmLCByZWxhdGl2ZV9pbXBvcnRhbmNlLCAqKmt3YXJncyk6CiAgICAgIHN1cGVyKE1hdHJ5b3Noa2FfQ0VfTG9zcywgc2VsZikuX19pbml0X18oKQogICAgICBzZWxmLmNyaXRlcmlvbiA9IG5uLkNyb3NzRW50cm9weUxvc3MoKiprd2FyZ3MpCiAgICAgIHNlbGYucmVsYXRpdmVfaW1wb3J0YW5jZSA9IHJlbGF0aXZlX2ltcG9ydGFuY2UgIyB1c3VhbGx5IHNldCB0byBhbGwgb25lcwoKICAgIGRlZiBmb3J3YXJkKHNlbGYsIG91dHB1dCwgdGFyZ2V0KToKICAgICAgbG9zcz0wCiAgICAgIGZvciBpIGluIHJhbmdlKGxlbihvdXRwdXQpKToKICAgICAgICBsb3NzKz0gc2VsZi5yZWxhdGl2ZV9pbXBvcnRhbmNlW2ldICogc2VsZi5jcml0ZXJpb24ob3V0cHV0W2ldLCB0YXJnZXQpCiAgICAgIHJldHVybiBsb3Nz" dataencoding="base64" datamimetype="text/plain">
+        <listingline xml:id="lstnumberx32"/>
+        <listingline xml:id="lstnumberx33"><text class="ltx_lst_space" color="#000000" font="typewriter">  </text><text class="ltx_lst_keyword" color="#0000FF" font="typewriter">class</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">Matryoshka_CE_Loss</text><text color="#000000" font="typewriter">(</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">nn</text><text color="#000000" font="typewriter">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">Module</text><text color="#000000" font="typewriter">):</text></listingline>
+        <listingline xml:id="lstnumberx34"><text class="ltx_lst_space" color="#000000" font="typewriter">      </text><text class="ltx_lst_keyword" color="#0000FF" font="typewriter">def</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">__init__</text><text color="#000000" font="typewriter">(</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">self</text><text color="#000000" font="typewriter">,</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">relative_importance</text><text color="#000000" font="typewriter">,</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text color="#000000" font="typewriter">**</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">kwargs</text><text color="#000000" font="typewriter">):</text></listingline>
+        <listingline xml:id="lstnumberx35"><text class="ltx_lst_space" color="#000000" font="typewriter">      </text><text class="ltx_lst_keyword ltx_lst_keywords2" color="#0000FF" font="typewriter">super</text><text color="#000000" font="typewriter">(</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">Matryoshka_CE_Loss</text><text color="#000000" font="typewriter">,</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">self</text><text color="#000000" font="typewriter">).</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">__init__</text><text color="#000000" font="typewriter">()</text></listingline>
+        <listingline xml:id="lstnumberx36"><text class="ltx_lst_space" color="#000000" font="typewriter">      </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">self</text><text color="#000000" font="typewriter">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">criterion</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text color="#000000" font="typewriter">=</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">nn</text><text color="#000000" font="typewriter">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">CrossEntropyLoss</text><text color="#000000" font="typewriter">(**</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">kwargs</text><text color="#000000" font="typewriter">)</text></listingline>
+        <listingline xml:id="lstnumberx37"><text class="ltx_lst_space" color="#000000" font="typewriter">      </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">self</text><text color="#000000" font="typewriter">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">relative_importance</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text color="#000000" font="typewriter">=</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">relative_importance</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_comment" color="#408080" font="typewriter">#<text class="ltx_lst_space"> </text>usually<text class="ltx_lst_space"> </text>set<text class="ltx_lst_space"> </text>to<text class="ltx_lst_space"> </text>all<text class="ltx_lst_space"> </text>ones</text></listingline>
+        <listingline xml:id="lstnumberx38"/>
+        <listingline xml:id="lstnumberx39"><text class="ltx_lst_space" color="#000000" font="typewriter">    </text><text class="ltx_lst_keyword" color="#0000FF" font="typewriter">def</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">forward</text><text color="#000000" font="typewriter">(</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">self</text><text color="#000000" font="typewriter">,</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">output</text><text color="#000000" font="typewriter">,</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">target</text><text color="#000000" font="typewriter">):</text></listingline>
+        <listingline xml:id="lstnumberx40"><text class="ltx_lst_space" color="#000000" font="typewriter">      </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">loss</text><text color="#000000" font="typewriter">=0</text></listingline>
+        <listingline xml:id="lstnumberx41"><text class="ltx_lst_space" color="#000000" font="typewriter">      </text><text class="ltx_lst_keyword" color="#0000FF" font="typewriter">for</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">i</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_keyword" color="#0000FF" font="typewriter">in</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_keyword ltx_lst_keywords2" color="#0000FF" font="typewriter">range</text><text color="#000000" font="typewriter">(</text><text class="ltx_lst_keyword ltx_lst_keywords2" color="#0000FF" font="typewriter">len</text><text color="#000000" font="typewriter">(</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">output</text><text color="#000000" font="typewriter">)):</text></listingline>
+        <listingline xml:id="lstnumberx42"><text class="ltx_lst_space" color="#000000" font="typewriter">        </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">loss</text><text color="#000000" font="typewriter">+=</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">self</text><text color="#000000" font="typewriter">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">relative_importance</text><text color="#000000" font="typewriter">[</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">i</text><text color="#000000" font="typewriter">]</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text color="#000000" font="typewriter">*</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">self</text><text color="#000000" font="typewriter">.</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">criterion</text><text color="#000000" font="typewriter">(</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">output</text><text color="#000000" font="typewriter">[</text><text class="ltx_lst_identifier" color="#000000" font="typewriter">i</text><text color="#000000" font="typewriter">],</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">target</text><text color="#000000" font="typewriter">)</text></listingline>
+        <listingline xml:id="lstnumberx43"><text class="ltx_lst_space" color="#000000" font="typewriter">      </text><text class="ltx_lst_keyword" color="#0000FF" font="typewriter">return</text><text class="ltx_lst_space" color="#000000" font="typewriter"> </text><text class="ltx_lst_identifier" color="#000000" font="typewriter">loss</text></listingline>
+      </listing>
+    </float>
+    <para class="ltx_noindent" xml:id="S3.p2">
+      <picture height="435.48" tex="\hbox to433.62pt{\vbox to314.72pt{\pgfpicture\makeatletter\hbox{\thinspace%&#10;\lower 0.0pt\hbox to0.0pt{\pgfsys@beginscope\pgfsys@invoke{ }\definecolor[%&#10;named]{pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@gray@stroke{0}\pgfsys@invoke{ %&#10;}\pgfsys@color@gray@fill{0}\pgfsys@invoke{ }\pgfsys@setlinewidth{\the%&#10;\pgflinewidth}\pgfsys@invoke{ }\nullfont\hbox to0.0pt{{}{}{}{}%&#10;\pgfsys@beginscope\pgfsys@invoke{ }{}{}{}{}{}{}{}{}\definecolor[named]{%&#10;pgffillcolor}{rgb}{0,0,0}\pgfsys@color@gray@fill{0}\pgfsys@invoke{ }%&#10;\pgfsys@fill@opacity{1.0}\pgfsys@invoke{ }\pgfsys@moveto{0.0pt}{0.0pt}%&#10;\pgfsys@lineto{0.0pt}{314.72443pt}\pgfsys@lineto{433.62pt}{314.72443pt}%&#10;\pgfsys@lineto{433.62pt}{0.0pt}\pgfsys@closepath\pgfsys@fill\pgfsys@invoke{ }%&#10;\pgfsys@invoke{ }\pgfsys@endscope\pgfsys@beginscope\pgfsys@invoke{ }{}{}{}{}{}%&#10;{}{}{}\definecolor[named]{pgffillcolor}{rgb}{1,1,1}\pgfsys@color@gray@fill{1}%&#10;\pgfsys@invoke{ }\pgfsys@fill@opacity{1.0}\pgfsys@invoke{ }\pgfsys@moveto{1.42%&#10;262pt}{1.42262pt}\pgfsys@lineto{1.42262pt}{193.43866pt}\pgfsys@lineto{432.1973%&#10;7pt}{193.43866pt}\pgfsys@lineto{432.19737pt}{1.42262pt}\pgfsys@closepath%&#10;\pgfsys@fill\pgfsys@invoke{ }\pgfsys@invoke{ }\pgfsys@endscope%&#10;\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@fill@opacity{1.0}\pgfsys@invoke{ }{%&#10;{{}}{{}}{{}}{{}}{{}}{{}}{{}}\pgfsys@beginscope\pgfsys@invoke{ }%&#10;\pgfsys@transformcm{1.0}{0.0}{0.0}{1.0}{15.64897pt}{199.65099pt}\pgfsys@invoke%&#10;{ }\hbox{{\color[rgb]{1,1,1}\definecolor[named]{pgfstrokecolor}{rgb}{1,1,1}%&#10;\pgfsys@color@gray@stroke{1}\pgfsys@color@gray@fill{1}\hbox{\minipage[b]{402.3%&#10;2205pt}\color[rgb]{1,1,1}\definecolor[named]{pgfstrokecolor}{rgb}{1,1,1}%&#10;\pgfsys@color@gray@stroke{1}\pgfsys@color@gray@fill{1}\ignorespaces%&#10;\ignorespaces{Table C.5}: Prompt to Choose Representative Landmarks for Each %&#10;Cluster\endminipage}}}\pgfsys@invoke{ }\pgfsys@endscope}\pgfsys@invoke{ }%&#10;\pgfsys@endscope\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@fill@opacity{1.0}%&#10;\pgfsys@invoke{ }{{{}}{{}}{{}}{{}}{{}}{{}}{{}}\pgfsys@beginscope\pgfsys@invoke%&#10;{ }\pgfsys@transformcm{1.0}{0.0}{0.0}{1.0}{15.64897pt}{9.95842pt}%&#10;\pgfsys@invoke{ }\hbox{{\color[rgb]{0,0,0}\definecolor[named]{pgfstrokecolor}{%&#10;rgb}{0,0,0}\pgfsys@color@gray@stroke{0}\pgfsys@color@gray@fill{0}\hbox{%&#10;\minipage[b]{402.32205pt}\color[rgb]{0,0,0}\definecolor[named]{pgfstrokecolor}%&#10;{rgb}{0,0,0}\pgfsys@color@gray@stroke{0}\pgfsys@color@gray@fill{0}%&#10;\ignorespaces\ignorespaces You have been provided with a set of similar %&#10;documents, each indexed by a number. Your task is to identify the most %&#10;representative example from this cluster of documents. Please carefully %&#10;analyze the given documents and select one document that best captures the %&#10;common essence and characteristics of the samples. The selection should %&#10;emphasize the representativeness and relevance of the chosen sample to the %&#10;category, so that it can serve as a reference for labeling the entire cluster.%&#10;\\&#10;\par Documents in the cluster:\\&#10;\par 1-. \{Document 1\}...... \\&#10;\par 2-. \{Document 2\}......\\&#10;\par 3-. \{Document 3\}......\\&#10;\par 4-. \{Document 4\}......\\&#10;\par$\vdots$\\&#10;\par Please choose one document that could best serve as a reference for %&#10;labeling the entire cluster, and return only the index number of your %&#10;selection, in format such as [0], [1], etc.\\&#10;\par Answer:\\&#10;\endminipage}}}\pgfsys@invoke{ }\pgfsys@endscope}\pgfsys@invoke{ }%&#10;\pgfsys@endscope{}{}{}\hss}\pgfsys@discardpath\pgfsys@invoke{ }%&#10;\pgfsys@endscope\hss}}\endpgfpicture}}" width="600" xml:id="S3.p2.pic1">
+        <svg:svg color="#000000" height="435.48" overflow="visible" version="1.1" viewBox="0 0 600 435.48" width="600">
+          <svg:g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,435.48) matrix(1 0 0 -1 0 0)">
+            <svg:g fill="#000000" fill-opacity="1.0">
+              <svg:path d="M 0 0 L 0 435.48 L 600 435.48 L 600 0 Z" style="stroke:none"/>
+            </svg:g>
+            <svg:g fill="#FFFFFF" fill-opacity="1.0">
+              <svg:path d="M 1.97 1.97 L 1.97 267.66 L 598.03 267.66 L 598.03 1.97 Z" style="stroke:none"/>
+            </svg:g>
+            <svg:g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 276.26)">
+              <svg:foreignObject color="#FFFFFF" height="156.01" overflow="visible" style="--fo_width :40.23em;--fo_height:11.08em;--fo_depth :0.19em;" transform="matrix(1 0 0 -1 0 153.32)" width="556.69"><inline-block class="ltx_minipage" vattach="bottom" width="40.23em">
+                  <p><text font="bold">Table C.5</text>: Prompt to Choose Representative Landmarks for Each Cluster</p>
+                </inline-block></svg:foreignObject>
+            </svg:g>
+            <svg:g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)">
+              <svg:foreignObject height="242.07" overflow="visible" style="--fo_width :40.23em;--fo_height:17.49em;--fo_depth :0em;" transform="matrix(1 0 0 -1 0 242.07)" width="556.69"><inline-block class="ltx_minipage" vattach="bottom" width="40.23em">
+                  <p>You have been provided with a set of similar documents, each indexed by a number. Your task is to identify the most representative example from this cluster of documents. Please carefully analyze the given documents and select one document that best captures the common essence and characteristics of the samples. The selection should emphasize the representativeness and relevance of the chosen sample to the category, so that it can serve as a reference for labeling the entire cluster.</p>
+                  <p>Documents in the cluster:</p>
+                  <p>1-. {Document 1}……</p>
+                  <p>2-. {Document 2}……</p>
+                  <p>3-. {Document 3}……</p>
+                  <p>4-. {Document 4}……</p>
+                  <p><Math mode="inline" tex="\vdots" text="vdots" xml:id="S3.p2.pic1.m1">
+                      <XMath>
+                        <XMTok name="vdots" role="ID">⋮</XMTok>
+                      </XMath>
+                    </Math></p>
+                  <p>Please choose one document that could best serve as a reference for labeling the entire cluster, and return only the index number of your selection, in format such as [0], [1], etc.</p>
+                  <p>Answer:</p>
+                </inline-block></svg:foreignObject>
+            </svg:g>
+          </svg:g>
+        </svg:svg>
+      </picture>
+    </para>
+  </section>
+</document>

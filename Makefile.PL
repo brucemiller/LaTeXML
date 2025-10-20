@@ -65,6 +65,7 @@ WriteMakefile(NAME => 'LaTeXML',
     'Image::Size'       => 0,
     'IO::String'        => 0,
     'IO::Handle'        => 0,
+    'IO::Socket'        => 0,
     'JSON::XS'          => 0,
     'LWP'               => 0,
     'MIME::Base64'      => 0,      # Core

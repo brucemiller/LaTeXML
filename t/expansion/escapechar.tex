@@ -33,4 +33,9 @@ Disabled backslash gives Foo/Bar : \chomper{-1}\AAfoo\AAbar.
 
 Normal backslash gives A Foo/A Bar: \chomper{`\\}\AAfoo\AAbar.
 
+Also, we try to preserve newlines, but still as a space token:
+\def\carriagereturn{
+}
+[\expandafter\string\carriagereturn]
+
 \end{document}
