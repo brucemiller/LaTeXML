@@ -75,7 +75,7 @@ DefMacro('\terms{}',               '\@add@frontmatter{ltx:keywords}{#1}');
 
 # Accessible figure descriptions
 NewCounter('acmlabel');
-DefConstructor('\Description[]{}', '^^<ltx:note xml:id="#id" class="ltx_nodisplay">#2</ltx:note>',
+DefConstructor('\Description[]{}', '^^<ltx:inline-block xml:id="#id" class="ltx_nodisplay">#2</ltx:inline-block>',
   properties => sub { ('width' => Dimension(0), 'height' => Dimension(0), RefStepCounter('acmlabel')) },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
