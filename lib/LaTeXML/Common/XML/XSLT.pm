@@ -31,5 +31,9 @@ sub transform {
   my ($self, $document, %params) = @_;
   return $$self{stylesheet}->transform($document, %params); }
 
+sub register_function {
+  my ($self, $uri, $name, $subref) = @_;
+  return $$self{stylesheet}->register_function($uri, $name, $subref); }
+
 #======================================================================
 1;
