@@ -201,7 +201,7 @@ if ($mathsvg) {
         imagename => $tmpfile, imagetype => $imagetype,
         %OPTIONS));
     my $SVG;
-    open($SVG, '<', "$tmpfile.svg") or die "Couldn't read temporary svg output '$tmpfile': $!";
+    pathname_openfile($SVG, '<', "$tmpfile.svg") or die "Couldn't read temporary svg output '$tmpfile': $!";
     while (<$SVG>) {
       print $_; }
     close($SVG);
@@ -293,7 +293,7 @@ sub outputText {
     if (my $dir = pathname_directory($destination)) {
       pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }
     my $OUT;
-    open($OUT, '>', $destination) or die "Couldn't open output file $destination: $!";
+    pathname_openfile($OUT, '>', $destination) or die "Couldn't open output file $destination: $!";
     binmode($OUT, ":encoding(UTF-8)");
     print $OUT $serialized;
     close($OUT); }

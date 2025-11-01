@@ -133,7 +133,7 @@ UseLog(undef);
 if    (!$serialized) { }
 elsif ($destination) {
   my $OUTPUT;
-  open($OUTPUT, ">", $destination) or die "Couldn't open output file $destination: $!";
+  pathname_openfile($OUTPUT, ">", $destination) or die "Couldn't open output file $destination: $!";
   print $OUTPUT $serialized;
   close($OUTPUT); }
 else {

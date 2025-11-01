@@ -69,7 +69,7 @@ sub detect_source {
   if ($readme_file = $self->find_file('00README.json')) {
     my $json_str = do {
       local $/ = undef;
-      open(my $README_FH, '<', $readme_file) or
+      pathname_openfile(my $README_FH, '<', $readme_file) or
         (print STDERR "failed to open '$readme_file' for use as input directives: $!. Continuing.\n");
       <$README_FH>;
     } || '';
@@ -81,7 +81,7 @@ sub detect_source {
   } }
   # I.1.2. Legacy arXiv 00README.XXX
   elsif ($readme_file = $self->find_file('00README.XXX')) {
-    open(my $README_FH, '<', $readme_file) or
+    pathname_openfile(my $README_FH, '<', $readme_file) or
       (print STDERR "failed to open '$readme_file' for use as input directives: $!. Continuing.\n");
     local $/ = "\n";
     my $toplevelfile;
@@ -109,7 +109,7 @@ sub detect_source {
     # Open file and read first few bytes to do magic sequence identification
     # note that file will be auto-closed when $FILE_TO_GUESS goes out of scope
     next unless pathname_test_e($tex_file);    # skip deleted "ignored" files.
-    open(my $FILE_TO_GUESS, '<', $tex_file) or
+    pathname_openfile(my $FILE_TO_GUESS, '<', $tex_file) or
       (print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n");
     local $/ = "\n";
     my ($maybe_tex, $maybe_tex_priority, $maybe_tex_priority2);
@@ -224,7 +224,7 @@ sub heuristic_check_for_pdftex {
   my @filenames    = @_;
   my @pdf_includes = ();
   for my $tex_file (@filenames) {
-    my $is_open = open(my $TEX_FH, '<', $tex_file);
+    my $is_open = pathname_openfile(my $TEX_FH, '<', $tex_file);
     if (!$is_open) {
       print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n";
       next; }

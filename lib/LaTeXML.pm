@@ -632,7 +632,7 @@ sub convert_post {
       NoteLog(($$opts{recursive} ? "recursive " : "") . "processing finished " . localtime());
       my $archive_log_status_code = max($$runtime{status_code}, $latexmlpost->getStatusCode);
       Note("Status:conversion:" . $archive_log_status_code);
-      open my $log_fh, '>', $log_file;
+      pathname_openfile(my $log_fh, '>', $log_file);
       print $log_fh $self->flush_log;
       close $log_fh;
       $self->bind_log; }

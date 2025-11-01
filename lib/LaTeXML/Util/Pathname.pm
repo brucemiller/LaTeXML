@@ -496,7 +496,7 @@ sub build_kpse_cache {
       my $LSR;
       my $subdir;
       my $skip = 0;    # whether to skip entries in the current subdirectory.
-      open($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
+      pathname_openfile($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
       while (<$LSR>) {
         chop;
         next if !$_ || (substr($_, 0, 1) eq '%');

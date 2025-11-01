@@ -72,7 +72,7 @@ sub initialize {
   # 1. Create mimetype declaration
   my $EPUB_FH;
   my $mime_path = pathname_concat($directory, 'mimetype');
-  open($EPUB_FH, ">", $mime_path)
+  pathname_openfile($EPUB_FH, ">", $mime_path)
     or Fatal('I/O', 'mimetype', $doc, "Couldn't open '$mime_path' for writing: $!");
   print $EPUB_FH 'application/epub+zip';
   close $EPUB_FH;
@@ -82,7 +82,7 @@ sub initialize {
   # 2.1. Add the container.xml description
   my $CONTAINER_FH;
   my $container_path = pathname_concat($meta_inf_dir, 'container.xml');
-  open($CONTAINER_FH, ">", $container_path)
+  pathname_openfile($CONTAINER_FH, ">", $container_path)
     or Fatal('I/O', 'container.xml', $doc, "Couldn't open '$container_path' for writing: $!");
   print $CONTAINER_FH $container_content;
   close $CONTAINER_FH;
@@ -227,7 +227,7 @@ sub finalize {
     Info('note', 'content.opf', undef, 'using the manifest supplied by the user'); }
   else {
     my $OPF_FH;
-    open($OPF_FH, ">", $content_path)
+    pathname_openfile($OPF_FH, ">", $content_path)
       or Fatal('I/O', 'content.opf', undef, "Couldn't open '$content_path' for writing: $_");
     print $OPF_FH $$self{opf}->toString(1);
     close $OPF_FH; }

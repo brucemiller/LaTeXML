@@ -2760,7 +2760,7 @@ sub maybeRequireDependencies {
   if (my $path = FindFile($file, type => $type, noltxml => 1)) {
     local $/ = undef;
     my $IN;
-    if (open($IN, '<', $path)) {
+    if (pathname_openfile($IN, '<', $path)) {
       my $code = <$IN>;
       close($IN);
       my @classes  = ();

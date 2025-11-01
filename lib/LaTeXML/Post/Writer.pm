@@ -54,7 +54,7 @@ sub process {
       or return Fatal('I/O', $destdir, undef, "Couldn't create directory '$destdir'",
       "Response was: $!");
     my $OUT;
-    open($OUT, '>', $destination)
+    pathname_openfile($OUT, '>', $destination)
       or return Fatal('I/O', $destdir, undef, "Couldn't write '$destination'", "Response was: $!");
     print $OUT $serialized;
     close($OUT); }

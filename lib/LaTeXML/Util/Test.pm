@@ -312,7 +312,7 @@ sub read_options {
   my ($optionfile, $testname) = @_;
   my $opts = [];
   my $OPT;
-  if (open($OPT, "<", $optionfile)) {
+  if (pathname_openfile($OPT, "<", $optionfile)) {
     while (my $line = <$OPT>) {
       next if $line =~ /^#/;
       chomp($line);
@@ -330,7 +330,7 @@ sub get_filecontent {
   my $IN;
   my @lines;
   if (pathname_test_e($path)) {
-    if (!open($IN, "<", $path)) {
+    if (!pathname_openfile($IN, "<", $path)) {
       do_fail($testname, "Could not open $path"); }
     else {
       { local $\ = undef;
