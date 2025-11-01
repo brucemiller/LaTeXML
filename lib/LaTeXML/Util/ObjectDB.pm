@@ -45,7 +45,7 @@ sub new {
   my $dbfile = $options{dbfile};
   if ($dbfile && $options{clean}) {
     warn "\nWARN: Removing Object database file $dbfile!!!\n";
-    unlink($dbfile); }
+    pathname_unlink($dbfile); }
 
   my $self = bless { dbfile => $dbfile,
     objects   => {}, externaldb => {},

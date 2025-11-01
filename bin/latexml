@@ -133,7 +133,7 @@ UseLog(undef);
 if    (!$serialized) { }
 elsif ($destination) {
   my $OUTPUT;
-  open($OUTPUT, ">", $destination) or die "Couldn't open output file $destination: $!";
+  pathname_openfile($OUTPUT, ">", $destination) or die "Couldn't open output file $destination: $!";
   print $OUTPUT $serialized;
   close($OUTPUT); }
 else {
@@ -163,7 +163,7 @@ sub validate_args {
 
   # Check search paths
   @paths = map { pathname_canonical($_) } reverse(@paths);
-  if (my @baddirs = grep { !-d $_ } @paths) {
+  if (my @baddirs = grep { !pathname_test_d($_) } @paths) {
     push(@fails, "These search path do not exist: " . join(', ', @baddirs)); }
 
   # Find the requested source
@@ -178,7 +178,7 @@ sub validate_args {
   }
   elsif (!($pathname = pathname_find($source, types => ['tex', 'bib', ''], paths => ['.', @paths])
       || ($initfile && pathname_kpsewhich($source, types => ['tex', 'ltx'], paths => ['.', @paths])))
-    || !-r $pathname) {
+    || !pathname_test_r($pathname)) {
     push(@fails, "Input file '$source' not readable"); }
   else {
     $mode = 'BibTeX' if !defined $mode && ($pathname =~ /\.bib$/);
@@ -197,7 +197,7 @@ sub validate_args {
     $destination = pathname_canonical($destination);
     if (my $dir = pathname_directory($destination)) {
       # -w is not about writeability on Windows, see https://perldoc.perl.org/perlport#-X
-      if (!(pathname_mkdir($dir) && ($^O eq 'MSWin32' || -w $dir))) {
+      if (!(pathname_mkdir($dir) && ($^O eq 'MSWin32' || pathname_test_w($dir)))) {
         push(@fails, "Couldn't create writable destination directory $dir: $!"); } } }
   if($initfile && !$destination){
     push(@fails, "No destination for dump of $initfile"); }

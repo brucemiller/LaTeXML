@@ -43,7 +43,7 @@ use JSON::XS qw(decode_json);
 
 # Determine if a socket server is installed locally and obtain its pathname:
 my $latexmls;
-$latexmls = catfile($RealBin_safe, 'latexmls') if (-e catfile($RealBin_safe, 'latexmls'));
+$latexmls = catfile($RealBin_safe, 'latexmls') if pathname_test_e(catfile($RealBin_safe, 'latexmls'));
 $latexmls = which('latexmls') unless defined $latexmls;
 
 # Some defaults:
@@ -84,7 +84,7 @@ if (!$opts->get('base')) {
 
 # Record if destination exists, for summary
 my $deststat;
-$deststat = (stat($opts->get('destination')))[9] if $opts->get('destination');
+$deststat = (pathname_stat($opts->get('destination')))[9] if $opts->get('destination');
 $deststat = 0 unless defined $deststat;
 
 push @$keyvals,                ['path', $cdir];    #add current path, to ensure never empty
@@ -117,7 +117,7 @@ if (!$logfile) {
   $opts->set('log', $logfile); }
 # A bit special: Since LaTeXML.pm will always try to append to the log file
 # make sure the file is new before we start.
-unlink($logfile) if (-f $logfile);
+unlink($logfile) if pathname_test_f($logfile);
 
 #***************************************************************************
 # Prepare output variables:
@@ -185,7 +185,7 @@ if ($result) {
   # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if ($destination) {
     my $output_handle;
-    open($output_handle, ">", $destination) or die("Fatal:I/O:forbidden Couldn't open output file " . $destination . ": $!");
+    pathname_openfile($output_handle, ">", $destination) or die("Fatal:I/O:forbidden Couldn't open output file " . $destination . ": $!");
     if ($whatsout eq 'archive') {
       binmode($output_handle, ':raw');
     }
@@ -206,7 +206,7 @@ if ($status_code == 3 || ($status =~ /fatal error/)) {    # non-zero exit code f
 # == Helpers ==
 sub summary {
   my ($destination, $prior_stat) = @_;
-  my $new_stat = (stat($destination))[9] || 0;
+  my $new_stat = (pathname_stat($destination))[9] || 0;
   return ($new_stat && ($prior_stat != $new_stat)) ? "\nWrote $destination\n" :
     "\nError! Did not write file $destination\n"; }
 

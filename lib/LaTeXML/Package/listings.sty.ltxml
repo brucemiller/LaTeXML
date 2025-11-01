@@ -323,7 +323,7 @@ sub listingsReadRawFile {
   my $path     = FindFile($filename);
   my $text;
   my $LST_FH;
-  if ($path && open($LST_FH, '<', $path)) {
+  if ($path && pathname_openfile($LST_FH, '<', $path)) {
     { local $/ = undef;
       $text = <$LST_FH>;
       close($LST_FH); } }

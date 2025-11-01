@@ -1544,7 +1544,7 @@ sub openCache {
       or return Fatal('internal', 'db', undef,
       "Couldn't create DB cache for " . $self->getDestination,
       "Message was: " . $!,
-      (-f $dbfile ? "\n(possibly incompatible db format?)" : ''));
+      (pathname_test_f($dbfile) ? "\n(possibly incompatible db format?)" : ''));
   }
   return; }
 
