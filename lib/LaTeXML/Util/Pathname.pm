@@ -268,7 +268,7 @@ sub pathname_stat { return stat $_[0]; }
 
 sub pathname_timestamp {
   my ($pathname) = @_;
-  return pathname_test_f($pathname) ? (stat($pathname))[9] : 0; }
+  return pathname_test_f($pathname) ? (pathname_stat($pathname))[9] : 0; }
 
 our $CWD = undef;
 # DO NOT use pathname_cwd, unless you also use pathname_chdir to change dirs!!!
@@ -317,7 +317,7 @@ sub pathname_copy {
 ###      system("cp --preserve=timestamps $source $destination")==0 or return; }
     # Hopefully this portably copies, preserving timestamp.
     copy($source, $destination) or return;
-    my ($atime, $mtime) = (stat($source))[8, 9];
+    my ($atime, $mtime) = (pathname_stat($source))[8, 9];
     utime $atime, $mtime, $destination;    # And set the modification time
   }
   return $destination; }
