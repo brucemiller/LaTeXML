@@ -78,7 +78,7 @@ sub initialize {
   close $EPUB_FH;
   # 2. Create META-INF metadata directory
   my $meta_inf_dir = catdir($directory, 'META-INF');
-  mkdir $meta_inf_dir;
+  pathname_mkdir($meta_inf_dir);
   # 2.1. Add the container.xml description
   my $CONTAINER_FH;
   my $container_path = pathname_concat($meta_inf_dir, 'container.xml');
