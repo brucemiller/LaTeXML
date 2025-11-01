@@ -130,7 +130,7 @@ EODoc
 # Digest the TeX
 #======================================================================
 @paths = map { pathname_canonical($_) } @paths;
-if (my @baddirs = grep { !-d $_ } @paths) {
+if (my @baddirs = grep { !pathname_test_d($_) } @paths) {
   warn "$LaTeXML::IDENTITY: these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
 my $latexml = LaTeXML::Core->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],

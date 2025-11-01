@@ -528,7 +528,7 @@ sub convert_image {
 
 sub DESTROY {
   if (my $tmpdir = File::Spec->tmpdir()) {
-    if (-d $tmpdir && opendir(my $tmpdir_fh, $tmpdir)) {
+    if (pathname_test_d($tmpdir) && opendir(my $tmpdir_fh, $tmpdir)) {
       my @empty_magick = grep { pathname_test_z($_) } map { "$tmpdir/$_" } readdir($tmpdir_fh);
       closedir($tmpdir_fh);
       unlink $_ foreach @empty_magick;

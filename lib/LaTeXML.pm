@@ -702,7 +702,7 @@ sub new_latexml {
     nomathparse     => $$opts{nomathparse},     # Backwards compatibility
     mathparse       => $$opts{mathparse});
 
-  if (my @baddirs = grep { !-d $_ } @{ $$opts{paths} }) {
+  if (my @baddirs = grep { !pathname_test_d($_) } @{ $$opts{paths} }) {
     warn "\n$LaTeXML::IDENTITY : these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
   $latexml->withState(sub {

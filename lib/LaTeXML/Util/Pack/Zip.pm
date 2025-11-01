@@ -84,7 +84,7 @@ sub get_archive {
   closedir $dirhandle;
   my $ext_exclude = $LaTeXML::Util::Pack::ARCHIVE_EXT_EXCLUDE;
   my @files       = grep { !/$ext_exclude/ && pathname_test_f(pathname_concat($directory, $_)) } @entries;
-  my @subdirs     = grep { -d File::Spec->catdir($directory, $_) } @entries;
+  my @subdirs     = grep { pathname_test_d(File::Spec->catdir($directory, $_)) } @entries;
  # We want to first add the files instead of simply invoking ->addTree on the top level
  # without ANY file attributes at all,
  # since EPUB is VERY picky about the first entry in the archive starting at byte 38 (file 'mimetype')

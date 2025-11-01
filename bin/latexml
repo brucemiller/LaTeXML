@@ -163,7 +163,7 @@ sub validate_args {
 
   # Check search paths
   @paths = map { pathname_canonical($_) } reverse(@paths);
-  if (my @baddirs = grep { !-d $_ } @paths) {
+  if (my @baddirs = grep { !pathname_test_d($_) } @paths) {
     push(@fails, "These search path do not exist: " . join(', ', @baddirs)); }
 
   # Find the requested source
