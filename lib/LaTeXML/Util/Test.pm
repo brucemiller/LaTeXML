@@ -296,7 +296,7 @@ sub daemon_ok {
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
       if (my $xmlstrings = process_xmlfile("$base.xml", $base)) {
         is_strings($teststrings, $xmlstrings, $base); } }
-    unlink "$base.test.xml" if pathname_test_e("$base.test.xml");
+    pathname_unlink("$base.test.xml") if pathname_test_e("$base.test.xml");
   }
   else {
     #TODO: Skip 3 tests

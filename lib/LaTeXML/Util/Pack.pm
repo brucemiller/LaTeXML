@@ -94,7 +94,7 @@ sub detect_source {
           $toplevelfile = $self->full_filename($name);
         } elsif ($directive eq 'ignore') {
           my $ignored_filepath = $self->full_filename($name);
-          unlink($ignored_filepath) if pathname_test_e($ignored_filepath); } } }
+          pathname_unlink($ignored_filepath) if pathname_test_e($ignored_filepath); } } }
     return $toplevelfile if $toplevelfile; }
 
   # I.2. Without an explicit directive,
@@ -341,7 +341,7 @@ sub pack_collection {
     elsif ($whatsout eq 'math') {
       # Math output - least common ancestor of all math in the document
       push @packed_docs, get_math($doc);
-      unlink('LaTeXML.cache'); }
+      pathname_unlink('LaTeXML.cache'); }
     else { push @packed_docs, $doc; } }
   return @packed_docs; }
 

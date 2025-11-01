@@ -531,7 +531,7 @@ sub DESTROY {
     if (pathname_test_d($tmpdir) && opendir(my $tmpdir_fh, $tmpdir)) {
       my @empty_magick = grep { pathname_test_z($_) } map { "$tmpdir/$_" } readdir($tmpdir_fh);
       closedir($tmpdir_fh);
-      unlink $_ foreach @empty_magick;
+      pathname_unlink($_) foreach @empty_magick;
   } }
   return; }
 

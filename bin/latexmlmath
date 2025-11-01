@@ -190,7 +190,7 @@ if ($mathimage) {
     DirectMathImages->new(magnification => $mag,
       imagename => $mathimage, imagetype => $imagetype,
       %OPTIONS));
-  unlink('LaTeXML.cache'); }
+  pathname_unlink('LaTeXML.cache'); }
 
 if ($mathsvg) {
   my $imagetype = 'svg';
@@ -205,14 +205,14 @@ if ($mathsvg) {
     while (<$SVG>) {
       print $_; }
     close($SVG);
-    unlink "$tmpfile.svg"; }
+    pathname_unlink("$tmpfile.svg"); }
   else {
     $mathsvg =~ s/\.svg$//;
     my ($result) = $post->ProcessChain(cloneDoc($document),
       DirectMathImages->new(magnification => $mag,
         imagename => $mathsvg, imagetype => $imagetype,
         %OPTIONS)); }
-  unlink('LaTeXML.cache'); }
+  pathname_unlink('LaTeXML.cache'); }
 
 if ($pmml) {
   require LaTeXML::Post::MathML::Presentation;
