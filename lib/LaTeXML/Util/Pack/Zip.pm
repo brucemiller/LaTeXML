@@ -75,7 +75,7 @@ sub get_archive {
   my ($directory, $whatsout) = @_;
   # Zip and send back
   my $archive = Archive::Zip->new();
-  opendir(my $dirhandle, $directory)
+  pathname_opendir(my $dirhandle, $directory)
     # TODO: Switch to Error API
     # or Fatal('expected', 'directory', undef,
     # "Expected a directory to archive '$directory':", $@);

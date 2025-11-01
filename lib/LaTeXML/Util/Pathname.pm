@@ -426,7 +426,7 @@ sub candidate_pathnames {
           qr/^\Q$name\E\Q$ext\E$/]); } }
   # Now, combine; precedence to leading directories.
   foreach my $dir (@dirs) {
-    opendir(my $dir_handle, $dir) or next;
+    pathname_opendir(my $dir_handle, $dir) or next;
     my @dir_files = readdir($dir_handle);
     closedir($dir_handle);
     for my $local_file (@dir_files) {
