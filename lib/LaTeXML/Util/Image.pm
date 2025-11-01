@@ -16,7 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Util::Pathname;
-use List::Util qw(min max);
+use List::Util qw(first min max pairfirst pairgrep);
 use Image::Size;
 use POSIX;
 use base qw(Exporter);
@@ -44,9 +44,9 @@ sub image_candidates {
   my ($path) = @_;
   $path =~ s/^\s+//; $path =~ s/\s+$//;
   $path =~ s/^("+)(.+)\g1$/$2/;    # unwrap if in quotes
-  my $searchpaths = [ @{ $STATE->lookupValue('GRAPHICSPATHS') || [] },
-                      @{ $STATE->lookupValue('SEARCHPATHS') || [] } ];
-  my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
+  my $searchpaths = [@{ $STATE->lookupValue('GRAPHICSPATHS') || [] },
+    @{ $STATE->lookupValue('SEARCHPATHS') || [] }];
+  my @candidates = pathname_findall($path, types => ['*'], paths => $searchpaths);
   if (!@candidates) {
     # if we have no candidates, also consult kpsewhich,
     # e.g. for "example-image-a"
@@ -84,16 +84,16 @@ sub image_type {
   return (defined $t ? lc($t) : undef); }
 
 sub image_size {
-  my ($pathname) = @_;
+  my ($pathname, $page) = @_;
   # Annoyingly, ImageMagick uses the MediaBox instead of CropBox (as does graphics.sty) for pdfs.
   # Worse, imgsize delegates to ImageMagick, w/o ability to add options
   if (($pathname =~ /\.pdf$/i) && image_can_image()) {
-    my $image = image_read($pathname) or return;
+    my $image = image_read($pathname, page => $page) or return;
     return image_getvalue($image, 'width', 'height'); }
-  my ($w, $h, $t) = imgsize($pathname);
+  my ($w, $h, $t) = imgsize($pathname) unless defined $page;
   return ($w, $h) if $w && $h;
   if (image_can_image()) {    # try harder!
-    my $image = image_read($pathname) or return;
+    my $image = image_read($pathname, page => $page) or return;
     return image_getvalue($image, 'width', 'height'); } }
 
 # This will be set once we've found an Image processing library to use [Daemon safe]
@@ -144,7 +144,7 @@ sub image_graphicx_parse {
   return [] unless $transformstring;
   local $_ = $_;
   my ($v, $clip, $trim, $width, $height, $xscale, $yscale,
-    $aspect, $angle, $rotfirst, $mag, @bb, @vp,) = ('', '', '', 0, 0, 0, 0, '', 0, '', 1, 0);
+    $aspect, $angle, $rotfirst, $mag, @bb, @vp, $page,) = ('', '', '', 0, 0, 0, 0, '', 0, '', 1, 0);
   my @unknown = ();
   my @ignore  = @{ $options{ignore_options} || [] };
   foreach (split(/(?<!\\),/, $transformstring || '')) {
@@ -161,6 +161,7 @@ sub image_graphicx_parse {
       elsif (/^keepaspectratio$/)     { $aspect = !($v eq 'false'); }
       elsif (/^width$/)               { $width  = to_bp($v); }
       elsif (/^(?:total)?height$/)    { $height = to_bp($v); }
+      elsif (/^page$/)                { $page   = $v; }
       elsif (/^scale$/)               { $xscale = $yscale = $v; }
       elsif (/^xscale$/)              { $xscale = $v; }
       elsif (/^yscale$/)              { $yscale = $v; }
@@ -175,6 +176,7 @@ sub image_graphicx_parse {
       # Note: the order of rotation & scaling is significant,
       # but the order of various clipping options w.r.t rotation or scaling is not.
   my @transform = ();
+  push(@transform, ['page', $page]) if $page;
   # If clip is set, viewport and trim will clip the image to that box,
   # but if not, they should ONLY affect the apparent size of the image.
   # Anything outside the box will *overlap* any adjacent material.
@@ -207,6 +209,11 @@ sub to_bp {
   else {
     return 1; } }
 
+sub image_graphicx_page {
+  my ($transform) = @_;
+  my $page = first { $_->[0] eq 'page' } @$transform;
+  return defined $page ? $page->[1] : undef; }
+
 #======================================================================
 # Compute the effective size of a graphic transformed in graphicx style.
 # [this is a simplification of image_graphicx_complex]
@@ -214,7 +221,8 @@ sub to_bp {
 sub image_graphicx_size {
   my ($source, $transform, %properties) = @_;
   my $dppt = ($properties{DPI} || $DPI) / 72.27;
-  my ($w, $h) = image_size($source);
+  my $page = image_graphicx_page($transform);
+  my ($w, $h) = image_size($source, $page);
   return unless $w && $h;
   foreach my $trans (@$transform) {
     my ($op, $a1, $a2, $a3, $a4) = @$trans;
@@ -265,15 +273,15 @@ sub image_graphicx_sizer {
 
 #======================================================================
 # Trivial scaling.
-# When an image can be dealt with by simple scaling without "editting" the image.
+# When an image can be dealt with by simple scaling without "editing" the image.
 # Compute the desired image size (width,height)
 # No need to necessarily read the image!
 
 # Check if the transform (parsed from above) is trivial
-# at most scaling; no rotations, reflectiosn or clipping.
+# at most scaling; no rotations, reflections, clipping or page selection.
 sub image_graphicx_is_trivial {
   my ($transform) = @_;
-  return !grep { ($_->[0] =~ /^(?:rotate|reflect|trim|clip)$/) } @$transform; }
+  return !grep { ($_->[0] =~ /^(?:rotate|reflect|trim|clip|page)$/) } @$transform; }
 
 # Make the transform (parsed from above) trivial
 # by removing any non-scaling operations!
@@ -284,7 +292,8 @@ sub image_graphicx_trivialize {
 # trivial_scaling: for transforms containing ONLY scale, scale-to
 sub image_graphicx_trivial {
   my ($source, $transform, %properties) = @_;
-  my ($w, $h) = image_size($source);
+  my $page = image_graphicx_page($transform);
+  my ($w, $h) = image_size($source, $page);
   return unless $w && $h;
   my $dppt = ($properties{DPI} || $DPI) / 72.27;
   foreach my $trans (@$transform) {
@@ -311,7 +320,8 @@ sub image_graphicx_complex {
   my ($xprescale, $yprescale) = (1, 1);
 
   # # Wastefully preread the image to get it's initial size
-  my ($w0, $h0) = image_size($source);
+  my $page = image_graphicx_page($transform);
+  my ($w0, $h0) = image_size($source, $page);
   return unless $w0 && $h0;
   Debug("Processing $source initially $w0 x $h0,"
       . "w/ DPI=$dpi, magnify=$magnify, upsample=$upsample, zoomout=$zoomout") if $LaTeXML::DEBUG{images};
@@ -338,7 +348,7 @@ sub image_graphicx_complex {
   # We'd presumably want to adjust (one of) the scaling factors.
   $dpi *= $magnify * $upsample;
   my $background = $properties{background} || $BACKGROUND;
-  my $image      = image_read($source, antialias => 1,
+  my $image      = image_read($source, (defined $page ? (page => $page) : ()), antialias => 1,
     density => $dpi * $xprescale . 'x' . $dpi * $yprescale,
   ) or return;
   my ($w, $h) = image_getvalue($image, 'width', 'height');
@@ -448,11 +458,14 @@ sub image_read {
   if (!$source) {
     Error('imageprocessing', 'read', undef, "No image source given"); return; }
   return unless $source;
+  my ($page_key, $page) = pairfirst { $a eq 'page' } @args;
+  @args = pairgrep { $a ne 'page' } @args if defined $page_key;
+  $page = ($page // 1) - 1;    # graphicx counts pages from 1, ImageMagick from 0
   my $image = image_object();
   # Just in case this is pdf, set this option; ImageMagick defaults to MediaBox (Wrong!!!)
   image_internalop($image, 'Set',  option => 'pdf:use-cropbox=true') or return;
   image_internalop($image, 'Set',  @args)                            or return;
-  image_internalop($image, 'Read', $source)                          or return;
+  image_internalop($image, 'Read', $source . "[$page]")              or return;
   return $image; }
 
 sub image_write {
