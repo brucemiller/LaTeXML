@@ -356,7 +356,7 @@ sub texlive_version {
   my $tex;
   # If kpsewhich specified, look for tex next to it
   if (my $path = $ENV{LATEXML_KPSEWHICH}) {
-    if (($path =~ s/kpsewhich/tex/i) && (-X $path)) {
+    if ($path =~ s/kpsewhich/tex/i && pathname_test_X($path)) {
       $tex = $path; } }
   if (!$tex) {    # Else look for executable
     $tex = which("tex"); }
