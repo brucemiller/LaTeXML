@@ -43,7 +43,7 @@ use JSON::XS qw(decode_json);
 
 # Determine if a socket server is installed locally and obtain its pathname:
 my $latexmls;
-$latexmls = catfile($RealBin_safe, 'latexmls') if (-e catfile($RealBin_safe, 'latexmls'));
+$latexmls = catfile($RealBin_safe, 'latexmls') if pathname_test_e(catfile($RealBin_safe, 'latexmls'));
 $latexmls = which('latexmls') unless defined $latexmls;
 
 # Some defaults:

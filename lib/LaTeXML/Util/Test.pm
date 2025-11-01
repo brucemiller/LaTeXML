@@ -296,7 +296,7 @@ sub daemon_ok {
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
       if (my $xmlstrings = process_xmlfile("$base.xml", $base)) {
         is_strings($teststrings, $xmlstrings, $base); } }
-    unlink "$base.test.xml" if -e "$base.test.xml";
+    unlink "$base.test.xml" if pathname_test_e("$base.test.xml");
   }
   else {
     #TODO: Skip 3 tests
@@ -304,7 +304,7 @@ sub daemon_ok {
     pathname_chdir($dir);
     system(@invocation);
     pathname_chdir($current_dir);
-    move("$base.test.xml", "$base.xml") if -e "$base.test.xml";
+    move("$base.test.xml", "$base.xml") if pathname_test_e("$base.test.xml");
   }
   return; }
 
@@ -329,7 +329,7 @@ sub get_filecontent {
   my ($path, $testname) = @_;
   my $IN;
   my @lines;
-  if (-e $path) {
+  if (pathname_test_e($path)) {
     if (!open($IN, "<", $path)) {
       do_fail($testname, "Could not open $path"); }
     else {

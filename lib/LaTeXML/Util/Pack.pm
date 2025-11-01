@@ -16,6 +16,7 @@ use warnings;
 use IO::String;
 use JSON::XS qw(decode_json);
 use File::Find;
+use LaTeXML::Util::Pathname;
 
 use base qw(Exporter);
 our @EXPORT = qw(&pack_collection);
@@ -93,7 +94,7 @@ sub detect_source {
           $toplevelfile = $self->full_filename($name);
         } elsif ($directive eq 'ignore') {
           my $ignored_filepath = $self->full_filename($name);
-          unlink($ignored_filepath) if -e $ignored_filepath; } } }
+          unlink($ignored_filepath) if pathname_test_e($ignored_filepath); } } }
     return $toplevelfile if $toplevelfile; }
 
   # I.2. Without an explicit directive,
@@ -107,7 +108,7 @@ sub detect_source {
     $tex_file = $self->full_filename($tex_file);
     # Open file and read first few bytes to do magic sequence identification
     # note that file will be auto-closed when $FILE_TO_GUESS goes out of scope
-    next unless -e $tex_file;    # skip deleted "ignored" files.
+    next unless pathname_test_e($tex_file);    # skip deleted "ignored" files.
     open(my $FILE_TO_GUESS, '<', $tex_file) or
       (print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n");
     local $/ = "\n";
@@ -200,7 +201,7 @@ sub detect_source {
       @files_by_likelihood = @pdf_includes if @pdf_includes; }
     # Special heuristic 3: prefer "best" candidates with a .bbl file
     if (scalar(@files_by_likelihood) > 1) {
-      my @with_bbl = grep { my $base = $_; $base =~ s/\.tex$//; -e "$base.bbl"; } @files_by_likelihood;
+      my @with_bbl = grep { my $base = $_; $base =~ s/\.tex$//; pathname_test_e("$base.bbl"); } @files_by_likelihood;
       @files_by_likelihood = @with_bbl if @with_bbl; }
 # Special heuristic 4 ?!: Sometimes in arXiv the decision is made in an unclear manner
 # (example: see 2112.08935 v1, which has equally good main.tex and bare_adv.tex)
