@@ -241,7 +241,7 @@ sub generateImages {
   foreach my $key (sort keys %table) {
     my $store = $doc->cacheLookup($key);
     if ($store && ($store =~ /^(.*);(\d+);(\d+);(\d+)$/)) {
-      next if -f pathname_absolute($1, $destdir); }
+      next if pathname_test_f(pathname_absolute($1, $destdir)); }
     push(@pending, $table{$key}); }
 
   Debug("LaTeXImages: $nuniq unique; " . scalar(@pending) . " new") if $LaTeXML::DEBUG{images};
@@ -288,7 +288,7 @@ sub generateImages {
 
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     # And sometimes it doesn't produce a dvi, even with 0 return code?
-    if (($ltxerr != 0) || (!-f "$workdir/$jobname.dvi")) {
+    if ($ltxerr != 0 || !pathname_test_f("$workdir/$jobname.dvi")) {
       $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images};    # Preserve junk
       Error('shell', $LATEXCMD, undef,
         "LaTeX command '$ltxcommand' failed",
@@ -334,7 +334,7 @@ sub generateImages {
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
     foreach my $entry (@pending) {
       my $src = "$workdir/" . sprintf($$self{dvicmd_output_name}, ++$index);
-      if (-f $src) {
+      if (pathname_test_f($src)) {
         my @dests = @{ $$entry{dest} };
         push(@dests, $self->generateResourcePathname($doc, $$entry{nodes}[0], undef, $$self{imagetype}))
           unless @dests;

@@ -202,7 +202,7 @@ sub finalize {
         my $OPS_abspath  = $_;
         my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
         my (undef, $name, $ext) = pathname_split($OPS_pathname);
-        if (-f $OPS_abspath && $ext ne 'xhtml' && "$name.$ext" ne 'LaTeXML.cache' && $OPS_abspath ne 'content.opf') {
+        if (pathname_test_f($OPS_abspath) && $ext ne 'xhtml' && "$name.$ext" ne 'LaTeXML.cache' && $OPS_abspath ne 'content.opf') {
           push(@content, $OPS_pathname); }
       } }, $OPS_directory);
 
@@ -223,7 +223,7 @@ sub finalize {
   # Write the content.opf file to disk
   my $directory    = $$self{siteDirectory};
   my $content_path = pathname_concat($OPS_directory, 'content.opf');
-  if (-f $content_path) {
+  if (pathname_test_f($content_path)) {
     Info('note', 'content.opf', undef, 'using the manifest supplied by the user'); }
   else {
     my $OPF_FH;

@@ -83,7 +83,7 @@ sub get_archive {
   my @entries = grep { /^[^.]/ } readdir($dirhandle);
   closedir $dirhandle;
   my $ext_exclude = $LaTeXML::Util::Pack::ARCHIVE_EXT_EXCLUDE;
-  my @files       = grep { !/$ext_exclude/ && -f pathname_concat($directory, $_) } @entries;
+  my @files       = grep { !/$ext_exclude/ && pathname_test_f(pathname_concat($directory, $_)) } @entries;
   my @subdirs     = grep { -d File::Spec->catdir($directory, $_) } @entries;
  # We want to first add the files instead of simply invoking ->addTree on the top level
  # without ANY file attributes at all,

@@ -2087,8 +2087,8 @@ sub FindFile_aux {
     return $file; }
   if (pathname_is_absolute($file)) {    # And if we've got an absolute path,
     if (!$options{noltxml}) {
-      return $file . '.ltxml' if -f ($file . '.ltxml'); }    # No need to search, just check if it exists.
-    return $file if -f $file;    # No need to search, just check if it exists.
+      return $file . '.ltxml' if pathname_test_f($file . '.ltxml'); }    # No need to search, just check if it exists.
+    return $file if pathname_test_f($file);    # No need to search, just check if it exists.
     return; }                    # otherwise we're never going to find it.
 
   # Note that the strategy is complicated by the fact that
@@ -2132,7 +2132,7 @@ sub FindFile_aux {
   local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
     @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
   if (my $result = (!$options{searchpaths_only}) && pathname_kpsewhich(@candidates)) {
-    return (-f $result ? $result : undef); }
+    return pathname_test_f($result) ? $result : undef; }
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {
     return $path; }
   return; }

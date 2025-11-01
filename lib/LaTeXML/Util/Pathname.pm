@@ -265,7 +265,7 @@ sub pathname_test_C { return -C $_[0]; }
 
 sub pathname_timestamp {
   my ($pathname) = @_;
-  return -f $pathname ? (stat($pathname))[9] : 0; }
+  return pathname_test_f($pathname) ? (stat($pathname))[9] : 0; }
 
 our $CWD = undef;
 # DO NOT use pathname_cwd, unless you also use pathname_chdir to change dirs!!!
@@ -304,7 +304,7 @@ sub pathname_copy {
   # If it _needs_ to be copied:
   $source      = pathname_canonical($source);
   $destination = pathname_canonical($destination);
-  if ((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))) {
+  if (!pathname_test_f($destination) || (pathname_timestamp($source) > pathname_timestamp($destination))) {
     if (my $destdir = pathname_directory($destination)) {
       pathname_mkdir($destdir) or return; }
 ###    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
@@ -337,7 +337,7 @@ sub pathname_copy {
 #    was installed, by appending it to the paths.
 
 # This is presumably daemon safe...
-my @INSTALLDIRS = grep { (-f "$_.pm") && (-d $_) }
+my @INSTALLDIRS = grep { pathname_test_f("$_.pm") && (-d $_) }
   map { pathname_canonical($_ . $SEP . 'LaTeXML') } @INC;    # [CONSTANT]
 
 sub pathname_installation {
@@ -484,7 +484,7 @@ sub build_kpse_cache {
   foreach my $dir (@dirs) {
     $dir =~ s/^!!//;
     # Presumably if no ls-R, we can ignore the directory?
-    if (-f "$dir/ls-R") {
+    if (pathname_test_f("$dir/ls-R")) {
       my $LSR;
       my $subdir;
       my $skip = 0;    # whether to skip entries in the current subdirectory.

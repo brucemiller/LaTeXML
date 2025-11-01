@@ -55,7 +55,7 @@ sub latexml_tests {
         foreach my $name (@core_tests) {
           my $test = "$directory/$name";
         SKIP: {
-            skip("No file $test.xml", 1) unless (-f "$test.xml");
+            skip("No file $test.xml", 1) unless pathname_test_f("$test.xml");
             next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
             latexml_ok("$test.tex", "$test.xml", $test, $options{compare}, $options{core_options}); } }
         # Carry out any post-processing tests
@@ -63,7 +63,7 @@ sub latexml_tests {
           my $test = "$directory/$name";
         SKIP: {
             skip("No file $test.xml and/or $test-post.xml", 1)
-              unless ((-f "$test.xml") && (-f "$test-post.xml"));
+              unless pathname_test_f("$test.xml") && pathname_test_f("$test-post.xml");
             next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
             latexmlpost_ok("$test.tex", "$test-post.xml", $test); } }
         # Carry out any daemon tests.
@@ -71,7 +71,7 @@ sub latexml_tests {
           my $test = "$directory/$name";
         SKIP: {
             skip("No file $test.xml", 1)
-              unless (-f "$test.xml");
+              unless pathname_test_f("$test.xml");
             my $ntests = ($directory =~ /runtimes/ ? 1 : 2);
             next unless check_requirements($test, $ntests, $$requires{'*'}, $$requires{$name});
             daemon_ok($test, $directory, $options{generate});

@@ -446,7 +446,7 @@ sub convert_post {
   my @procs    = ();
   #TODO: Add support for the following:
   my $dbfile = $$opts{dbfile};
-  if (defined $dbfile && !-f $dbfile) {
+  if (defined $dbfile && !pathname_test_f($dbfile)) {
     if (my $dbdir = pathname_directory($dbfile)) {
       pathname_mkdir($dbdir); } }
   my $DB = LaTeXML::Util::ObjectDB->new(dbfile => $dbfile, %PostOPS);
