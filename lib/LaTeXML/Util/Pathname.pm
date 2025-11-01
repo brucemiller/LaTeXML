@@ -36,6 +36,13 @@ use base qw(Exporter);
 our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_make &pathname_canonical
   &pathname_split &pathname_directory &pathname_name &pathname_type
+  &pathname_test_r &pathname_test_w &pathname_test_x &pathname_test_o
+  &pathname_test_R &pathname_test_W &pathname_test_X &pathname_test_O
+  &pathname_test_e &pathname_test_z &pathname_test_s
+  &pathname_test_f &pathname_test_d &pathname_test_l &pathname_test_p &pathname_test_S &pathname_test_b &pathname_test_c
+  &pathname_test_u &pathname_test_g &pathname_test_k
+  &pathname_test_T &pathname_test_B
+  &pathname_test_M &pathname_test_A &pathname_test_C
   &pathname_timestamp
   &pathname_concat
   &pathname_relative &pathname_absolute &pathname_to_url
@@ -222,6 +229,40 @@ sub pathname_to_url {
 
 #======================================================================
 # Actual file system operations.
+
+sub pathname_test_r { return -r $_[0]; }
+sub pathname_test_w { return -w $_[0]; }
+sub pathname_test_x { return -x $_[0]; }
+sub pathname_test_o { return -o $_[0]; }
+
+sub pathname_test_R { return -R $_[0]; }
+sub pathname_test_W { return -W $_[0]; }
+sub pathname_test_X { return -X $_[0]; }
+sub pathname_test_O { return -O $_[0]; }
+
+sub pathname_test_e { return -e $_[0]; }
+sub pathname_test_z { return -z $_[0]; }
+sub pathname_test_s { return -s $_[0]; }
+
+sub pathname_test_f { return -f $_[0]; }
+sub pathname_test_d { return -d $_[0]; }
+sub pathname_test_l { return -l $_[0]; }
+sub pathname_test_p { return -p $_[0]; }
+sub pathname_test_S { return -S $_[0]; }
+sub pathname_test_b { return -b $_[0]; }
+sub pathname_test_c { return -c $_[0]; }
+
+sub pathname_test_u { return -u $_[0]; }
+sub pathname_test_g { return -g $_[0]; }
+sub pathname_test_k { return -k $_[0]; }
+
+sub pathname_test_T { return -T $_[0]; }
+sub pathname_test_B { return -B $_[0]; }
+
+sub pathname_test_M { return -M $_[0]; }
+sub pathname_test_A { return -A $_[0]; }
+sub pathname_test_C { return -C $_[0]; }
+
 sub pathname_timestamp {
   my ($pathname) = @_;
   return -f $pathname ? (stat($pathname))[9] : 0; }
