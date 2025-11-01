@@ -238,7 +238,7 @@ sub validate_args {
   elsif ($xmlfile eq '-') {    # Any sense in pre-reading it here??
   }
   elsif (!($pathname = pathname_find($xmlfile, types => ['xml', ''], paths => ['.', @paths]))
-    || !-r $pathname) {
+    || !pathname_test_r($pathname)) {
     push(@fails, "Input file '$xmlfile' not readable"); }
   else {
     $xmlfile = $pathname; }

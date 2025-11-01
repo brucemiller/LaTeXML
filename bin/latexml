@@ -178,7 +178,7 @@ sub validate_args {
   }
   elsif (!($pathname = pathname_find($source, types => ['tex', 'bib', ''], paths => ['.', @paths])
       || ($initfile && pathname_kpsewhich($source, types => ['tex', 'ltx'], paths => ['.', @paths])))
-    || !-r $pathname) {
+    || !pathname_test_r($pathname)) {
     push(@fails, "Input file '$source' not readable"); }
   else {
     $mode = 'BibTeX' if !defined $mode && ($pathname =~ /\.bib$/);
