@@ -382,9 +382,9 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       $node->setAttribute(overflow  => 'visible');
       # Store expected size for experimentation Temporary?
       $document->setAttribute($node,
-        style=>'--fo_width :' . $w->emValue(undef,$f).'em;'
-              .'--fo_height:' . $h->emValue(undef,$f).'em;'
-              .'--fo_depth :' . $d->emValue(undef,$f).'em;');
+        style=>'--ltx-fo-width:'  . $w->emValue(undef,$f).'em;'
+              .'--ltx-fo-height:' . $h->emValue(undef,$f).'em;'
+              .'--ltx-fo-depth:'  . $d->emValue(undef,$f).'em;');
  } });
 
 sub isVAttached {
