@@ -672,7 +672,7 @@ sub rearrangeLoneAMSAligned {
           # and synthesize a box from the lhs & rhs.
           $document->setNodeBox($main, MathWhatsit(map { $document->getNodeBox($_) } @cells));
           closeMathFork($document, $eqn, $main, $branch);
-  } } } }
+        } } } }
   return; }
 
 #======================================================================
@@ -749,7 +749,7 @@ DefPrimitive('\numberwithin[]{}{}', sub {
 
 # Section 3.11.2 Cross references to equation numbers
 DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label' _force_font='true'/>)",
-  mode => 'restricted_horizontal', enterHorizontal => 1,
+  mode       => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub { (label => CleanLabel($_[1])); });
 DefMacro('\thetag{}', '{\rm #1}');
 
@@ -954,7 +954,14 @@ DefConstructor('\underset{}{}',
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
     . "<ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>");
-
+DefConstructor('\overunderset{}{}{}',
+  "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMArg>#3</ltx:XMArg>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>");
 #======================================================================
 # Section 4.11 Fractions and related commands
 
@@ -1189,7 +1196,7 @@ DefConstructor('\sideset{}{}{}', sub {
       if (my $scriptop = IsScript($script)) {
         $node = sidesetWrap($document, $node, 'pre', $$scriptop[1], $level, $script);
         $level++ if $$scriptop[0] eq 'FLOATING';                # After node is seen!
-    } }
+      } }
     my @after = ();
     foreach my $script ($post->unlist) {
       # If it's a script, handle it (non-scripts dealt with above & below)
