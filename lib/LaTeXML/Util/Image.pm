@@ -44,9 +44,9 @@ sub image_candidates {
   my ($path) = @_;
   $path =~ s/^\s+//; $path =~ s/\s+$//;
   $path =~ s/^("+)(.+)\g1$/$2/;    # unwrap if in quotes
-  my $searchpaths = [ @{ $STATE->lookupValue('GRAPHICSPATHS') || [] },
-                      @{ $STATE->lookupValue('SEARCHPATHS') || [] } ];
-  my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
+  my $searchpaths = [@{ $STATE->lookupValue('GRAPHICSPATHS') || [] },
+    @{ $STATE->lookupValue('SEARCHPATHS') || [] }];
+  my @candidates = pathname_findall($path, types => ['*'], paths => $searchpaths);
   if (!@candidates) {
     # if we have no candidates, also consult kpsewhich,
     # e.g. for "example-image-a"
@@ -244,7 +244,7 @@ sub image_graphicx_size {
         ($x0, $y0, $ww, $hh) = (floor($a1 * $dppt), floor($h - $a4 * $dppt),
           ceil(($a3 - $a1) * $dppt), ceil(($a4 - $a2) * $dppt)); }
       ($w, $h) = ($ww, $hh);
-  } }
+    } }
   return ($w, $h); }
 
 # Totally doesn't belong here, but want to share...
@@ -415,7 +415,7 @@ sub image_graphicx_complex {
       # $notes .= " compose to $ww x $hh at $x0,$y0";
       # $image = $nimage;
       # ($w, $h) = ($ww, $hh);
-  } }
+    } }
 
   if ($properties{transparent} && !$hasalpha) {
     image_internalop($image, 'Transparent', $background) or return; }
@@ -434,7 +434,7 @@ sub image_graphicx_complex {
     ($w, $h) = image_getvalue($image, 'width', 'height');
     Debug("  Downsampled to $w x $h") if $LaTeXML::DEBUG{images}; }
 
-  my ($watt, $hatt) = ($w / $zoomout, $h = $h / $zoomout);
+  my ($watt, $hatt) = ($w / $zoomout, $h / $zoomout);
   Debug("Transformed $source final size $w x $h, displayed as $watt x $hatt") if $LaTeXML::DEBUG{images};
   return ($image, $watt, $hatt); }
 
