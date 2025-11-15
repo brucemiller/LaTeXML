@@ -664,7 +664,6 @@ use DB_File;
 use Unicode::Normalize;
 use LaTeXML::Post;    # to import error handling...
 use LaTeXML::Common::Error;
-use URI::file;
 use base qw(LaTeXML::Common::Object);
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 our $XPATH = LaTeXML::Common::XML::XPath->new(ltx => $NSURI);
@@ -857,7 +856,8 @@ sub setDocument_internal {
   else {
     Fatal('unexpected', $root, undef, "Dont know how to use '$root' as document element"); }
   # set URI to destination
-  $$self{document}->setURI(URI::file->new($self->getDestination));
+  my $url = pathname_to_file_url($self->getDestination);
+  $$self{document}->setURI($url) if defined $url;
   return $self; }
 
 our @MonthNames = (qw( January February March April May June
