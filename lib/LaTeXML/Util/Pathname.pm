@@ -400,6 +400,7 @@ sub candidate_pathnames {
     opendir(my $dir_handle, $dir) or next;
     my @dir_files = readdir($dir_handle);
     closedir($dir_handle);
+    my @dir_paths;
     for my $local_file (@dir_files) {
       for my $regex_pair (@regexes) {
         my ($i_regex, $regex) = @$regex_pair;
@@ -409,7 +410,8 @@ sub candidate_pathnames {
           if ($local_file =~ m/$regex/) {
             # if we are only interested in the first match, return it:
             return ($full_file) if $options{findfirst};
-            push(@paths, $full_file); } } } } }
+            push(@dir_paths, $full_file); } } } }
+    push(@paths, sort @dir_paths); }
   # Fallback: if no strict matches were found, return any existing case-insensitive matches
   # Defer the -f check until we are sure we need it, to keep the usual cases fast.
   return @paths ? @paths : @nocase_paths; }
