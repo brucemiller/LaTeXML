@@ -248,7 +248,7 @@ DefConstructor('\reflectbox {}',
 DefConstructor('\graphicspath DirectoryList', sub {
     my ($document, $paths, %props) = @_;
     foreach my $path (@{ $props{paths} }) {
-      $document->insertPI('latexml', graphicspath => $path); } },
+      $document->insertPI('latexml', graphicspath => pathname_to_url($path)); } },
   properties => sub {
     my ($stomach, $paths) = @_;
     my @paths = ();

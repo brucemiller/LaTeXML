@@ -821,7 +821,7 @@ sub setDocument_internal {
     @paths = @{ $$self{searchpaths} } if $$self{searchpaths};
     foreach my $pi (@{ $$self{processingInstructions} }) {
       if ($pi =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/) {
-        push(@paths, split(',', $2)); } }
+        push(@paths, pathname_from_urls($2)); } }
     ### No, this ultimately can be the xml source, which may be the destination;
     ### adding this gets the wrong graphics (already processed!)
     ### push(@paths, pathname_absolute($$self{sourceDirectory})) if $$self{sourceDirectory};

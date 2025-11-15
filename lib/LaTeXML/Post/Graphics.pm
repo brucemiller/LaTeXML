@@ -123,7 +123,7 @@ sub findGraphicsPaths {
   my @paths = ();
   foreach my $pi ($doc->findnodes('.//processing-instruction("latexml")')) {
     if ($pi->textContent =~ /^\s*graphicspath\s*=\s*([\"\'])(.*?)\1\s*$/) {
-      push(@paths, $2); } }
+      push(@paths, pathname_from_url($2)); } }
   return @paths; }
 
 sub getGraphicsSourceTypes {
