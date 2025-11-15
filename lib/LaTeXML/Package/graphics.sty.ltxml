@@ -297,8 +297,8 @@ DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim',
     my ($stomach, $starred, $op1, $op2, $graphic) = @_;
     my $options = graphicS_options($starred, $op1, $op2);
     my ($path, @candidates) = image_candidates(ToString($graphic));
-    (graphic => $path,
-      candidates => join(',', @candidates),
+    (graphic => pathname_to_url($path),
+      candidates => pathname_to_urls(@candidates),
       options    => $options); },
   alias => '\includegraphics');
 

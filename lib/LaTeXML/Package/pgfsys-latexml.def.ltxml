@@ -617,8 +617,8 @@ DefConstructor('\lxSVG@includegraphics{}{} Semiverbatim',
       paths => LookupValue('GRAPHICSPATHS'));
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
       @candidates = map { pathname_relative($_, $base) } @candidates; }
-    (graphic => $graphic,
-      candidates => join(',', @candidates),
+    (graphic => pathname_to_url($graphic),
+      candidates => pathname_to_urls(@candidates),
       options    => $options); },
   alias => '\includegraphics');
 
