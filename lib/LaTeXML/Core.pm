@@ -263,7 +263,7 @@ sub convertDocument {
           my @dedup = ();
           while (my $check = shift(@copy)) {
             unshift(@dedup, $check) if !(grep { $_ eq $check } @dedup); }
-          $document->insertPI('latexml', searchpaths => join(',', @dedup)); } }
+          $document->insertPI('latexml', searchpaths => pathname_to_urls(@dedup)); } }
       foreach my $preload_by_reference (@{ $$self{preload} }) {
         my $preload = $preload_by_reference; # copy preload value, as we want to preserve the hash as-is, for (potential) future daemon calls
         next if $preload =~ /\.pool$/;
