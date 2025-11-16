@@ -26,7 +26,7 @@ use Encode;
 # Parse command line
 my ($verbosity, $strict, $comments, $noparse, $includestyles) = (0, 0, 1, 0, 0);
 my ($format, $destination, $help, $showversion)               = ('xml', '');
-my ($preamble, $postamble, $logfile)                          = (undef, undef, undef);
+my ($preamble, $postamble, $logfile, $recorder, $recordfile)  = (undef, undef, undef, undef, undef);
 my ($documentid);
 my $inputencoding;
 my $mode  = undef;
@@ -43,6 +43,8 @@ GetOptions("destination=s" => \$destination,
   "verbose"         => sub { $verbosity++; },
   "strict"          => \$strict,
   "log=s"           => \$logfile,
+  "recorder"        => \$recorder,
+  "recordfile=s"    => \$recordfile,
   "xml"             => sub { $format = 'xml'; },
   "tex"             => sub { $format = 'tex'; },
   "box"             => sub { $format = 'box'; },
@@ -79,6 +81,7 @@ my $latexml;
 my $digested;
 my $serialized;
 eval {    # Catch errors
+  UseRecordFile($recordfile);
   UseLog($logfile);
   Note("$LaTeXML::IDENTITY processing $source");
   $latexml = LaTeXML::Core->new(
@@ -133,11 +136,14 @@ UseLog(undef);
 if    (!$serialized) { }
 elsif ($destination) {
   my $OUTPUT;
+  RecordOutput($destination);
   open($OUTPUT, ">", $destination) or die "Couldn't open output file $destination: $!";
   print $OUTPUT $serialized;
   close($OUTPUT); }
 else {
   print $serialized; }
+
+UseRecordFile(undef);
 
 # ========================================
 # Now, unbind stuff, so we can clear memory
@@ -191,6 +197,13 @@ sub validate_args {
     if ($name) {
       $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
   $logfile = 'latexml.log' unless $logfile;
+
+  # Optionally create a .fls file for tracking the opening of files (option --recorder)
+  # Use $jobname.latexml.fls, latexml.fls, or argument of --recordfile
+  $recordfile = $recorder ? $recordfile : undef;
+  if ($pathname && $recorder && !$recordfile) {
+    my ($dir, $name, $ext) = pathname_split($pathname);
+    $recordfile = $name ? pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.fls') : 'latexml.fls'; }
 
   # Check that destination is valid before wasting any time...
   if ($destination) {
