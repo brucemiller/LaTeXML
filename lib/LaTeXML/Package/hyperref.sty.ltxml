@@ -86,7 +86,7 @@ foreach my $option (    # 3.1 General Options
   DeclareOption($option, undef); }
 
 # \hypersetup{keyvals} configures various parameters,
-# for each pdf keyword, provide [property,(content|resource),datatype]
+# for each pdf keyword, provide [property,(content|resource),datatype,langsupport]
 our %pdfkey_property = (
   baseurl     => '',                                 # xmp:BaseURL ??
   pdfauthor   => ['dcterms:creator',  'content'],
@@ -134,13 +134,16 @@ PushValue('@at@end@document', T_CS('\@add@PDF@RDFa@triples'));
 DefConstructor('\@add@PDF@RDFa@triples', sub {
     my ($document, $xproperty, $content) = @_;
     if (my $root = $document->getDocument->documentElement) {
+      my $metalang = LookupMapping('Hyperref_options', 'pdfmetalang') // LookupMapping('Hyperref_options', 'pdflang');
       foreach my $key (LookupMappingKeys('Hyperref_options')) {
         if (my $entry = ($pdfkey_property{$key})) {
-          my ($property, $object, $datatype) = @$entry;
+          my ($property, $object, $datatype, $langsupport) = @$entry;
           my $value = LookupMapping('Hyperref_options', $key);
-          my $node  = $document->openElementAt($root, 'ltx:rdf',
-            property => $property, $object => $value,
-            ($datatype ? (datatype => $datatype) : ()));
+          my ($lang, $localizedValue) = $value->ToString =~ m/^\[([^]]*)\](.*)/;
+          my $node = $document->openElementAt($root, 'ltx:rdf',
+            property => $property, $object => $langsupport ? $localizedValue // $value : $value,
+            ($langsupport && ($lang || $metalang) ? ('xml:lang' => $lang // $metalang) : ()),
+            ($datatype                            ? (datatype   => $datatype)          : ()));
           # Must do directly; $document->setAttribute omits empty attributes
           $node->setAttribute(about => '');
           $document->closeElementAt($node); } } } });
