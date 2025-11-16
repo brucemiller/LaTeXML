@@ -124,7 +124,7 @@ DefPrimitive('\hypersetup RequiredKeyVals:Hyp', sub {
     my @pairs = $kv->getPairs;
     while (@pairs) {
       my ($key, $value) = (shift(@pairs), shift(@pairs));
-      hyperref_setoption($key, Digest($value)); }
+      hyperref_setoption($key, Expand($value)); }
     return; });
 
 PushValue('@at@end@document', T_CS('\@add@PDF@RDFa@triples'));
@@ -136,8 +136,8 @@ DefConstructor('\@add@PDF@RDFa@triples', sub {
       foreach my $key (LookupMappingKeys('Hyperref_options')) {
         if (my $entry = ($pdfkey_property{$key})) {
           my ($property, $object, $datatype, $langsupport) = @$entry;
-          my $value = LookupMapping('Hyperref_options', $key);
-          my ($lang, $localizedValue) = $value->ToString =~ m/^\[([^]]*)\](.*)/;
+          my $value = ToString(LookupMapping('Hyperref_options', $key));
+          my ($lang, $localizedValue) = $value =~ m/^\[([^]]*)\](.*)/;
           my $node = $document->openElementAt($root, 'ltx:rdf',
             property => $property, $object => $langsupport ? $localizedValue // $value : $value,
             ($langsupport && ($lang || $metalang) ? ('xml:lang' => $lang // $metalang) : ()),
