@@ -87,20 +87,18 @@ foreach my $option (    # 3.1 General Options
 
 # \hypersetup{keyvals} configures various parameters,
 # for each pdf keyword, provide [property,(content|resource),datatype,langsupport]
-our %pdfkey_property = (
-  baseurl     => '',                                 # xmp:BaseURL ??
-  pdfauthor   => ['dcterms:creator',  'content'],
-  pdfkeywords => ['dcterms:subject',  'content'],    # & pdf:Keywords
-  pdflang     => ['dcterms:language', 'content'],
-  pdfproducer => '',                                 # pdf:Producer & xmp:CreatorTool
-  pdfsubject  => ['dcterms:subject', 'content'],
-  pdftitle    => ['dcterms:title',   'content'],
-  # Include hyperxmp's keywords, as well.
-  pdfauthortitle   => '',                                # photoshop:AuthorsPosition
-  pdfcaptionwriter => '',                                # photoshop:CaptionWriter !?!?!?
-  pdfcopyright     => ['dcterms:rights', 'content'],     # & xmpRights:Marked
-  pdflicenseurl    => ['cc:licence',     'resource'],    # xmpRights:WebStatement
-  pdfmetalang      => '',                                # dcterms:language ??
+# %pdfkey_property may have already been populated by hyperxmp
+our %pdfkey_property = (%pdfkey_property,
+  baseurl         => '',                                 # xmp:BaseURL ??
+  pdfauthor       => ['dcterms:creator', 'content'],
+  pdfcreationdate => '',                                 # xmp:CreateDate
+  pdfkeywords     => ['dcterms:subject',  'content'],    # & pdf:Keywords
+  pdflang         => ['dcterms:language', 'content'],
+  pdfmoddate      => '',                                 # xmp:ModifyDate
+  pdfproducer     => '',                                 # pdf:Producer & xmp:CreatorTool
+  pdfsubject      => ['dcterms:description', 'content'],
+  pdftitle        => ['dcterms:title',       'content'],
+  pdftrapped      => '',                                 # pdf:Trapped
 );
 # date=>dcterms:date xmp:CreateDate xmp:ModifyDate xmp:MetadataDate ?
 # document identifier => xmlMM:DocumentID
