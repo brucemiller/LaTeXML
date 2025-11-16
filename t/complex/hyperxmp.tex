@@ -1,0 +1,64 @@
+% example copied from hyperxmp with minor modifications
+\pdfobjcompresslevel=0 % added to easily inspect the XMP packet
+\documentclass[british]{article} % added british to test pdflang and pdfmetalang
+\usepackage[utf8]{inputenc}
+\usepackage{babel}
+\usepackage[unicode]{hyperref}
+\usepackage{hyperxmp}
+%
+\title{%
+  On a heuristic viewpoint concerning the production and
+  transformation of light}
+\author{Albert Einstein}
+\date{March 17, 1905}
+%
+\hypersetup{%
+  pdfmetalang={en-AU}, % added to test pdfmetalang
+  pdftitle={%
+    On a heuristic viewpoint concerning the production and
+    transformation of light},
+  pdfsubtitle={[en-US]Putting that bum Maxwell in his place},
+  pdfauthor={Albert Einstein},
+  pdfauthortitle={\xmpquote{Technical Assistant\xmpcomma\ Level III}},
+  pdfdate={1905-03-17},
+  pdfcopyright={Copyright (C) 1905, Albert Einstein},
+  pdfsubject={photoelectric effect},
+  pdfkeywords={energy quanta, Hertz effect, quantum physics},
+  pdflicenseurl={http://creativecommons.org/licenses/by-nc-nd/3.0/},
+  pdfcaptionwriter={Scott Pakin},
+  pdfcontactaddress={Kramgasse 49},
+  pdfcontactcity={Bern},
+  pdfcontactpostcode={3011},
+  pdfcontactcountry={Switzerland},
+  pdfcontactphone={031 312 00 91},
+  pdfcontactemail={aeinstein@ipi.ch},
+  pdfcontacturl={%
+    http://einstein.biz/,
+    https://www.facebook.com/AlbertEinstein
+  },
+  pdfdocumentid={uuid:6d1ac9ec-4ff2-515a-954b-648eeb4853b0},
+  pdfversionid={2.998e8},
+  pdfpublication={[de]Annalen der Physik},
+  pdfpublisher={Wiley-VCH},
+  pdfpubtype={journal},
+  pdfvolumenum={322},
+  pdfissuenum={6},
+  pdfpagerange={132-148},
+  pdfissn={0003-3804},
+  pdfeissn={1521-3889},
+  pdfpubstatus={VoR},
+  pdflang={en-GB},
+  pdfurl={http://www.physik.uni-augsburg.de/annalen/history/einstein-papers/1905_17_132-148.pdf},
+  pdfdoi={10.1002/andp.19053220607},
+  pdfidentifier={info:lccn/50013519}
+}
+\XMPLangAlt{de}{pdftitle={Über einen die Erzeugung und Verwandlung des
+  Lichtes betreffenden heuristischen Gesichtspunkt}}
+%
+\begin{document}
+\maketitle
+A profound formal difference exists between the theoretical
+concepts that physicists have formed about gases and other
+ponderable bodies, and Maxwell's theory of electromagnetic
+processes in so-called empty space\dots
+\end{document}
