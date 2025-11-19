@@ -51,9 +51,12 @@ DeclareOption('noguesstabularheaders', sub { AssignValue(GUESS_TABULAR_HEADERS =
 
 # 'nobibtex' intended to be used for arXiv-like build harnesses, where there
 # is explicit instruction to only use ".bbl" and that bibtex will not be ran.
-DeclareOption('bibtex',   sub { AssignValue('BIBTEX_CONFIG' => 'BIBTEX',    'global'); });
-DeclareOption('nobibtex', sub { AssignValue('BIBTEX_CONFIG' => 'BBL_ONLY',  'global'); });
-DeclareOption('usebbl',   sub { AssignValue('BIBTEX_CONFIG' => 'BBL_FIRST', 'global'); });
+DeclareOption('bibtex',   sub { AssignValue('BIB_CONFIG' => ['bib', 'bbl'], 'global'); });
+DeclareOption('nobibtex', sub { AssignValue('BIB_CONFIG' => ['bbl'],        'global'); });
+
+DefKeyVal('LTXML', 'bibconfig', 'Semiverbatim', '', code => sub {
+    AssignValue('BIB_CONFIG' => [split(',', ToString($_[1]))], 'global');
+    return; });
 
 # Lexeme serialization for math formulas
 DeclareOption('mathlexemes', sub { AssignValue('LEXEMATIZE_MATH' => 1, 'global'); });
