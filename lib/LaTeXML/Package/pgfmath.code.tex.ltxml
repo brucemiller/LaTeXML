@@ -591,7 +591,6 @@ BEGIN {
     divide   => sub { $_[0] / pgfmath_divisor($_[1]); },
     div      => sub { int($_[0] / pgfmath_divisor($_[1])); },
     '!post'  => sub { pgfmathfactorial($_[0]); },
-    'r'      => sub { rad2deg($_[0]); },
     e        => sub { $E; },
     pi       => sub { $PI; },
     abs      => sub { abs($_[0]); },
@@ -694,7 +693,8 @@ comparison : CMP expr
 expr : QTEX | term (ADDOP term { [$item{ADDOP},$item{term}]; })(s?)
   { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{term}, map(@$_,@{$item[2]})); }
 
-term : factor (MULOP factor { [$item{MULOP},$item{factor}]; })(s?)
+# the postfix 'r' is equivalent to multiplying by 180/pi, even accounting for predecence
+term : factor ('r' { ['*',180/Math::Trig::pi]; } | MULOP factor { [$item{MULOP},$item{factor}]; })(s?)
   { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{factor},map(@$_,@{$item[2]})); }
 
 # addPostfix[$base] ; adds any following sub/super scripts to $base.
@@ -775,7 +775,7 @@ BOOLOP  : /&&|\|\|/
 # pgfmathparser has a hardcoded notion of 'double character' operator
 # '!' could be part of '!=', so we forbid that sequence
 PREFIX  : /-|\+/ | '!' ...!'=' { '!pref'; }
-POSTFIX : 'r'    | '!' ...!'=' { '!post'; }
+POSTFIX : '!' ...!'=' { '!post'; }
 
 ADDOP   : /\+|=|-/
 MULOP   : /\*|\//
