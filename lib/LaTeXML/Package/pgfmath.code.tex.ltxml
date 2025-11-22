@@ -361,7 +361,7 @@ sub pgfmathparse {
     # \def\e{1260}\pgfmathparse{cos \e/5} to -0.2 - i.e. "cos" binds stronger than "/"
     && ($string !~ /\b(?:a?(sin|cos|tan2?)h?)|bin|add|array|tan|cot|sec|(?:co)?sec|
     deg|depth|dim|div|divide|(?:(?:not)?(?:equal|greater|less))|oct|pi|pow|multiply|
-    rand|scalar|sign|vec|width|hex/x)) { {
+    rand|scalar|sign|vec|width|hex|frac/x)) { {
       # special case! the ^ in tikz is used for power, but NOT so in perl.
       $string =~ s/\^/**/g;
       local $LaTeXML::IGNORE_ERRORS = 1;
@@ -594,7 +594,7 @@ BEGIN {
     atan       => sub { rad2deg(atan($_[0])); },
     atan2      => sub { rad2deg(atan2($_[0], $_[1])); },
     angle      => sub { rad2deg(atan2($_[0], $_[1])); },    # Assume same? Where's documentation?
-                                                            #    bin   => sub { },
+    bin        => sub { sprintf("%b", $_[0]); },
     ceil       => sub { ceil($_[0]); },
     cos        => sub { cos(pgfmathargradians($_[0])); },
     cosec      => sub { cosec(pgfmathargradians($_[0])); },
@@ -606,12 +606,12 @@ BEGIN {
     factorial => sub { pgfmathfactorial($_[0]); },
     false     => sub { 0; },
     floor     => sub { floor($_[0]); },
-    #    frac       => sub { },
+    frac      => sub { $_[0] < 0 ? ceil($_[0]) - $_[0] : $_[0] - floor($_[0]); },
     #    gcd        => sub { },
     #    height     => sub { },
     hex        => sub { sprintf("%x", $_[0]); },
     Hex        => sub { sprintf("%X", $_[0]); },
-    int        => sub { int($_[0]); },
+    int        => sub { $_[0] < 0 ? ceil($_[0]) : floor($_[0]); },
     ifthenelse => sub { ($_[0] ? $_[1] : $_[2]); },
     iseven     => sub { (int($_[0]) % 2) == 0 },
     isodd      => sub { (int($_[0]) % 2) == 1 },
