@@ -372,7 +372,7 @@ sub pgfmathparse {
   } }
   if ($string && !$result) {
     $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
-    $result         = $PGFMATHGrammar->expr(\$string); }
+    $result         = $PGFMATHGrammar->formula(\$string); }
   $result = $result || 0.0;
   $string =~ s/^[\)\]]+$//;    # Forgive excess trailing ) !?!?!?!?!
   if ($string) {
@@ -646,6 +646,17 @@ BEGIN {
   };
 
   $::RD_HINT = 1;
+  # $::RD_TRACE = 1;
+
+  # The PGF grammar is simple enough that can be parsed from left to right:
+  # once a part of the text has been parsed successfully, its meaning will not
+  # change. To ensure we do not waste energy on reparsing the same text, follow
+  #
+  # REQUIREMENT: alternations MUST be disambiguated by the first character
+  #
+  # In other words, the parser must never backtrack. This guarantees that
+  # successful matches and effectful computations such as 'rand' are not
+  # repeated multiple times.
 
   # Why can't I manage to import a few functions to be visible to the grammar actions?
   # NOTE Not yet done: quoted strings, extensible functions
@@ -653,80 +664,111 @@ BEGIN {
 #  {BEGIN { use LaTeXML::Package::Pool; }}
 #  { use LaTeXML::Package::Pool; }
 #  { LaTeXML::Package::Pool->import(qw(pgfmath_apply)); }
-  <skip:'[\s\{\}]*'>            # braces ignored during parse...
-  formula :
-    expr /\?/ expr /:/ expr { ($item[1] ? $item[3] : $item[5]); }
-  | expr CMP expr           { LaTeXML::Package::Pool::pgfmath_apply($item[2], $item[1], $item[3]); }
-  | expr
 
-expr :
-     term (ADDOP term { [$item[1],$item[2]]; })(s?)
-          { LaTeXML::Package::Pool::pgfmath_leftrecapply($item[1],map(@$_,@{$item[2]})); }
+<skip:'[\s\{\}]*'>            # braces ignored during parse...
 
-  term :
-     factor (MULOP factor { [$item[1],$item[2]]; })(s?)
-          { LaTeXML::Package::Pool::pgfmath_leftrecapply($item[1],map(@$_,@{$item[2]})); }
+formula : predicate conditional[$item{predicate}](?)
+  { defined $item[2][0] ? $item[2][0] : $item{predicate}; }
 
-   # addPostfix[$base] ; adds any following sub/super scripts to $base.
-   addPostfix :
-          /^\Z/ { $arg[0];}   # short circuit!
-        | POSTFIX          addPostfix[LaTeXML::Package::Pool::pgfmath_apply($item[1],$arg[0])]
-        | { $arg[0]; }
-  factor : simplefactor /\^/ simplefactor { $item[1] ** $item[3]; }
-    | simplefactor addPostfix[$item[1]]
+# conditional[$if]
+conditional : '?' then ':' else
+  { $arg[0] ? $item{then} : $item{else}; }
+  then: formula
+  else: formula
 
-  simplefactor :
-      /\(/ formula /(?:\)|^\Z)/     { $item[2]; } # Let unclosed () succeed at end?
-    | PREFIX simplefactor   { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
-    | SIZER /\(/ QTEX /\)/ { LaTeXML::Package::Pool::pgfmath_sizer($item[1], $item[3]); }
-    | FUNCTION /\(/ formula (/,/ formula { $item[2]; })(s?) /\)/
-           { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[3], @{$item[4]}); }
-    | FUNCTION simplefactor
-           { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[2]); }
-    | FUNCTION0                   { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
-    | NUMBER UNIT          { LaTeXML::Package::Pool::pgfmath_convert($item[1],$item[2]); }
-    | NUMBER REGISTER      { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
+predicate : atomic (BOOLOP atomic { [$item{BOOLOP},$item{atomic}]; })(s?)
+  { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{atomic}, map(@$_,@{$item[2]})); }
+
+atomic : expr comparison[$item{expr}](?)
+  { defined $item[2][0] ? $item[2][0] : $item{expr}; }
+
+# comparison[$left]
+comparison : CMP expr
+  { LaTeXML::Package::Pool::pgfmath_apply($item{CMP}, $arg[0], $item{expr}); }
+
+expr : term (ADDOP term { [$item{ADDOP},$item{term}]; })(s?)
+  { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{term}, map(@$_,@{$item[2]})); }
+
+term : factor (MULOP factor { [$item{MULOP},$item{factor}]; })(s?)
+  { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{factor},map(@$_,@{$item[2]})); }
+
+# addPostfix[$base] ; adds any following sub/super scripts to $base.
+addPostfix :
+    /^\Z/ { $arg[0]; } # short circuit!
+  | POSTFIX addPostfix[LaTeXML::Package::Pool::pgfmath_apply($item{POSTFIX},$arg[0])]
+  | { $arg[0]; }
+
+factor : simplefactor (power | addPostfix)[$item[1]](?)
+  { defined $item[2][0] ? $item[2][0] : $item{simplefactor}; }
+
+power : '^' simplefactor { $arg[0] ** $item{simplefactor}; }
+
+function : FUNCTION (arguments | simpleargument)[$item{FUNCTION}] { $item[2]; }
+  arguments : '(' formula (',' formula { $item[2]; })(s?) ')'
+    { LaTeXML::Package::Pool::pgfmath_apply($arg[0], $item{formula}, @{$item[3]}); }
+  # to respect the REQUIREMENT, forbid simplefactor starting with '('
+  simpleargument : ...!'(' simplefactor
+    { LaTeXML::Package::Pool::pgfmath_apply($arg[0], $item{simplefactor}); }
+
+simplefactor :
+    '(' formula /(?:\)|^\Z)/ { $item[2]; } # Let unclosed () succeed at end?
+  | PREFIX simplefactor      { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
+  | SIZER '(' QTEX ')'       { LaTeXML::Package::Pool::pgfmath_sizer($item[1], $item[3]); }
+  | function
+  | FUNCTION0 { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
+  | number
+  | register
+
+number : NUMBER postNumber[$item[1]]
+  postNumber :
+      /^\Z/    { $arg[0]; } # short circuit!
+    | REGISTER { LaTeXML::Package::Pool::pgfmath_apply('*', $arg[0], $item[1]); }
+    | UNIT     { LaTeXML::Package::Pool::pgfmath_convert($arg[0],$item[1]); }
+    |          { $arg[0]; }
+
+register : REGISTER postRegister[$item[1]]
+  postRegister :
+      /^\Z/    { $arg[0]; }   # short circuit!
       # really count_register dimension_register!
-    | REGISTER REGISTER    { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
-    | NUMBER
-    | REGISTER
+    | REGISTER { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
 
-    REGISTER :  # these need to set dimension flag!!!
-      /\\wd/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::Pool::pgfmath_getwidth($item[2]); }
-    | /\\ht/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::Pool::pgfmath_getheight($item[2]); }
-    | /\\dp/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::Pool::pgfmath_getdepth($item[2]); }
-    | CS                   { LaTeXML::Package::Pool::pgfmath_register($item[1]); }
+REGISTER :  # these need to set dimension flag!!!
+  '\wd' CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
+                          LaTeXML::Package::Pool::pgfmath_getwidth($item[2]); }
+| '\ht' CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
+                          LaTeXML::Package::Pool::pgfmath_getheight($item[2]); }
+| '\dp' CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
+                          LaTeXML::Package::Pool::pgfmath_getdepth($item[2]); }
+| CS                   { LaTeXML::Package::Pool::pgfmath_register($item[1]); }
 
-    CS : /\\[a-zA-Z@]*/
+CS : /\\[a-zA-Z@]*/
 
-    # NOTE: Need to recognize octal, binary and hex!  AND scientific notation!
-    NUMBER :
-      /(?:\d+\.?\d*|\d*\.?\d+)(:?[eE][+-]?\d+)?/ { $item[1]+0.0; }
-    | /0b[01]+/                  { oct($item[1]); } # !!!
-    | /0x[0-9a-fA-F]+/           { hex($item[1]); }
-    | /0[0-9]+/                  { oct($item[1]); }
-    | /\./                       { 0.0; } # pgf treats a single dot as a zero
+# NOTE: Need to recognize octal, binary and hex!  AND scientific notation!
+NUMBER :
+  /(?:\d+\.?\d*|\d*\.?\d+)(:?[eE][+-]?\d+)?/ { $item[1]+0.0; }
+| /0b[01]+/                  { oct($item[1]); } # !!!
+| /0x[0-9a-fA-F]+/           { hex($item[1]); }
+| /0[0-9]+/                  { oct($item[1]); }
+| '.'                        { 0.0; } # pgf treats a single dot as a zero
 
-    UNIT :
-      /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/
+UNIT :
+  /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/
 
-    FUNCTION0 : /(?:e|pi|false|rand|rnd|true|axis_height|rule_thickness)/
-        | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserconstant($item[1]); }
+FUNCTION0 : /(?:e|pi|false|rand|rnd|true|axis_height|rule_thickness)/
+    | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserconstant($item[1]); }
 
-    FUNCTION : /(?:abs|acos|asin|atan2|atan|angle|bin|ceil|cos|cosec|cosh|cot|deg|exp|factorial|floor|frac|hex|Hex|int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|rad|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse|veclen)/
-        | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserfunction($item[1]); }
-    # ? array|scalar
-    # These take boxes!
-    SIZER : /(?:depth|height|width)/
-    QTEX : /"[^"]*"/
-    CMP     : /==/ | /\>/ | /\</ | /!=/ | /\>=/ | /\<=/ | /&&/ | /||/
-    PREFIX  : /\-/ | /!/ | /\+/
-    POSTFIX : /!/ | /r/
-    ADDOP   : /\+/ | /=/ | /\-/
-    MULOP   : /\*/ | /\//
+FUNCTION : /(?:abs|acos|asin|atan2|atan|angle|bin|ceil|cos|cosec|cosh|cot|deg|exp|factorial|floor|frac|hex|Hex|int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|rad|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse|veclen)/
+    | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserfunction($item[1]); }
+# ? array|scalar
+# These take boxes!
+SIZER : /(?:depth|height|width)/
+QTEX : /"[^"]*"/
+CMP     : /==|>=?|<=?|!=/
+BOOLOP  : /&&|\|\|/
+PREFIX  : /-|!|\+/
+POSTFIX : /!|r/
+ADDOP   : /\+|=|-/
+MULOP   : /\*|\//
 
 EoGrammar
 
