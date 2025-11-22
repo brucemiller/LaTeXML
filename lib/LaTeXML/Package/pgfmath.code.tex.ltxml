@@ -613,7 +613,12 @@ BEGIN {
     factorial => sub { pgfmathfactorial($_[0]); },
     floor     => sub { floor($_[0]); },
     frac      => sub { $_[0] < 0 ? ceil($_[0]) - $_[0] : $_[0] - floor($_[0]); },
-    #    gcd        => sub { },
+    gcd       => sub {
+      # PGF computes the gcd of the underlying TeX integers!
+      my ($a, $b) = (abs($_[0]) * 65536, abs($_[1]) * 65536);
+      ($a, $b) = ($b, $a) if $b > $a;
+      while ($b > 0) { ($a, $b) = ($b, $a % $b); }
+      int($a / 65536); },
     #    height     => sub { },
     hex        => sub { sprintf("%x", $_[0]); },
     Hex        => sub { sprintf("%X", $_[0]); },
