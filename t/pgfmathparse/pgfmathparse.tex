@@ -1,0 +1,194 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{pgf}
+% some versions of PGF add an extra \clearpage at the end of the document, which breaks the test
+\iflatexml\let\clearpage=\relax\fi
+% ifthenelse will force LaTeXML to use the grammar instead of eval, because it is blacklisted
+\makeatletter
+\def\test{\begingroup\pgfmath@catcodes\@ifnextchar[\test@\test@@}
+\def\test@[#1]#2{\texttt{#1 = \pgfmathprint{#2} = \pgfmathprint{ifthenelse(1,#2,"never")}}\endgroup\par}
+\def\test@@#1{\test@[#1]{#1}}
+\makeatother
+\begin{document}
+
+\section{94.1.1 Commands}
+\test{2pt+3.5pt}
+\test{sin(.5*pi r)*60}
+\test{1.234e+4}
+\test{010}
+\test{0xA}
+\test{0XB}
+\test{0b10}
+\test{0B101}
+% partially implemented: quotes
+
+\section{92.2 Operators}
+\test{1+2}
+\test{1-2}
+\test{-2}
+\test{1*2}
+\test{1/2}
+% correct, but generates 'Script ^ can only appear in math mode' error
+\test[2\textasciicircum{}3]{2^3}
+\test{4!}
+\test{1r}
+\test{pi r}
+\test{1 ? 2 : 3}
+\test{2 == 2}
+\test{2 == 1}
+\test{(1+2)*3}
+\test{sin(30*10)}
+\test{mod(72,3)}
+\test{sin 30}
+\test{sin(30)}
+\test{sin 30*10}
+\test{sin(30)*10}
+% unimplemented: array operator {X}
+% unimplemented: array access operator [X]
+5 is {\pgfmathprint{ifthenelse(5 > 7,"\noexpand\Large Bigger","\noexpand\tiny smaller")} than 7.}
+
+5 is {\pgfmathprint{5 > 7 ? "\noexpand\Large Bigger" : "\noexpand\tiny smaller"} than 7.}
+
+7 is {\pgfmathprint{ifthenelse(7 > 5,"\noexpand\Large Bigger","\noexpand\tiny smaller")} than 5.}
+
+7 is {\pgfmathprint{7 > 5 ? "\noexpand\Large Bigger" : "\noexpand\tiny smaller"} than 5}
+
+\section{92.3 Functions}
+
+\subsection{92.3.1 Basic arithmetic functions}
+\test{add(75,6)}
+\test{subtract(75,6)}
+\test{neg(50)}
+\test{multiply(75,6)}
+\test{divide(75,6)}
+\test{div(75,9)}
+\test{factorial(5)}
+\test{sqrt(10)}
+\test{sqrt(8765.432)}
+\test{pow(2,7)}
+\test[e\textasciicircum{}2 - e\textasciicircum{}-2]{(e^2 - e^-2)/2}
+\test{exp(1)}
+\test{exp(2.34)}
+\test{ln(10)}
+\test{ln(exp(5))}
+\test{log10(100)}
+\test{log2(128)}
+\test{abs(-5)}
+\test{-abs(4*-3)}
+\test{mod(20,6)}
+\test{mod(-100,30)}
+\test{Mod(-100,30)}
+\test{sign(-5)}
+\test{sign(0)}
+\test{sign(5)}
+
+\subsection{94.3.2 Rounding functions}
+\test{round(32.5/17)}
+\test{round(398/12)}
+\test{floor(32.5/17)}
+\test{floor(398/12)}
+\test{floor(-398/12)}
+\test{ceil(32.5/17)}
+\test{ceil(398/12)}
+\test{ceil(-398/12)}
+\test{int(32.5/17)}
+\test{frac(32.5/17)}
+\test{int(-32.5/17)}  % added in LaTeXML to check behavior on negative numbers
+\test{frac(-32.5/17)} % added in LaTeXML to check behavior on negative numbers
+\test{real(4)}
+
+\subsection{94.3.3 Integer arithmetic functions}
+\test{gcd(42,56)}
+\test{gcd(24,34)}     % added in LaTeXML to check behavior when iteration is required
+\test{gcd(42.1,56.1)} % added in LaTeXML to check behavior on non-integers
+\test{gcd(-42,-56)}   % added in LaTeXML to check behavior on negative numbers
+\test{gcd(-42,0)}     % added in LaTeXML to check behavior at zero
+\test{isodd(2)}
+\test{isodd(3)}
+\test{iseven(2)}
+\test{iseven(3)}
+\test{isprime(1)}
+\test{isprime(2)}
+\test{isprime(31)}
+\test{isprime(64)}
+
+\subsection{94.3.4 Trigonometric functions}
+\test{pi}
+\test{pi r}
+\test{rad(90)}
+\test{deg(3*pi/2)}
+\test{sin(60)}
+\test{sin(pi/3 r)}
+\test{cos(60)}
+\test{cos(pi/3 r)}
+\test{tan(45)}
+\test{tan(2*pi/8 r)}
+\test{sec(45)}
+\test{cosec(30)}
+\test{cot(15)}
+
+\subsection{94.3.5 Comparison and logical functions}
+% infix versions added by LaTeXML to check parsing
+\test{equal(20,20)}
+\test{20 == 20}
+\test{greater(20,25)}
+\test{20 > 25}
+\test{less(20,25)}
+\test{20 < 25}
+\test{notequal(20,25)}
+\test{20 != 25}
+\test{notgreater(20,25)}
+\test{20 <= 25}
+\test{notless(20,25)}
+\test{20 >= 25}
+\test{and(5>4,6>7)}
+\test{5>4 && 6>7}
+\test{or(5>4,6>7)}
+\test{5>4 || 6>7}
+\test{not(true)}
+\test{! true}
+\test{not(false)} % added in LaTeXML to check parsing
+\test{! false}    % added in LaTeXML to check parsing
+\test{ifthenelse(5==4,"yes","no")}
+\test{5==4 ? "yes" : "no"}
+\test{true ? "yes" : "no"}
+\test{false ? "yes" : "no"}
+
+\subsection{94.3.6 Pseudo-random functions}
+% unimplemented: determinism (yet)
+
+\subsection{94.3.7 Base conversion functions}
+\test{hex(65535)}
+\test{Hex(65535)}
+\test{oct(63)}
+% perl thinks this is a number and yields an overflow error
+% FAILS \test{bin(185)}
+
+\subsection{94.3.8 Miscellaneous functions}
+\test{min(3,4,-2,250,-8,100)}
+\test{max(3,4,-2,250,-8,100)}
+\test{veclen(12,5)}
+% unimplemented: arrays
+\test{sinh(0.5)}
+\test{cosh(0.5)}
+\test{tanh(0.5)}
+\test{width("Some Lovely Text")}
+\test{height("Some Lovely Text")}
+\test{depth("Some Lovely Text")}
+
+\subsection{Additional predecence tests}
+\test[2\textasciicircum{}2!]{2^2!}
+\test[2\textasciicircum{}(2!)]{2^(2!)}
+\test{2*2!}
+\test{3!!}
+\test[2\textasciicircum{}2\textasciicircum{}3]{2^2^3}
+\test[2\textasciicircum{}3 r * 2]{2^3 r * 2}
+\test{2 + !1 + 2}
+\test[2\textasciicircum{}3\textasciicircum{}2]{2^3^2}
+\test[-2\textasciicircum{}-2]{-2^-2}
+\test[2\textasciicircum{}2!]{2^2!}
+\test{-3!}
+\test{2 * - 2 * 3!}
+
+
+\end{document}
