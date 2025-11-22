@@ -15,7 +15,8 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Geometry;
-use List::Util qw(min max);
+use List::Util   qw(min max);
+use Scalar::Util qw(looks_like_number);
 
 # NOTE: since *.code.tex is read with \input, the .ltxml may be loaded more than once.
 no warnings 'redefine';
@@ -87,7 +88,8 @@ sub pgfmathresult {
   if (!$presanitized && $value =~ /[.e]/) {
     $value = sprintf("%.5f", $value);
     $value =~ s/([^.])0+$/$1/; }
-  return Tokens(T_CS('\def'), T_CS('\pgfmathresult'), T_BEGIN, ExplodeText($value), T_END); }
+  # the result may contain TeX macros, retokenize them with the current cattable
+  return Tokens(T_CS('\def'), T_CS('\pgfmathresult'), T_BEGIN, LaTeXML::Core::Mouth->new($value)->readTokens, T_END); }
 
 DefMacro('\@@@show@mathresult{}', sub {
     my ($gulet, $result) = @_;
@@ -324,7 +326,7 @@ sub pgfmathparse {
   Let('\widthof',  '\pgfmath@calc@widthof');
   Let('\heightof', '\pgfmath@calc@heightof');
   Let('\depthof',  '\pgfmath@calc@depthof');
-  my $string = (ref $tokens ? ToString(Expand($tokens)->stripBraces) : $tokens);
+  my $string = (ref $tokens ? UnTeX(Expand($tokens)->stripBraces) : $tokens);
   $string =~ s/^\s+//; $string =~ s/\s+$//; $string =~ s/\s+/ /gs;
   my $input = $string;
   # simple number-like thing? return as-is without any changes.
@@ -380,6 +382,9 @@ sub pgfmathparse {
       "Parse of '$input' failed",
       "LTX: '$result'",
       "Left: $string"); }
+  elsif (!looks_like_number($result)) {
+    # result is a string, leave untouched
+    return $result; }
   # NOT really correct, but would like to use an internal to distinguish 1.0 from int(1.0)!!!
   elsif ($result == int($result)) {
     $result = int($result);
@@ -397,7 +402,8 @@ DefMacro('\lx@pgfmath@parseX{}', sub {
     return Tokens(T_CS('\def'), T_CS('\lx@pgfmathresult'),
       T_BEGIN, pgfmathparse($gullet, $tokens), T_END); });
 
-DefMacro('\lx@pgfmath@parse{}', sub {
+# TODO argument should actually go through \protected@edef if that is defined (i.e. with the LaTeX engine)
+DefMacro('\lx@pgfmath@parse ExpandedPartially', sub {
     my ($gullet, $tokens) = @_;
     return pgfmathresult(pgfmathparse($gullet, $tokens), 1); });
 
@@ -521,8 +527,6 @@ sub pgfmath_getdepth {
 
 sub pgfmath_sizer {
   my ($dimension, $rawtex) = @_;
-  $rawtex =~ s/^"//;
-  $rawtex =~ s/"$//;
   my $result;
   if (my $boxed = Digest($rawtex)) {
     if ($dimension eq 'height') {
@@ -686,7 +690,7 @@ atomic : expr comparison[$item{expr}](?)
 comparison : CMP expr
   { LaTeXML::Package::Pool::pgfmath_apply($item{CMP}, $arg[0], $item{expr}); }
 
-expr : term (ADDOP term { [$item{ADDOP},$item{term}]; })(s?)
+expr : QTEX | term (ADDOP term { [$item{ADDOP},$item{term}]; })(s?)
   { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{term}, map(@$_,@{$item[2]})); }
 
 term : factor (MULOP factor { [$item{MULOP},$item{factor}]; })(s?)
@@ -760,8 +764,8 @@ FUNCTION : /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserf
 
 # ? array|scalar
 # These take boxes!
-SIZER : /(?:depth|height|width)/
-QTEX : /"[^"]*"/
+SIZER   : /(?:depth|height|width)/
+QTEX    : '"' /[^"]*/ '"' { $item[2]; }
 CMP     : /==|>=?|<=?|!=/
 BOOLOP  : /&&|\|\|/
 PREFIX  : /-|!|\+/
