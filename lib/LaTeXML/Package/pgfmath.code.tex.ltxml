@@ -361,7 +361,7 @@ sub pgfmathparse {
     # \def\e{1260}\pgfmathparse{cos \e/5} to -0.2 - i.e. "cos" binds stronger than "/"
     && ($string !~ /\b(?:a?(sin|cos|tan2?)h?)|bin|add|array|tan|cot|sec|(?:co)?sec|
     deg|depth|dim|div|divide|(?:(?:not)?(?:equal|greater|less))|oct|pi|pow|multiply|
-    rand|scalar|sign|vec|width/x)) { {
+    rand|scalar|sign|vec|width|hex/x)) { {
       # special case! the ^ in tikz is used for power, but NOT so in perl.
       $string =~ s/\^/**/g;
       local $LaTeXML::IGNORE_ERRORS = 1;
