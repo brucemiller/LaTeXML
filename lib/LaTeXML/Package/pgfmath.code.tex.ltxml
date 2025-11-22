@@ -676,14 +676,17 @@ formula : predicate conditional[$item{predicate}](?)
   { defined $item[2][0] ? $item[2][0] : $item{predicate}; }
 
 # conditional[$if]
+# '?' precedence 100, ':' precendence 101
 conditional : '?' then ':' else
   { $arg[0] ? $item{then} : $item{else}; }
   then: formula
   else: formula
 
+# BOOLOP precedence 200
 predicate : atomic (BOOLOP atomic { [$item{BOOLOP},$item{atomic}]; })(s?)
   { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{atomic}, map(@$_,@{$item[2]})); }
 
+# CMP precedence 250
 atomic : expr comparison[$item{expr}](?)
   { defined $item[2][0] ? $item[2][0] : $item{expr}; }
 
@@ -691,9 +694,11 @@ atomic : expr comparison[$item{expr}](?)
 comparison : CMP expr
   { LaTeXML::Package::Pool::pgfmath_apply($item{CMP}, $arg[0], $item{expr}); }
 
+# ADDOP precedence 500
 expr : QTEX | term (ADDOP term { [$item{ADDOP},$item{term}]; })(s?)
   { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{term}, map(@$_,@{$item[2]})); }
 
+# MULOP precedence 700, 'r' precedence 600
 # the postfix 'r' is equivalent to multiplying by 180/pi, even accounting for predecence
 term :
   PREFIX term { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
@@ -702,10 +707,12 @@ term :
 
 # pgfmathparser has a hardcoded notion of 'double character' operator
 # '!' could be part of '!=', so we forbid that sequence
+# '!' postfix precedence 800
 factor : power ('!' ...!'=')(s?)
   { $return = $item{power};
     for my $i (@{$item[2]}) { $return = LaTeXML::Package::Pool::pgfmathfactorial($return); } }
 
+# '^' precedence 900
 power : simplefactor ('^' simplefactor { ['^',$item{simplefactor}]; })(s?)
   { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{simplefactor}, map(@$_,@{$item[2]})); }
 
@@ -716,6 +723,8 @@ function : FUNCTION (arguments | simpleargument)[$item{FUNCTION}] { $item[2]; }
   simpleargument : ...!'(' simplefactor
     { LaTeXML::Package::Pool::pgfmath_apply($arg[0], $item{simplefactor}); }
 
+# '!' precedence 975, rest of PREFIX precedence infinity
+# '(' precedence 5, ')' precedence 4
 simplefactor :
     '(' formula /(?:\)|^\Z)/ { $item[2]; } # Let unclosed () succeed at end?
   | PREFIX simplefactor      { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
