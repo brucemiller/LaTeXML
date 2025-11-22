@@ -558,6 +558,7 @@ sub pgfmath_checkuserfunction {
 
 BEGIN {
   $PGFMathFunctions = {
+    '!pref'    => sub { int(!$_[0]); },
     not        => sub { int(!$_[0]) },
     '=='       => sub { int($_[0] == $_[1]) },
     equal      => sub { int($_[0] == $_[1]) },
@@ -589,7 +590,7 @@ BEGIN {
     '/'      => sub { $_[0] / pgfmath_divisor($_[1]); },
     divide   => sub { $_[0] / pgfmath_divisor($_[1]); },
     div      => sub { int($_[0] / pgfmath_divisor($_[1])); },
-    '!'      => sub { pgfmathfactorial($_[0]); },
+    '!post'  => sub { pgfmathfactorial($_[0]); },
     'r'      => sub { rad2deg($_[0]); },
     e        => sub { $E; },
     pi       => sub { $PI; },
@@ -769,8 +770,13 @@ SIZER   : /(?:depth|height|width)/
 QTEX    : '"' /[^"]*/ '"' { $item[2]; }
 CMP     : /==|>=?|<=?|!=/
 BOOLOP  : /&&|\|\|/
-PREFIX  : /-|!|\+/
-POSTFIX : /!|r/
+
+# the meaning of ! depends on its position
+# pgfmathparser has a hardcoded notion of 'double character' operator
+# '!' could be part of '!=', so we forbid that sequence
+PREFIX  : /-|\+/ | '!' ...!'=' { '!pref'; }
+POSTFIX : 'r'    | '!' ...!'=' { '!post'; }
+
 ADDOP   : /\+|=|-/
 MULOP   : /\*|\//
 
