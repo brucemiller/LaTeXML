@@ -372,10 +372,10 @@ sub pgfmathparse {
         # need to erase string when perl eval works, to keep it consistent with recdescent
         $string = ''; }
   } }
+  $result = $result || 0.0;
   if ($string && !$result) {
     $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
     $result         = $PGFMATHGrammar->formula(\$string); }
-  $result = $result || 0.0;
   $string =~ s/^[\)\]]+$//;    # Forgive excess trailing ) !?!?!?!?!
   if ($string) {
     Error('pgfparse', 'pgfparse', $gullet,
