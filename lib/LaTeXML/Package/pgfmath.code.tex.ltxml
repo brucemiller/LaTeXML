@@ -359,9 +359,10 @@ sub pgfmathparse {
     # note: trig functions may be tempting, but their precedence differs
     # e.g. perl's eval of 'cos 1260/5' is 0.7822121... , while PGF computes
     # \def\e{1260}\pgfmathparse{cos \e/5} to -0.2 - i.e. "cos" binds stronger than "/"
+    # also ^ associates to the left rather than the right
     && ($string !~ /\b(?:a?(sin|cos|tan2?)h?)|bin|add|array|tan|cot|sec|(?:co)?sec|
     deg|depth|dim|div|divide|(?:(?:not)?(?:equal|greater|less))|oct|pi|pow|multiply|
-    rand|scalar|sign|vec|width|hex|frac|ifthenelse|\\/x)) { {
+    rand|scalar|sign|vec|width|hex|frac|ifthenelse|\\|\^/x)) { {
       # special case! the ^ in tikz is used for power, but NOT so in perl.
       my $perlstring = $string =~ s/\^/**/gr;
       local $LaTeXML::IGNORE_ERRORS = 1;
@@ -590,7 +591,7 @@ BEGIN {
     '/'      => sub { $_[0] / pgfmath_divisor($_[1]); },
     divide   => sub { $_[0] / pgfmath_divisor($_[1]); },
     div      => sub { int($_[0] / pgfmath_divisor($_[1])); },
-    '!post'  => sub { pgfmathfactorial($_[0]); },
+    '^'      => sub { $_[0]**$_[1]; },
     e        => sub { $E; },
     pi       => sub { $PI; },
     abs      => sub { abs($_[0]); },
@@ -694,19 +695,19 @@ expr : QTEX | term (ADDOP term { [$item{ADDOP},$item{term}]; })(s?)
   { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{term}, map(@$_,@{$item[2]})); }
 
 # the postfix 'r' is equivalent to multiplying by 180/pi, even accounting for predecence
-term : factor ('r' { ['*',180/Math::Trig::pi]; } | MULOP factor { [$item{MULOP},$item{factor}]; })(s?)
-  { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{factor},map(@$_,@{$item[2]})); }
+term :
+  PREFIX term { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
+  | factor ('r' { ['*',180/Math::Trig::pi]; } | MULOP factor { [$item{MULOP},$item{factor}]; })(s?)
+    { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{factor},map(@$_,@{$item[2]})); }
 
-# addPostfix[$base] ; adds any following sub/super scripts to $base.
-addPostfix :
-    /^\Z/ { $arg[0]; } # short circuit!
-  | POSTFIX addPostfix[LaTeXML::Package::Pool::pgfmath_apply($item{POSTFIX},$arg[0])]
-  | { $arg[0]; }
+# pgfmathparser has a hardcoded notion of 'double character' operator
+# '!' could be part of '!=', so we forbid that sequence
+factor : power ('!' ...!'=')(s?)
+  { $return = $item{power};
+    for my $i (@{$item[2]}) { $return = LaTeXML::Package::Pool::pgfmathfactorial($return); } }
 
-factor : simplefactor (power | addPostfix)[$item[1]](?)
-  { defined $item[2][0] ? $item[2][0] : $item{simplefactor}; }
-
-power : '^' simplefactor { $arg[0] ** $item{simplefactor}; }
+power : simplefactor ('^' simplefactor { ['^',$item{simplefactor}]; })(s?)
+  { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{simplefactor}, map(@$_,@{$item[2]})); }
 
 function : FUNCTION (arguments | simpleargument)[$item{FUNCTION}] { $item[2]; }
   arguments : '(' formula (',' formula { $item[2]; })(s?) ')'
@@ -775,7 +776,6 @@ BOOLOP  : /&&|\|\|/
 # pgfmathparser has a hardcoded notion of 'double character' operator
 # '!' could be part of '!=', so we forbid that sequence
 PREFIX  : /-|\+/ | '!' ...!'=' { '!pref'; }
-POSTFIX : '!' ...!'=' { '!post'; }
 
 ADDOP   : /\+|=|-/
 MULOP   : /\*|\//
