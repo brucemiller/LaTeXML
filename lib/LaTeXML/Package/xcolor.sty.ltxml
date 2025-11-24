@@ -329,6 +329,10 @@ sub DecodeColor {
       $color = ($postfix && ($postfix =~ /!!\[(\d+)\]/)    # Note "out-of-order" effect!
         ? indexColorSeries($name, $1)
         : LookupXColor($name));
+      if (!$color) {
+        Error('misdefined', 'color', $STATE->getStomach,
+          "could not resolve <color> name in '$expression'");
+        return Black; }
       if (my $blend = LookupValue('color_blend')) {        # Combine any stored blend with the mix_expr.
         $mix_expr .= $blend; }
       if ($mix_expr) {
