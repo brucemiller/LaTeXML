@@ -18,6 +18,8 @@ use LaTeXML::Package;
 # The main use of grffile.sty is to allow for filenames with spaces in \includegraphics
 # LaTeXML can already handle that natively.
 
+RequirePackage('graphicx');
+
 # Documentation: http://bay.uchicago.edu/tex-archive/macros/latex/contrib/oberdiek/grffile.pdf
 
 DefMacro('\grffilesetup{}', '');
