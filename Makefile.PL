@@ -283,14 +283,14 @@ formats :: all formats-clean
 formats :: $(INST_FMTDIR)/plain_dump.pool.ltxml
 
 $(INST_FMTDIR)/plain_dump.pool.ltxml:
-	$(PERLRUN) $(INST_SCRIPT)/latexml --init=plain.tex --dest=$(INST_FMTDIR)/plain_dump.pool.ltxml
+	$(PERLRUN) $(INST_SCRIPT)/latexml --init=plain.tex --strict --dest=$(INST_FMTDIR)/plain_dump.pool.ltxml
 	$(NOECHO) $(PERLRUN) -e "exit(1) unless -e '$(INST_FMTDIR)/plain_dump.pool.ltxml'" \
 	|| (echo "LaTeXML FAILED to dump format for plain.tex" && exit 1)
 
 formats :: $(INST_FMTDIR)/latex_dump.pool.ltxml
 
 $(INST_FMTDIR)/latex_dump.pool.ltxml:
-	$(PERLRUN) $(INST_SCRIPT)/latexml --init=latex.ltx --dest=$(INST_FMTDIR)/latex_dump.pool.ltxml
+	$(PERLRUN) $(INST_SCRIPT)/latexml --init=latex.ltx --strict --dest=$(INST_FMTDIR)/latex_dump.pool.ltxml
 	$(NOECHO) $(PERLRUN) -e "exit(1) unless -e '$(INST_FMTDIR)/latex_dump.pool.ltxml'" \
 	|| (echo "LaTeXML FAILED to dump format for latex.ltx" && exit 1)
 
