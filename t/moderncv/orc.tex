@@ -3,6 +3,9 @@
 \usepackage{orcidlink}
 \title{ORCID Test}
 \author{Bruce\orcidlink{0000-0002-2300-0367}}
+\makeatletter%avoid page break portability issues with tikz emulation
+\let\lx@newpage\relax
+\makeatother
 \begin{document}
 \maketitle
 
