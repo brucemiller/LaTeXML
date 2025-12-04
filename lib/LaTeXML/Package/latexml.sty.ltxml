@@ -51,8 +51,12 @@ DeclareOption('noguesstabularheaders', sub { AssignValue(GUESS_TABULAR_HEADERS =
 
 # 'nobibtex' intended to be used for arXiv-like build harnesses, where there
 # is explicit instruction to only use ".bbl" and that bibtex will not be ran.
-DeclareOption('bibtex',   sub { AssignValue('NO_BIBTEX' => 0, 'global'); });
-DeclareOption('nobibtex', sub { AssignValue('NO_BIBTEX' => 1, 'global'); });
+DeclareOption('bibtex',   sub { AssignValue('BIB_CONFIG' => ['bib', 'bbl'], 'global'); });
+DeclareOption('nobibtex', sub { AssignValue('BIB_CONFIG' => ['bbl'],        'global'); });
+
+DefKeyVal('LTXML', 'bibconfig', 'Semiverbatim', '', code => sub {
+    AssignValue('BIB_CONFIG' => [split(',', ToString($_[1]))], 'global');
+    return; });
 
 # Lexeme serialization for math formulas
 DeclareOption('mathlexemes', sub { AssignValue('LEXEMATIZE_MATH' => 1, 'global'); });
@@ -101,7 +105,7 @@ ProcessOptions(inorder => 1, keysets => ['LTXML']);
 # [does this really belong here? or should this be disableable?]
 DefConstructor('\URL[] Verbatim', "<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
   enterHorizontal => 1,
-  properties => sub { (href => CleanURL($_[2])); });
+  properties      => sub { (href => CleanURL($_[2])); });
 DefMacro('\XML',      '\textsc{xml}');     # '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
 DefMacro('\SGML',     '\textsc{sgml}');    # '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
 DefMacro('\HTML',     '\textsc{html}');    #'\URL[\texttt{HTML}]{http://www.w3.org/html/}');
@@ -127,7 +131,7 @@ DefConstructor('\LaTeXML@logo',
     . "<ltx:text cssstyle='font-size:90%' yoffset='-0.2ex'>XML</ltx:text>"
     . "</ltx:text>",
   enterHorizontal => 1,
-  sizer => sub { (Dimension('3.8em'), Dimension('1.6ex'), Dimension('0.4ex')); });
+  sizer           => sub { (Dimension('3.8em'), Dimension('1.6ex'), Dimension('0.4ex')); });
 
 DefMacro('\LaTeXMLversion',  sub { ExplodeText($LaTeXML::VERSION); });
 DefMacro('\LaTeXMLrevision', sub { ExplodeText($LaTeXML::Version::REVISION); });
@@ -223,7 +227,7 @@ DefConstructor('\lxWithAnnotation RequiredKeyVals {}', sub {
 DefConstructor('\lxRef Semiverbatim {}',
   "<ltx:ref labelref='#label'>#2</ltx:ref>",
   enterHorizontal => 1,
-  properties => sub { (label => CleanLabel($_[1])); });
+  properties      => sub { (label => CleanLabel($_[1])); });
 
 #======================================================================
 # Resources
@@ -381,7 +385,7 @@ DefConstructor('\@lxDefMathDeclare{} RequiredKeyVals:XMath', sub {
       $document->insertElement('ltx:text', $description); }
     $document->closeElement('ltx:declare');
     $document->setNode($save); },
-  mode   => 'restricted_horizontal',
+  mode        => 'restricted_horizontal',
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my ($id, $kv) = $whatsit->getArgs;
     normalizeDeclareKeys($kv, $whatsit);
