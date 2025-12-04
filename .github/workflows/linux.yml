@@ -16,32 +16,35 @@ jobs:
     strategy:
       matrix:
         include:
+          - perl: "5.42"
+            texlive: none
+            allow_failure: true
+          - perl: "5.40"
+            texlive: none
+            allow_failure: false
+          - perl: "5.38"
+            texlive: none
+            allow_failure: false
+          - perl: "5.36"
+            texlive: none
+            allow_failure: false
           - perl: "5.34"
             texlive: none
             allow_failure: false
-          - perl: "5.32"
-            texlive: none
+          - perl: "5.42"
+            texlive: 2025
+            allow_failure: true
+          - perl: "5.38"
+            texlive: 2024
             allow_failure: false
-          - perl: "5.30"
-            texlive: none
+          - perl: "5.38"
+            texlive: 2023
             allow_failure: false
-          - perl: "5.28"
-            texlive: none
-            allow_failure: false
-          - perl: "5.26"
-            texlive: none
+          - perl: "5.36"
+            texlive: 2022
             allow_failure: false
           - perl: "5.34"
-            texlive: "2021"
-            allow_failure: true
-          - perl: "5.32"
-            texlive: "2020"
-            allow_failure: true
-          - perl: "5.30"
-            texlive: "2019"
-            allow_failure: true
-          - perl: "5.28"
-            texlive: "2018"
+            texlive: 2021
             allow_failure: true
     
     steps:
@@ -64,6 +67,9 @@ jobs:
           source /usr/local/perlbrew/etc/bashrc
           perl Makefile.PL
           make
+      - name: Run 'make formats' for newer texlives
+        if: matrix.texlive >= 2023
+        run: make formats
       - name: Run 'make test'
         shell: bash
         run: |

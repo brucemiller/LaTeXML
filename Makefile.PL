@@ -274,7 +274,8 @@ InstallTeXStyles
 # Ideally, would depend on /<system>/texmf-dist/.../plain.tex & latex.ltx
 # This is still experimental/optional, otherwise should add formats to pure_all target!
 sub dump_formats {
-  $$MORE_MACROS{INST_FMTDIR} = '$(INST_LIB)/LaTeXML/Engine';
+  $$MORE_MACROS{INST_FMTDIR}  = '$(INST_LIB)/LaTeXML/Engine';
+  $$MORE_MACROS{STRICT_IN_CI} = $ENV{CI} ? "--strict" : "";
   $MORE_MAKERULES .= <<'DumpFormats';
 
 # Create dump file for format plain.tex, latex.ltx
@@ -283,14 +284,14 @@ formats :: all formats-clean
 formats :: $(INST_FMTDIR)/plain_dump.pool.ltxml
 
 $(INST_FMTDIR)/plain_dump.pool.ltxml:
-	$(PERLRUN) $(INST_SCRIPT)/latexml --init=plain.tex --dest=$(INST_FMTDIR)/plain_dump.pool.ltxml
+	$(PERLRUN) $(INST_SCRIPT)/latexml --init=plain.tex $(STRICT_IN_CI) --dest=$(INST_FMTDIR)/plain_dump.pool.ltxml
 	$(NOECHO) $(PERLRUN) -e "exit(1) unless -e '$(INST_FMTDIR)/plain_dump.pool.ltxml'" \
 	|| (echo "LaTeXML FAILED to dump format for plain.tex" && exit 1)
 
 formats :: $(INST_FMTDIR)/latex_dump.pool.ltxml
 
 $(INST_FMTDIR)/latex_dump.pool.ltxml:
-	$(PERLRUN) $(INST_SCRIPT)/latexml --init=latex.ltx --dest=$(INST_FMTDIR)/latex_dump.pool.ltxml
+	$(PERLRUN) $(INST_SCRIPT)/latexml --init=latex.ltx $(STRICT_IN_CI) --dest=$(INST_FMTDIR)/latex_dump.pool.ltxml
 	$(NOECHO) $(PERLRUN) -e "exit(1) unless -e '$(INST_FMTDIR)/latex_dump.pool.ltxml'" \
 	|| (echo "LaTeXML FAILED to dump format for latex.ltx" && exit 1)
 

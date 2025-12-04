@@ -26,22 +26,27 @@ jobs:
     strategy:
       matrix:
         include:
-          - perl: 5.32.1.1
+          - perl: 5.42.0.1
             miktex: none
             allow_failure: false
-          # - perl: 5.32.1.1
-          #   miktex: 21.6.28
+          - perl: 5.38.4.1
+            miktex: none
+            allow_failure: false
+          - perl: 5.38.4.1
+            miktex: none
+            allow_failure: false
+          - perl: 5.36.3.1
+            miktex: none
+            allow_failure: false
+          - perl: 5.34.3.1
+            miktex: none  
+            allow_failure: true
+          # - perl: 5.42.0.1
+          #   miktex: 25.3.0
           #   allow_failure: true
-          - perl: 5.30.3.1
-            miktex: none
-            allow_failure: false
-          - perl: 5.28.2.1
-            miktex: none
-            allow_failure: false
-          - perl: 5.26.3.1
-            miktex: none
-            allow_failure: false
-
+          # - perl: 5.38.4.1
+          #   miktex: 25.3.0
+          #   allow_failure: true
     steps:
 
       - uses: actions/checkout@v2

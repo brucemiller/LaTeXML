@@ -935,10 +935,10 @@ sub specialize {
   my $deffamily = ($flags & $FLAG_FORCE_FAMILY ? $family || $DEFFAMILY : $DEFFAMILY);
   my $defseries = ($flags & $FLAG_FORCE_SERIES ? $series || $DEFSERIES : $DEFSERIES);
   my $defshape  = ($flags & $FLAG_FORCE_SHAPE  ? $shape  || $DEFSHAPE  : $DEFSHAPE);
-  if (($string =~ /^\p{Latin}$/) && ($string =~ /^\p{L}$/)) {    # Latin Letter
+  if ($string =~ /^(?=\p{LC})(?!\p{Script=Common})\p{Latin}$/) {    # Latin Letter, NOT a modifier
     $shape = 'italic' if !$shape && !$family; }
-  elsif ($string =~ /^\p{Greek}$/) {                             # Single Greek character?
-    if ($string =~ /^\p{Lu}$/) {                                 # Uppercase
+  elsif ($string =~ /^\p{Greek}$/) {                                # Single Greek character?
+    if ($string =~ /^\p{Lu}$/) {                                    # Uppercase
       if (!$family || ($family eq 'math')) {
         $family = $deffamily;
         $shape  = $defshape if $shape && ($shape ne $DEFSHAPE); } }    # if ANY shape, must be default
