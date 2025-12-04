@@ -363,7 +363,7 @@ DefMacro('\Zodiac{}',
 
 #======================================================================
 # Others
-DefPrimitive('\YinYang', "\x{262F}"); Let('\Yingyang', '\YinYang');
+DefPrimitive('\YinYang', "\x{262F}"); Let('\Yinyang', '\YinYang'); Let('\Yingyang', '\YinYang');
 DefPrimitive('\MVRightArrow', "\x{2192}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
 Let('\MVRightarrow', '\MVRightArrow');
 DefPrimitive('\MVAt',   "@",  bounded => 1, font => { family => 'sansserif', series => 'bold' });
