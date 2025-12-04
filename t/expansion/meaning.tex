@@ -1,5 +1,14 @@
 \documentclass{article}
-\usepackage[T1]{fontenc}
+\def\tester#1{%
+  \par\noindent%
+  [\string #1]%
+  [\meaning #1]%
+  [\expandafter\meaning\string #1]%
+  [\detokenize{#1}]%
+.}
+\def\xtester#1{%
+  \expandafter\tester\expandafter{#1}}
+
 \begin{document}
 
 \def\A#1{saaa#1}
@@ -7,62 +16,48 @@
 \def\Aaa#1{sa#1aa}
 \def\b{bb}
 \def\c a#1b#2c{one#1c#2}
-\edef\foo{%
-  \csname A\endcsname%
-  \csname expl:n\endcsname%
-  \csname B\endcsname%
-  \csname *\endcsname%
-  \csname C\endcsname}
 
-\meaning A 
+\meaning\
 
-\meaning_
+\meaning{
 
-\meaning%
+\meaning}
 
-
-%\meaning ~
-
+\tester{$}
+\tester{&}
+\tester{
+}
+\tester{#}
+\tester{^}
+\tester{_}
+\tester{ }
+\tester{A}
+\tester{@}
 {\catcode`\@=\active\let@\A
-\meaning @}
+\tester{@}}
+\tester{*}
+\tester{(}
+\tester{1}
+\tester{!}
 
-\meaning ^
+\tester{\A}
+\tester{\Aa}
+\tester{\Aaa}
+\tester{\b}
+\tester{\c}
+\tester{\bla}
 
-\meaning *
+\tester{^^J}
+{ \catcode`\^^J=\active
+  \tester{^^J} }
+{ \catcode`\Z=9\relax
+  \tester{Z} }
 
-\meaning (
-
-\meaning \
-
-\meaning 1
-
-\meaning !
-
-\meaning @
-
-\meaning #
-
-\meaning &
-
-\meaning \A
-
-\meaning \Aa
-
-\meaning \Aaa
-
-\meaning \b 
-
-
-\meaning \c 
-
-\meaning \bla
-
-\meaning {
-
-\meaning }
-
-\meaning $
-
-\meaning\foo
-
+\def\aspace{ }
+\def\carriagereturn{
+}
+\def\linefeed{^^J}
+\xtester{\aspace}
+\xtester{\carriagereturn}
+\xtester{\linefeed}
 \end{document}

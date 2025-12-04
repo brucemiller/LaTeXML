@@ -1,77 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
-<?latexml package="fontenc" options="T1"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p>the letter A</p>
+    <p>macro:-¿“</p>
   </para>
   <para xml:id="p2">
-    <p>subscript character _</p>
+    <p>begin-group character –</p>
   </para>
   <para xml:id="p3">
-    <p>\par</p>
+    <p>end-group character ˝</p>
   </para>
-  <para xml:id="p4">
-    <p>macro:#1-&gt;saaa#1</p>
+  <para class="ltx_noindent" xml:id="p4">
+    <p>[$][math shift character $][the character $][$].</p>
   </para>
-  <para xml:id="p5">
-    <p>superscript character ˆ</p>
+  <para class="ltx_noindent" xml:id="p5">
+    <p>[&amp;][alignment tab character &amp;][the character &amp;][&amp;].</p>
   </para>
-  <para xml:id="p6">
-    <p>the character *</p>
+  <para class="ltx_noindent" xml:id="p6">
+    <p>[
+][blank space  ][blank space  ][ ].</p>
   </para>
-  <para xml:id="p7">
-    <p>the character (</p>
+  <para class="ltx_noindent" xml:id="p7">
+    <p>[#][macro parameter character #][the character #][##].</p>
   </para>
-  <para xml:id="p8">
-    <p>macro:-&gt;\</p>
+  <para class="ltx_noindent" xml:id="p8">
+    <p>[ˆ][superscript character ˆ][the character ˆ][ˆ].</p>
   </para>
-  <para xml:id="p9">
-    <p>the character 1</p>
+  <para class="ltx_noindent" xml:id="p9">
+    <p>[˙][subscript character ˙][the character ˙][˙].</p>
   </para>
-  <para xml:id="p10">
-    <p>the character !</p>
+  <para class="ltx_noindent" xml:id="p10">
+    <p>[ ][blank space  ][blank space  ][ ].</p>
   </para>
-  <para xml:id="p11">
-    <p>the character @</p>
+  <para class="ltx_noindent" xml:id="p11">
+    <p>[A][the letter A][the character A][A].</p>
   </para>
-  <para xml:id="p12">
-    <p>macro parameter character #</p>
+  <para class="ltx_noindent" xml:id="p12">
+    <p>[@][the character @][the character @][@].</p>
   </para>
-  <para xml:id="p13">
-    <p>alignment tab character &amp;</p>
+  <para class="ltx_noindent" xml:id="p13">
+    <p>[@][macro:#1-¿saaa#1][the character @][@].</p>
   </para>
-  <para xml:id="p14">
-    <p>macro:#1-&gt;saaa#1</p>
+  <para class="ltx_noindent" xml:id="p14">
+    <p>[*][the character *][the character *][*].</p>
   </para>
-  <para xml:id="p15">
-    <p>macro:#1-&gt;#1saaa</p>
+  <para class="ltx_noindent" xml:id="p15">
+    <p>[(][the character (][the character (][(].</p>
   </para>
-  <para xml:id="p16">
-    <p>macro:#1-&gt;sa#1aa</p>
+  <para class="ltx_noindent" xml:id="p16">
+    <p>[1][the character 1][the character 1][1].</p>
   </para>
-  <para xml:id="p17">
-    <p>macro:-&gt;bb</p>
+  <para class="ltx_noindent" xml:id="p17">
+    <p>[!][the character !][the character !][!].</p>
   </para>
-  <para xml:id="p18">
-    <p>macro:a#1b#2c-&gt;one#1c#2</p>
+  <para class="ltx_noindent" xml:id="p18">
+    <p>[“A][macro:#1-¿saaa#1][the character “A][“A ].</p>
   </para>
-  <para xml:id="p19">
-    <p>undefined</p>
+  <para class="ltx_noindent" xml:id="p19">
+    <p>[“Aa][macro:#1-¿#1saaa][the character “Aa][“Aa ].</p>
   </para>
-  <para xml:id="p20">
-    <p>begin-group character {</p>
+  <para class="ltx_noindent" xml:id="p20">
+    <p>[“Aaa][macro:#1-¿sa#1aa][the character “Aaa][“Aaa ].</p>
   </para>
-  <para xml:id="p21">
-    <p>end-group character }</p>
+  <para class="ltx_noindent" xml:id="p21">
+    <p>[“b][macro:-¿bb][the character “b][“b ].</p>
   </para>
-  <para xml:id="p22">
-    <p>math shift character $</p>
+  <para class="ltx_noindent" xml:id="p22">
+    <p>[“c][macro:a#1b#2c-¿one#1c#2][the character “c][“c ].</p>
   </para>
-  <para xml:id="p23">
-    <p>macro:-&gt;saaa\expl:n \B \*\C</p>
+  <para class="ltx_noindent" xml:id="p23">
+    <p>[“bla][undefined][the character “bla][“bla ].</p>
+  </para>
+  <para class="ltx_noindent" xml:id="p24">
+    <p>[Ω][the character Ω][the character Ω][Ω].</p>
+  </para>
+  <para class="ltx_noindent" xml:id="p25">
+    <p>[Ω][undefined][the character Ω][Ω].</p>
+  </para>
+  <para class="ltx_noindent" xml:id="p26">
+    <p>[][the character ][the character ][].</p>
+  </para>
+  <para class="ltx_noindent" xml:id="p27">
+    <p>[ ][blank space  ][blank space  ][ ].</p>
+  </para>
+  <para class="ltx_noindent" xml:id="p28">
+    <p>[
+][blank space  ][blank space  ][ ].</p>
+  </para>
+  <para class="ltx_noindent" xml:id="p29">
+    <p>[Ω][the character Ω][the character Ω][Ω].</p>
   </para>
 </document>
