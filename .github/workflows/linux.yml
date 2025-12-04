@@ -67,6 +67,9 @@ jobs:
           source /usr/local/perlbrew/etc/bashrc
           perl Makefile.PL
           make
+      - name: Run 'make formats' for newer texlives
+        if: matrix.texlive >= 2023
+        run: make formats
       - name: Run 'make test'
         shell: bash
         run: |
