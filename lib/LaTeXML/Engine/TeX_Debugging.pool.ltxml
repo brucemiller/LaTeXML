@@ -114,7 +114,7 @@ DefMacro('\meaning Token', sub {
       # The actual tests start here
       if ($type =~ /token$/i) {
         my $cc         = $definition->getCatcode;
-        my $char       = $definition->toString;
+        my $char       = ($cc == CC_SPACE ? ' ' : $definition->toString); # Normalize \n!
         my $meaning_cc = $CATCODE_MEANING[$cc] || '';
         $meaning_cc .= ' ' if $meaning_cc;                    # append space separator if defined
         $meaning = $meaning_cc . $char; }
@@ -166,8 +166,6 @@ DefMacro('\meaning Token', sub {
       elsif ($type =~ /chardef$/i) {    # from \chardef or \mathchardef
         my $prefix = ($$definition{mathglyph} ? '\mathchar' : '\char');
         $meaning = $prefix . '"' . $definition->valueOf->valueOf; } }
-    # One catch: make sure all \s in the meaning string are normalized to a simple space ' '
-    $meaning =~ s/\s/ /g;
     return Explode($meaning); });
 
 #======================================================================

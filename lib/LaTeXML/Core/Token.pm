@@ -99,11 +99,11 @@ sub Token {
   return bless [$string, (defined $cc ? $cc : CC_OTHER)], 'LaTeXML::Core::Token'; }
 
 # Explode a string into a list of tokens, all w/catcode OTHER (except space).
+# Note: convert \n to OTHER (NOT SPACE); ^^J generally should decode to Omega
 sub Explode {
   my ($string) = @_;
   return (defined $string
-    ? map { ($_ eq ' ' ? T_SPACE() : ($_ eq "\n" ? Token($_, CC_SPACE)
-      : T_OTHER($_))) } split('', $string)
+    ? map { ($_ eq ' ' ? T_SPACE() : T_OTHER($_)) } split('', $string)
     : ()); }
 
 # Similar to Explode, but convert letters to catcode LETTER and others to OTHER
@@ -111,7 +111,7 @@ sub Explode {
 sub ExplodeText {
   my ($string) = @_;
   return (defined $string
-    ? map { ($_ eq ' ' ? T_SPACE() : ($_ eq "\n" ? Token($_, CC_SPACE) : (/[a-zA-Z]/ ? T_LETTER($_) : T_OTHER($_)))) }
+    ? map { ($_ eq ' ' ? T_SPACE() : (/[a-zA-Z]/ ? T_LETTER($_) : T_OTHER($_))) }
       split('', $string)
     : ()); }
 

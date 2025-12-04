@@ -198,12 +198,25 @@ sub escapechar {
   return (($code >= 0) && ($code <= 255) ? chr($code) : ''); }
 
 # 1) Knuth, The TeXBook, page 40, paragraph 1, Chapter 7: How TEX Reads What You Type.
-# suggests all characters except spaces are returned in category code Other, i.e. Explode()
+# suggests all characters except spaces are returned in category code Other,
+# i.e. like Explode(), but take care to distinguish T_SPACE(\n) and T_OTHER(\n)!
+# the latter likely gets decoded to Omega
 DefMacro('\string Token', sub {
-    my $s = $_[1]->toString;
+  my($gullet, $token) = @_;
+  my $cc = $token->getCatcode;
+  if($cc == CC_CS){
+    my $s = $token->toString;
     if ($s =~ s/^\\//) {
       $s = escapechar() . $s; }
-    Explode($s); });
+    return Explode($s); }
+  elsif($cc == CC_SPACE){
+    return ($token); }
+  elsif(($cc == CC_ESCAPE) || ($cc == CC_COMMENT) || ($cc == CC_INVALID)){
+    return; }
+  else {                        # All other catcodes
+    return T_OTHER($token->toString); }
+});
+
 #======================================================================
 # Character properties
 #----------------------------------------------------------------------
