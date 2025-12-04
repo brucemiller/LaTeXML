@@ -34,6 +34,8 @@ RequirePackage('xcolor');
 RequirePackage('hyperref');
 RequirePackage('array');
 RequirePackage('lineno');
+RequirePackage('amssymb');
+RequirePackage('epsf');
 RequirePackage('ulem');
 #======================================================================
 # 2.1.3 Editorial Information
@@ -132,7 +134,7 @@ DefConstructor('\altaffiltext{}{}',
 DefMacro('\software{}',      '\@add@frontmatter{ltx:note}[role=software]{#1}');
 DefMacro('\submitjournal{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
 # Alas \doi is not frontmatter.
-DefConstructor('\doi{}',             '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>',
+DefConstructor('\doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>',
   enterHorizontal => 1);
 DefConstructor('\@@@collaborator{}', "<ltx:note role='collaborator'>#1</ltx:note>");
 DefMacro('\collaboration{}{}', '\@add@to@frontmatter{ltx:creator}{\@@@collaborator{#2}}');
@@ -493,7 +495,7 @@ DefConstructor('\aas@@fstack Undigested {}',
     . "<ltx:XMWrap>#2</ltx:XMWrap>"
     . "</ltx:XMApp>",
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
-  font => { shape => 'upright' }, bounded => 1, reversion => '#1', sizer=>'#2');
+  font       => { shape     => 'upright' }, bounded => 1, reversion => '#1', sizer => '#2');
 DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
 
 DefMacro('\fd',    '\ensuremath{\@fd}');
@@ -565,14 +567,14 @@ RequirePackage('url');
 DefConstructor('\anchor Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
   enterHorizontal => 1,
-  properties => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[1])); });
+  properties      => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[1])); });
 
 # This should be in effect only after frontmatter
 # \email{address}
 DefConstructor('\@@email Semiverbatim',
   "<ltx:ref href='#href'>#1</ltx:ref>",
   enterHorizontal => 1,
-  properties => sub { (href => CleanURL("mailto:" . ToString($_[1]))); });
+  properties      => sub { (href => CleanURL("mailto:" . ToString($_[1]))); });
 
 # RequirePackage('verbatim');
 
