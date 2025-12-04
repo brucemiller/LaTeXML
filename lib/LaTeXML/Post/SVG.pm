@@ -83,7 +83,9 @@ sub ProcessSVG {
   # if during processing some definitions are required, they are stored here
   # at end of processing, required definitions are inserted into the tree
   local %::DEFS = ();
-  my $newSVG = $node->parentNode->addNewChild($svgURI, 'svg');
+  # assign parent to an explicit variable $parent , to avoid some really tricky segfault edge cases.
+  my $parent = $node->parentNode;
+  my $newSVG = $parent->addNewChild($svgURI, 'svg');
   $newSVG->setAttribute(version => '1.1');
   my $newNode = convertNode($self, $newSVG, $node);
   if (%::DEFS) {
