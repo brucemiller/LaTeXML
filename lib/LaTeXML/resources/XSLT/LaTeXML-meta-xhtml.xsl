@@ -82,7 +82,7 @@
   </xsl:template>
 
   <!-- completely hidden by design - no mark, no scaffolding markup -->
-  <xsl:template match="ltx:note[@role='nodisplay']">
+  <xsl:template match="ltx:note[@role='accessible-description']">
     <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
       <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
