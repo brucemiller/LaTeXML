@@ -14,7 +14,7 @@ latexml_tests("t/complex",
     si => {
       env=>'CI', # only runs in continuous integration
       packages => 'siunitx.sty', texlive_min => 2021 },
-    si-v2 => {
+    si_v2 => {
       env=>'CI', # only runs in continuous integration
       packages => 'siunitx.sty', texlive_min => 2015 },
  });
