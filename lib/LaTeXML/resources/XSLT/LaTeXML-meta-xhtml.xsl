@@ -17,6 +17,7 @@
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
     xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:aria  = "http://www.w3.org/ns/wai-aria"
     extension-element-prefixes="f"
     exclude-result-prefixes = "ltx f">
 
@@ -145,6 +146,70 @@
       </xsl:apply-templates>
     </xsl:element>
     <xsl:text>&#x0A;</xsl:text>
+  </xsl:template>
+
+  <!-- add aria-labelledby and/or aria-describedby to things with
+       ltx:alternate-text and/or ltx:long-description.
+       (Done together to outsmart apply-imports) -->
+  <xsl:template match="*[ltx:alternate-text | ltx:long-description]" mode="begin">
+    <xsl:if test="ltx:alternate-text and not(@aria:label | @aria:labelledby)">
+      <xsl:attribute name="aria-labelledby">
+        <xsl:value-of select="f:if(ltx:alternate-text/@fragid,ltx:alternate-text/@fragid, generate-id(ltx:alternate-text))"/>
+      </xsl:attribute>
+    </xsl:if>
+    <xsl:if test="ltx:long-description and not(@aria:describedby)">
+      <xsl:attribute name="aria-describedby">
+        <xsl:value-of select="f:if(ltx:long-description/@fragid,ltx:long-description/@fragid, generate-id(ltx:long-description))"/>
+      </xsl:attribute>
+    </xsl:if>
+    <xsl:apply-imports/>
+  </xsl:template>
+
+  <!-- ltx:alternate-text stores the text to be referenced by
+       parent's @aria-labelledby -->
+  <xsl:preserve-space elements="ltx:alternate-text"/>
+  <xsl:template match="ltx:alternate-text">
+    <xsl:param name="context"/>
+    <xsl:if test="not(./parent::*/@aria:label | ./parent::*/@aria:labelledby)">
+      <xsl:element name="{f:blockelement($context,'span')}" namespace="{$html_ns}">
+        <!-- must have an id -->
+        <xsl:attribute name="id"><xsl:value-of select="f:if(@fragid,@fragid,generate-id())"/></xsl:attribute>
+        <xsl:call-template name="add_attributes"/>
+        <xsl:apply-templates select="." mode="begin">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates>
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="." mode="end">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+      </xsl:element>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:if>
+  </xsl:template>
+
+  <!-- ltx:long-description stores the text to be referenced by
+       parent's @aria-describedby -->
+  <xsl:preserve-space elements="ltx:long-description"/>
+  <xsl:template match="ltx:long-description">
+    <xsl:param name="context"/>
+    <xsl:if test="not(./parent::*/@aria:label | ./parent::*/@aria:labelledby)">
+      <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+        <xsl:attribute name="id"><xsl:value-of select="f:if(@fragid,@fragid,generate-id())"/></xsl:attribute>
+        <xsl:call-template name="add_attributes"/>
+        <xsl:apply-templates select="." mode="begin">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates>
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="." mode="end">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+      </xsl:element>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:if>
   </xsl:template>
 
 </xsl:stylesheet>
