@@ -76,7 +76,16 @@ sub process {
   if (my $icon = $params{ICON}) {
     # Hmm.... what type? could be various image types
     $params{ICON} = '"' . $self->copyResource($doc, $icon, undef) . '"'; }
+
+  # change directory so that files created by <exsl:document> are relative to the destination
+  my $destdir  = $doc->getDestinationDirectory;
+  my $orig_cwd = pathname_cwd();
+  pathname_chdir($destdir);
+
   my $newdoc = $doc->new($$self{stylesheet}->transform($doc->getDocument, %params));
+
+  pathname_chdir($orig_cwd);
+
   return $newdoc; }
 
 my $RESOURCE_INFO = {    # [CONSTANT]
