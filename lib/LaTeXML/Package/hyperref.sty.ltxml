@@ -86,21 +86,19 @@ foreach my $option (    # 3.1 General Options
   DeclareOption($option, undef); }
 
 # \hypersetup{keyvals} configures various parameters,
-# for each pdf keyword, provide [property,(content|resource),datatype]
-our %pdfkey_property = (
-  baseurl     => '',                                 # xmp:BaseURL ??
-  pdfauthor   => ['dcterms:creator',  'content'],
-  pdfkeywords => ['dcterms:subject',  'content'],    # & pdf:Keywords
-  pdflang     => ['dcterms:language', 'content'],
-  pdfproducer => '',                                 # pdf:Producer & xmp:CreatorTool
-  pdfsubject  => ['dcterms:subject', 'content'],
-  pdftitle    => ['dcterms:title',   'content'],
-  # Include hyperxmp's keywords, as well.
-  pdfauthortitle   => '',                                # photoshop:AuthorsPosition
-  pdfcaptionwriter => '',                                # photoshop:CaptionWriter !?!?!?
-  pdfcopyright     => ['dcterms:rights', 'content'],     # & xmpRights:Marked
-  pdflicenseurl    => ['cc:licence',     'resource'],    # xmpRights:WebStatement
-  pdfmetalang      => '',                                # dcterms:language ??
+# for each pdf keyword, provide [property,(content|resource),datatype,langsupport]
+# %pdfkey_property may have already been populated by hyperxmp
+our %pdfkey_property = (%pdfkey_property,
+  baseurl         => '',                                 # xmp:BaseURL ??
+  pdfauthor       => ['dcterms:creator', 'content'],
+  pdfcreationdate => '',                                 # xmp:CreateDate
+  pdfkeywords     => ['dcterms:subject',  'content'],    # & pdf:Keywords
+  pdflang         => ['dcterms:language', 'content'],
+  pdfmoddate      => '',                                 # xmp:ModifyDate
+  pdfproducer     => '',                                 # pdf:Producer & xmp:CreatorTool
+  pdfsubject      => ['dcterms:description', 'content'],
+  pdftitle        => ['dcterms:title',       'content'],
+  pdftrapped      => '',                                 # pdf:Trapped
 );
 # date=>dcterms:date xmp:CreateDate xmp:ModifyDate xmp:MetadataDate ?
 # document identifier => xmlMM:DocumentID
@@ -126,7 +124,7 @@ DefPrimitive('\hypersetup RequiredKeyVals:Hyp', sub {
     my @pairs = $kv->getPairs;
     while (@pairs) {
       my ($key, $value) = (shift(@pairs), shift(@pairs));
-      hyperref_setoption($key, Digest($value)); }
+      hyperref_setoption($key, Expand($value)); }
     return; });
 
 PushValue('@at@end@document', T_CS('\@add@PDF@RDFa@triples'));
@@ -134,13 +132,16 @@ PushValue('@at@end@document', T_CS('\@add@PDF@RDFa@triples'));
 DefConstructor('\@add@PDF@RDFa@triples', sub {
     my ($document, $xproperty, $content) = @_;
     if (my $root = $document->getDocument->documentElement) {
+      my $metalang = LookupMapping('Hyperref_options', 'pdfmetalang') // LookupMapping('Hyperref_options', 'pdflang');
       foreach my $key (LookupMappingKeys('Hyperref_options')) {
         if (my $entry = ($pdfkey_property{$key})) {
-          my ($property, $object, $datatype) = @$entry;
-          my $value = LookupMapping('Hyperref_options', $key);
-          my $node  = $document->openElementAt($root, 'ltx:rdf',
-            property => $property, $object => $value,
-            ($datatype ? (datatype => $datatype) : ()));
+          my ($property, $object, $datatype, $langsupport) = @$entry;
+          my $value = ToString(LookupMapping('Hyperref_options', $key));
+          my ($lang, $localizedValue) = $value =~ m/^\[([^]]*)\](.*)/;
+          my $node = $document->openElementAt($root, 'ltx:rdf',
+            property => $property, $object => $langsupport ? $localizedValue // $value : $value,
+            ($langsupport && ($lang || $metalang) ? ('xml:lang' => $lang // $metalang) : ()),
+            ($datatype                            ? (datatype   => $datatype)          : ()));
           # Must do directly; $document->setAttribute omits empty attributes
           $node->setAttribute(about => '');
           $document->closeElementAt($node); } } } });

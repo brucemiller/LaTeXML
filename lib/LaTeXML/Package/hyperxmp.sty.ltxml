@@ -17,7 +17,63 @@ use LaTeXML::Package;
 
 RequirePackage('ifthen');
 
-# Basically, the effects of hyperxmp are already built
-# into the LaTeXML binding for hyperref.
+# macro to pass alternate language entries
+# TODO support entries in multiple languages
+# TODO pdfmetalang should affect *following* entries, not all of them
+Let('\XMPLangAlt', '\@gobbletwo');
+
+# macros for including commas in comma-separated lists
+# TODO implement comma-separated lists splitting
+Let('\xmpquote', '\relax');
+DefMacroI('\xmpcomma', undef, ',');
+
+# %pdfkey_property may have already been populated by hyperref
+our %pdfkey_property = (%pdfkey_property,
+  # modify hyperref keywords to support specifying the language
+  pdfsubject         => ['dcterms:description', 'content', undef, 1],
+  pdftitle           => ['dcterms:title',       'content', undef, 1],
+  pdfaconformance    => '',                                  # pdfaid:conformance
+  pdfapart           => '',                                  # pdfaid:part
+  pdfauthortitle     => '',                                  # photoshop:AuthorsPosition
+  pdfbookedition     => ['prism:bookEdition', 'content', undef, 1],
+  pdfbytes           => ['prism:byteCount',   'content'],
+  pdfcaptionwriter   => '',                                  # photoshop:CaptionWriter
+  pdfcontactaddress  => '',                                  # Iptc4xmpCore:CiAdrExtadr
+  pdfcontactcity     => '',                                  # Iptc4xmpCore:CiAdrCity
+  pdfcontactcountry  => '',                                  # Iptc4xmpCore:CiAdrCtry
+  pdfcontactemail    => '',                                  # Iptc4xmpCore:CiEmailWork
+  pdfcontactphone    => '',                                  # Iptc4xmpCore:CiTelWork
+  pdfcontactpostcode => '',                                  # Iptc4xmpCore:CiAdrPcode
+  pdfcontactregion   => '',                                  # Iptc4xmpCore:CiAdrRegion
+  pdfcontacturl      => '',                                  # Iptc4xmpCore:CiUrlWork
+  pdfcopyright => ['dcterms:rights', 'content', undef, 1], # & xmpRights:Marked, xmpRights:WebStatement
+  pdfdate => ['dcterms:date', 'content'], # (if missing, hyperxmp uses \date -- we delegate the default choice to postprocessing)
+  pdfdocumentid => '',                    # xmpMM:DocumentID
+  pdfdoi        => ['prism:doi',   'content'],
+  pdfeissn      => ['prism:eIssn', 'content'],
+  pdfidentifier => ['dcterms:identifier', 'content'], # (if missing, hyperxmp uses the first non-empty doi, eissn, issn, isbn with prefix info:doi/ or urn:ISS(B|N): -- we delegate the default choice to postprocessing)
+  pdfinstanceid  => '',                               # xmpMM:InstanceID
+  pdfisbn        => ['prism:isbn',   'content'],
+  pdfissn        => ['prism:issn',   'content'],
+  pdfissuenum    => ['prism:number', 'content'],
+  pdflicenseurl  => ['cc:licence',   'resource'],     # xmpRights:WebStatement
+  pdfmetadate    => '',    # xmp:MetadataDate
+  pdfmetalang    => '',    # the default language of the metadata entries themselves
+  pdfnumpages    => ['prism:pageCount',       'content'],    # xmpTPg:NPages
+  pdfpagerange   => ['prism:pageRange',       'content'],
+  pdfpublication => ['prism:publicationName', 'content', undef, 1],
+  pdfpublisher   => ['dcterms:publisher',     'content'],
+  pdfpubstatus   => '',                                      # jav:journal_article_version
+  pdfpubtype     => ['prism:aggregationType', 'content'],
+  pdfrendition   => '',                                      # xmpMM:RenditionClass
+  pdfsource      => ['dcterms:source', 'content'],
+  pdfsubtitle    => ['prism:subtitle', 'content', undef, 1],
+  pdftype        => ['dcterms:type',   'content'],
+  pdfuapart      => '',                                      # pdfuaid:part
+  pdfurl         => ['prism:url', 'content'],
+  pdfversionid   => '',                                      # xmpMM:VersionID
+  pdfvolumenum   => ['prism:volume', 'content'],
+  pdfxstandard   => '',                                      # {pdfx,pdfxid}:GTS_PDFXVersion
+);
 
 1;
