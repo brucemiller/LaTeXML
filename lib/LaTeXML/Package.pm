@@ -2738,7 +2738,7 @@ sub LoadFormat {
     && FindFile($format . '_dump', type => 'pool', notex => 1,
       installation_subdir => 'Engine')) {    # dump of $format?
     LoadPool($format . '_bootstrap', noerror => 1);
-    local $LaTeXML::LOCATOR = LaTeXML::Common::Locator->new($format, 0, 0, 0, 0);
+    local $LaTeXML::LOCATOR = LaTeXML::Common::Locator->new($format, 1, 1, 1, 1);
     $success = LoadPool($format . '_dump');
     LoadPool($format . '_constructs', noerror => 1); }
   elsif (FindFile($format . '_base', type => 'pool', notex => 1,
