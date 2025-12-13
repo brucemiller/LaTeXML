@@ -3957,7 +3957,11 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
 
     my $bbl_path     = FindFile($jobname, type => 'bbl');
     my $missing_bibs = '';
-    if (LookupValue("NO_BIBTEX")) {
+    my $bib_config   = LookupValue("BIB_CONFIG") || ['bib', 'bbl'];
+    if ((ref $bib_config ne 'ARRAY') || scalar(@$bib_config) == 0) {
+      Info('missing', 'bib_config', $gullet, "BIB_CONFIG was empty, ignoring bibliography phase.");
+      return; }
+    if ($$bib_config[0] eq 'bbl') {
       if (not $bbl_path) {
         Info('expected', "bbl", $_[0], "Couldn't find bbl file, bibliography may be empty.");
         return Tokens(); }
