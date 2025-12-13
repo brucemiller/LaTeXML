@@ -17,7 +17,7 @@ use LaTeXML::Package;
 
 #======================================================================
 # Don't really need to change \_, but do need to make _ work in text!
-DefMacroI(T_ACTIVE('_'),   undef, '\ifmmode\sb\lx@text@underscore\fi');
+DefMacroI(T_ACTIVE('_'), undef, '\ifmmode\sb\else\textunderscore\fi');
 AtBeginDocument('\catcode`_\active');
 #======================================================================
 1;
