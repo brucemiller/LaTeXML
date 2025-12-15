@@ -326,7 +326,7 @@ sub pgfmathparse {
   Let('\widthof',  '\pgfmath@calc@widthof');
   Let('\heightof', '\pgfmath@calc@heightof');
   Let('\depthof',  '\pgfmath@calc@depthof');
-  my $string = (ref $tokens ? UnTeX(Expand($tokens)->stripBraces) : $tokens);
+  my $string = (ref $tokens ? UnTeX(Expand($tokens)->stripBraces, 1) : $tokens);
   $string =~ s/^\s+//; $string =~ s/\s+$//; $string =~ s/\s+/ /gs;
   my $input = $string;
   # simple number-like thing? return as-is without any changes.
