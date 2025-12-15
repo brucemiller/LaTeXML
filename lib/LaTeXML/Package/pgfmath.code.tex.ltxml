@@ -775,9 +775,9 @@ NUMBER :
 UNIT :
   /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/
 
-FUNCTION0 : /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserconstant($item[1]); }
+FUNCTION0 : /([a-zA-Z][a-zA-Z0-9_]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserconstant($item[1]); }
 
-FUNCTION : /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserfunction($item[1]); }
+FUNCTION : /([a-zA-Z][a-zA-Z0-9_]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserfunction($item[1]); }
 
 # ? array|scalar
 # These take boxes!
