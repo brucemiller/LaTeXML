@@ -617,10 +617,10 @@ BEGIN {
     frac      => sub { $_[0] < 0 ? ceil($_[0]) - $_[0] : $_[0] - floor($_[0]); },
     gcd       => sub {
       # PGF computes the gcd of the underlying TeX integers!
-      my ($a, $b) = (abs($_[0]) * 65536, abs($_[1]) * 65536);
-      ($a, $b) = ($b, $a) if $b > $a;
-      while ($b > 0) { ($a, $b) = ($b, $a % $b); }
-      int($a / 65536); },
+      my ($lhs, $rhs) = (abs($_[0]) * 65536, abs($_[1]) * 65536);
+      ($lhs, $rhs) = ($rhs, $lhs) if $rhs > $lhs;
+      while ($rhs > 0) { ($lhs, $rhs) = ($rhs, $lhs % $rhs); }
+      int($lhs / 65536); },
     #    height     => sub { },
     hex        => sub { sprintf("%x", $_[0]); },
     Hex        => sub { sprintf("%X", $_[0]); },
@@ -640,17 +640,17 @@ BEGIN {
     #    random   => sub { },
     real => sub { $_[0] + 0.0; },
     #    rnd      => sub { },
-    round    => sub { round($_[0]); },
-    scalar   => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
-    sec      => sub { sec(pgfmathargradians($_[0])); },
-    sign     => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
-    sin      => sub { sin(pgfmathargradians($_[0])); },
-    sinh     => sub { sinh($_[0]); },
-    sqrt     => sub { 
+    round  => sub { round($_[0]); },
+    scalar => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
+    sec    => sub { sec(pgfmathargradians($_[0])); },
+    sign   => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
+    sin    => sub { sin(pgfmathargradians($_[0])); },
+    sinh   => sub { sinh($_[0]); },
+    sqrt   => sub {
       if ($_[0] >= 0) {
         return sqrt($_[0]); }
       else {
-        Error("pgfmath", "sqrt", undef, "Undefined sqrt on negative number: ".$_[0]);
+        Error("pgfmath", "sqrt", undef, "Undefined sqrt on negative number: " . $_[0]);
         return $_[0]; } },
     subtract => sub { $_[0] - $_[1]; },
     tan      => sub { tan(pgfmathargradians($_[0])); },
@@ -677,7 +677,7 @@ BEGIN {
 
   # Why can't I manage to import a few functions to be visible to the grammar actions?
   # NOTE Not yet done: quoted strings, extensible functions
-  $PGFMATHGrammarSpec = << 'EoGrammar';
+  $PGFMATHGrammarSpec = <<'EoGrammar';
 #  {BEGIN { use LaTeXML::Package::Pool; }}
 #  { use LaTeXML::Package::Pool; }
 #  { LaTeXML::Package::Pool->import(qw(pgfmath_apply)); }
