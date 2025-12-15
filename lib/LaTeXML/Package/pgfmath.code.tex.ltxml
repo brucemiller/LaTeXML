@@ -751,6 +751,7 @@ register : REGISTER postRegister[$item[1]]
       /^\Z/    { $arg[0]; }   # short circuit!
       # really count_register dimension_register!
     | REGISTER { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
+    |          { $arg[0]; }
 
 REGISTER :  # these need to set dimension flag!!!
   '\wd' CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
