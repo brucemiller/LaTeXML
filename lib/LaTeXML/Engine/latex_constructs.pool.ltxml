@@ -1500,13 +1500,17 @@ sub setEnumerationStyle {
   return; }
 
 # End paragraphs, like \par, but only if within an item's text
+our %QNamesForItems = map { $_ => 1 } ('ltx:itemize', 'ltx:enumerate',
+  'ltx:description', 'inline-itemize', 'inline-enumerate', 'inline-description');
 DefConstructorI('\preitem@par', undef, sub {
     my ($document, %props) = @_;
-    if (!$props{inPreamble} && !$document->getNodeQName($document->getElement(), 'ltx:itemize')) {
+    return if $props{inPreamble};
+    my $qname = $document->getNodeQName($document->getElement()) || 'ltx:itemize';
+    if (!$QNamesForItems{$qname}) {
       $document->maybeCloseElement('ltx:p');
-      $document->maybeCloseElement('ltx:para'); } },
+      $document->maybeCloseElement('ltx:para');
+    } },
   alias => '\par');
-
 # id, but NO refnum (et.al) attributes on itemize \item ...
 # unless the optional tag argument was given!
 # We'll make the <ltx:tag> from either the optional arg, or from \labelitemi..
@@ -1536,23 +1540,20 @@ DefConstructor('\inline@description@item OptionalUndigested',
 
 DefEnvironment('{itemize}',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  mode            => 'internal_vertical',
-  properties      => sub { beginItemize('itemize', '@item'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode       => 'internal_vertical',
+  properties => sub { beginItemize('itemize', '@item'); },
+  locked     => 1);
 DefEnvironment('{enumerate}',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-  mode            => 'internal_vertical',
-  properties      => sub { beginItemize('enumerate', 'enum'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode       => 'internal_vertical',
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  locked     => 1);
 DefEnvironment('{description}',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
-  mode            => 'internal_vertical',
-  beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
-  properties      => sub { beginItemize('description', '@desc'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode         => 'internal_vertical',
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties   => sub { beginItemize('description', '@desc'); },
+  locked       => 1);
 
 DefMacro('\makelabel{}', '#1');
 DefMacro('\@mklab{}',    '\hfil #1');
@@ -1720,8 +1721,7 @@ DefConstructor('\trivlist',
   mode       => 'internal_vertical',
   properties => sub { beginItemize('trivlist'); });
 DefConstructor('\endtrivlist', sub {
-    $_[0]->maybeCloseElement('ltx:itemize'); },
-  beforeDigest => sub { Digest('\par'); });
+    $_[0]->maybeCloseElement('ltx:itemize'); });
 DefMacro('\trivlist@item', '\preitem@par\trivlist@item@');
 DefConstructor('\trivlist@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
@@ -1729,11 +1729,11 @@ DefConstructor('\trivlist@item@ OptionalUndigested',
   properties => sub { ($_[1] ? (tag => Digest(Expand($_[1]))) : ()); });
 DefMacro('\@trivlist', '\relax', locked => 1);
 
-DefRegister('\topsep'             => Glue(0));
-DefRegister('\partopsep'          => Glue(0));
-DefRegister('\lx@default@itemsep' => Glue(0));
-DefRegister('\itemsep'            => Glue(0));
-DefRegister('\parsep'             => Glue(0));
+DefRegister('\topsep'             => Glue('8pt plus 2pt minus 4pt'));
+DefRegister('\partopsep'          => Glue('2pt plus 1pt minus 1pt'));
+DefRegister('\lx@default@itemsep' => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\itemsep'            => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\parsep'             => Glue('4pt plus 2pt minus 1pt'));
 DefRegister('\@topsep'            => Glue(0));
 DefRegister('\@topsepadd'         => Glue(0));
 DefRegister('\@outerparskip'      => Glue(0));
@@ -6008,4 +6008,3 @@ EOL
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
-

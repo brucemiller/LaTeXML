@@ -350,20 +350,17 @@ DefMacro('\IEEEiedlabeljustifyr', '');
 # also, we skip the internal @-named variants for now.
 DefEnvironment('{IEEEitemize}[]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  properties      => sub { beginItemize('itemize', '@item'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1, mode => 'internal_vertical');
+  properties => sub { beginItemize('itemize', '@item'); },
+  locked     => 1, mode => 'internal_vertical');
 DefEnvironment('{IEEEenumerate}[]',
   "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
-  properties      => sub { beginItemize('enumerate', 'enum'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1, mode => 'internal_vertical');
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  locked     => 1, mode => 'internal_vertical');
 DefEnvironment('{IEEEdescription}[]',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
-  beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
-  properties      => sub { beginItemize('description', '@desc'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1, mode => 'internal_vertical');
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties   => sub { beginItemize('description', '@desc'); },
+  locked       => 1, mode => 'internal_vertical');
 
 # override LaTeX's default IED lists
 Let('\itemize',                  '\IEEEitemize');
@@ -429,7 +426,7 @@ DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
   enterHorizontal => 1,
-  reversion => '\qed');
+  reversion       => '\qed');
 Let('\proof',    '\IEEEproof');
 Let('\endproof', '\endIEEEproof');
 # V1.8 no longer support biography or biographynophoto
