@@ -108,6 +108,7 @@ DefMacro('\@@@show@pgfmatharg@{}', sub {
 DefParameterType('pgfNumber', sub {
     my ($gullet) = @_;
     my $pgf_number = ToString(Expand($gullet->readArg()));
+    $pgf_number =~ s/^\-\-//g;                  # drop leading double negation
     $pgf_number = "0" if $pgf_number eq '.';    # Apparently "." is a valid number!
     return $pgf_number; });
 
@@ -649,7 +650,7 @@ BEGIN {
 
   # Why can't I manage to import a few functions to be visible to the grammar actions?
   # NOTE Not yet done: quoted strings, extensible functions
-  $PGFMATHGrammarSpec = << 'EoGrammar';
+  $PGFMATHGrammarSpec = <<'EoGrammar';
 #  {BEGIN { use LaTeXML::Package::Pool; }}
 #  { use LaTeXML::Package::Pool; }
 #  { LaTeXML::Package::Pool->import(qw(pgfmath_apply)); }
