@@ -1492,7 +1492,7 @@ DefMathML('Apply:OVERACCENT:?', sub {
       my ($xaccent, $xbase) = element_nodes($base);
       if (($xaccent->getAttribute('role') || '') eq 'UNDERACCENT') {
         return ['m:munderover', { accent => 'true', accentunder => 'true' },
-          pmml($xbase), pmml_scriptsize($xaccent), pmml($accent)]; } }
+          pmml($xbase), pmml($xaccent), pmml($accent)]; } }
     return ['m:mover', { accent => 'true' }, pmml($base), pmml($accent)]; });
 
 DefMathML('Apply:UNDERACCENT:?', sub {
@@ -1501,7 +1501,7 @@ DefMathML('Apply:UNDERACCENT:?', sub {
       my ($xaccent, $xbase) = element_nodes($base);
       if (($xaccent->getAttribute('role') || '') eq 'OVERACCENT') {
         return ['m:munderover', { accent => 'true', accentunder => 'true' },
-          pmml($xbase), pmml_scriptsize($accent), pmml($xaccent)]; } }
+          pmml($xbase), pmml($accent), pmml($xaccent)]; } }
     return ['m:munder', { accentunder => 'true' }, pmml($base), pmml($accent)]; });
 
 DefMathML('Apply:ENCLOSE:?', sub {
