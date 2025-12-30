@@ -12,11 +12,11 @@
           <XMApp>
             <XMTok name="rightarrow" role="ARROW">→</XMTok>
             <XMApp>
-              <XMTok name="underrightarrow" role="UNDERACCENT">→</XMTok>
+              <XMTok name="underrightarrow" role="UNDERACCENT" stretchy="true">→</XMTok>
               <XMTok role="UNKNOWN">word</XMTok>
             </XMApp>
             <XMApp>
-              <XMTok name="underleftarrow" role="UNDERACCENT">←</XMTok>
+              <XMTok name="underleftarrow" role="UNDERACCENT" stretchy="true">←</XMTok>
               <XMTok role="UNKNOWN">word</XMTok>
             </XMApp>
           </XMApp>
@@ -31,11 +31,11 @@
           <XMApp>
             <XMTok name="leftarrow" role="ARROW">←</XMTok>
             <XMApp>
-              <XMTok name="overleftrightarrow" role="OVERACCENT">↔</XMTok>
+              <XMTok name="overleftrightarrow" role="OVERACCENT" stretchy="true">↔</XMTok>
               <XMTok role="UNKNOWN">word</XMTok>
             </XMApp>
             <XMApp>
-              <XMTok name="underleftrightarrow" role="UNDERACCENT">↔</XMTok>
+              <XMTok name="underleftrightarrow" role="UNDERACCENT" stretchy="true">↔</XMTok>
               <XMTok role="UNKNOWN">word</XMTok>
             </XMApp>
           </XMApp>
@@ -55,13 +55,13 @@
               <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
             </XMApp>
             <XMApp role="ARROW">
-              <XMTok role="OVERACCENT">over</XMTok>
-              <XMTok name="rightarrow" role="ARROW">→</XMTok>
+              <XMTok fontsize="70%" role="OVERACCENT">over</XMTok>
+              <XMTok name="rightarrow" role="ARROW" stretchy="true">→</XMTok>
             </XMApp>
             <XMTok font="italic" role="UNKNOWN">b</XMTok>
             <XMApp role="ARROW">
-              <XMTok role="OVERACCENT">over</XMTok>
-              <XMTok name="leftarrow" role="ARROW">←</XMTok>
+              <XMTok fontsize="70%" role="OVERACCENT">over</XMTok>
+              <XMTok name="leftarrow" role="ARROW" stretchy="true">←</XMTok>
             </XMApp>
             <XMTok font="italic" role="UNKNOWN">c</XMTok>
           </XMApp>
@@ -77,18 +77,18 @@
             <XMTok meaning="multirelation"/>
             <XMTok font="italic" role="UNKNOWN">a</XMTok>
             <XMApp role="ARROW">
-              <XMTok role="UNDERACCENT">under</XMTok>
+              <XMTok fontsize="70%" role="UNDERACCENT">under</XMTok>
               <XMApp role="ARROW">
-                <XMTok role="OVERACCENT">over</XMTok>
-                <XMTok name="rightarrow" role="ARROW">→</XMTok>
+                <XMTok fontsize="70%" role="OVERACCENT">over</XMTok>
+                <XMTok name="rightarrow" role="ARROW" stretchy="true">→</XMTok>
               </XMApp>
             </XMApp>
             <XMTok font="italic" role="UNKNOWN">b</XMTok>
             <XMApp role="ARROW">
-              <XMTok role="UNDERACCENT">under</XMTok>
+              <XMTok fontsize="70%" role="UNDERACCENT">under</XMTok>
               <XMApp role="ARROW">
-                <XMTok role="OVERACCENT">over</XMTok>
-                <XMTok name="leftarrow" role="ARROW">←</XMTok>
+                <XMTok fontsize="70%" role="OVERACCENT">over</XMTok>
+                <XMTok name="leftarrow" role="ARROW" stretchy="true">←</XMTok>
               </XMApp>
             </XMApp>
             <XMTok font="italic" role="UNKNOWN">c</XMTok>
@@ -105,12 +105,12 @@
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
             <XMTok font="italic" role="UNKNOWN">a</XMTok>
             <XMApp>
-              <XMTok role="OVERACCENT">over</XMTok>
+              <XMTok fontsize="70%" role="OVERACCENT">over</XMTok>
               <XMTok name="rightarrow" role="ARROW">→</XMTok>
             </XMApp>
             <XMTok font="italic" role="UNKNOWN">b</XMTok>
             <XMApp>
-              <XMTok role="UNDERACCENT">under</XMTok>
+              <XMTok fontsize="70%" role="UNDERACCENT">under</XMTok>
               <XMTok name="leftarrow" role="ARROW">←</XMTok>
             </XMApp>
             <XMTok font="italic" role="UNKNOWN">c</XMTok>
