@@ -51,13 +51,12 @@ sub lstPushValueLocally {
 our $EMPTY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'none');
 
 # \leavevmode (or any primitive, really) to stop \halign from expanding too far.
-DefMacro('\lstinline', '\leavevmode\lx@lstinline');
+DefMacro('\lstinline', '\leavevmode\bgroup\lx@lstinline');
 DefMacro('\lx@lstinline OptionalKeyVals:LST', sub {
     my ($gullet, $keyvals) = @_;
-    $STATE->getStomach->bgroup;    # To localize activation
-    lstActivate($keyvals);         # But do BEFORE reading arg, since some options screw things up.
-                                   # get opening delim from gullet, before cattable swap,
-                                   # in case token was already peeked for the optional args!
+    lstActivate($keyvals);    # But do BEFORE reading arg, since some options screw things up.
+                              # get opening delim from gullet, before cattable swap,
+                              # in case token was already peeked for the optional args!
     my $init = $gullet->readToken;
     my $body = listingsReadRawString($gullet, (Equals($init, T_BEGIN) ? T_END : $init));
     return (
@@ -107,7 +106,7 @@ sub lstProcessInline {
 DefConstructor('\@listings@inline {}',
   "<ltx:text class='ltx_lstlisting' _noautoclose='1'>#1</ltx:text>",
   enterHorizontal => 1,
-  reversion => '\lstinline{#1}');
+  reversion       => '\lstinline{#1}');
 
 # Not a regular environment, since we're going to read the body verbatim!
 DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST', sub {
@@ -249,7 +248,7 @@ DefConstructor('\@@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
-  mode           => 'internal_vertical',
+  mode       => 'internal_vertical',
   properties => sub {
     my %props = RefStepID('lstlisting');
     return %props; },
@@ -1489,7 +1488,7 @@ DefConstructor('\@listingLiterate {}',
 DefConstructor('\@listingKeyword Semiverbatim {}',
   "?#class(<ltx:text class='ltx_lst_#class' _noautoclose='1'>#2</ltx:text>)(#2)",
   enterHorizontal => 1,
-  properties => { class => sub {
+  properties      => { class => sub {
       my $classname = ToString($_[1]);
       my $class     = $classname && LookupValue('LST_CLASSES')->{$classname};
       my $cssclass  = $class     && $$class{cssclass};

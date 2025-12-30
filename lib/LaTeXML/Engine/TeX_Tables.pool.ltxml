@@ -68,8 +68,8 @@ DefColumnType('p{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(
       before => Tokens(T_CS('\vtop'), T_BEGIN, T_CS('\hbox'),
         T_LETTER('t'), T_LETTER('o'), $_[1]->revert, T_CS('\relax'),
-        T_BEGIN),
-      after   => Tokens(T_END, T_END),
+        T_BEGIN,       T_BEGIN),
+      after   => Tokens(T_END, T_END, T_END),
       vattach => 'top',
       align   => 'justify',
     ); return; });
@@ -170,7 +170,7 @@ DefConstructor('\halign BoxSpecification',
   beforeConstruct => sub {
     my ($document) = @_;
     $document->maybeCloseElement('ltx:p'); },
-  afterDigest => sub {          # After spec, but before body!
+  afterDigest => sub {    # After spec, but before body!
     my ($stomach, $whatsit) = @_;
     $whatsit->setProperty(mode => 'internal_vertical');
     $stomach->beginMode('restricted_horizontal');
@@ -360,7 +360,7 @@ sub digestAlignmentColumn {
   my ($stomach, $alignment, $lastwascr) = @_;
   my $gullet = $stomach->getGullet;
   my $ismath = $STATE->lookupValue('IN_MATH');
-  my $mode = $STATE->lookupValue('MODE');
+  my $mode   = $STATE->lookupValue('MODE');
   local @LaTeXML::LIST = ();
   # Scan for leading \omit, skipping over (& saving) \hline.
   Debug("Halign $alignment: COLUMN starting scan ($mode)") if $LaTeXML::DEBUG{halign};
@@ -425,7 +425,7 @@ sub digestAlignmentColumn {
         push(@LaTeXML::LIST, $stomach->invokeToken($token));
         Debug("Halign $alignment: COLUMN " . Stringify($token) . " ==> " . Stringify(List(@LaTeXML::LIST)))
           if $LaTeXML::DEBUG{halign};
-  } } }
+      } } }
   return; }
 
 # This attempts to trim off the column template parts from contents of the full column,
