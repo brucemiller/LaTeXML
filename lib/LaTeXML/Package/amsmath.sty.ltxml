@@ -905,10 +905,14 @@ DefMath('\And', '&', role => 'ADDOP', meaning => 'and');
 
 # Should be in LaTeX (& TeX): \overrightarrow, \overleftarrow
 # Note that the arrow is treated as an accent over/under the argument!
-DefMath('\underrightarrow{}',     "\x{2192}", operator_role => 'UNDERACCENT');
-DefMath('\underleftarrow{}',      "\x{2190}", operator_role => 'UNDERACCENT');
-DefMath('\overleftrightarrow{}',  "\x{2194}", operator_role => 'OVERACCENT');
-DefMath('\underleftrightarrow{}', "\x{2194}", operator_role => 'UNDERACCENT');
+DefMath('\underrightarrow{}',     "\x{2192}",
+  operator_role => 'UNDERACCENT', operator_stretchy => 'true');
+DefMath('\underleftarrow{}',      "\x{2190}",
+  operator_role => 'UNDERACCENT', operator_stretchy => 'true');
+DefMath('\overleftrightarrow{}',  "\x{2194}",
+  operator_role => 'OVERACCENT',  operator_stretchy => 'true');
+DefMath('\underleftrightarrow{}', "\x{2194}",
+  operator_role => 'UNDERACCENT', operator_stretchy => 'true');
 
 #======================================================================
 # Section 4.9 Extensible arrows
@@ -916,7 +920,7 @@ DefMath('\underleftrightarrow{}', "\x{2194}", operator_role => 'UNDERACCENT');
 
 # set up a general macro to support variations on xarrows macros (see mathtools)
 # \lx@long@arrow{token}{arrow}[under]{over}
-DefConstructor('\lx@long@arrow DefToken {}[]{}',
+DefConstructor('\lx@long@arrow DefToken {} OptionalInScriptStyle InScriptStyle',
   "?#3("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#3</ltx:XMWrap>"
@@ -937,24 +941,29 @@ DefConstructor('\lx@long@arrow DefToken {}[]{}',
   # specialize to ldots ???
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefMacro('\xrightarrow', '\lx@long@arrow{\xrightarrow}{\rightarrow}');
-DefMacro('\xleftarrow',  '\lx@long@arrow{\xleftarrow}{\leftarrow}');
+DefMacro('\xrightarrow', '\lx@long@arrow{\xrightarrow}{\lx@stretchy@rightarrow}');
+DefMacro('\xleftarrow',  '\lx@long@arrow{\xleftarrow}{\lx@stretchy@leftarrow}');
+
+DefMathI('\lx@stretchy@leftarrow', undef, "\x{2190}",
+  role => 'ARROW', stretchy => 'true', alias => '\leftarrow');
+DefMathI('\lx@stretchy@rightarrow', undef, "\x{2192}",
+  role => 'ARROW', stretchy => 'true', alias => '\rightarrow');
 
 #======================================================================
 # Section 4.10 Affixing symbols to other symbols
 
 # Note that the 1st argument is treated set as an accent over (or under) the 2nd argument.
-DefConstructor('\overset{}{}',
+DefConstructor('\overset InScriptStyle {}',
   "<ltx:XMApp>"
     . "<ltx:XMWrap role='OVERACCENT'>#1</ltx:XMWrap>"
     . "<ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>");
-DefConstructor('\underset{}{}',
+DefConstructor('\underset InScriptStyle {}',
   "<ltx:XMApp>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
     . "<ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>");
-DefConstructor('\overunderset{}{}{}',
+DefConstructor('\overunderset InScriptStyle InScriptStyle {}',
   "<ltx:XMApp>"
     . "<ltx:XMWrap role='OVERACCENT'>#1</ltx:XMWrap>"
     . "<ltx:XMApp>"

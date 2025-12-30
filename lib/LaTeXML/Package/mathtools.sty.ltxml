@@ -247,7 +247,7 @@ DefMacro('\noeqref{}', '');
 
 ## 3.3
 
-DefConstructor('\xleftrightarrow[]{}',    # not centered anymore
+DefConstructor('\xleftrightarrow OptionalInScriptStyle InScriptStyle',    # not centered anymore
   "?#1("
     . "<ltx:XMApp role='METARELOP'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -259,12 +259,12 @@ DefConstructor('\xleftrightarrow[]{}',    # not centered anymore
     . ")("
     . "<ltx:XMApp role='METARELOP'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xleftrightarrow' role='METARELOP'>\x{2194}</ltx:XMTok>"
+    . "<ltx:XMTok name='xleftrightarrow' role='METARELOP' stretchy='true'>\x{2194}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xLeftarrow[]{}',
+DefConstructor('\xLeftarrow OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -276,12 +276,12 @@ DefConstructor('\xLeftarrow[]{}',
     . ")("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xLeftarrow' role='ARROW'>\x{21D0}</ltx:XMTok>"
+    . "<ltx:XMTok name='xLeftarrow' role='ARROW' stretchy='true'>\x{21D0}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xRightarrow[]{}',
+DefConstructor('\xRightarrow OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -293,12 +293,12 @@ DefConstructor('\xRightarrow[]{}',
     . ")("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xRightarrow' role='ARROW'>\x{21D2}</ltx:XMTok>"
+    . "<ltx:XMTok name='xRightarrow' role='ARROW' stretchy='true'>\x{21D2}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xLeftrightarrow[]{}',    # looks stretched
+DefConstructor('\xLeftrightarrow OptionalInScriptStyle InScriptStyle',    # looks stretched
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -310,12 +310,12 @@ DefConstructor('\xLeftrightarrow[]{}',    # looks stretched
     . ")("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xLeftrightarrow' role='ARROW'>\x{21D4}</ltx:XMTok>"
+    . "<ltx:XMTok name='xLeftrightarrow' role='ARROW' stretchy='true'>\x{21D4}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xhookleftarrow[]{}',
+DefConstructor('\xhookleftarrow OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -327,12 +327,12 @@ DefConstructor('\xhookleftarrow[]{}',
     . ")("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xhookleftarrow' role='ARROW'>\x{21A9}</ltx:XMTok>"
+    . "<ltx:XMTok name='xhookleftarrow' role='ARROW' stretchy='true'>\x{21A9}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xhookrightarrow[]{}',
+DefConstructor('\xhookrightarrow OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -344,12 +344,12 @@ DefConstructor('\xhookrightarrow[]{}',
     . ")("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xhookrightarrow' role='ARROW'>\x{21AA}</ltx:XMTok>"
+    . "<ltx:XMTok name='xhookrightarrow' role='ARROW' stretchy='true'>\x{21AA}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xmapsto[]{}',
+DefConstructor('\xmapsto OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -361,12 +361,12 @@ DefConstructor('\xmapsto[]{}',
     . ")("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xmapsto' role='ARROW'>\x{21A6}</ltx:XMTok>"
+    . "<ltx:XMTok name='xmapsto' role='ARROW' stretchy='true'>\x{21A6}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xrightharpoondown[]{}',
+DefConstructor('\xrightharpoondown OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -383,7 +383,7 @@ DefConstructor('\xrightharpoondown[]{}',
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xrightharpoonup[]{}',
+DefConstructor('\xrightharpoonup OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -395,12 +395,12 @@ DefConstructor('\xrightharpoonup[]{}',
     . ")("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xrightharpoonup' role='ARROW'>\x{21C0}</ltx:XMTok>"
+    . "<ltx:XMTok name='xrightharpoonup' role='ARROW' stretchy='true'>\x{21C0}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xleftharpoondown[]{}',
+DefConstructor('\xleftharpoondown OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -412,12 +412,12 @@ DefConstructor('\xleftharpoondown[]{}',
     . ")("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xlefttharpoondown' role='ARROW'>\x{21BD}</ltx:XMTok>"
+    . "<ltx:XMTok name='xlefttharpoondown' role='ARROW' stretchy='true'>\x{21BD}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xleftharpoonup[]{}',
+DefConstructor('\xleftharpoonup OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -429,12 +429,12 @@ DefConstructor('\xleftharpoonup[]{}',
     . ")("
     . "<ltx:XMApp role='ARROW'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xleftharpoonup' role='ARROW'>\x{21BC}</ltx:XMTok>"
+    . "<ltx:XMTok name='xleftharpoonup' role='ARROW' stretchy='true'>\x{21BC}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xrightleftharpoons[]{}',
+DefConstructor('\xrightleftharpoons OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='METARELOP'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -446,12 +446,12 @@ DefConstructor('\xrightleftharpoons[]{}',
     . ")("
     . "<ltx:XMApp role='METARELOP'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xrightleftharpoons' role='METARELOP'>\x{21CC}</ltx:XMTok>"
+    . "<ltx:XMTok name='xrightleftharpoons' role='METARELOP' stretchy='true'>\x{21CC}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefConstructor('\xleftrightharpoons[]{}',
+DefConstructor('\xleftrightharpoons OptionalInScriptStyle InScriptStyle',
   "?#1("
     . "<ltx:XMApp role='METARELOP'>"
     . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
@@ -463,7 +463,7 @@ DefConstructor('\xleftrightharpoons[]{}',
     . ")("
     . "<ltx:XMApp role='METARELOP'>"
     . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='xleftrightharpoons' role='METARELOP'>\x{21CB}</ltx:XMTok>"
+    . "<ltx:XMTok name='xleftrightharpoons' role='METARELOP' stretchy='true'>\x{21CB}</ltx:XMTok>"
     . "</ltx:XMApp>"
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
