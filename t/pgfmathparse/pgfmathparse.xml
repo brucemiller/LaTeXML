@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="pgf"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>94.1.1 Commands</title>
+    <para xml:id="S1.p1">
+      <p><text font="typewriter">2pt+3.5pt = 5.5 = 5.5</text></p>
+    </para>
+    <para xml:id="S1.p2">
+      <p><text font="typewriter">sin(.5*pi r)*60 = 60.0 = 60.0</text></p>
+    </para>
+    <para xml:id="S1.p3">
+      <p><text font="typewriter">1.234e+4 = 12340.0 = 12340.0</text></p>
+    </para>
+    <para xml:id="S1.p4">
+      <p><text font="typewriter">010 = 010 = 8.0</text></p>
+    </para>
+    <para xml:id="S1.p5">
+      <p><text font="typewriter">0xA = 10.0 = 10.0</text></p>
+    </para>
+    <para xml:id="S1.p6">
+      <p><text font="typewriter">0XB = 11.0 = 11.0</text></p>
+    </para>
+    <para xml:id="S1.p7">
+      <p><text font="typewriter">0b10 = 2.0 = 2.0</text></p>
+    </para>
+    <para xml:id="S1.p8">
+      <p><text font="typewriter">0B101 = 5.0 = 5.0</text></p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>92.2 Operators</title>
+    <para xml:id="S2.p1">
+      <p><text font="typewriter">1+2 = 3.0 = 3.0</text></p>
+    </para>
+    <para xml:id="S2.p2">
+      <p><text font="typewriter">1-2 = -1.0 = -1.0</text></p>
+    </para>
+    <para xml:id="S2.p3">
+      <p><text font="typewriter">-2 = -2.0 = -2.0</text></p>
+    </para>
+    <para xml:id="S2.p4">
+      <p><text font="typewriter">1*2 = 2.0 = 2.0</text></p>
+    </para>
+    <para xml:id="S2.p5">
+      <p><text font="typewriter">1/2 = 0.5 = 0.5</text></p>
+    </para>
+    <para xml:id="S2.p6">
+      <p><text font="typewriter">2^3 = 8.0 = 8.0</text></p>
+    </para>
+    <para xml:id="S2.p7">
+      <p><text font="typewriter">4! = 24.0 = 24.0</text></p>
+    </para>
+    <para xml:id="S2.p8">
+      <p><text font="typewriter">1r = 57.29578 = 57.29578</text></p>
+    </para>
+    <para xml:id="S2.p9">
+      <p><text font="typewriter">pi r = 180.0 = 180.0</text></p>
+    </para>
+    <para xml:id="S2.p10">
+      <p><text font="typewriter">1 ? 2 : 3 = 2.0 = 2.0</text></p>
+    </para>
+    <para xml:id="S2.p11">
+      <p><text font="typewriter">2 == 2 = 1.0 = 1.0</text></p>
+    </para>
+    <para xml:id="S2.p12">
+      <p><text font="typewriter">2 == 1 = 0.0 = 0.0</text></p>
+    </para>
+    <para xml:id="S2.p13">
+      <p><text font="typewriter">(1+2)*3 = 9.0 = 9.0</text></p>
+    </para>
+    <para xml:id="S2.p14">
+      <p><text font="typewriter">sin(30*10) = -0.86603 = -0.86603</text></p>
+    </para>
+    <para xml:id="S2.p15">
+      <p><text font="typewriter">mod(72,3) = 0.0 = 0.0</text></p>
+    </para>
+    <para xml:id="S2.p16">
+      <p><text font="typewriter">sin 30 = 0.5 = 0.5</text></p>
+    </para>
+    <para xml:id="S2.p17">
+      <p><text font="typewriter">sin(30) = 0.5 = 0.5</text></p>
+    </para>
+    <para xml:id="S2.p18">
+      <p><text font="typewriter">sin 30*10 = 5 = 5</text></p>
+    </para>
+    <para xml:id="S2.p19">
+      <p><text font="typewriter">sin(30)*10 = 5 = 5</text></p>
+    </para>
+    <para xml:id="S2.p20">
+      <p>5 is <text fontsize="50%">smaller than 7.</text></p>
+    </para>
+    <para xml:id="S2.p21">
+      <p>5 is <text fontsize="50%">smaller than 7.</text></p>
+    </para>
+    <para xml:id="S2.p22">
+      <p>7 is <text fontsize="144%">Bigger than 5.</text></p>
+    </para>
+    <para xml:id="S2.p23">
+      <p>7 is <text fontsize="144%">Bigger than 5</text></p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>92.3 Functions</title>
+    <subsection inlist="toc" xml:id="S3.SS1">
+      <tags>
+        <tag>3.1</tag>
+        <tag role="refnum">3.1</tag>
+        <tag role="typerefnum">§3.1</tag>
+      </tags>
+      <title><tag close=" ">3.1</tag>92.3.1 Basic arithmetic functions</title>
+      <para xml:id="S3.SS1.p1">
+        <p><text font="typewriter">add(75,6) = 81.0 = 81.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p2">
+        <p><text font="typewriter">subtract(75,6) = 69.0 = 69.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p3">
+        <p><text font="typewriter">neg(50) = -50.0 = -50.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p4">
+        <p><text font="typewriter">multiply(75,6) = 450.0 = 450.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p5">
+        <p><text font="typewriter">divide(75,6) = 12.5 = 12.5</text></p>
+      </para>
+      <para xml:id="S3.SS1.p6">
+        <p><text font="typewriter">div(75,9) = 8.0 = 8.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p7">
+        <p><text font="typewriter">factorial(5) = 120.0 = 120.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p8">
+        <p><text font="typewriter">sqrt(10) = 3.16228 = 3.16228</text></p>
+      </para>
+      <para xml:id="S3.SS1.p9">
+        <p><text font="typewriter">sqrt(8765.432) = 93.62389 = 93.62389</text></p>
+      </para>
+      <para xml:id="S3.SS1.p10">
+        <p><text font="typewriter">pow(2,7) = 128.0 = 128.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p11">
+        <p><text font="typewriter">e^2 - e^-2 = 3.62686 = 3.62686</text></p>
+      </para>
+      <para xml:id="S3.SS1.p12">
+        <p><text font="typewriter">exp(1) = 2.71828 = 2.71828</text></p>
+      </para>
+      <para xml:id="S3.SS1.p13">
+        <p><text font="typewriter">exp(2.34) = 10.38124 = 10.38124</text></p>
+      </para>
+      <para xml:id="S3.SS1.p14">
+        <p><text font="typewriter">ln(10) = 2.30259 = 2.30259</text></p>
+      </para>
+      <para xml:id="S3.SS1.p15">
+        <p><text font="typewriter">ln(exp(5)) = 5.0 = 5.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p16">
+        <p><text font="typewriter">log10(100) = 2.0 = 2.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p17">
+        <p><text font="typewriter">log2(128) = 7.0 = 7.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p18">
+        <p><text font="typewriter">abs(-5) = 5.0 = 5.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p19">
+        <p><text font="typewriter">-abs(4*-3) = -12.0 = -12.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p20">
+        <p><text font="typewriter">mod(20,6) = 2.0 = 2.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p21">
+        <p><text font="typewriter">mod(-100,30) = -10.0 = -10.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p22">
+        <p><text font="typewriter">Mod(-100,30) = 20.0 = 20.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p23">
+        <p><text font="typewriter">sign(-5) = -1.0 = -1.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p24">
+        <p><text font="typewriter">sign(0) = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS1.p25">
+        <p><text font="typewriter">sign(5) = 1.0 = 1.0</text></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS2">
+      <tags>
+        <tag>3.2</tag>
+        <tag role="refnum">3.2</tag>
+        <tag role="typerefnum">§3.2</tag>
+      </tags>
+      <title><tag close=" ">3.2</tag>94.3.2 Rounding functions</title>
+      <para xml:id="S3.SS2.p1">
+        <p><text font="typewriter">round(32.5/17) = 2.0 = 2.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p2">
+        <p><text font="typewriter">round(398/12) = 33.0 = 33.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p3">
+        <p><text font="typewriter">floor(32.5/17) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p4">
+        <p><text font="typewriter">floor(398/12) = 33.0 = 33.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p5">
+        <p><text font="typewriter">floor(-398/12) = -34.0 = -34.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p6">
+        <p><text font="typewriter">ceil(32.5/17) = 2.0 = 2.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p7">
+        <p><text font="typewriter">ceil(398/12) = 34.0 = 34.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p8">
+        <p><text font="typewriter">ceil(-398/12) = -33.0 = -33.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p9">
+        <p><text font="typewriter">int(32.5/17) = 1 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p10">
+        <p><text font="typewriter">frac(32.5/17) = 0.91176 = 0.91176</text></p>
+      </para>
+      <para xml:id="S3.SS2.p11">
+        <p><text font="typewriter">int(-32.5/17) = -1 = -1.0</text></p>
+      </para>
+      <para xml:id="S3.SS2.p12">
+        <p><text font="typewriter">frac(-32.5/17) = 0.91176 = 0.91176</text></p>
+      </para>
+      <para xml:id="S3.SS2.p13">
+        <p><text font="typewriter">real(4) = 4.0 = 4.0</text></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS3">
+      <tags>
+        <tag>3.3</tag>
+        <tag role="refnum">3.3</tag>
+        <tag role="typerefnum">§3.3</tag>
+      </tags>
+      <title><tag close=" ">3.3</tag>94.3.3 Integer arithmetic functions</title>
+      <para xml:id="S3.SS3.p1">
+        <p><text font="typewriter">gcd(42,56) = 14.0 = 14.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p2">
+        <p><text font="typewriter">gcd(24,34) = 2.0 = 2.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p3">
+        <p><text font="typewriter">gcd(42.1,56.1) = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p4">
+        <p><text font="typewriter">gcd(-42,-56) = 14.0 = 14.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p5">
+        <p><text font="typewriter">gcd(-42,0) = 42.0 = 42.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p6">
+        <p><text font="typewriter">isodd(2) = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p7">
+        <p><text font="typewriter">isodd(3) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p8">
+        <p><text font="typewriter">iseven(2) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p9">
+        <p><text font="typewriter">iseven(3) = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p10">
+        <p><text font="typewriter">isprime(1) = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p11">
+        <p><text font="typewriter">isprime(2) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p12">
+        <p><text font="typewriter">isprime(31) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS3.p13">
+        <p><text font="typewriter">isprime(64) = 0.0 = 0.0</text></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS4">
+      <tags>
+        <tag>3.4</tag>
+        <tag role="refnum">3.4</tag>
+        <tag role="typerefnum">§3.4</tag>
+      </tags>
+      <title><tag close=" ">3.4</tag>94.3.4 Trigonometric functions</title>
+      <para xml:id="S3.SS4.p1">
+        <p><text font="typewriter">pi = 3.14159 = 3.14159</text></p>
+      </para>
+      <para xml:id="S3.SS4.p2">
+        <p><text font="typewriter">pi r = 180.0 = 180.0</text></p>
+      </para>
+      <para xml:id="S3.SS4.p3">
+        <p><text font="typewriter">rad(90) = 1.5708 = 1.5708</text></p>
+      </para>
+      <para xml:id="S3.SS4.p4">
+        <p><text font="typewriter">deg(3*pi/2) = 270.0 = 270.0</text></p>
+      </para>
+      <para xml:id="S3.SS4.p5">
+        <p><text font="typewriter">sin(60) = 0.86603 = 0.86603</text></p>
+      </para>
+      <para xml:id="S3.SS4.p6">
+        <p><text font="typewriter">sin(pi/3 r) = 0.86603 = 0.86603</text></p>
+      </para>
+      <para xml:id="S3.SS4.p7">
+        <p><text font="typewriter">cos(60) = 0.5 = 0.5</text></p>
+      </para>
+      <para xml:id="S3.SS4.p8">
+        <p><text font="typewriter">cos(pi/3 r) = 0.5 = 0.5</text></p>
+      </para>
+      <para xml:id="S3.SS4.p9">
+        <p><text font="typewriter">tan(45) = 1 = 1</text></p>
+      </para>
+      <para xml:id="S3.SS4.p10">
+        <p><text font="typewriter">tan(2*pi/8 r) = 1 = 1</text></p>
+      </para>
+      <para xml:id="S3.SS4.p11">
+        <p><text font="typewriter">sec(45) = 1.41421 = 1.41421</text></p>
+      </para>
+      <para xml:id="S3.SS4.p12">
+        <p><text font="typewriter">cosec(30) = 2 = 2</text></p>
+      </para>
+      <para xml:id="S3.SS4.p13">
+        <p><text font="typewriter">cot(15) = 3.73205 = 3.73205</text></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS5">
+      <tags>
+        <tag>3.5</tag>
+        <tag role="refnum">3.5</tag>
+        <tag role="typerefnum">§3.5</tag>
+      </tags>
+      <title><tag close=" ">3.5</tag>94.3.5 Comparison and logical functions</title>
+      <para xml:id="S3.SS5.p1">
+        <p><text font="typewriter">equal(20,20) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p2">
+        <p><text font="typewriter">20 == 20 = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p3">
+        <p><text font="typewriter">greater(20,25) = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p4">
+        <p><text font="typewriter">20 &gt; 25 = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p5">
+        <p><text font="typewriter">less(20,25) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p6">
+        <p><text font="typewriter">20 &lt; 25 = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p7">
+        <p><text font="typewriter">notequal(20,25) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p8">
+        <p><text font="typewriter">20 != 25 = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p9">
+        <p><text font="typewriter">notgreater(20,25) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p10">
+        <p><text font="typewriter">20 &lt;= 25 = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p11">
+        <p><text font="typewriter">notless(20,25) = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p12">
+        <p><text font="typewriter">20 &gt;= 25 = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p13">
+        <p><text font="typewriter">and(5&gt;4,6&gt;7) = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p14">
+        <p><text font="typewriter">5&gt;4 &amp;&amp; 6&gt;7 = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p15">
+        <p><text font="typewriter">or(5&gt;4,6&gt;7) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p16">
+        <p><text font="typewriter">5&gt;4 || 6&gt;7 = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p17">
+        <p><text font="typewriter">not(true) = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p18">
+        <p><text font="typewriter">! true = 0.0 = 0.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p19">
+        <p><text font="typewriter">not(false) = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p20">
+        <p><text font="typewriter">! false = 1.0 = 1.0</text></p>
+      </para>
+      <para xml:id="S3.SS5.p21">
+        <p><text font="typewriter">ifthenelse(5==4,"yes","no") = no = no</text></p>
+      </para>
+      <para xml:id="S3.SS5.p22">
+        <p><text font="typewriter">5==4 ? "yes" : "no" = no = no</text></p>
+      </para>
+      <para xml:id="S3.SS5.p23">
+        <p><text font="typewriter">true ? "yes" : "no" = yes = yes</text></p>
+      </para>
+      <para xml:id="S3.SS5.p24">
+        <p><text font="typewriter">false ? "yes" : "no" = no = no</text></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS6">
+      <tags>
+        <tag>3.6</tag>
+        <tag role="refnum">3.6</tag>
+        <tag role="typerefnum">§3.6</tag>
+      </tags>
+      <title><tag close=" ">3.6</tag>94.3.6 Pseudo-random functions</title>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS7">
+      <tags>
+        <tag>3.7</tag>
+        <tag role="refnum">3.7</tag>
+        <tag role="typerefnum">§3.7</tag>
+      </tags>
+      <title><tag close=" ">3.7</tag>94.3.7 Base conversion functions</title>
+      <para xml:id="S3.SS7.p1">
+        <p><text font="typewriter">hex(65535) = ffff = ffff</text></p>
+      </para>
+      <para xml:id="S3.SS7.p2">
+        <p><text font="typewriter">Hex(65535) = FFFF = FFFF</text></p>
+      </para>
+      <para xml:id="S3.SS7.p3">
+        <p><text font="typewriter">oct(63) = 77.0 = 77.0</text></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS8">
+      <tags>
+        <tag>3.8</tag>
+        <tag role="refnum">3.8</tag>
+        <tag role="typerefnum">§3.8</tag>
+      </tags>
+      <title><tag close=" ">3.8</tag>94.3.8 Miscellaneous functions</title>
+      <para xml:id="S3.SS8.p1">
+        <p><text font="typewriter">min(3,4,-2,250,-8,100) = -8.0 = -8.0</text></p>
+      </para>
+      <para xml:id="S3.SS8.p2">
+        <p><text font="typewriter">max(3,4,-2,250,-8,100) = 250.0 = 250.0</text></p>
+      </para>
+      <para xml:id="S3.SS8.p3">
+        <p><text font="typewriter">veclen(12,5) = 13.0 = 13.0</text></p>
+      </para>
+      <para xml:id="S3.SS8.p4">
+        <p><text font="typewriter">sinh(0.5) = 0.5211 = 0.5211</text></p>
+      </para>
+      <para xml:id="S3.SS8.p5">
+        <p><text font="typewriter">cosh(0.5) = 1.12763 = 1.12763</text></p>
+      </para>
+      <para xml:id="S3.SS8.p6">
+        <p><text font="typewriter">tanh(0.5) = 0.46212 = 0.46212</text></p>
+      </para>
+      <para xml:id="S3.SS8.p7">
+        <p><text font="typewriter">width("Some Lovely Text") = 469.75 = 469.75</text></p>
+      </para>
+      <para xml:id="S3.SS8.p8">
+        <p><text font="typewriter">height("Some Lovely Text") = 6.11 = 6.11</text></p>
+      </para>
+      <para xml:id="S3.SS8.p9">
+        <p><text font="typewriter">depth("Some Lovely Text") = 2.22 = 2.22</text></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS9">
+      <tags>
+        <tag>3.9</tag>
+        <tag role="refnum">3.9</tag>
+        <tag role="typerefnum">§3.9</tag>
+      </tags>
+      <title><tag close=" ">3.9</tag>Additional predecence tests</title>
+      <para xml:id="S3.SS9.p1">
+        <p><text font="typewriter">2^2! = 24.0 = 24.0</text></p>
+      </para>
+      <para xml:id="S3.SS9.p2">
+        <p><text font="typewriter">2^(2!) = 4.0 = 4.0</text></p>
+      </para>
+      <para xml:id="S3.SS9.p3">
+        <p><text font="typewriter">2*2! = 4.0 = 4.0</text></p>
+      </para>
+      <para xml:id="S3.SS9.p4">
+        <p><text font="typewriter">3!! = 720.0 = 720.0</text></p>
+      </para>
+      <para xml:id="S3.SS9.p5">
+        <p><text font="typewriter">2^2^3 = 64.0 = 64.0</text></p>
+      </para>
+      <para xml:id="S3.SS9.p6">
+        <p><text font="typewriter">2^3 r * 2 = 916.73247 = 916.73247</text></p>
+      </para>
+      <para xml:id="S3.SS9.p7">
+        <p><text font="typewriter">2 + !1 + 2 = 4.0 = 4.0</text></p>
+      </para>
+      <para xml:id="S3.SS9.p8">
+        <p><text font="typewriter">2^3^2 = 64.0 = 64.0</text></p>
+      </para>
+      <para xml:id="S3.SS9.p9">
+        <p><text font="typewriter">-2^-2 = -0.25 = -0.25</text></p>
+      </para>
+      <para xml:id="S3.SS9.p10">
+        <p><text font="typewriter">2^2! = 24.0 = 24.0</text></p>
+      </para>
+      <para xml:id="S3.SS9.p11">
+        <p><text font="typewriter">-3! = -6.0 = -6.0</text></p>
+      </para>
+      <para xml:id="S3.SS9.p12">
+        <p><text font="typewriter">2 * - 2 * 3! = -24.0 = -24.0</text></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS10">
+      <tags>
+        <tag>3.10</tag>
+        <tag role="refnum">3.10</tag>
+        <tag role="typerefnum">§3.10</tag>
+      </tags>
+      <title><tag close=" ">3.10</tag>Delimiters and grouping</title>
+      <para xml:id="S3.SS10.p1">
+        <p><text font="typewriter">wrapping braces = -34.32812 = -34.32812</text></p>
+      </para>
+    </subsection>
+  </section>
+</document>
