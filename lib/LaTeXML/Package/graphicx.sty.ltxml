@@ -33,7 +33,9 @@ DefKeyVal('Gin', 'keepaspectratio', '', 'true');
 DefKeyVal('Gin', 'clip',            '', 'true');
 DefKeyVal('Gin', 'scale',           '');
 DefKeyVal('Gin', 'angle',           '');
+DefKeyVal('Gin', 'actualtext',      '');
 DefKeyVal('Gin', 'alt',             '');
+DefKeyVal('Gin', 'artifact',        '', 'true');
 DefKeyVal('Gin', 'trim',            'GraphixDimensions');
 DefKeyVal('Gin', 'viewport',        'GraphixDimensions');
 # NOTE: graphicx defines @angle to actually carry out the rotation (on \box\z@) w/\Gin@erotate
@@ -56,19 +58,30 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
   scope          => 'global',
   afterConstruct => sub {
     my ($document, $whatsit) = @_;
-    my $alt = $whatsit->getProperty('alt');
-    # Trickery to set @description EVEN IF empty string (constructor shorthand omits it)
-    if (defined $alt) {
-      $document->getNode->lastChild->setAttribute(description => ToString($alt)); } },
+    my $actualtext = $whatsit->getProperty('actualtext');
+    my $alt        = $whatsit->getProperty('alt');
+    my $artifact   = $whatsit->getProperty('artifact');
+    $artifact = 1 if defined $artifact && ToString($artifact) ne 'false';
+    if ($artifact || defined $actualtext || defined $alt) {
+      my $node = $document->getNode->lastChild;
+      # Trickery to set @description EVEN IF empty string (constructor shorthand omits it)
+      $node->setAttribute(description => ToString($actualtext // $alt // ''));
+      # when both actualtext and alt are specified, use aria-description for alt
+      $document->setAttribute($node, 'aria:description', ToString($alt)) if defined $alt && defined $actualtext;
+      $document->setAttribute($node, 'aria:hidden', 'true')              if $artifact; } },
   properties => sub {
     my ($stomach, $starred, $kv, $graphic) = @_;
     my $options = graphicX_options($starred, $kv);
     my ($path, @candidates) = image_candidates(ToString($graphic));
-    my $alt = $kv && $kv->getValue('alt');
+    my $alt        = $kv && $kv->getValue('alt');
+    my $actualtext = $kv && $kv->getValue('actualtext');
+    my $artifact   = $kv && $kv->getValue('artifact');
     (path => $path,
       candidates => join(',', @candidates),
-      (defined $alt ? (alt => $alt) : ()),
-      options => $options); },
+      actualtext => $actualtext,
+      alt        => $alt,
+      artifact   => $artifact,
+      options    => $options); },
   mode => 'restricted_horizontal', enterHorizontal => 1);
 
 #**********************************************************************
