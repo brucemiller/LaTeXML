@@ -58,10 +58,11 @@ sub valueOf {
 sub setValue {
   my ($self, $value, $scope, @args) = @_;
   my $tracing = (($STATE->lookupValue('TRACING') || 0) & TRACE_COMMANDS);
+  my $name = '';
   if ($tracing) {
     my $scope  = $STATE->getPrefix('global') ? 'globally ' : '';
-    my $csname = ToString($$self{cs});
-    Debug("{$scope" . "changing " . $csname . "=" . ToString($self->valueOf(@args)) . "}"); }
+    $name = ToString($$self{cs}).join(',',map { ToString($_); } @args);
+    Debug("{$scope" . "changing " . $name . "=" . ToString($self->valueOf(@args)) . "}"); }
   if (my $setter = $$self{setter}) {
     &{ $$self{setter} }($value, $scope, @args); }
   elsif ($$self{readonly}) {
@@ -70,7 +71,7 @@ sub setValue {
   else {
     my $loc = (@args ? join('', $$self{address}, map { ToString($_) } @args) : $$self{address});
     $STATE->assignValue($loc => $value, $scope); }
-  Debug("{into " . ToString($$self{cs}) . "=" . ToString($self->valueOf(@args)) . "}") if $tracing;
+  Debug("{into " . $name . "=" . ToString($self->valueOf(@args)) . "}") if $tracing;
   return; }
 
 sub addValue {

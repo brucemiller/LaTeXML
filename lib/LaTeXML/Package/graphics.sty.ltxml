@@ -22,7 +22,8 @@ use LaTeXML::Util::Image;
 # (See  LaTeXML::Post::Graphics for suggested postprocessing)
 # Package options: draft, final, hiderotate, hidescale, hiresbb
 
-# Dimensions, but \calc syntax SHOULD be allowed (if calc loaded)
+# "!" (punt to other axes) or Dimension, but \calc syntax allowed if calc loaded
+# [See discussions in Base_ParameterTypes for {Dimension}
 DefParameterType('GraphixDimension', sub {
     my ($gullet) = @_;
     $gullet->skipSpaces;
@@ -32,7 +33,9 @@ DefParameterType('GraphixDimension', sub {
       undef; }    # essentially: let other dimensions determine size.
     else {
       $gullet->unread($next);
-      $gullet->readDimension; } },
+      (LookupValue('calc.sty.ltxml_loaded')
+       ? readCalcExpression($gullet, 'Glue')
+       : $gullet->readDimension()); } },
   optional => 1);
 
 # For trim, viewport: a sequence of 4 dimensions
@@ -284,7 +287,7 @@ sub graphicX_options {
     my ($key, $value) = (shift(@kv), shift(@kv));
     $saw_w = 1 if $key =~ /width$/;
     $saw_h = 1 if $key =~ /height$/;
-    $value = ToString($value);
+    $value = $value->toAttribute if ref $value;
     $value =~ s/,/\\,/g;    # Slashify any "," within the value
     push(@options, $key . '=' . $value); }
   push(@options, 'keepaspectratio=true') if ($saw_w xor $saw_h) && !$kv->hasKey('keepaspectratio');
