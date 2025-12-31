@@ -185,6 +185,11 @@
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
     </xsl:element>
+    <!-- AND, if non-empty, place any processed metadata
+         (likely accessibility) AFTER the img -->
+    <xsl:apply-templates>
+      <xsl:with-param name="context" select="$context"/>
+    </xsl:apply-templates>
   </xsl:template>
 
   <!-- svg graphics should use the object tag, rather than img,
