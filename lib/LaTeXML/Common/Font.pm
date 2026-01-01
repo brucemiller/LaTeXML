@@ -591,7 +591,8 @@ sub computeStringSize {
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
   my $ismath = $self->getFamily eq 'math';
   my ($w, $h, $d) = (0, 0, 0);
-  my @chars = split(//, $string);
+  # split string into grapheme clusters
+  my @chars = $string =~ m/(\X)/g;
   while (@chars) {
     my $char   = shift(@chars);
     my $metric = $self->getMetric($char);
