@@ -144,14 +144,12 @@ if (!LookupValue('enumitem@loadonly')) {
   DefEnvironment('{itemize} OptionalKeyVals:enumitem',
     "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
     properties      => sub { beginEnumItemize('itemize', '@item', $_[1]); },
-    beforeDigestEnd => sub { Digest('\par'); },
     afterDigestBody => sub { endEnumItemize($_[1]); },
     mode            => 'internal_vertical',
     locked          => 1);
   DefEnvironment('{enumerate} OptionalKeyVals:enumitem',
     "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
     properties      => sub { beginEnumItemize('enumerate', 'enum', $_[1]); },
-    beforeDigestEnd => sub { Digest('\par'); },
     afterDigestBody => sub { endEnumItemize($_[1]); },
     mode            => 'internal_vertical',
     locked          => 1);
@@ -159,7 +157,6 @@ if (!LookupValue('enumitem@loadonly')) {
     "<ltx:description  xml:id='#id'>#body</ltx:description>",
     beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
     properties      => sub { beginEnumItemize('description', '@desc', $_[1]); },
-    beforeDigestEnd => sub { Digest('\par'); },
     afterDigestBody => sub { endEnumItemize($_[1]); },
     mode            => 'internal_vertical',
     locked          => 1);
@@ -199,7 +196,6 @@ DefPrimitive('\newlist{}{}{}', sub {
     DefEnvironmentI($listname, "OptionalKeyVals:enumitem",
       "<ltx:$elementname xml:id='#id'>#body</ltx:$elementname>",
       properties      => sub { beginEnumItemize($listname, $listname, $_[1]); },
-      beforeDigestEnd => sub { Digest('\par'); },
       afterDigestBody => sub { endEnumItemize($_[1]); },
       mode            => 'internal_vertical',
       locked          => 1);
