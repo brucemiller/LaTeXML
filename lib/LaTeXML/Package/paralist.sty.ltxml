@@ -101,8 +101,7 @@ DefEnvironment('{asparaenum} OptionalUndigested',
 if (IfCondition(T_CS('\if@plnewenum'))) {
   DefEnvironment('{enumerate} OptionalUndigested',
     "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-    mode => 'internal_vertical',
-
+    mode             => 'internal_vertical',
     properties       => sub { beginItemize('enumerate', 'enum'); },
     afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); }); }
 
@@ -135,8 +134,7 @@ DefEnvironment('{asparaitem} OptionalUndigested',
 if (IfCondition(T_CS('\if@plnewitem'))) {
   DefEnvironment('{itemize} OptionalUndigested',
     "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-    mode => 'internal_vertical',
-
+    mode             => 'internal_vertical',
     properties       => sub { beginItemize('itemize', '@item'); },
     afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); }); }
 

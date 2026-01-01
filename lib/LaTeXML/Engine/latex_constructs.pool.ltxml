@@ -1501,7 +1501,7 @@ sub setEnumerationStyle {
 
 # End paragraphs, like \par, but only if within an item's text
 our %QNamesForItems = map { $_ => 1 } ('ltx:itemize', 'ltx:enumerate',
-  'ltx:description', 'inline-itemize', 'inline-enumerate', 'inline-description');
+  'ltx:description', 'ltx:inline-itemize', 'ltx:inline-enumerate', 'ltx:inline-description');
 DefConstructorI('\preitem@par', undef, sub {
     my ($document, %props) = @_;
     return if $props{inPreamble};
