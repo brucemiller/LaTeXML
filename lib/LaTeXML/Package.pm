@@ -572,7 +572,20 @@ sub TrimmedCommaList {
   $text = ToString($text);
   $text =~ s/^\s+//;
   $text =~ s/\s+$//;
-  return split(/\s*,\s*/, $text); }
+  my $level  = 0;
+  my @pieces = ();
+  my $piece  = '';
+  for my $c (split('', $text)) {
+    if    ($c eq '{') { $level++; $piece .= $c; }
+    elsif ($c eq '}') { $level--; $piece .= $c; }
+    elsif (($c eq ',') && ($level == 0)) {
+      push(@pieces, $piece) if length($piece) > 0;
+      $piece = ''; }
+    else {
+      $piece .= $c; } }
+  push(@pieces, $piece) if length($piece) > 0;
+  Note("trimmed pieces: " . join(";", @pieces));
+  return @pieces; }
 
 #======================================================================
 # Defining new Control-sequence Parameter types.
@@ -952,7 +965,7 @@ sub Expand {
   return () unless @tokens;
   my $gullet = $STATE->getStomach->getGullet;
   return $gullet->readingFromMouth(Tokens(T_BEGIN, @tokens, T_END), sub {
-    $gullet->readBalanced(2, 0, 1); }); }
+      $gullet->readBalanced(2, 0, 1); }); }
 
 # Return $tokens, partially expanded (defer protected, and results of \the)
 sub ExpandPartially {
@@ -960,7 +973,7 @@ sub ExpandPartially {
   return () unless @tokens;
   my $gullet = $STATE->getStomach->getGullet;
   return $gullet->readingFromMouth(Tokens(T_BEGIN, @tokens, T_END), sub {
-    $gullet->readBalanced(1, 0, 1); }); }
+      $gullet->readBalanced(1, 0, 1); }); }
 
 sub Invocation {
   my ($token, @args) = @_;
@@ -1371,7 +1384,7 @@ sub LookupDimension {
       return $defn->valueOf; }
     else {
       return $STATE->getStomach->getGullet->readingFromMouth($cs, sub {
-        $_[0]->readDimension; }); } }
+          $_[0]->readDimension; }); } }
   else {
     Warn('expected', 'register', $STATE->getStomach,
       "The control sequence " . ToString($cs) . " is not a register"); }
@@ -2547,7 +2560,7 @@ sub InputDefinitions {
   my $mode = $STATE->lookupValue('MODE');
   my $prevname = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Expand(T_CS('\@currname')));
   my $prevext = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currext')) && ToString(Expand(T_CS('\@currext')));
-
+  Note("input def with options: " . join(";", @{ $options{options} })) if $options{options};
   # This file will be treated somewhat as if it were a class
   # IF as_class is true
   # OR if it is loaded by such a class, and has withoptions true!!! (yikes)
@@ -2952,11 +2965,11 @@ sub decodeMathChar {
       elsif ($fontdef = LookupValue('textfont_' . $fam))         { $downsize = 2; } }
     my $defn = $STATE->lookupDefinition($fontdef);
     $fontinfo = $defn && $defn->isFontDef;
-    if(! $fontinfo) {
-      $defn = $STATE->lookupDefinition(T_CS('\lx@default@font'));
+    if (!$fontinfo) {
+      $defn     = $STATE->lookupDefinition(T_CS('\lx@default@font'));
       $fontinfo = $defn && $defn->isFontDef; }
     if ($fontinfo && (ref $fontinfo eq 'HASH')
-        && $basefontinfo && ($$basefontinfo{size} != $curfont->getSize)) {
+      && $basefontinfo && ($$basefontinfo{size} != $curfont->getSize)) {
       # If we've gotten an explicit font SIZE change; Adjust!
       $fontinfo = {%$fontinfo}; $$fontinfo{size} = $curfont->getSize; } }
   my $font = $curfont;
