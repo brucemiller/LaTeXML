@@ -65,8 +65,8 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
     my $options = graphicX_options($starred, $kv);
     my ($path, @candidates) = image_candidates(ToString($graphic));
     my $alt = $kv && $kv->getValue('alt');
-    (path => $path,
-      candidates => join(',', @candidates),
+    (path => pathname_to_url($path),
+      candidates => pathname_to_urls(@candidates),
       (defined $alt ? (alt => $alt) : ()),
       options => $options); },
   mode => 'restricted_horizontal', enterHorizontal => 1);

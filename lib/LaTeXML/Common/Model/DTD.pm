@@ -16,7 +16,6 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
-use URI::file;
 
 #**********************************************************************
 # NOTE: Arglist is DTD specific.
@@ -118,7 +117,7 @@ sub readDTD {
       paths               => $STATE->lookupValue('SEARCHPATHS'),
       installation_subdir => 'resources/DTD');
     if ($dtdfile) {
-      $dtd = XML::LibXML::Dtd->new($$self{public_id}, URI::file->new($dtdfile));
+      $dtd = XML::LibXML::Dtd->new($$self{public_id}, pathname_to_file_url($dtdfile));
       $how = " from $dtdfile ";
       Error('misdefined', $$self{system_id}, undef,
         "Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed")

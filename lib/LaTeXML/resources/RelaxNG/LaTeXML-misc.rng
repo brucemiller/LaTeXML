@@ -12,7 +12,7 @@
   | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
   \=========================================================ooo==U==ooo=/
 -->
-<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <define name="Misc.class" combine="choice">
     <a:documentation> Miscellaneous (Misc) elements are (typically) visible
 elements which don't have clear inline or block character;
@@ -103,6 +103,7 @@ typesets its contents as a block.</a:documentation>
         <a:documentation>the path to the graphics file. This is the (often minimally specified) path
 to a graphics file omitting the type extension.  Once resolved to a specific
 image file, the \attr{imagesrc} (from Imageable.attributes) is used.</a:documentation>
+        <data type="anyURI"/>
       </attribute>
     </optional>
     <optional>
@@ -110,6 +111,13 @@ image file, the \attr{imagesrc} (from Imageable.attributes) is used.</a:document
         <a:documentation>a comma separated list of candidate graphics files that could be used to
 for \attr{graphic}.  A post-processor or application may choose from these,
 or may make its own selection or synthesis to implement the graphic for a given target.</a:documentation>
+        <group>
+          <data type="anyURI"/>
+          <zeroOrMore>
+            <value>,</value>
+            <data type="anyURI"/>
+          </zeroOrMore>
+        </group>
       </attribute>
     </optional>
     <optional>
