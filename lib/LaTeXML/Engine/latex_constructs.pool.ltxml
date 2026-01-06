@@ -784,13 +784,17 @@ DefMacroI('\@curroptions',      undef, undef);
 DefMacroI('\@unusedoptionlist', undef, Tokens());
 
 DefConstructor('\usepackage OptionalUndigested Semiverbatim []',
-  "<?latexml package='#2' ?#1(options='#1')?>",
+  "<?latexml package='#2' ?#1(options='#options')?>",
   beforeDigest => sub { onlyPreamble('\usepackage'); },
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    Note("USEPACKAGE WITH STR |" . ToString($whatsit->getArg(1)) . "|");
-    my $options  = [TrimmedCommaList($whatsit->getArg(1))];
+    # approximate semiverbatim by reparsing the inner lists
+    my $options = [map {
+        my ($k, $v) = split(/=/, $_, 2);
+        defined $v ? ($k . '=' . join(",", TrimmedCommaList($v))) : $k;
+    } TrimmedCommaList($whatsit->getArg(1))];
+    $whatsit->setProperty(options => join(",", @$options));
     my $packages = $whatsit->getArg(2);
-    for my $pkg (TrimmedCommaList(ToString($packages))) {
+    for my $pkg (TrimmedCommaList($packages)) {
       $pkg =~ s/\s+//g;
       next if !$pkg || $pkg =~ /^%/;
       RequirePackage($pkg, options => $options); }
@@ -803,7 +807,7 @@ DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
     my $options  = [TrimmedCommaList($whatsit->getArg(1))];
     my $packages = $whatsit->getArg(2);
-    for my $pkg (TrimmedCommaList(ToString($packages))) {
+    for my $pkg (TrimmedCommaList($packages)) {
       $pkg =~ s/\s+//g;
       next if !$pkg || $pkg =~ /^%/;
       RequirePackage($pkg, options => $options); }
@@ -3959,7 +3963,6 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
     my $bbl_path     = FindFile($jobname, type => 'bbl');
     my $missing_bibs = '';
     my $bib_config   = LookupValue("BIB_CONFIG") || ['bib', 'bbl'];
-    print STDERR "\n\n BIB CONFIG : " . join(", ", @$bib_config) . "\n\n";
     if ((ref $bib_config ne 'ARRAY') || scalar(@$bib_config) == 0) {
       Info('missing', 'bib_config', $gullet, "BIB_CONFIG was empty, ignoring bibliography phase.");
       return; }

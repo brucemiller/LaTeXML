@@ -111,7 +111,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
 
   # Random low-level token or string operations.
   qw(&CleanID &CleanLabel &CleanIndexKey  &CleanClassName &CleanBibKey &NormalizeBibKey &CleanURL
-    &ComposeURL &TrimmedCommaList
+    &ComposeURL
     &roman &Roman),
   # Math & font state.
   qw(&MergeFont),
@@ -566,26 +566,6 @@ sub ComposeURL {
         : ''),
       $url,
       ($fragid ? '#' . CleanID($fragid) : ''))); }
-
-sub TrimmedCommaList {
-  my ($text) = @_;
-  $text = ToString($text);
-  $text =~ s/^\s+//;
-  $text =~ s/\s+$//;
-  my $level  = 0;
-  my @pieces = ();
-  my $piece  = '';
-  for my $c (split('', $text)) {
-    if    ($c eq '{') { $level++; $piece .= $c; }
-    elsif ($c eq '}') { $level--; $piece .= $c; }
-    elsif (($c eq ',') && ($level == 0)) {
-      push(@pieces, $piece) if length($piece) > 0;
-      $piece = ''; }
-    else {
-      $piece .= $c; } }
-  push(@pieces, $piece) if length($piece) > 0;
-  Note("trimmed pieces: " . join(";", @pieces));
-  return @pieces; }
 
 #======================================================================
 # Defining new Control-sequence Parameter types.
@@ -2560,7 +2540,6 @@ sub InputDefinitions {
   my $mode = $STATE->lookupValue('MODE');
   my $prevname = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Expand(T_CS('\@currname')));
   my $prevext = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currext')) && ToString(Expand(T_CS('\@currext')));
-  Note("input def with options: " . join(";", @{ $options{options} })) if $options{options};
   # This file will be treated somewhat as if it were a class
   # IF as_class is true
   # OR if it is loaded by such a class, and has withoptions true!!! (yikes)
