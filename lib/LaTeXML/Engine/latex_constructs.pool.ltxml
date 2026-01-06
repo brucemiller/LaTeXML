@@ -783,13 +783,18 @@ DefMacroI('\@declaredoptions',  undef, Tokens());
 DefMacroI('\@curroptions',      undef, undef);
 DefMacroI('\@unusedoptionlist', undef, Tokens());
 
-DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
-  "<?latexml package='#2' ?#1(options='#1')?>",
+DefConstructor('\usepackage OptionalUndigested Semiverbatim []',
+  "<?latexml package='#2' ?#1(options='#options')?>",
   beforeDigest => sub { onlyPreamble('\usepackage'); },
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    my $options  = [TrimmedCommaList($whatsit->getArg(1))];
+    # approximate semiverbatim by reparsing the inner lists
+    my $options = [map {
+        my ($k, $v) = split(/=/, $_, 2);
+        defined $v ? ($k . '=' . join(",", TrimmedCommaList($v))) : $k;
+    } TrimmedCommaList($whatsit->getArg(1))];
+    $whatsit->setProperty(options => join(",", @$options));
     my $packages = $whatsit->getArg(2);
-    for my $pkg (split(',', ToString($packages))) {
+    for my $pkg (TrimmedCommaList($packages)) {
       $pkg =~ s/\s+//g;
       next if !$pkg || $pkg =~ /^%/;
       RequirePackage($pkg, options => $options); }
@@ -802,7 +807,7 @@ DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
     my $options  = [TrimmedCommaList($whatsit->getArg(1))];
     my $packages = $whatsit->getArg(2);
-    for my $pkg (split(',', ToString($packages))) {
+    for my $pkg (TrimmedCommaList($packages)) {
       $pkg =~ s/\s+//g;
       next if !$pkg || $pkg =~ /^%/;
       RequirePackage($pkg, options => $options); }
@@ -3961,20 +3966,29 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
     if ((ref $bib_config ne 'ARRAY') || scalar(@$bib_config) == 0) {
       Info('missing', 'bib_config', $gullet, "BIB_CONFIG was empty, ignoring bibliography phase.");
       return; }
-    if ($$bib_config[0] eq 'bbl') {
+    my $allows_bbl = scalar(grep { $_ eq 'bbl' } @$bib_config);
+    my $allows_bib = scalar(grep { $_ eq 'bib' } @$bib_config);
+    # bbl flow
+    if ($allows_bbl && ($$bib_config[0] eq 'bbl')) {
       if (not $bbl_path) {
-        Info('expected', "bbl", $_[0], "Couldn't find bbl file, bibliography may be empty.");
-        return Tokens(); }
+        if (!$allows_bib) {
+          Info('expected', "bbl", $_[0], "Couldn't find bbl file, bibliography may be empty.");
+          return Tokens(); } }
       else {
         return $bbl_clause->unlist; } }
+    # bib flow
+    return Tokens() unless $allows_bib;
+    for my $bf (TrimmedCommaList($bib_files)) {
+      my $bib_path = FindFile($bf, type => 'bib');
+      if (not $bib_path) {
+        $missing_bibs .= ',' unless length($missing_bibs) == 0;
+        $missing_bibs .= $bf; } }
+    if (length($missing_bibs) == 0 or not $bbl_path) {
+      return $bib_clause->unlist; }
     else {
-      for my $bf (split(',', $bib_files)) {
-        my $bib_path = FindFile($bf, type => 'bib');
-        if (not $bib_path) {
-          $missing_bibs .= ',' unless length($missing_bibs) == 0;
-          $missing_bibs .= $bf; } }
-      if (length($missing_bibs) == 0 or not $bbl_path) {
-        return $bib_clause->unlist; }
+      if (!$allows_bbl) {
+        Info('expected', $missing_bibs, $_[0], "Couldn't find all bib files, bibliography may be empty");
+        return Tokens(); }
       else {
         Info('expected', $missing_bibs, $_[0], "Couldn't find all bib files, using " . $jobname . ".bbl instead");
         return $bbl_clause->unlist; } } });

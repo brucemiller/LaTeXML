@@ -168,7 +168,7 @@ sub digestFile {
 sub iniTeX {
   my ($self, $request, $destination, %options) = @_;
   my ($dir, $name, $ext);
-  my $mode = $options{mode} || 'Base'; # normally, w/o TeX (plain) itself
+  my $mode = $options{mode} || 'Base';    # normally, w/o TeX (plain) itself
   if (pathname_is_literaldata($request)) {
     $dir  = undef; $ext = 'tex';
     $name = "Anonymous String"; }
@@ -176,9 +176,9 @@ sub iniTeX {
     $dir  = undef; $ext = 'tex';
     $name = $request; }
   else {
-    if (my $pathname = pathname_find($request, types => ['tex','ltx'],
-	paths => $$self{state}->lookupValue('SEARCHPATHS'))
-	|| pathname_kpsewhich($request, types => ['tex','ltx'],
+    if (my $pathname = pathname_find($request, types => ['tex', 'ltx'],
+        paths => $$self{state}->lookupValue('SEARCHPATHS'))
+      || pathname_kpsewhich($request, types => ['tex', 'ltx'],
         paths => $$self{state}->lookupValue('SEARCHPATHS'))) {
       $request = $pathname;
       ($dir, $name, $ext) = pathname_split($request); }
@@ -320,7 +320,7 @@ sub initializeState {
     my $handleoptions = ($type eq 'sty') || ($type eq 'cls');
     if ($options) {
       if ($handleoptions) {
-        $options = [split(/,/, $options)]; }
+        $options = [LaTeXML::Core::KeyVal::TrimmedCommaList($options)]; }
       else {
         Warn('unexpected', 'options',
           "Attempting to pass options to $preload.$type (not style or class)",

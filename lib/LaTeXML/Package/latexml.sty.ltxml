@@ -55,7 +55,7 @@ DeclareOption('bibtex',   sub { AssignValue('BIB_CONFIG' => ['bib', 'bbl'], 'glo
 DeclareOption('nobibtex', sub { AssignValue('BIB_CONFIG' => ['bbl'],        'global'); });
 
 DefKeyVal('LTXML', 'bibconfig', 'Semiverbatim', '', code => sub {
-    AssignValue('BIB_CONFIG' => [split(',', ToString($_[1]))], 'global');
+    AssignValue('BIB_CONFIG' => [TrimmedCommaList($_[1])], 'global');
     return; });
 
 # Lexeme serialization for math formulas
