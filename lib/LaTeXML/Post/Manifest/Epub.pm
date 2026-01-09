@@ -72,17 +72,17 @@ sub initialize {
   # 1. Create mimetype declaration
   my $EPUB_FH;
   my $mime_path = pathname_concat($directory, 'mimetype');
-  open($EPUB_FH, ">", $mime_path)
+  pathname_openfile($EPUB_FH, ">", $mime_path)
     or Fatal('I/O', 'mimetype', $doc, "Couldn't open '$mime_path' for writing: $!");
   print $EPUB_FH 'application/epub+zip';
   close $EPUB_FH;
   # 2. Create META-INF metadata directory
   my $meta_inf_dir = catdir($directory, 'META-INF');
-  mkdir $meta_inf_dir;
+  pathname_mkdir($meta_inf_dir);
   # 2.1. Add the container.xml description
   my $CONTAINER_FH;
   my $container_path = pathname_concat($meta_inf_dir, 'container.xml');
-  open($CONTAINER_FH, ">", $container_path)
+  pathname_openfile($CONTAINER_FH, ">", $container_path)
     or Fatal('I/O', 'container.xml', $doc, "Couldn't open '$container_path' for writing: $!");
   print $CONTAINER_FH $container_content;
   close $CONTAINER_FH;
@@ -202,7 +202,7 @@ sub finalize {
         my $OPS_abspath  = $_;
         my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
         my (undef, $name, $ext) = pathname_split($OPS_pathname);
-        if (-f $OPS_abspath && $ext ne 'xhtml' && "$name.$ext" ne 'LaTeXML.cache' && $OPS_abspath ne 'content.opf') {
+        if (pathname_test_f($OPS_abspath) && $ext ne 'xhtml' && "$name.$ext" ne 'LaTeXML.cache' && $OPS_abspath ne 'content.opf') {
           push(@content, $OPS_pathname); }
       } }, $OPS_directory);
 
@@ -223,11 +223,11 @@ sub finalize {
   # Write the content.opf file to disk
   my $directory    = $$self{siteDirectory};
   my $content_path = pathname_concat($OPS_directory, 'content.opf');
-  if (-f $content_path) {
+  if (pathname_test_f($content_path)) {
     Info('note', 'content.opf', undef, 'using the manifest supplied by the user'); }
   else {
     my $OPF_FH;
-    open($OPF_FH, ">", $content_path)
+    pathname_openfile($OPF_FH, ">", $content_path)
       or Fatal('I/O', 'content.opf', undef, "Couldn't open '$content_path' for writing: $_");
     print $OPF_FH $$self{opf}->toString(1);
     close $OPF_FH; }

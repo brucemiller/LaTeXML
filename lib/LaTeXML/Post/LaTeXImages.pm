@@ -241,7 +241,7 @@ sub generateImages {
   foreach my $key (sort keys %table) {
     my $store = $doc->cacheLookup($key);
     if ($store && ($store =~ /^(.*);(\d+);(\d+);(\d+)$/)) {
-      next if -f pathname_absolute($1, $destdir); }
+      next if pathname_test_f(pathname_absolute($1, $destdir)); }
     push(@pending, $table{$key}); }
 
   Debug("LaTeXImages: $nuniq unique; " . scalar(@pending) . " new") if $LaTeXML::DEBUG{images};
@@ -255,7 +255,7 @@ sub generateImages {
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir => $workdir, name => $jobname, type => 'tex');
     my $TEX;
-    if (!open($TEX, '>', $texfile)) {
+    if (!pathname_openfile($TEX, '>', $texfile)) {
       Error('I/O', $texfile, undef, "Cant write to '$texfile'", "Response was: $!");
       return $doc; }
     my ($pre_preamble, $add_to_body) = $self->pre_preamble($doc);
@@ -288,7 +288,7 @@ sub generateImages {
 
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     # And sometimes it doesn't produce a dvi, even with 0 return code?
-    if (($ltxerr != 0) || (!-f "$workdir/$jobname.dvi")) {
+    if ($ltxerr != 0 || !pathname_test_f("$workdir/$jobname.dvi")) {
       $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images};    # Preserve junk
       Error('shell', $LATEXCMD, undef,
         "LaTeX command '$ltxcommand' failed",
@@ -302,7 +302,7 @@ sub generateImages {
     # Extract dimensions (width x height+depth) from each image from log file.
     my @dimensions = ();
     my $LOG;
-    if (open($LOG, '<', "$workdir/$jobname.log")) {
+    if (pathname_openfile($LOG, '<', "$workdir/$jobname.log")) {
       while (<$LOG>) {
         if (/^\s*LXIMAGE\s*(\d+)\s*=\s*([\+\-\d\.]+)pt\s*x\s*([\+\-\d\.]+)pt\s*\+\s*([\+\-\d\.]+)pt\s*$/) {
           $dimensions[$1] = [$2, $3, $4]; } }
@@ -334,7 +334,7 @@ sub generateImages {
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
     foreach my $entry (@pending) {
       my $src = "$workdir/" . sprintf($$self{dvicmd_output_name}, ++$index);
-      if (-f $src) {
+      if (pathname_test_f($src)) {
         my @dests = @{ $$entry{dest} };
         push(@dests, $self->generateResourcePathname($doc, $$entry{nodes}[0], undef, $$self{imagetype}))
           unless @dests;
@@ -528,10 +528,10 @@ sub convert_image {
 
 sub DESTROY {
   if (my $tmpdir = File::Spec->tmpdir()) {
-    if (-d $tmpdir && opendir(my $tmpdir_fh, $tmpdir)) {
-      my @empty_magick = grep { -z $_ } map { "$tmpdir/$_" } readdir($tmpdir_fh);
+    if (pathname_test_d($tmpdir) && pathname_opendir(my $tmpdir_fh, $tmpdir)) {
+      my @empty_magick = grep { pathname_test_z($_) } map { "$tmpdir/$_" } readdir($tmpdir_fh);
       closedir($tmpdir_fh);
-      unlink $_ foreach @empty_magick;
+      pathname_unlink($_) foreach @empty_magick;
   } }
   return; }
 

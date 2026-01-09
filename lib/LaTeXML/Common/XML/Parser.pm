@@ -12,6 +12,7 @@
 package LaTeXML::Common::XML::Parser;
 use strict;
 use warnings;
+use LaTeXML::Util::Pathname;
 use XML::LibXML;
 
 sub new {
@@ -24,7 +25,7 @@ sub parseFile {
   my ($self, $file) = @_;
   LaTeXML::Common::XML::initialize_catalogs();
   #  LaTeXML::Common::XML::initialize_input_callbacks($$self{parser});
-  if (((-s $file) || 0) > 20_000_000) {
+  if ((pathname_test_s($file) || 0) > 20_000_000) {
     $$self{parser}->set_option('huge', 1); }
   return $$self{parser}->parse_file($file); }
 
