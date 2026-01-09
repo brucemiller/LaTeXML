@@ -186,10 +186,10 @@ sub showUnexpected {
   my ($self) = @_;
   my $message = "Input is empty";
   if (my $token = peekToken($self)) {
-    my @pb = @{ $$self{pushback} }[1..-1];
+    my @pb = @{ $$self{pushback} }[1 .. -1];
     $message = "Next token is " . Stringify($token)
       . " ( == " . Stringify($STATE->lookupMeaning($token)) . ")"
-        . (@pb ? " more: " . ToString(TokensI(@pb)) : ''); }
+      . (@pb ? " more: " . ToString(TokensI(@pb)) : ''); }
   return $message; }
 
 sub show_pushback {
@@ -328,7 +328,7 @@ sub readToken {
 # This might be needed in more places?
 sub peekToken {
   my ($self) = @_;
-  local $LaTeXML::ALIGN_STATE = 1000000; # Inhibit readToken from processing {}!!!
+  local $LaTeXML::ALIGN_STATE = 1000000;    # Inhibit readToken from processing {}!!!
   if (my $token = readToken($self)) {
     unshift(@{ $$self{pushback} }, $token);
     return $token; }
@@ -453,9 +453,6 @@ sub readBalanced {
   my ($token, $cc, $defn, $atoken, $atype, $ahidden);
   # Inlined readToken (we'll keep comments in the result)
   while (1) {
-    if (@{ $$self{pending_comments} }) {
-      push(@tokens, @{ $$self{pending_comments} });
-      $$self{pending_comments} = []; }
     # Examine pushback first
     while (($token = shift(@{ $$self{pushback} })) && $CATCODE_HOLD[$cc = $$token[1]]) {
       if    ($cc == CC_COMMENT) { push(@tokens, $token); }
