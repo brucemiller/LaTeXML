@@ -89,6 +89,7 @@ sub outerWrapper {
     qw(about resource property rel rev typeof datatype content);
   my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
       class   => $math->getAttribute('class'),
+      intent  => $math->getAttribute('intent'),
       alttext => $math->getAttribute('tex'),
 #### Handy for debugging math
 ###      title => $math->getAttribute('text'),
@@ -353,6 +354,10 @@ sub pmml {
   # Associate the generated node with the source XMath node.
   if (my $role = _getattr($refr, $node, 'role')) {
     $$result[1]{_role} = $role; }
+  if (my $intent = _getattr($refr, $node, 'intent')) {
+    $$result[1]{intent} = $intent; }
+  if (my $arg = _getattr($refr, $node, 'arg')) {
+    $$result[1]{arg} = $arg; }
   $LaTeXML::Post::MATHPROCESSOR->associateNode($result, $node);
   return $result; }
 
