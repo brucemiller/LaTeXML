@@ -37,22 +37,23 @@ use LaTeXML::Package;
 # Our implementation strategy is similar, but we split the \institution into several
 # ltx:note's. We check to see if there is an ltx:creator with a footnote mark
 # with the same mark number, and copy the institute information into that creator element
-# as an ltx:contact(with @role='institute').
+# as an ltx:contact(with @role='affiliation').
 
 # add optinal argument for OmniBus use
 DefMacro('\author[]{}', sub {
     map { (T_CS('\lx@author'), T_BEGIN, @$_, T_END) } SplitTokens($_[2], T_CS('\and'), T_OTHER(',')); });
 
-DefMacro('\@institutemark{}', '\lx@contact{institutemark}{#1}');
-
 # \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
-DefConstructor('\@@@inst{}',
-  "^<ltx:contact role='institutemark' _mark='#1'>#1</ltx:contact>"
+# This adds ltx:contact(s) to the ltx:creator; arg is marks to connect to \institute
+DefConstructor('\lx@add@creator@marks@@{}',
+  "^<ltx:contact role='affiliationmark' _mark='#1'>#1</ltx:contact>"
     . "<ltx:contact role='emailmark' _mark='#1'>#1</ltx:contact>");
-DefMacro('\@inst{}', '\@add@to@frontmatter{ltx:creator}{\@@@inst{#1}}');
-DefMacro('\inst{}', sub {
-    map { (T_CS('\@inst'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_OTHER(',')); });
-
+DefMacro('\lx@add@creator@marks@{}',
+  '\@add@to@frontmatter{ltx:creator}{\lx@add@creator@marks@@{#1}}');
+DefMacro('\lx@add@creator@marks{}', sub {
+    map { (T_CS('\lx@add@creator@marks@'), T_BEGIN, @$_, T_END) }
+      SplitTokens($_[1], T_OTHER(',')); });
+Let('\inst',    '\lx@add@creator@marks');
 Let('\at',      '\and');    # Actually this is different than \and, but...
 Let('\iand',    '\and');
 Let('\nand',    '\and');
@@ -78,44 +79,64 @@ DefConstructor('\@in@inst@email{}',
 
 # This creates the note for each institute.
 DefConstructor('\@add@institute {}',
-  "<ltx:note role='institutetext' mark='#mark'>#1</ltx:note>",
+  "<ltx:note role='affiliationtext' mark='#mark' xml:id='#id'>#1</ltx:note>",
   bounded    => 1, beforeDigest => sub { AssignValue(inPreamble => 0); },
-  properties => sub { (mark => ToString(Expand(T_CS('\theinst')))); });
+  properties => sub {
+    my $mark = ToString(Expand(T_CS('\theinst')));
+    # Need an xmlm:id, so ltx:note can accept \label
+    (mark => $mark, id => "inst$mark"); });
 
-# Reconnecting the institute to the appropriate author:
+# Reconnecting the institute, email to the appropriate author:
 # [Handling is similar to reconnecting footnotemark & footnotetext]
-Tag('ltx:note', afterClose => \&relocateInstitute);
+# This can't work until AFTER both authors AND institute have been absorbed!
+Tag('ltx:document', afterClose => sub {
+  map { relocateInstitute($_[0], $_); } $_[0]->findnodes(".//ltx:note[\@role]"); });
 
 sub relocateInstitute {
-  my ($document, $instnode) = @_;
-  if (($instnode->getAttribute('role') || '') eq 'institutetext') {
-    if (my $mark = $instnode->getAttribute('mark')) {
-      # Find authors with same mark.
-      my @authors;
-      if (@authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@_mark='$mark']")) {
-        foreach my $author (@authors) {
-          $document->appendClone($author, $instnode->childNodes);
-          $author->setAttribute(role => 'institute');
-          $author->removeAttribute('_mark'); }
-        $instnode->parentNode->removeChild($instnode); }
-      # Not sure if this is right; find authors WITHOUT a contact mark.
-      elsif (@authors = $document->findnodes(".//ltx:creator[not(descendant::ltx:contact[\@role='institutemark'])]")) {
-        foreach my $author (@authors) {
-          $document->appendTree($author, ['ltx:contact', { role => 'institute' }, $instnode->childNodes]);
-          $instnode->parentNode->removeChild($instnode); } }
-  } }
+  my ($document, $instnode, $nopurge) = @_;
+  my $role  = $instnode->getAttribute('role') || '';
+  my $mark  = $instnode->getAttribute('mark') || '';
+  my $label = $instnode->getAttribute('labels') || '';
+  my $match = join(' or ', ($mark ? "(\@_mark='$mark')" : ()),
+                   ($label ? "(ltx:ref[\@labelref='$label'])" : ()));
+  # Perversely, can have the email note embedded within the affiliation note!
+  if(my $embedded = ($role eq 'affiliationtext')
+     && $document->findnode("ltx:note[\@role='email']", $instnode)) {
+    $embedded->setAttribute(mark => $mark);
+    $embedded->setAttribute(labels => $label);
+    relocateInstitute($document, $embedded, 1); }
+
+  if ($role eq 'affiliationtext') {
+    # Find authors with same mark or containing ltx:ref@label.
+    if (my @contacts = ($mark || $label)
+        && $document->findnodes(".//ltx:contact[\@role='affiliationmark'][$match]")) {
+      foreach my $contact (@contacts) {
+        map { $contact->removeChild($_); } $contact->childNodes;
+        $document->appendClone($contact, $instnode->childNodes);
+        $contact->setAttribute(role => 'affiliation');
+        $contact->removeAttribute('_mark'); }
+      $instnode->parentNode->removeChild($instnode); }
+    # Not sure if this is right; find authors WITHOUT a contact mark.
+    elsif (my @authors = $document->findnodes(".//ltx:creator[not(descendant::ltx:contact[\@role='affiliationmark'])]")) {
+      foreach my $author (@authors) {
+        $document->appendTree($author, ['ltx:contact', { role => 'affiliation' }, $instnode->childNodes]);
+        $instnode->parentNode->removeChild($instnode); } }
+  }
   # Or relocate email
-  if (($instnode->getAttribute('role') || '') eq 'email') {
-    if (my $mark = $instnode->getAttribute('mark')) {
-      # Find authors with same mark.
-      my @authors;
-      if (@authors = $document->findnodes(".//ltx:contact[\@role='emailmark'][\@_mark='$mark']")) {
-        foreach my $author (@authors) {
-          $document->appendClone($author, $instnode->childNodes);
-          $author->setAttribute(role => 'email');
-          $author->removeAttribute('_mark'); }
-        $instnode->parentNode->removeChild($instnode); }
-  } }
+  if ($role eq 'email') {
+    if (my @contacts = ($mark || $label)
+        && $document->findnodes(".//ltx:contact[\@role='emailmark'][$match]")) {
+      foreach my $contact (@contacts) {
+        map { $contact->removeChild($_); } $contact->childNodes;
+        $document->appendClone($contact, $instnode->childNodes);
+        $contact->setAttribute(role => 'email');
+        $contact->removeAttribute('_mark'); }
+      $instnode->parentNode->removeChild($instnode); }
+  }
+  # Any remaining ltx:contact that have the mark or label can be removed
+  if((! $nopurge) && ($mark || $label)){
+    map { $_->parentNode->removeChild($_); }
+      $document->findnodes(".//ltx:contact[$match]"); }
   return; }
 
 1;
