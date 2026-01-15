@@ -207,7 +207,7 @@
     <xsl:apply-templates/>
   </xsl:template>
 
-  <xsl:template match="ltx:note[@role='institutetext']"/>
+  <xsl:template match="ltx:note[@role='affiliationtext']"/>
 
   <xsl:template match="ltx:note[@role='thanks']">
     <p>
