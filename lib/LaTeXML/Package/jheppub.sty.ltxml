@@ -29,19 +29,40 @@ RequirePackage('epsfig');
 RequirePackage('graphicx');
 RequirePackage('inst_support');
 # \author[]{}
+# Add an author (repeated), and add ltx:contact stubs to be filled in
+# by inst_support for affiliation & email
+# optional arg is a mark identifying which affliation belongs
 DefMacro('\author[]{}',
-  '\ifx.#1.\else\@institutemark{#1}\fi'
-    . '\def\@author{#2}\lx@author{#2}', locked => 1);
+  '\def\@author{#2}\lx@author{#2}'
+  . '\ifx.#1.\else\lx@add@creator@marks{#1}\fi'
+  . '\@add@to@frontmatter{ltx:creator}{\lx@jhep@emailstub}', locked => 1);
 
+# Define the affiliation; optional arg is the mark connecting to author
 DefConstructor('\affiliation[]{}',
-  "<ltx:note role='institutetext' mark='#1'>#2</ltx:note>",
+  "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>",
   bounded => 1, beforeDigest => sub { AssignValue(inPreamble => 0); });
 
 # \note{} appears inside author?
 Let('\note', '\footnote');
 
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\emailAdd Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+NewCounter('\lx@jhep@nauthor');
+NewCounter('\lx@jhep@nemail');
+DefConstructor('\lx@jhep@emailstub',
+  "<ltx:contact role='emailmark' _mark='#mark'></ltx:contact>",
+  properties => sub {
+    StepCounter('\lx@jhep@nauthor');
+    ( mark => 'email' . ToString(CounterValue('\lx@jhep@nauthor')) ); });
+
+# \emailAdd{email}, repeated, after \author(s),
+# adds email address to each author in sequence
+# use ltx:note, rather than ltx:contact; inst_support moves these to the right place.
+DefConstructor('\lx@jhep@email{}',
+  "^ <ltx:note role='email' mark='#mark'>#1</ltx:note>",
+  properties => sub {
+    StepCounter('\lx@jhep@nemail');
+    ( mark => 'email' . ToString(CounterValue('\lx@jhep@nemail')) ); });
+DefMacro('\emailAdd Semiverbatim',
+  '\@add@to@frontmatter{ltx:creator}{\lx@jhep@email{#1}}');
 
 DefMacro('\keywordname', '\textbf{Keywords}');
 DefMacro('\keywords{}',  '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
