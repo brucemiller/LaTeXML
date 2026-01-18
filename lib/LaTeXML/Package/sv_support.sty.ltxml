@@ -82,7 +82,6 @@ DefConstructor('\acknowledgements', "<ltx:acknowledgements name='#name'>",
 DefMacro('\acknowledgement', '\acknowledgements');
 DefConstructor('\endacknowledgements', "</ltx:acknowledgements>");
 DefConstructor('\endacknowledgement',  "</ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose => 1);
 
 DefMacro('\noteaddname', 'Note added in proof');
 DefMacro('\notename',    'Note');
@@ -232,7 +231,7 @@ DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
   enterHorizontal => 1,
-  reversion => '\qed');
+  reversion       => '\qed');
 Let('\smartqed',     '\qed');
 Let('\squareforqed', '\qed');
 

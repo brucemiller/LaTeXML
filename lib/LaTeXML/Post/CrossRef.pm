@@ -129,7 +129,7 @@ sub fill_in_relations {
           $doc->addNavigation($child_rel => $child_id); }
         else {                                # Else, consider it as some sort of sidebar.
           $doc->addNavigation('sidebar' => $child_id); } }
-  } }
+    } }
   return; }
 
 sub findPreviousPage {
@@ -200,10 +200,10 @@ sub getChildPages {
 # To make it more extensible, it really should be integrated into the database?
 # Eg. "sectional" things might mark their entries specially?
 my $normaltoctypes = { map { ($_ => 1) }    # CONSTANT
-    qw (ltx:document ltx:part ltx:chapter
+    qw (ltx:document ltx:abstract ltx:part ltx:chapter
     ltx:section ltx:subsection ltx:subsubsection
     ltx:paragraph ltx:subparagraph
-    ltx:index ltx:bibliography ltx:glossary ltx:appendix) };
+    ltx:index ltx:bibliography ltx:glossary ltx:acknowledgementsltx:appendix) };
 
 sub fill_in_tocs {
   my ($self, $doc) = @_;
@@ -346,7 +346,7 @@ sub fill_in_refs {
           if (!$ref->textContent) {
             $doc->addNodes($ref, $label);    # Just to reassure (?) readers.
             $ref->setAttribute(broken => 1); }
-    } } }
+        } } }
 
     if ($id) {
       $n++;
@@ -365,7 +365,7 @@ sub fill_in_refs {
         $doc->addNodes($ref, $self->generateRef($doc, $id, $show, $is_nameref)); }
       if (my $entry = $$self{db}->lookup("ID:$id")) {
         $ref->setAttribute(stub => 1) if $entry->getValue('stub'); }
-  } }
+    } }
   Debug("Filled in $n refs") if $LaTeXML::DEBUG{crossref};
   return; }
 
@@ -384,7 +384,7 @@ sub fill_in_RDFa_refs {
             $ref->setAttribute($key . 'idref' => $id); }
           else {
             $self->note_missing('warn', "Target for $key Label", $label);
-      } } }
+          } } }
       if ($id) {
         $n++;
         if (!$ref->getAttribute($key)) {
@@ -393,7 +393,7 @@ sub fill_in_RDFa_refs {
               $ref->setAttribute($key => $url); } }
           else {
             $ref->setAttribute($key => '#' . $id); } }
-  } } }
+      } } }
   set_RDFa_prefixes($doc->getDocument, {});    # what prefixes??
   Debug("Filled in $n RDFa refs") if $LaTeXML::DEBUG{crossref};
   return; }
@@ -424,7 +424,7 @@ sub fill_in_mathlinks {
         $sym->setAttribute(href => $self->generateURL($doc, $id));
         if (my $tag = $entry->getValue('tag:short') || $entry->getValue('description')) {
           $sym->setAttribute(title => getTextContent($doc, $tag)); }
-  } } }
+      } } }
   Debug("Filled in $n math links") if $LaTeXML::DEBUG{crossref};
   return; }
 
@@ -559,7 +559,7 @@ sub make_bibcite {
       $self->note_missing('warn', 'Entry for citation', $key);
       push(@data, { key => $key, refnum => [$key], title => [$key], year => [],
           attr => { idref => $key, title => $key, class => "ltx_missing_citation" } });
-  } }
+    } }
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
   my @refs      = ();
   my $saveshow  = $show;
@@ -939,7 +939,7 @@ sub copy_resources {
       if (my $src = pathname_find($url, paths => $paths)) {    # AND if file exists there.
         my $dst = $doc->checkDestination($url);
         pathname_copy($src, $dst);
-  } } }
+      } } }
   return; }
 
 # ================================================================================

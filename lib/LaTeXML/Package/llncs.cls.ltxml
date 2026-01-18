@@ -53,7 +53,6 @@ DefConstructor('\acknowledgements', "<ltx:acknowledgements name='#name'>",
 DefMacro('\acknowledgement', '\acknowledgements');
 DefConstructor('\endacknowledgements', "</ltx:acknowledgements>");
 DefConstructor('\endacknowledgement',  "</ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose => 1);
 
 DefConstructor('\url Semiverbatim', "<ltx:ref href='#1'>#1</ltx:ref>");
 

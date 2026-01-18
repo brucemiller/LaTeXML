@@ -23,18 +23,20 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{db}       = $options{db};
   $$self{handlers} = {};
-  $self->registerHandler('ltx:document'      => \&section_handler);
-  $self->registerHandler('ltx:part'          => \&section_handler);
-  $self->registerHandler('ltx:chapter'       => \&section_handler);
-  $self->registerHandler('ltx:section'       => \&section_handler);
-  $self->registerHandler('ltx:appendix'      => \&section_handler);
-  $self->registerHandler('ltx:subsection'    => \&section_handler);
-  $self->registerHandler('ltx:subsubsection' => \&section_handler);
-  $self->registerHandler('ltx:paragraph'     => \&section_handler);
-  $self->registerHandler('ltx:subparagraph'  => \&section_handler);
-  $self->registerHandler('ltx:bibliography'  => \&section_handler);
-  $self->registerHandler('ltx:index'         => \&section_handler);
-  $self->registerHandler('ltx:glossary'      => \&section_handler);
+  $self->registerHandler('ltx:document'         => \&section_handler);
+  $self->registerHandler('ltx:abstract'         => \&abstract_handler);
+  $self->registerHandler('ltx:part'             => \&section_handler);
+  $self->registerHandler('ltx:chapter'          => \&section_handler);
+  $self->registerHandler('ltx:section'          => \&section_handler);
+  $self->registerHandler('ltx:appendix'         => \&section_handler);
+  $self->registerHandler('ltx:subsection'       => \&section_handler);
+  $self->registerHandler('ltx:subsubsection'    => \&section_handler);
+  $self->registerHandler('ltx:paragraph'        => \&section_handler);
+  $self->registerHandler('ltx:subparagraph'     => \&section_handler);
+  $self->registerHandler('ltx:bibliography'     => \&section_handler);
+  $self->registerHandler('ltx:index'            => \&section_handler);
+  $self->registerHandler('ltx:glossary'         => \&section_handler);
+  $self->registerHandler('ltx:acknowledgements' => \&ack_handler);
 
   $self->registerHandler('ltx:table'   => \&captioned_handler);
   $self->registerHandler('ltx:figure'  => \&captioned_handler);
@@ -293,6 +295,34 @@ sub section_handler {
       stub     => orNull($node->getAttribute('stub')));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
+
+sub abstract_handler {
+  my ($self, $doc, $node, $tag, $parent_id) = @_;
+  my $id = $node->getAttribute('xml:id');
+  if ($id) {
+    my $name = $node->getAttribute('name') || "Abstract";
+    $$self{db}->register("ID:$id",
+      $self->addCommon($doc, $node, $tag, $parent_id),
+      primary  => 1,
+      title    => $name,
+      toctitle => $name,
+      children => []);
+    $self->addAsChild($id, $parent_id); }
+  return; }
+
+sub ack_handler {
+  my ($self, $doc, $node, $tag, $parent_id) = @_;
+  my $id = $node->getAttribute('xml:id');
+  if ($id) {
+    my $name = $node->getAttribute('name') || "Acknowledgements";
+    $$self{db}->register("ID:$id",
+      $self->addCommon($doc, $node, $tag, $parent_id),
+      primary  => 1,
+      title    => $name,
+      toctitle => $name,
+      children => []);
+    $self->addAsChild($id, $parent_id); }
   return; }
 
 sub captioned_handler {

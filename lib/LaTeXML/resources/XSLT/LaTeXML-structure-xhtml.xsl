@@ -306,7 +306,7 @@
     <func:result>
       <xsl:choose>
         <xsl:when test="$name = 'document'">1</xsl:when>
-        <xsl:when test="$name = 'part'">
+        <xsl:when test="$name = 'part' or $name = 'abstract'">
           <!-- reserve level 1 for document if present, EVEN IF it has no title -->
           <xsl:value-of select="f:seclev-aux('document')+number(boolean(//ltx:document))"/>
         </xsl:when>
@@ -343,7 +343,8 @@
         <!-- Backmatter elements are at the same level as either chapter (eg.book) or section.
              But it's tricky to detect that here -->
         <xsl:when test="$name = 'appendix' or $name = 'index'
-                        or $name = 'glossary' or $name = 'bibliography'">
+                        or $name = 'glossary' or $name = 'bibliography'
+                        or $name = 'acknowledgements'">
           <!-- if there are chapters, or sections within appendices,
                assume chapter-level backmatter -->
           <xsl:value-of

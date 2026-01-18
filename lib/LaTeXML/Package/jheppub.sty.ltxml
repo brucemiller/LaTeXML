@@ -57,7 +57,6 @@ DefMacro('\acknowledgmentsname', 'Acknowledgements');
 DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",
   properties => sub { (name => Digest(T_CS('\acknowledgmentsname'))); });
 DefConstructor('\endacknowledgments', "</ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose => 1);
 
 DefConditional('\ifaffil',         undef);
 DefConditional('\ifnotoc',         undef);
