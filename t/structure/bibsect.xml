@@ -15,7 +15,7 @@
     <para xml:id="S1.p1">
       <p>some text <cite class="ltx_citemacro_cite">[<bibref bibrefs="Lamport:1994" inlist="bu1" separator="," yyseparator=","/>]</cite> more text more citations</p>
     </para>
-    <bibliography bibstyle="alpha" citestyle="AY" files="lit" lists="bu1" sort="true" xml:id="bib">
+    <bibliography bibstyle="alpha" citestyle="AY" files="lit" inlist="toc" lists="bu1" sort="true" xml:id="bib">
       <title>References</title>
     </bibliography>
     <para xml:id="S1.p2">
@@ -32,11 +32,11 @@
     <para xml:id="S2.p1">
       <p>some text <cite class="ltx_citemacro_cite">[<bibref bibrefs="Knuth:1991" inlist="bibliography bu2" separator="," yyseparator=","/>]</cite> more text more citations</p>
     </para>
-    <bibliography citestyle="numbers" files="lit" lists="bu2" xml:id="biba">
+    <bibliography citestyle="numbers" files="lit" inlist="toc" lists="bu2" xml:id="biba">
       <title>References</title>
     </bibliography>
   </section>
-  <bibliography bibstyle="alpha" citestyle="AY" files="lit" xml:id="bibb">
+  <bibliography bibstyle="alpha" citestyle="AY" files="lit" inlist="toc" xml:id="bibb">
     <title>References</title>
   </bibliography>
 </document>
