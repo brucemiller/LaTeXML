@@ -203,7 +203,7 @@ my $normaltoctypes = { map { ($_ => 1) }    # CONSTANT
     qw (ltx:document ltx:abstract ltx:part ltx:chapter
     ltx:section ltx:subsection ltx:subsubsection
     ltx:paragraph ltx:subparagraph
-    ltx:index ltx:bibliography ltx:glossary ltx:acknowledgementsltx:appendix) };
+    ltx:index ltx:bibliography ltx:glossary ltx:acknowledgements ltx:appendix) };
 
 sub fill_in_tocs {
   my ($self, $doc) = @_;
