@@ -47,7 +47,7 @@
       <permissions>
         <copyright-statement>unknown</copyright-statement>
       </permissions>
-      <abstract>
+      <abstract id="abstract1">
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
       </abstract>
       <kwd-group>
@@ -63,7 +63,7 @@
       <p id="S1.p1">As discussed in [<xref rid="bib.bib1">AS64</xref>],
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
       <disp-formula id="S1.E1">
-        <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S1.E1.m1" alttext="a+b," display="block">
+        <mml:math id="S1.E1.m1" alttext="a+b," display="block">
           <mml:mrow>
             <mml:mrow>
               <mml:mi>a</mml:mi>
@@ -75,7 +75,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </mml:math>
       </disp-formula>
       <disp-formula id="S1.E2">
-        <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S1.E2.m1" alttext="c+d," display="block">
+        <mml:math id="S1.E2.m1" alttext="c+d," display="block">
           <mml:mrow>
             <mml:mrow>
               <mml:mi>c</mml:mi>
@@ -103,12 +103,12 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
 <tbody>
 <tr>
 <th>a</th>
-<td><inline-formula><mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S1.T1.m1" alttext="x" display="inline"><mml:mi>x</mml:mi></mml:math></inline-formula></td>
-<td><inline-formula><mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S1.T1.m2" alttext="x^{2}" display="inline"><mml:msup><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></inline-formula></td></tr>
+<td><inline-formula><mml:math id="S1.T1.m1" alttext="x" display="inline"><mml:mi>x</mml:mi></mml:math></inline-formula></td>
+<td><inline-formula><mml:math id="S1.T1.m2" alttext="x^{2}" display="inline"><mml:msup><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></inline-formula></td></tr>
 <tr>
 <th>b</th>
-<td><inline-formula><mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S1.T1.m3" alttext="y^{2}" display="inline"><mml:msup><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></inline-formula></td>
-<td><inline-formula><mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S1.T1.m4" alttext="y" display="inline"><mml:mi>y</mml:mi></mml:math></inline-formula></td></tr>
+<td><inline-formula><mml:math id="S1.T1.m3" alttext="y^{2}" display="inline"><mml:msup><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math></inline-formula></td>
+<td><inline-formula><mml:math id="S1.T1.m4" alttext="y" display="inline"><mml:mi>y</mml:mi></mml:math></inline-formula></td></tr>
 </tbody>
 </table></table-wrap>
       <p>
@@ -169,7 +169,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <p id="S2.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
       <p id="S2.p2">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
       <disp-formula id="S2.Ex1">
-        <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.Ex1.m1" alttext="a=b" display="block">
+        <mml:math id="S2.Ex1.m1" alttext="a=b" display="block">
           <mml:mrow>
             <mml:mi>a</mml:mi>
             <mml:mo>=</mml:mo>
@@ -178,7 +178,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </mml:math>
       </disp-formula>
       <disp-formula id="S2.E1">
-        <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E1.m1" alttext="a=b" display="block">
+        <mml:math id="S2.E1.m1" alttext="a=b" display="block">
           <mml:mrow>
             <mml:mi>a</mml:mi>
             <mml:mo>=</mml:mo>
@@ -187,7 +187,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </mml:math>
       </disp-formula>
       <disp-formula id="S2.E2">
-        <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E2.m1" alttext="\begin{split}a&amp;=b+c-d\\&#10;&amp;\quad+e-f\\&#10;&amp;=g+h\\&#10;&amp;=i\end{split}" display="block">
+        <mml:math id="S2.E2.m1" alttext="\begin{split}a&amp;=b+c-d\\&#10;&amp;\quad+e-f\\&#10;&amp;=g+h\\&#10;&amp;=i\end{split}" display="block">
           <mml:mtable columnspacing="0pt" displaystyle="true" rowspacing="0pt">
             <mml:mtr>
               <mml:mtd class="ltx_align_right" columnalign="right">
@@ -250,7 +250,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </mml:math>
       </disp-formula>
       <disp-formula id="S2.E3">
-        <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E3.m1" alttext="a+b+c+d+e+f\\&#10;+i+j+k+l+m+n" display="block">
+        <mml:math id="S2.E3.m1" alttext="a+b+c+d+e+f\\&#10;+i+j+k+l+m+n" display="block">
           <mml:mtable displaystyle="true" rowspacing="0pt">
             <mml:mtr>
               <mml:mtd class="ltx_align_left" columnalign="left">
@@ -294,7 +294,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </disp-formula>
       <disp-formula-group id="S3.EGx1">
         <disp-formula id="S2.E4">
-          <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E4.m1" alttext="\displaystyle a_{1}=b_{1}+c_{1}" display="block">
+          <mml:math id="S2.E4.m1" alttext="\displaystyle a_{1}=b_{1}+c_{1}" display="block">
             <mml:mrow>
               <mml:msub>
                 <mml:mi>a</mml:mi>
@@ -316,7 +316,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </mml:math>
         </disp-formula>
         <disp-formula id="S2.E5">
-          <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E5.m1" alttext="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" display="block">
+          <mml:math id="S2.E5.m1" alttext="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" display="block">
             <mml:mrow>
               <mml:msub>
                 <mml:mi>a</mml:mi>
@@ -354,7 +354,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </disp-formula-group>
       <disp-formula-group id="S3.EGx2">
         <disp-formula id="S2.E6">
-          <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E6.m3" alttext="\displaystyle a_{1}=b_{1}+c_{1}" display="inline">
+          <mml:math id="S2.E6.m3" alttext="\displaystyle a_{1}=b_{1}+c_{1}" display="inline">
             <mml:mrow>
               <mml:msub>
                 <mml:mi>a</mml:mi>
@@ -376,7 +376,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </mml:math>
         </disp-formula>
         <disp-formula id="S2.E7">
-          <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E7.m3" alttext="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" display="inline">
+          <mml:math id="S2.E7.m3" alttext="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" display="inline">
             <mml:mrow>
               <mml:msub>
                 <mml:mi>a</mml:mi>
@@ -415,7 +415,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <disp-formula-group id="S3.EGx3">
         <disp-formula-group id="S2.E8">
           <disp-formula>
-            <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E8.m5" alttext="\displaystyle a_{11}=b_{11}" display="inline">
+            <mml:math id="S2.E8.m5" alttext="\displaystyle a_{11}=b_{11}" display="inline">
               <mml:mrow>
                 <mml:msub>
                   <mml:mi>a</mml:mi>
@@ -430,7 +430,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
             </mml:math>
           </disp-formula>
           <disp-formula>
-            <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E8.m6" alttext="\displaystyle a_{12}=b_{12}" display="inline">
+            <mml:math id="S2.E8.m6" alttext="\displaystyle a_{12}=b_{12}" display="inline">
               <mml:mrow>
                 <mml:msub>
                   <mml:mi>a</mml:mi>
@@ -447,7 +447,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </disp-formula-group>
         <disp-formula-group id="S2.E9">
           <disp-formula>
-            <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E9.m5" alttext="\displaystyle a_{21}=b_{21}" display="inline">
+            <mml:math id="S2.E9.m5" alttext="\displaystyle a_{21}=b_{21}" display="inline">
               <mml:mrow>
                 <mml:msub>
                   <mml:mi>a</mml:mi>
@@ -462,7 +462,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
             </mml:math>
           </disp-formula>
           <disp-formula>
-            <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E9.m6" alttext="\displaystyle a_{22}=b_{22}+c_{22}" display="inline">
+            <mml:math id="S2.E9.m6" alttext="\displaystyle a_{22}=b_{22}+c_{22}" display="inline">
               <mml:mrow>
                 <mml:msub>
                   <mml:mi>a</mml:mi>
@@ -487,7 +487,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </disp-formula-group>
       <p>Some text</p>
       <disp-formula id="S2.E10">
-        <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.E10.m1" alttext="a=\text{something}" display="block">
+        <mml:math id="S2.E10.m1" alttext="a=\text{something}" display="block">
           <mml:mrow>
             <mml:mi>a</mml:mi>
             <mml:mo>=</mml:mo>
@@ -512,7 +512,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <disp-formula-group id="S3.EGx4">
         <disp-formula-group id="S2.Ex2">
           <disp-formula>
-            <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.Ex2.m5" alttext="\displaystyle a_{11}=b_{11}" display="inline">
+            <mml:math id="S2.Ex2.m5" alttext="\displaystyle a_{11}=b_{11}" display="inline">
               <mml:mrow>
                 <mml:msub>
                   <mml:mi>a</mml:mi>
@@ -527,7 +527,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
             </mml:math>
           </disp-formula>
           <disp-formula>
-            <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.Ex2.m6" alttext="\displaystyle a_{12}=b_{12}" display="inline">
+            <mml:math id="S2.Ex2.m6" alttext="\displaystyle a_{12}=b_{12}" display="inline">
               <mml:mrow>
                 <mml:msub>
                   <mml:mi>a</mml:mi>
@@ -544,7 +544,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </disp-formula-group>
         <disp-formula-group id="S2.Ex3">
           <disp-formula>
-            <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.Ex3.m5" alttext="\displaystyle a_{21}=b_{21}" display="inline">
+            <mml:math id="S2.Ex3.m5" alttext="\displaystyle a_{21}=b_{21}" display="inline">
               <mml:mrow>
                 <mml:msub>
                   <mml:mi>a</mml:mi>
@@ -559,7 +559,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
             </mml:math>
           </disp-formula>
           <disp-formula>
-            <mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML" id="S2.Ex3.m6" alttext="\displaystyle a_{22}=b_{22}+c_{22}" display="inline">
+            <mml:math id="S2.Ex3.m6" alttext="\displaystyle a_{22}=b_{22}+c_{22}" display="inline">
               <mml:mrow>
                 <mml:msub>
                   <mml:mi>a</mml:mi>
@@ -605,7 +605,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
   </body>
   <back>
     <ack>
-      <p>My Mommy.</p>
+      <p id="acknowledgements1">My Mommy.</p>
     </ack>
     <ref-list>
       <title>References</title>

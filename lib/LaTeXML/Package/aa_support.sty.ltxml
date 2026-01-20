@@ -135,7 +135,7 @@ DefConstructor('\endacknowledgements', "</ltx:acknowledgements>");
 DefConstructor('\acknowledgement', "<ltx:acknowledgements name='#name'>",
   properties => sub { (name => Digest(T_CS('\acknowledgmentsname'))); });
 DefConstructor('\endacknowledgement', "</ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose => 1);
+
 DefMacro('\acknowledgmentsname', 'Acknowledgements');
 DefMacro('\ackname',             'Acknowledgements');
 

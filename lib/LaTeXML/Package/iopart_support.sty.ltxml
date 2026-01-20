@@ -248,7 +248,6 @@ DefMacro('\endrefs',    '\end{thebibliography}');
 
 DefConstructor('\ack',  "<ltx:acknowledgements>");             # name?
 DefConstructor('\ackn', "<ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose => 1);
 
 #======================================================================
 # Abbreviations

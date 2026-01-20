@@ -61,7 +61,6 @@ DefMacro('\keywords{}',   '\@add@frontmatter{ltx:keywords}{#1}');
 DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",
   properties => sub { (name => Digest(T_CS('\acknowlname'))); });
 DefConstructor('\endacknowledgments', "</ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose => 1);
 
 #======================================================================
 DefPrimitiveI('\hash', undef, '#');
@@ -133,7 +132,7 @@ DefEnvironment('{floatingtable}[]',
 DefConstructor('\href Semiverbatim  Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
   enterHorizontal => 1,
-  properties => sub { (href => ComposeURL((LookupValue('BASE_URL') || ''), $_[1])); });
+  properties      => sub { (href => ComposeURL((LookupValue('BASE_URL') || ''), $_[1])); });
 
 DefMacro('\JHEPspecialurl Semiverbatim', '');    # ???
 DefMacro('\base Semiverbatim',           '');
@@ -310,5 +309,3 @@ DefMacro('\acknowlname',    'Acknowledgments');
 1;
 
 __END__
-
-

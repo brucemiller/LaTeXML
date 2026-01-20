@@ -366,7 +366,7 @@ sub convert {
           $serialized = Encode::encode('UTF-8', $serialized); }
       } else {    # fragment case
         $serialized = $result->toString(1, 1);
-    } }
+      } }
     elsif ($$opts{format} =~ /^html/) {
       if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {
         $serialized = $result->getDocument->toStringHTML; }
@@ -666,8 +666,8 @@ sub convert_post {
 sub check_TOC {
   my ($self, $document) = @_;
   if (!$document->findnode('//ltx:TOC[@lists="toc"]')) {
-    my @s = (qw(ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
-        ltx:paragraph ltx:subparagraph ltx:appendix ltx:index ltx:bibliography));
+    my @s = (qw(ltx:abstract ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
+        ltx:paragraph ltx:subparagraph ltx:appendix ltx:index ltx:acknowledgements ltx:bibliography));
     $document->prependNodes($document->getDocumentElement,
       ['ltx:TOC', { lists => 'toc', scope => 'global',
           select => join(' | ', @s), class => 'ltx_nodisplay' }]); }

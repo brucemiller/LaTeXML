@@ -226,7 +226,6 @@ DefEnvironment('{interactive}{}{}', '#body');
 # 2.9 Acknowledgements
 
 # acts like \section{Acknowledgements}, rather than container.
-Tag("ltx:acknowledgements", autoClose => 1);
 DefConstructor('\acknowledgements', "<ltx:acknowledgements>");
 Let('\acknowledgments', '\acknowledgements');
 
