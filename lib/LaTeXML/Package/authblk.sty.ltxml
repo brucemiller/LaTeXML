@@ -36,59 +36,86 @@ NewCounter('authors');
 NewCounter('affil');
 NewCounter('@affil');
 
-DefMacro('\the@affil', 'affil\arabic{@affil}');
+# DefMacro('\the@affil', 'affil\arabic{@affil}');
+#     return map { Invocation(T_CS('\lx@ab@author'), $_[1], Tokens(@$_)) }
+#       SplitTokens($_[2], T_CS('\and'), T_OTHER(',')); });
+
+# DefMacro('\lx@ab@author[]{}',
+#   '\@add@frontmatter{ltx:creator}[role=author]'
+#     . '{\@personname{#2}\lx@split@authormark{#1}}');
+
+# # Preserve the order, where we add an "affiliationmark" element
+# # for each numeric mark in the \author[] optional argument
+# DefMacro('\lx@split@authormark{}', sub {
+#     if (my @marks = split(/\s*,\s*/, ToString($_[1]))) {
+#       return (map { T_CS('\lx@authormark'), T_OTHER($_) } @marks); }
+#     else {
+#       return (T_CS('\lx@authormark'), T_CS('\the@affil')); } });
+
+# DefConstructor('\lx@authormark{}',
+#   "^?#mark(<ltx:contact role='affiliationmark' _mark='#mark'></ltx:contact>)()",
+#   properties => sub { (mark => ToString($_[1])); });
+
+# DefConstructor('\affil[]{}',
+#   "^?#2(<ltx:note mark='#mark' role='affiliationtext'>#2</ltx:note>)()",
+#   afterDigest => sub {
+#     my ($stomach, $whatsit) = @_;
+#     my $mark = $whatsit->getArg(1);
+#     if (!defined $mark) {
+#       $mark = Digest(T_CS('\the@affil'));    # get mark
+#       StepCounter('@affil'); }               # and THEN step counter!
+#     $whatsit->setProperty(mark => ToString($mark));
+#     return; });
+
+# Tag('ltx:document', afterClose => \&authblkRelocateAffil);
+
+# sub authblkRelocateAffil {
+#   my ($document)   = @_;
+#   my @author_nodes = $document->findnodes(".//ltx:contact[\@role='affiliationmark' and \@_mark]");
+#   my @affil_nodes  = $document->findnodes(".//ltx:note[\@role='affiliationtext']");
+#   # first, unbind all affiliation text nodes - they get reparented or discarded.
+#   my %mark_to_affil = ();
+#   for my $affil_node (@affil_nodes) {
+#     $affil_node->parentNode->removeChild($affil_node);
+#     # if we get conflicting marks -- which we shouldn't
+#     # the last node wins
+#     if (my $mark = $affil_node->getAttribute('mark')) {
+#       $mark_to_affil{$mark} = $affil_node; } }
+#   # Now process all affiliationmarks
+#   for my $author_node (@author_nodes) {
+#     $author_node->setAttribute(role => 'affiliation');
+#     my $mark = $author_node->getAttribute('_mark') || '';
+#     if (my $affil_node = $mark_to_affil{$mark}) {
+#       $document->appendClone($author_node, $affil_node->childNodes); } }
+#   return; }
+
+# Distinguish THREE distinct use patterns!
+#   \author{auth1\\affil1 \and ...}
+#   \author[a]{auth1} ... \affil[a]{afill1} ...
+#   \author{auth1}\afill{afill1} ...
 DefMacro('\author[]{}', sub {
-    return map { Invocation(T_CS('\lx@ab@author'), $_[1], Tokens(@$_)) }
-      SplitTokens($_[2], T_CS('\and'), T_OTHER(',')); });
-
-DefMacro('\lx@ab@author[]{}',
-  '\@add@frontmatter{ltx:creator}[role=author]'
-    . '{\@personname{#2}\lx@split@authormark{#1}}');
-
-# Preserve the order, where we add an "affiliationmark" element
-# for each numeric mark in the \author[] optional argument
-DefMacro('\lx@split@authormark{}', sub {
-    if (my @marks = split(/\s*,\s*/, ToString($_[1]))) {
-      return (map { T_CS('\lx@authormark'), T_OTHER($_) } @marks); }
+    my ($gullet, $mark, $author) = @_;
+    if ($mark) {    # Use mark attachment
+      Invocation(T_CS('\lx@authblk@author@marked'), $mark, $author); }
+    elsif (grep { $_->defined_as(T_CS('\and')) || $_->defined_as(T_CS('\And')); } $author->unlist) {
+      Invocation(T_CS('\lx@authblk@author@anded'), $author); }
     else {
-      return (T_CS('\lx@authormark'), T_CS('\the@affil')); } });
+      Invocation(T_CS('\lx@add@creator'), undef, $author); } });
 
-DefConstructor('\lx@authormark{}',
-  "^?#mark(<ltx:contact role='affiliationmark' _mark='#mark'></ltx:contact>)()",
-  properties => sub { (mark => ToString($_[1])); });
+DefMacro('\lx@authblk@author@marked{}{}', '\lx@add@creator[role=author,mark=#1]{#2}');
+DefMacro('\lx@authblk@author@anded{}',
+  '\lx@clear@creators[role=author]'
+    # Note: must keep affiliations (after \\) embedded, to simplify clear@author removal
+    . '\lx@splitting{\lx@author@and@affil}{\and,\And}{#1}');
+# NOTE: Dangling <ltx:break> in affiliation???
+DefMacro('\lx@author@and@affil{}', '\lx@author@and@affil@#1\\\\\done');
+DefMacro('\lx@author@and@affil@ Until:\\\\ Until:\\done',
+  '\ifx.#2.\lx@add@creator[role=author]{#1}'
+    . '\else\lx@add@creator[role=author]{#1\lx@add@contact[role=affiliation]{#2}}\fi');
 
-DefConstructor('\affil[]{}',
-  "^?#2(<ltx:note mark='#mark' role='affiliationtext'>#2</ltx:note>)()",
-  afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $mark = $whatsit->getArg(1);
-    if (!defined $mark) {
-      $mark = Digest(T_CS('\the@affil'));    # get mark
-      StepCounter('@affil'); }               # and THEN step counter!
-    $whatsit->setProperty(mark => ToString($mark));
-    return; });
-
-Tag('ltx:document', afterClose => \&authblkRelocateAffil);
-
-sub authblkRelocateAffil {
-  my ($document)   = @_;
-  my @author_nodes = $document->findnodes(".//ltx:contact[\@role='affiliationmark' and \@_mark]");
-  my @affil_nodes  = $document->findnodes(".//ltx:note[\@role='affiliationtext']");
-  # first, unbind all affiliation text nodes - they get reparented or discarded.
-  my %mark_to_affil = ();
-  for my $affil_node (@affil_nodes) {
-    $affil_node->parentNode->removeChild($affil_node);
-    # if we get conflicting marks -- which we shouldn't
-    # the last node wins
-    if (my $mark = $affil_node->getAttribute('mark')) {
-      $mark_to_affil{$mark} = $affil_node; } }
-  # Now process all affiliationmarks
-  for my $author_node (@author_nodes) {
-    $author_node->setAttribute(role => 'affiliation');
-    my $mark = $author_node->getAttribute('_mark') || '';
-    if (my $affil_node = $mark_to_affil{$mark}) {
-      $document->appendClone($author_node, $affil_node->childNodes); } }
-  return; }
+DefMacro('\affil[]{}',
+  '\ifx.#1.\lx@add@contact[all=1,role=affiliation]{#2}'
+    . '\else\lx@add@contact[mark=#1,role=affiliation]{#2}\fi');
 
 # we shouldn't need these, but if someone is using them low-level
 # might as well provide them
