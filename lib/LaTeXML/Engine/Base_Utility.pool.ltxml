@@ -135,6 +135,11 @@ sub andSplit {
   my ($cs, $tokens) = @_;
   return map { ($cs, T_BEGIN, @$_, T_END) } SplitTokens($tokens, T_CS('\and')); }
 
+DefMacro('\lx@splitting{}{}{}', sub {
+    my ($gullet, $op, $delimiters, $tokens) = @_;
+    my @delims = ($delimiters ? $delimiters->unlist : (T_CS('\and')));
+    return map { ($op, T_BEGIN, @$_, T_END) } SplitTokens($tokens, @delims); });
+
 sub orNull {
   return (grep { defined } @_) ? @_ : undef; }
 
@@ -206,6 +211,114 @@ DefPrimitive('\@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals {}', sub 
     return; },
   bounded => 1);
 
+# Remove all creators with given role (default author)
+DefPrimitive('\lx@clear@creators OptionalKeyVals', sub {
+    my ($stomach, $kv) = @_;
+    Debug("CLEARING creators");
+    my $frontmatter = LookupValue('frontmatter'); # $$frontmatter{ltx:creator} = List of [$tag, $attr,@content]
+    my @creators = @{ $$frontmatter{'ltx:creator'} || [] };
+    my $role     = ($kv && ToString($kv->getValue('role'))) || 'author';
+    $$frontmatter{'ltx:creator'} =
+      [grep { (!$$_[1]) || (!$$_[1]{role}) || ($$_[1]{role} ne $role); } @creators];
+    AssignMapping('num_creators', $role => 0);
+    return; });
+
+DefPrimitive('\lx@add@creator OptionalKeyVals {}', sub {
+    my ($gullet, $kv, $content) = @_;
+    my $frontmatter = LookupValue('frontmatter');
+    my $role        = ($kv && ToString($kv->getValue('role'))) || 'author';
+    my $n           = LookupMapping('num_creators', $role); $n++;
+    AssignMapping('num_creators', $role => $n);
+    my @marks = map { ToString($_); } ($kv ? $kv->getValues('mark') : ());
+    # \@add@frontmatter{ltx:creator}{$content}[_marks=>join(',',@marks), _num => $n]
+    # Inner part of \@add@frontmatter@now
+    my $inpreamble = LookupValue('inPreamble');
+    Debug("ADD creator: [" . ToString($kv) . "] " . ToString($content) . ": marks=" . join(',', @marks));
+    AssignValue(inPreamble => 0);
+    my $tag = 'ltx:creator';
+    my $entry = [$tag, { role => $role, _num => $n, _marks => join(',', @marks) }, 'place_keeper']; # (in case embedded)
+    push(@{ $$frontmatter{$tag} }, $entry);
+    $$entry[2] = DigestText(Invocation(T_CS('\@personname'), $content));   # Eventually do NOT digest!!!
+    AssignValue(inPreamble => $inpreamble);
+    return; });
+# Needs key attachment_method to describe how to find the right creator along w/labels|ids|something
+# needs better way to punt on not-yet-attached contact info
+# NOTE: And if EMBEDDED?
+# NOTE: not handling all correctly; overshoots!!!
+DefPrimitive('\lx@add@contact OptionalKeyVals {}', sub {
+    my ($gullet, $kv, $content) = @_;
+    # '\lx@add@to@frontmatter[]{ltx:creator}[#1]{#2}');
+    my $frontmatter = LookupValue('frontmatter');
+    my $inpreamble  = LookupValue('inPreamble');
+    my $role        = $kv && ToString($kv->getValue('role'));
+    my @creators    = @{ $$frontmatter{'ltx:creator'} || [] };
+    AssignValue(inPreamble => 0);
+    my @marks = map { ToString($_); } ($kv ? $kv->getValues('mark') : ());
+    my $marks = join(',', @marks);
+    my $datum = DigestText(Tokens(Invocation(T_CS('\lx@contact@'), $role, $marks, $content)));
+    my $tag   = 'ltx:creator';
+    Debug("ADD contact: [" . ToString($kv) . "] " . ToString($content) . ": marks=" . join(',', @marks));
+
+    if ($marks || !scalar(@creators)) {    # deferred until we can compare makrs
+      Debug("...defering to $marks");
+      push(@{ $$frontmatter{$tag} }, ['ltx:creator', { role => 'pending' }, $datum]); }
+    elsif ($kv && $kv->getValue('all')) {    # Add to last and any preceding w/o contacts
+      Debug("...adding to several");
+      my @c     = @creators;
+      my $added = 0;
+      while (@c) {
+        my $creator = pop(@c);
+        last if $added && $$creator[1]{_hascontact};
+        push(@$creator, $datum);
+        $added = 1;
+        $$creator[1]{_hascontact} = 1; } }
+    else {
+      Debug("...adding to last");
+      my $creator = $creators[-1];
+      my ($itag, $iattr, @stuff) = @$creator;
+      push(@$creator, $datum);
+      $$iattr{_hascontact} = 1; }
+    return; });
+DefConstructor('\lx@contact@{}{}{}',
+  "^<ltx:contact role='#1' _mark='#2'>#3</ltx:contact>");
+
+# Add another mark to the current ltx:creator by which some other ltx:contact data can be attached.
+# this should be embedded within the (eg) \author text.
+DefConstructor('\lx@add@creator@mark{}', sub {
+    my ($document, $mark) = @_;
+    if (my $creator = $document->findnode('ancestor::ltx:creator', $document->getNode)) {
+      my $marks = $creator->getAttribute('_marks') || '';
+      $mark = ToString($mark);
+      $creator->setAttribute(_marks => ($marks ? "$marks,$mark" : $mark)); } });
+
+# Find all dummy creators (role "pending") containing unattached contacts
+# and attempt to attach to the appropriate creator, based on the identifying marks.
+# NOTE: _marks vs _mark ???
+sub relocateContacts {
+  my ($document) = @_;
+  my (@creators, @pending);
+  foreach my $creator ($document->findnodes(".//ltx:creator")) {
+    if (($creator->getAttribute('role') || '') eq 'pending') {
+      push(@pending, $creator); }
+    else {
+      push(@creators, $creator); } }
+  if (@pending) {
+    my %marktable = ();    # Collect the creators that have attachment marks
+    foreach my $creator (@creators) {
+      map { $marktable{$_} = $creator; } split(',', $creator->getAttribute('_marks') || ''); }
+    foreach my $pending (@pending) {
+      foreach my $contact (element_nodes($pending)) {
+        my $mark    = $contact->getAttribute('_mark') || '';
+        my $creator = $mark && $marktable{$mark};
+        if ($creator) {
+          Debug("Moving contact for $mark: " . ToString($contact));
+          $document->appendClone($creator, $contact); }
+        else {
+          Warn('unexpected', 'ltx:contact', $document,
+            "Orphaned contact frontmatter couldn't find author for mark=$mark"); } }
+      $document->removeNode($pending); } }
+  return; }
+
 # Append a piece of data to an existing frontmatter item that is contained in <$tag>
 # If $label is given, look for an item which has label=>$label,
 # otherwise, just append to the last item in $tag.
@@ -275,6 +388,8 @@ sub insertFrontMatter {
         if ($tag eq 'ltx:note') {
           $attr ||= {};
           $$attr{class} = ($$attr{class} ? $$attr{class} . ' ' : '') . 'ltx_note_frontmatter'; }
+        Debug("INSERTING frontmatter $tag {" . join(',', map { $_ . '=' . ToString($$attr{$_}); } sort keys %$attr) . "} "
+            . join(' ', map { ToString($_); } @stuff));
         $document->openElement($tag, ($attr ? %$attr : ()),
           (scalar(@stuff) && $document->canHaveAttribute($tag, 'font')
             ? (font => $stuff[0]->getFont, _force_font => 'true') : ()));
@@ -287,6 +402,7 @@ sub insertFrontMatter {
         # To solve this in a single location: prune here!
         if (($tag ne "ltx:rdf") && !scalar($completed_node->childNodes)) {
           $document->removeNode($completed_node); } } } }
+  relocateContacts($document);
   return; }
 
 # Add FrontMatter at document begin, unless deferred to a better position.
@@ -299,10 +415,10 @@ DefConstructor('\lx@frontmatterhere', sub { insertFrontMatter($_[0]); },
     my ($stomach) = @_;
     my @boxes = ();
     if (my $frontmatter_tks = LookupValue('@at@begin@maketitle')) {
-      Let('\@add@to@frontmatter@save','\@add@to@frontmatter');
-      Let('\@add@to@frontmatter','\@add@to@frontmatter@now');
+      Let('\@add@to@frontmatter@save', '\@add@to@frontmatter');
+      Let('\@add@to@frontmatter',      '\@add@to@frontmatter@now');
       push(@boxes, $stomach->digest(Tokens(@$frontmatter_tks)));
-      Let('\@add@to@frontmatter','\@add@to@frontmatter@save');
+      Let('\@add@to@frontmatter', '\@add@to@frontmatter@save');
       AssignValue('@at@begin@maketitle', undef, 'global'); }
     AssignValue(frontmatter_deferred => 1, 'global');
     return @boxes; });
