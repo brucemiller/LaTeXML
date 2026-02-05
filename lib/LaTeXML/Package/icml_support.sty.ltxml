@@ -39,11 +39,15 @@ DefMacro('\icmlsetsymbol{}{}', '');
 DefEnvironment('{icmlauthorlist}', '#body');
 
 # \icmlauthor{author}{labels}
-DefMacro('\icmlauthor{}{}', '\author{#1}');
+#DefMacro('\icmlauthor{}{}', '\author{#1}');
+#DefMacro('\icmlauthor{}{}', '\lx@add@creator[role=autho]{#1\lx@add@creator@mark}');
+DefMacro('\icmlauthor{}{}', '\lx@add@creator[role=author,mark={#2}]{#1}');
 DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\icmladdress{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1}}');
+#DefMacro('\icmladdress{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1}}');
+DefMacro('\icmladdress[]{}', '\lx@add@contact[role=address,mark={#1}]{#2}');
 # \icmlaffiliation{label}{address}
-DefMacro('\icmlaffiliation{}{}', '');
+#DefMacro('\icmlaffiliation{}{}', '');
+DefMacro('\icmlaffiliation{}{}', '\lx@add@contact[role=affiliation,mark={#1}]{#2}');
 # \icmlcorrespondingauthor{author}{email}
 DefMacro('\icmlcorrespondingauthor{}{}', '');
 
