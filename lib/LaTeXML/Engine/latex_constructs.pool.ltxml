@@ -1111,7 +1111,8 @@ DefConstructor('\lx@author@prefix', sub {
 });
 
 DefMacro('\@author',                 '\@empty');
-DefMacro('\author[]{}',              '\def\@author{#2}\lx@make@authors@anded{#2}', locked => 1);
+#DefMacro('\author[]{}',              '\def\@author{#2}\lx@make@authors@anded{#2}', locked => 1);
+DefMacro('\author[]{}',              '\def\@author{#2}\lx@add@authors{#2}', locked => 1);
 DefMacro('\lx@make@authors@anded{}', sub { andSplit(T_CS('\lx@author'), $_[1]); });
 DefPrimitive('\ltx@authors@oneline', sub {
     AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line => 1);

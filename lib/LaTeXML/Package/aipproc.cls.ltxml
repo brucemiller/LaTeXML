@@ -71,16 +71,28 @@ RequirePackage('natbib');
 DefMacro('\layoutstyle{}', '');
 
 # keywords: address, altaddress, email
+# DefMacro('\author{} RequiredKeyVals', sub {
+#     my ($gullet, $author, $kvx) = @_;
+#     my $kv    = GetKeyVals($kvx);
+#     my @stuff = (Invocation(T_CS('\lx@author'), $author));
+#     if (my $addr = $$kv{address}) {
+#       push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('address'), $addr))); }
+#     if (my $altaddr = $$kv{altaddress}) {
+#       push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('altaddress'), $altaddr))); }
+#     if (my $email = $$kv{email}) {
+#       push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('email'), $email))); }
+#     return Tokens(@stuff); });
+
 DefMacro('\author{} RequiredKeyVals', sub {
     my ($gullet, $author, $kvx) = @_;
     my $kv    = GetKeyVals($kvx);
-    my @stuff = (Invocation(T_CS('\lx@author'), $author));
+    my @stuff = (Invocation('\lx@add@creator[role=author]{#1}', $author));
     if (my $addr = $$kv{address}) {
-      push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('address'), $addr))); }
+      push(@stuff, Invocation('\lx@add@contact[role=address]{#1}', $addr)); }
     if (my $altaddr = $$kv{altaddress}) {
-      push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('altaddress'), $altaddr))); }
+      push(@stuff, Invocation('\lx@add@contact[role=altaddress]{#1}', $altaddr)); }
     if (my $email = $$kv{email}) {
-      push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('email'), $email))); }
+      push(@stuff, Invocation('\lx@add@contact[role=email]{#1}', $email)); }
     return Tokens(@stuff); });
 
 DefMacroI('\keywordsname', undef, 'Keywords');
