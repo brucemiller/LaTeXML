@@ -63,7 +63,7 @@ sub Sc { LaTeXML::Core::State::assign_internal($STATE, 'sfcode',  $_[0], $_[1], 
 sub Lc { LaTeXML::Core::State::assign_internal($STATE, 'lccode',  $_[0], $_[1], 'global'); return; }
 sub Uc { LaTeXML::Core::State::assign_internal($STATE, 'uccode',  $_[0], $_[1], 'global'); return; }
 sub Dc { LaTeXML::Core::State::assign_internal($STATE, 'delcode', $_[0], $_[1], 'global'); return; }
-sub Im  { LaTeXML::Core::State::assign_internal($STATE, 'meaning', $_[0], $_[1], 'global'); return; }
+sub Im { LaTeXML::Core::State::assign_internal($STATE, 'meaning', $_[0], $_[1], 'global'); return; }
 sub I { LaTeXML::Core::State::assign_internal($STATE, 'meaning', $_[0]->getCSName, $_[0], 'global'); return; }
 
 sub Lt {
@@ -302,7 +302,6 @@ sub dump_parameter {
   my $spec        = $$parameter{spec};
   if ($type eq 'Plain') {
     return '$P'; }
-  $spec =~ s/\\/\\\\/g if $spec;
   # options: extra, novalue
   my $options = '';
   if ($$parameter{novalue}) {
@@ -326,7 +325,7 @@ sub E {
 sub FD {
   my ($cs, $fontID) = @_;
   return LaTeXML::Core::Definition::FontDef->new($cs, $fontID,
-     locator => $LaTeXML::LOCATOR); }
+    locator => $LaTeXML::LOCATOR); }
 
 sub CD {
   my ($cs, $mode, $value) = @_;
@@ -391,4 +390,3 @@ sub dump_primitive {
 #======================================================================
 
 1;
-
