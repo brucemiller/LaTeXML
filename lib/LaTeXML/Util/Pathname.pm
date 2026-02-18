@@ -249,11 +249,13 @@ sub pathname_mkdir {
   return unless $directory;
   $directory = pathname_canonical($directory);
   my ($volume, $dirs, $last) = File::Spec->splitpath($directory);
-  my (@dirs) = (File::Spec->splitdir($dirs), $last);
+  my (@dirs) = File::Spec->splitdir($dirs);
   for (my $i = 0 ; $i <= $#dirs ; $i++) {
     my $dir = File::Spec->catpath($volume, File::Spec->catdir(@dirs[0 .. $i]), '');
     if (!-d $dir) {
       mkdir($dir) or return; } }
+  if (!-d $directory) {
+    mkdir($directory) or return; }
   return $directory; }
 
 # copy a file, preserving attributes, if possible.
