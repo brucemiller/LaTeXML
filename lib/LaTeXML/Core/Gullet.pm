@@ -608,7 +608,8 @@ sub readMatch {
     my @matched = ();
     my $token;
     while (@tomatch && defined($token = readToken($self))
-      && push(@matched, $token) && ($token->equals($tomatch[0]))) {
+      && push(@matched, $token) && ($token->equals($tomatch[0]) ||
+        ($$token[2] && ($$token[0] eq '\special_relax') && $$token[2]->equals($tomatch[0])))) {
       shift(@tomatch);
       if ($$token[1] == CC_SPACE) {    # If this was space, SKIP any following!!!
         while (defined($token = readToken($self)) && ($$token[1] == CC_SPACE)) {
