@@ -574,8 +574,8 @@ DefMathI('\langle', undef, "\x{27E8}", role => 'OPEN', stretchy => 'false'); # L
 DefMathI('\rangle', undef, "\x{27E9}", role => 'CLOSE', stretchy => 'false'); # RIGHT-POINTING ANGLE BRACKET
 
 # Not sure these should be defined here, or latex, or even latex compat mode.
-DefMathI('\lgroup', undef, "\x{27EE}", font => { series => 'bold' }, role => 'OPEN',  stretchy => 'false');
-DefMathI('\rgroup', undef, "\x{27EF}", font => { series => 'bold' }, role => 'CLOSE', stretchy => 'false');
+DefMathI('\lgroup', undef, "\x{27EE}", role => 'OPEN',  stretchy => 'false');
+DefMathI('\rgroup', undef, "\x{27EF}", role => 'CLOSE', stretchy => 'false');
 DefMathI('\bracevert', undef, "|", font => { series => 'bold' }, role => 'VERTBAR');
 
 ## DefMath('\lmoustache',"???", font=>{series=>'bold'}, role=>'OPEN');
