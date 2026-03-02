@@ -390,7 +390,7 @@ sub setKeysExpansion {
           T_CS('\def'), T_CS('\XKV@tfam'),   T_BEGIN, T_END,
           T_CS('\def'), T_CS('\XKV@header'), T_BEGIN, T_END,
           T_CS('\def'), T_CS('\XKV@tkey'),   T_BEGIN, T_END) if $setInternals;
-  } } }
+      } } }
 
   # and assign the skipmissing macro with the other keys
   push(@tokens, T_CS('\def'), $rmmacro, T_BEGIN, @rmtokens, T_END) if $rmmacro;
@@ -466,8 +466,29 @@ sub revertKeyVal {
   push(@tokens, Explode($key));
   # write the default (if applicable)
   if (!$useDefault && $value) {
-    push(@tokens, T_OTHER('='), ($keytype ? $keytype->revert($value) : Revert($value))); }
+    push(@tokens, T_OTHER('='),
+      $self->rebrace(Tokens($keytype ? $keytype->revert($value) : Revert($value)))); }
   return @tokens; }
+
+# when reverting a KeyVals value, we may need to wrap in {}
+# eg. if a "," appears outside of any bracing
+# Other cases?
+sub rebrace {
+  my ($self, $tokens) = @_;
+  my $level       = 0;
+  my $needs_brace = 0;
+  foreach my $t ($tokens->unlist) {
+    my $cc = $$t[1];    # INLINE
+    $level++ if $cc == CC_BEGIN;
+    if ($cc == CC_END) {
+      $level--;
+      # Note that '{ }} {' is still unbalanced
+      # even though the left and right braces match in count.
+      last if $level < 0; }
+    elsif (($level <= 0) && ($cc == CC_OTHER) && ($$t[0] eq ',')) {    # Outer comma?
+      $needs_brace = 1;
+      last; } }
+  return ($needs_brace ? Tokens(T_BEGIN, $tokens, T_END) : $tokens); }
 
 # TODO: ????
 sub unlist {
