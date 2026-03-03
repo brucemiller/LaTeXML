@@ -38,18 +38,15 @@ DefMacro('\icmlsetsymbol{}{}', '');
 
 DefEnvironment('{icmlauthorlist}', '#body');
 
-# \icmlauthor{author}{labels}
-#DefMacro('\icmlauthor{}{}', '\author{#1}');
-#DefMacro('\icmlauthor{}{}', '\lx@add@creator[role=autho]{#1\lx@add@creator@mark}');
+# \icmlauthor{author}{marks}   One per author; marks used to connect to affiliation
 DefMacro('\icmlauthor{}{}', '\lx@add@creator[role=author,mark={#2}]{#1}');
-DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-#DefMacro('\icmladdress{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1}}');
-DefMacro('\icmladdress[]{}', '\lx@add@contact[role=address,mark={#1}]{#2}');
-# \icmlaffiliation{label}{address}
-#DefMacro('\icmlaffiliation{}{}', '');
+# \icmlaffiliation{mark}{address}  provides affiliation for author with same mark
 DefMacro('\icmlaffiliation{}{}', '\lx@add@contact[role=affiliation,mark={#1}]{#2}');
+DefMacro('\icmladdress[]{}',     '\lx@add@contact[role=address,mark={#1}]{#2}');       # deprecated
+
 # \icmlcorrespondingauthor{author}{email}
-DefMacro('\icmlcorrespondingauthor{}{}', '');
+# Attempt to use author as a matching mark to connect to author (should be a fuzzy match?)
+DefMacro('\icmlcorrespondingauthor{}{}', '\lx@add@contact[mark={fuzzy:#1},role=email,name={Correspondence to: }]{#2}');
 
 DefMacro('\printAffiliationsAndNotice{}', '');
 DefMacro('\icmlEqualContribution',        'Equal contribution');

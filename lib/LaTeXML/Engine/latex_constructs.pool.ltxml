@@ -1050,8 +1050,10 @@ DefRegister('\baselinestretch' => Dimension(0));
 
 # See frontmatter support in TeX.ltxml
 Let('\@title', '\@empty');
-DefMacro('\title[]{}', '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
-    . '\def\@title{#2}\@add@frontmatter{ltx:title}{#2}', locked => 1);
+DefMacro('\title[]{}',
+  '\gdef\@shorttitle{#1}\gdef\@title{#2}'
+    . '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
+    . '\@add@frontmatter{ltx:title}{#2}');
 
 DefMacro('\@date', '\@empty');
 DefMacro('\date{}',
@@ -1112,10 +1114,11 @@ DefConstructor('\lx@author@prefix', sub {
       $document->setAttribute($node, before => DigestText(T_CS('\lx@author@sep'))); }
 });
 
-DefMacro('\@author',                 '\@empty');
-#DefMacro('\author[]{}',              '\def\@author{#2}\lx@make@authors@anded{#2}', locked => 1);
-DefMacro('\author[]{}',              '\def\@author{#2}\lx@add@authors{#2}', locked => 1);
-DefMacro('\lx@make@authors@anded{}', sub { andSplit(T_CS('\lx@author'), $_[1]); });
+DefMacro('\@author', '\@empty');
+DefMacro('\author[]{}',
+  '\def\@shortauthor{#1}\def\@author{#2}'
+    . '\lx@add@creator[role=author]{#2}', locked => 1);
+
 DefPrimitive('\ltx@authors@oneline', sub {
     AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line => 1);
     return; });

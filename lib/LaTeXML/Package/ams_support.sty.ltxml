@@ -76,8 +76,9 @@ RequirePackage('makeidx');
 # #======================================================================
 # # Sec. 4. Top Matter
 # # FrontMatter:
-DefMacro('\shorttitle{}',   '\@add@frontmatter{ltx:toctitle}{#1}');
-DefMacro('\shortauthor{}',  Tokens());                                # Not useful?
+DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\shortauthor{}', Tokens());                                # Not useful?
+# these next three SHOULD accumulate formatted list of authors, etc.
 DefMacro('\authors{}',      Tokens());
 DefMacro('\shortauthors{}', Tokens());
 DefMacro('\addresses{}',    Tokens());
@@ -85,55 +86,47 @@ DefMacro('\publname{}',     Tokens());
 DefMacro('\publname{}',     Tokens());
 
 DefMacro('\title[]{}',
-  '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
+  '\gdef\@shorttitle{#1}\gdef\@title{#2}'
+    . '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
     . '\@add@frontmatter{ltx:title}{#2}');
 
 DefMacro('\lx@author@sep',  ',\ ');
-DefMacro('\lx@author@conj', '\ and\ ');                               # \@@and
+DefMacro('\lx@author@conj', '\ and\ ');    # \@@and
 
+# \author[shortname]{name} Use one \author per author
+# followed by whever contact information applies to that author.
 # What to do with shortauthor ?
 DefMacro('\author[]{}',
-  '\if.#1.\else\def\shortauthor{#1}\fi'
-  . '\def\@author{#2}\lx@add@creator[role=author]{#2}');
+  '\def\@shortauthor{#1}\def\@author{#2}'
+    . '\lx@add@creator[role=author]{#2}');
 
 DefMacroI('\datename', undef, '\textit{Date}:');
 
-DefMacro('\contrib[]{}',
- '\lx@add@creator[role=contributor, name={#1}]{#2}');
-
-DefMacro('\@commby','Communicated by');
-DefMacro('\commby{}',
- '\lx@add@creator[role=communicator,name={\@commby}]{#1}');
-
+DefMacro('\@commby',       'Communicated by');
 DefMacro('\curraddrname',  '{\itshape Current address}');
 DefMacro('\emailaddrname', '{\itshape Email address}');
 DefMacro('\urladdrname',   '{\itshape URL}');
+DefMacro('\translname',    'Translated by');
+DefMacro('\keywordsname',  'Key words and phrases');
 
-DefMacro('\address[]{}',
-  '\lx@add@contact[role=address,name={#1}]{#2}');
-DefMacro('\curraddr[]{}',
-  '\lx@add@contact[role=current_address,name={\curraddrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
-DefMacro('\email[]{}',
-  '\lx@add@contact[role=email,name={\emailaddrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
-DefMacro('\urladdr[]{}',
-  '\lx@add@contact[role=url,name={\urladdrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
-DefMacro('\dedicatory{}', '\lx@add@contact[role=dedicatory]{#1}');
+# Various frontmatter creator contact information; attaches to previous \author
+DefMacro('\contrib[]{}', '\lx@add@creator[role=contributor, name={#1}]{#2}');
+DefMacro('\commby{}',    '\lx@add@creator[role=communicator,name={\@commby}]{#1}');
+DefMacro('\address[]{}', '\lx@add@contact[role=address,name={#1}]{#2}');
+DefMacro('\curraddr[]{}', '\lx@add@contact[role=current_address,name={\curraddrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
+DefMacro('\email[]{}', '\lx@add@contact[role=email,name={\emailaddrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
+DefMacro('\urladdr[]{}', '\lx@add@contact[role=url,name={\urladdrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
+DefMacro('\dedicatory{}',   '\lx@add@contact[role=dedicatory]{#1}');
+DefMacro('\dateposted{}',   '\@add@frontmatter{ltx:date}[role=posted]{#1}');
+DefMacro('\translator[]{}', '\lx@add@creator[role=translator,name={\trnaslname}]{#2}');
 
-# \date{}
-DefMacro('\dateposted{}', '\@add@frontmatter{ltx:date}[role=posted]{#1}');
+DefMacro('\keywords{}',
+  '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
 
 # \thanks{} ( == ack, not latex's \thanks, not in author)
 # make a throwaway optional argument available for OmniBus use
 DefMacro('\thanks[]{}',
   '\@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#2}');
-
-DefMacro('\translname','Translated by');
-DefMacro('\translator[]{}',
-  '\lx@add@creator[role=translator,name={\trnaslname}]{#2}');
-
-DefMacroI('\keywordsname', undef, 'Key words and phrases');
-DefMacro('\keywords{}',
-  '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
 
 # Non-standard but makes it easier to create bindings for variations on AMS classes;
 # just redefine this macro

@@ -36,6 +36,15 @@ NewCounter('authors');
 NewCounter('affil');
 NewCounter('@affil');
 
+# authblk supports 3 distinct styles of markup for authors & affiliations
+# LaTeX style:
+#  \author{name\\ affil \and name and name\\ affil}
+# Individually: \author for each author, followed by \affil for affiliation
+#  \author{name} : REPEATED
+#  \affil{affil} : REPEATED, attaches to ALL previous authors which don't have affil!
+# Connected via marks, one \author for each author; one \affil for each affiliation
+#  \author[mark]{name} : REPEATED
+#  \affil[mark]{affil} : REPEATED, attaches to author with same mark
 DefMacro('\author[]{}', sub {
     my ($gullet, $mark, $author) = @_;
     if ($mark) {    # Use mark attachment
@@ -46,7 +55,7 @@ DefMacro('\author[]{}', sub {
       Invocation(T_CS('\lx@add@creator'), undef, $author); } });
 
 DefMacro('\affil[]{}',
-  '\lx@add@contact[role=affiliation,\ifx.#1.all\else mark={#1}\fi]{#2}');
+  '\lx@add@contact[role=affiliation,attach={\ifx.#1.new\else 1\fi},mark={#1}]{#2}');
 
 # we shouldn't need these, but if someone is using them low-level
 # might as well provide them

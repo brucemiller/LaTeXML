@@ -70,39 +70,39 @@ RequirePackage('natbib');
 # Frontmatter
 DefMacro('\layoutstyle{}', '');
 
-# keywords: address, altaddress, email
-# DefMacro('\author{} RequiredKeyVals', sub {
-#     my ($gullet, $author, $kvx) = @_;
-#     my $kv    = GetKeyVals($kvx);
-#     my @stuff = (Invocation(T_CS('\lx@author'), $author));
-#     if (my $addr = $$kv{address}) {
-#       push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('address'), $addr))); }
-#     if (my $altaddr = $$kv{altaddress}) {
-#       push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('altaddress'), $altaddr))); }
-#     if (my $email = $$kv{email}) {
-#       push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('email'), $email))); }
-#     return Tokens(@stuff); });
-
+# \author{name}[keys]  Use one \author per author;
+# various contact information is supplied via the optional keyvals
+my @aipproc_author_keys = (
+  [address    => '\lx@add@contact[role=address]{#1}'],
+  [altaddress => '\lx@add@contact[role=altaddress]{#1}'],
+  [email      => '\lx@add@contact[role=email]{#1}'],
+  [homepage   => '\lx@add@contact[role=url]{#1}'],
+  [thanks     => '\lx@add@contact[role=thanks]{#1}'],
+);
 DefMacro('\author{} RequiredKeyVals', sub {
-    my ($gullet, $author, $kvx) = @_;
-    my $kv    = GetKeyVals($kvx);
-    my @stuff = (Invocation('\lx@add@creator[role=author]{#1}', $author));
-    if (my $addr = $$kv{address}) {
-      push(@stuff, Invocation('\lx@add@contact[role=address]{#1}', $addr)); }
-    if (my $altaddr = $$kv{altaddress}) {
-      push(@stuff, Invocation('\lx@add@contact[role=altaddress]{#1}', $altaddr)); }
-    if (my $email = $$kv{email}) {
-      push(@stuff, Invocation('\lx@add@contact[role=email]{#1}', $email)); }
-    return Tokens(@stuff); });
+    my ($gullet, $author, $kv) = @_;
+    my @content = ($author);
+    foreach my $entry (@aipproc_author_keys) {
+      my ($key, $code) = @$entry;
+      if (my $value = $kv->getValue($key)) {
+        push(@content, Invocation($code, $value)); } }
+    return Invocation('\lx@add@creator[role=author]{#1}', Tokens(@content)); });
 
 DefMacroI('\keywordsname', undef, 'Keywords');
 DefMacro('\keywords{}',       '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 
+DefMacro('\received{}',        '\@add@frontmatter{ltx:date}[role=received]{#1}');
+DefMacro('\revised{}',         '\@add@frontmatter{ltx:date}[role=revised]{#1}');
+DefMacro('\accepted{}',        '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+DefMacro('\draftdate{}',       '\@add@frontmatter{ltx:date}[role=draft]{#1}');
+DefMacro('\copyrightholder{}', '\@add@frontmatter{ltx:date}[role=copyrightholder]{#1}');
+DefMacro('\copyrightyear{}',   '\@add@frontmatter{ltx:date}[role=copyright]{#1}');
+
 DefEnvironment('{theacknowledgments}', "<ltx:acknowledgements>#body</ltx:acknowledgements>");
 #======================================================================
 DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label' _force_font='true'/>)",
-  properties => sub { (label => CleanLabel($_[1])); },
+  properties      => sub { (label => CleanLabel($_[1])); },
   enterHorizontal => 1);
 
 #======================================================================

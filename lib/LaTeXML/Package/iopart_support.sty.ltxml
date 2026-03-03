@@ -31,7 +31,8 @@ DefMacroI('\theequation', undef, '\ifnumbysec\arabic{section}.\arabic{equation}\
 # Frontmatter
 
 DefMacro('\title[]{}',
-  '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
+  '\gdef\@shorttitle{#1}\gdef\@title{#2}'
+    . '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
     . '\@add@frontmatter{ltx:title}{#2}');
 Let('\paper', '\title');
 
