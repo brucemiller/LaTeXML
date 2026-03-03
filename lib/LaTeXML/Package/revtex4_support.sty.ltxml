@@ -35,25 +35,31 @@ RequirePackage('dcolumn');
 #======================================================================
 
 # 4.3
-DefMacro('\title[]{}', '\@add@frontmatter{ltx:title}{#2}');
+DefMacro('\title[]{}',
+  '\gdef\@shorttitle{#1}\gdef\@title{#2}'
+    . '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
+    . '\@add@frontmatter{ltx:title}{#2}');
 
-DefMacro('\doauthor{}{}{}', '#1 #2 #3');       # -- ??
-DefMacro('\address',        '\affiliation');
-# DefMacro('\affiliation','');
-DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affiliation{}',  '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefMacro('\altaddress',     '\altaffiliation');
-DefMacro('\altaffiliation', '\affiliation');
-DefMacro('\andname',        'and');
-DefMacro('\collaboration',  '');               # Should have a look at this too
-DefMacro('\noaffiliation',  Tokens());
+# \author[mark]{name}   One \author per author
+# If mark given, the corresponding affiliation from \affil is attached
+# otherwise, \author should be followed by \affiliation
+DefMacro('\author[]{}',    '\lx@add@creator[role=author,mark={#1}]{#2}');
+DefMacro('\affiliation{}', '\lx@add@contact[attach=new,role=affiliation]{#1}');
+DefMacro('\affil[]{}',
+  '\lx@add@contact[role=affiliation,attach={\ifx.#1.new\else 1\fi},mark={#1}]{#2}');
+# \address provides an address to the previous \author
+DefMacro('\address{}', '\lx@add@contact[attach=new,role=address]{#1}');
+# These add contacts to most recent author
+# The optional arguments here are a sort of prefix to the footnote. (NOT marks)
+DefMacro('\email[] Semiverbatim',    '\lx@add@contact[role=email,name={#1}]{#2}');
+DefMacro('\homepage[] Semiverbatim', '\lx@add@contact[role=url,name={#1}]{#2}');
+DefMacro('\thanks[]{}',              '\lx@add@contact[role=thanks,name={#1}]{#2}');
+DefMacro('\orcid[]{}',               '\lx@add@contact[role=orcid,name={#1}]{#2}');    # ?
 
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
-DefConstructor('\@@@homepage{}', "^ <ltx:contact role='url'>#1</ltx:contact>");
-DefMacro('\homepage Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@homepage{#1}}');
+DefMacro('\collaboration{}',    '\author{#1}');
+DefMacro('\altaffiliation[]{}', '\lx@add@contact[attach=new,role=affiliation,name={#1}]{#2}');
 
-DefMacro('\firstname', '');                    # \let\firstname\@firstofone ??
+DefMacro('\firstname', '');    # \let\firstname\@firstofone ??
 DefConstructor('\surname{}', "#1");
 
 # 4.4
@@ -134,7 +140,7 @@ DefConstructor('\endnotemark[]',
   "<ltx:note role='endnotemark' mark='#mark' xml:id='#id'>"
     . "#tags"
     . "</ltx:note>",
-  mode => 'restricted_horizontal', enterHorizontal => 1,
+  mode       => 'restricted_horizontal', enterHorizontal => 1,
   properties => sub {
     ($_[1]
       ? (mark => $_[1])
@@ -162,10 +168,10 @@ DefConstructor('\text{}', "<ltx:text _noautoclose='true'>#1</ltx:text>",
   mode => 'restricted_horizontal', locked => 1);
 
 # RevTeX3 (obsolete in RevTeX4)
-DefConstructor('\bm{}',   '#1', bounded => 1, requireMath => 1, font => { forcebold => 1 });
+DefConstructor('\bm{}', '#1', bounded => 1, requireMath => 1, font => { forcebold => 1 });
 DefConstructor('\bbox{}', '#1',
   bounded => 1, requireMath => 1, font => { forcebold => 1 },
-  locked => 1);
+  locked  => 1);
 DefConstructor('\pmb{}', '#1', bounded => 1, requireMath => 1,
   font => { forcebold => 1, family => 'blackboard',
     series => 'medium', shape => 'upright' });

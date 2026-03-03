@@ -26,12 +26,12 @@ if (LookupValue('@usegraphicx')) {
 # Front Matter
 
 DefMacro('\title[]{}',
-  '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
+  '\gdef\@shorttitle{#1}\gdef\@title{#2}'
+    . '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
     . '\@add@frontmatter{ltx:title}{#2}');
-DefMacro('\author[]{}', sub { andSplit(T_CS('\lx@author'), $_[2]); });
-
-DefMacro('\newauthor', Tokens());    # ????
-
+DefMacro('\author[]{}',   sub { andSplit(T_CS('\lx@author'), $_[2]); });
+DefMacro('\author[]{}',   '\def\@author{#2}\lx@add@authors{#2}', locked => 1);
+DefMacro('\newauthor',    Tokens());                                             # ????
 DefMacro('\journal{}',    '\@add@frontmatter{ltx:note}[role=journal]{#1}');
 DefMacro('\volume{}',     '\@add@frontmatter{ltx:note}[role=volume]{#1}');
 DefMacro('\pubyear{}',    '\@add@frontmatter{ltx:note}[role=pubyear]{#1}');

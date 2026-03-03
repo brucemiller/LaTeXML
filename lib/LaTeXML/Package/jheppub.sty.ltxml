@@ -27,42 +27,17 @@ RequirePackage('amsmath');
 RequirePackage('amssymb');
 RequirePackage('epsfig');
 RequirePackage('graphicx');
-RequirePackage('inst_support');
+
 # \author[]{}
-# Add an author (repeated), and add ltx:contact stubs to be filled in
-# by inst_support for affiliation & email
+# One \author per author followed by \affiliation
+# OR both are supplied an optional mark by which the affiliation is attached to author
 # optional arg is a mark identifying which affliation belongs
-DefMacro('\author[]{}',
-  '\def\@author{#2}\lx@author{#2}'
-  . '\ifx.#1.\else\lx@add@creator@marks{#1}\fi'
-  . '\@add@to@frontmatter{ltx:creator}{\lx@jhep@emailstub}', locked => 1);
-
-# Define the affiliation; optional arg is the mark connecting to author
-DefConstructor('\affiliation[]{}',
-  "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>",
-  bounded => 1, beforeDigest => sub { AssignValue(inPreamble => 0); });
-
+DefMacro('\author[]{}',      '\lx@add@creator[role=author,mark={#1}]{#2}');
+DefMacro('\affiliation[]{}', '\lx@add@contact[role=affiliation,mark={#1}]{#2}');
 # \note{} appears inside author?
-Let('\note', '\footnote');
-
-NewCounter('\lx@jhep@nauthor');
-NewCounter('\lx@jhep@nemail');
-DefConstructor('\lx@jhep@emailstub',
-  "<ltx:contact role='emailmark' _mark='#mark'></ltx:contact>",
-  properties => sub {
-    StepCounter('\lx@jhep@nauthor');
-    ( mark => 'email' . ToString(CounterValue('\lx@jhep@nauthor')) ); });
-
-# \emailAdd{email}, repeated, after \author(s),
-# adds email address to each author in sequence
-# use ltx:note, rather than ltx:contact; inst_support moves these to the right place.
-DefConstructor('\lx@jhep@email{}',
-  "^ <ltx:note role='email' mark='#mark'>#1</ltx:note>",
-  properties => sub {
-    StepCounter('\lx@jhep@nemail');
-    ( mark => 'email' . ToString(CounterValue('\lx@jhep@nemail')) ); });
-DefMacro('\emailAdd Semiverbatim',
-  '\@add@to@frontmatter{ltx:creator}{\lx@jhep@email{#1}}');
+DefMacro('\note{}', '\lx@add@contact[role=note]{#1}');
+# The n-th \emailAdd is attached to the n-th author!
+DefMacro('\emailAdd Semiverbatim', '\lx@add@contact[role=email,markseq=author]{#1}');
 
 DefMacro('\keywordname', '\textbf{Keywords}');
 DefMacro('\keywords{}',  '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
@@ -71,8 +46,8 @@ DefMacro('\arxivnumber{}',        '\@add@frontmatter{ltx:note}[role=arxiv]{#1}')
 DefMacro('\preprint{}',           '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
 DefMacro('\proceeding{}',         '\@add@frontmatter{ltx:note}[role=proceeding]{#1}');
 DefMacro('\dedicated{}',          '\@add@frontmatter{ltx:note}[role=dedication]{#1}');
-DefMacro('\collaboration{}{}',    '\@add@to@frontmatter{ltx:creator}{\@@@collaborator{#2}}');
-DefMacro('\collaborationImg[]{}', '');                                                          # ?
+DefMacro('\collaboration{}',      '\@add@frontmatter{ltx:note}[role=collaboration]{#1}');
+DefMacro('\collaborationImg[]{}', '');                                                      # ?
 
 DefMacro('\acknowledgmentsname', 'Acknowledgements');
 DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",

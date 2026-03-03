@@ -85,39 +85,38 @@ DefConstructor('\Description[]{}', '^^<ltx:note xml:id="#id" class="ltx_nodispla
 
 # Use \author for EACH author, follow with \orcid, \affiliation, \email as needed.
 # Note that \affiliation can apply to all preceding authors without one
-DefMacro('\author{}',           '\lx@add@creator[role=author]{#1}');
-DefMacro('\editor{}',           '\lx@add@creator[role=editor]{#1}');
-DefMacro('\affiliation{}',     '\lx@add@contact[role=affiliation,all]{#1}');
+DefMacro('\author{}',                '\lx@add@creator[role=author]{#1}');
+DefMacro('\editor{}',                '\lx@add@creator[role=editor]{#1}');
+DefMacro('\affiliation{}',           '\lx@add@contact[role=affiliation,attach=new]{#1}');
 DefMacro('\additionalaffiliation{}', '\lx@add@contact[role=altaffiliation]{#1}');
-DefMacro('\email [] Semiverbatim', '\lx@add@contact[role=email,name={email: }]{#2}');
-DefMacro('\orcid{}',            '\lx@add@contact[role=orcid, name={OrcID: }]{#1}');
-
+DefMacro('\email [] Semiverbatim',   '\lx@add@contact[role=email,name={email: }]{#2}');
+DefMacro('\orcid{}',                 '\lx@add@contact[role=orcid, name={OrcID: }]{#1}');
 
 # Internal structure to affiliation
 # Note: \affiliation should arrange to join these with ", "
 DefConstructor('\position{}',
-  "<ltx:text class='ltx_affiliation_position' _noautoclose='1'>#1</ltx:text>",
+  "<ltx:text class='ltx_affiliation_position' _noautoclose='1'>#1</ltx:text>, ",
   mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\institution{}',
-  "<ltx:text class='ltx_affiliation_institution' _noautoclose='1'>#1</ltx:text>",
+  "<ltx:text class='ltx_affiliation_institution' _noautoclose='1'>#1</ltx:text>, ",
   mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\department{}',
-  "<ltx:text class='ltx_affiliation_department' _noautoclose='1'>#1</ltx:text>",
+  "<ltx:text class='ltx_affiliation_department' _noautoclose='1'>#1</ltx:text>, ",
   mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\streetaddress{}',
-  "<ltx:text class='ltx_affiliation_streetaddress' _noautoclose='1'>#1</ltx:text>",
+  "<ltx:text class='ltx_affiliation_streetaddress' _noautoclose='1'>#1</ltx:text>, ",
   mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\city{}',
-  "<ltx:text class='ltx_affiliation_city' _noautoclose='1'>#1</ltx:text>",
+  "<ltx:text class='ltx_affiliation_city' _noautoclose='1'>#1</ltx:text>, ",
   mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\state{}',
-  "<ltx:text class='ltx_affiliation_state' _noautoclose='1'>#1</ltx:text>",
+  "<ltx:text class='ltx_affiliation_state' _noautoclose='1'>#1</ltx:text>, ",
   mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\postcode{}',
-  "<ltx:text class='ltx_affiliation_postcode' _noautoclose='1'>#1</ltx:text>",
+  "<ltx:text class='ltx_affiliation_postcode' _noautoclose='1'>#1</ltx:text>, ",
   mode => 'restricted_horizontal', enterHorizontal => 1);
 DefConstructor('\country{}',
-  "<ltx:text class='ltx_affiliation_country' _noautoclose='1'>#1</ltx:text>",
+  "<ltx:text class='ltx_affiliation_country' _noautoclose='1'>#1</ltx:text>.",
   mode => 'restricted_horizontal', enterHorizontal => 1);
 
 DefMacro('\titlenote{}',    '\@add@frontmatter{ltx:note}[role=note]{#1}');
