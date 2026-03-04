@@ -40,7 +40,7 @@ DefMacro('\mailname',  '\textit{Correspondence to}:');
 # \inst{marks} can be used within each author to identify which affiliations apply
 DefMacro('\author{}',
   '\lx@clear@creators[role=author]'
-    . '\lx@splitting{\lx@add@author}{\and,\And}{#1}');
+    . '\lx@splitting{\lx@add@author}{\and\And,}{#1}');
 # Single  \institute, with multiple institutions serapated by \and
 # The n-th institution is attached to the author which has that n in its \inst marks.
 DefMacro('\institute{}',

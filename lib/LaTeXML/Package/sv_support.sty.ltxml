@@ -39,13 +39,13 @@ DefMacro('\mailname', '\textit{Correspondence}');
 # Single \author containing multiple authors separated by \and
 DefMacro('\author{}',
   '\lx@clear@creators[role=author]'
-    . '\lx@splitting{\lx@add@author}{\and,\And}{#1}');
+    . '\lx@splitting{\lx@add@author}{\and\And,}{#1}');
 # Single \institute containing name \at institute \and ... repeating.
 # Note that the name corresponds to (but probably won't match exactly!) an author name
 # We'll want some kind of fuzzy matching of marks to attach institute to author
 DefMacro('\institute{}',
   '\lx@clear@frontmatter{ltx:contact}[role=affiliation]'
-    . '\lx@splitting{\lx@sv@institute}{\and,\And}{#1}');
+    . '\lx@splitting{\lx@sv@institute}{\and\And}{#1}');
 Let('\at', '\relax');
 DefMacro('\lx@sv@institute{}', '\lx@sv@institute@#1\at\done');
 DefMacro('\lx@sv@institute@ Until:\at Until:\done',

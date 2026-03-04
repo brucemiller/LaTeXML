@@ -41,7 +41,7 @@ DefMacro('\emails',       Tokens());
 DefMacro('\author{}',
   '\lx@clear@creators[role=author]'
     # Note: must keep affiliations (after \\) embedded, to simplify clear@author removal
-    . '\lx@splitting{\lx@ijcai@author}{\and,\And}{#1}');
+    . '\lx@splitting{\lx@ijcai@author}{\and\And,}{#1}');
 # Affiliations is expected WITHIN \author.
 # Multiple affiliations separated by \\
 # the n-th affiliation is attached to n-th author
