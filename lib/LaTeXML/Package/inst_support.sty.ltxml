@@ -32,10 +32,10 @@ use LaTeXML::Package;
 # \author[marks]{author}
 DefMacro('\author{}',
   '\lx@clear@creators[role=author]'
-    . '\lx@splitting{\lx@add@author}{\and,\And}{#1}');
+    . '\lx@splitting{\lx@add@author}{\and\And,}{#1}');
 DefMacro('\institute{}',
   '\lx@clear@frontmatter{ltx:contact}[role=affiliation]'
-    . '\lx@splitting{\lx@ijcai@affiliation}{\\\\}{#1}');
+    . '\lx@splitting{\lx@add@contact[role=affiliation,markseq=affiliation]}{\and\And}{#1}');
 DefMacro('\inst{}', '\lx@add@creator@mark[affiliation]{#1}');
 
 Let('\at',      '\and');    # Actually this is different than \and, but...
