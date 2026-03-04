@@ -1053,7 +1053,8 @@ Let('\@title', '\@empty');
 DefMacro('\title[]{}',
   '\gdef\@shorttitle{#1}\gdef\@title{#2}'
     . '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
-    . '\@add@frontmatter{ltx:title}{#2}');
+    . '\@add@frontmatter{ltx:title}{#2}',
+  locked => 1);
 
 DefMacro('\@date', '\@empty');
 DefMacro('\date{}',
@@ -1117,7 +1118,7 @@ DefConstructor('\lx@author@prefix', sub {
 DefMacro('\@author', '\@empty');
 DefMacro('\author[]{}',
   '\def\@shortauthor{#1}\def\@author{#2}'
-    . '\lx@add@creator[role=author]{#2}', locked => 1);
+    . '\lx@add@authors{#2}', locked => 1);
 
 DefPrimitive('\ltx@authors@oneline', sub {
     AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line => 1);
