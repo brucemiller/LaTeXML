@@ -229,7 +229,12 @@ DefPrimitive('\lx@clear@creators OptionalKeyVals:Frontmatter', sub {
 #DefMacro('\lx@clear@creators OptionalKeyVals:Frontmatter', '\lx@clear@frontmatter{ltx:creator)[#1]');
 DefMacro('\lx@clear@creators []', '\lx@clear@frontmatter{ltx:creator}[#1]');
 
-DefMacro('\lx@ignored[]', '');
+# trailing \\ should disappear.
+# OR alternatively a Tag if <ltx:break/> is last element?
+DefMacro('\lx@ignored OptionalMatch:* [Glue]', sub {
+  my ($gullet, $star, $dim) = @_;
+  return ($gullet->peekToken ? Invocation(T_CS('\lx@newline'),$star, $dim) : ()); });
+
 # Digest the content for a frontmatter item, disabling certain commands
 # Note that we shouldn't be digesting any frontmatter until within document, so inPreamble unnec.
 # NOTE: shouldn't actually ignore \\, but trailing onces should be stripped!!!
@@ -237,6 +242,7 @@ sub digestFrontmatterItem {
   my ($stomach, $item) = @_;
   $stomach->bgroup;
   Let('\\\\', '\lx@ignored');
+  Let('\label','\lx@set@contact@label');
   my $digested = DigestText($item);
   $stomach->egroup;
   return $digested; }
@@ -257,14 +263,25 @@ sub cleanFrontmatterMarks {
   my ($marks, $prefix) = @_;
   $marks  = ToString($marks);
   $prefix = ToString($prefix) || '';
-  return ($marks ? map { CleanLabel($_, $prefix); } split(',', $marks) : ()); }
+###  return ($marks ? map { CleanLabel($_, $prefix); } split(',', $marks) : ()); }
+  my @marks = ();
+  foreach my $mark (split(',', $marks)) {
+    $mark = ToString($mark);
+    $mark =~ s/^\s+//; $mark =~ s/\s+$//;
+    if ($mark =~ /^\\ref\{\s*([^\}]*)\s*\}$/) {
+      $mark = 'LABEL:'. $1; }
+    elsif ($prefix) {
+      $mark = $prefix.':'.$mark; }
+    $mark =~ s/\s+/_/sg;
+    push(@marks, $mark); }
+  return @marks; }
 
 DefPrimitive('\lx@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals:Frontmatter {}', sub {
     my ($stomach, $obsoletekeys, $tag, $kv, $content) = @_;
     $tag = ToString($tag);
     $kv  = $kv->beDigested($stomach) if $kv;
     my $frontmatter = LookupValue('frontmatter');
-    my $role        = ($kv && ToString($kv->getValue('role'))) || 'author';
+    my $role        = ($kv && ToString($kv->getValue('role'))) || '';
     my $n           = LookupMapping('num_' . $tag, $role); $n++;
     AssignMapping('num_' . $tag, $role => $n);
     # extract (possibly multiple!) marks
@@ -311,7 +328,7 @@ DefPrimitive('\lx@add@contact@now OptionalKeyVals:Frontmatter {}', sub {
       cleanFrontmatterMarks($options{mark} || '', ''),
       ($options{markseq} ? CleanLabel($n, ToString($options{markseq})) : ()));
     AssignMapping('num_contacts', $role => $n);
-    if (!$options{name}) {
+    if (!$options{name} || ! scalar($options{name}->unlist)) {
       my $cs = T_CS('\lx@contact@' . $role . '@name');
       $options{name} = (LookupDefinition($cs) ? $cs : Tokens()); }
     my @allcreators = @{ $$frontmatter{'ltx:creator'} || [] };
@@ -331,8 +348,8 @@ DefPrimitive('\lx@add@contact@now OptionalKeyVals:Frontmatter {}', sub {
       push(@{ $$frontmatter{'ltx:creator'} }, $entry);
       # NOW, with that context saved, we can digest, THEN store the contact's content.
       Debug("... deferring to mark=$marks");
-      $$entry[2] = DigestText(Invocation(T_CS('\lx@make@contact@'),
-##      $$entry[2] = digestFrontmatterItem($stomach, Invocation(T_CS('\lx@make@contact@'),
+##      $$entry[2] = DigestText(Invocation(T_CS('\lx@make@contact@'),
+      $$entry[2] = digestFrontmatterItem($stomach, Invocation(T_CS('\lx@make@contact@'),
 ####          T_OTHER($role), T_OTHER($marks), $options{name} || Tokens(), $content)); }
           T_OTHER($role), T_OTHER($marks), $options{name}, $content)); }
     else {
@@ -345,8 +362,8 @@ DefPrimitive('\lx@add@contact@now OptionalKeyVals:Frontmatter {}', sub {
       elsif ($attach eq 'new') { $nprev = $ncreators; $newonly = 1; }
       else { Info('unexpected', 'contact', $stomach, "Contact attach '$attach' unrecognized"); }
       Debug("...adding to  $nprev previous" . ($newonly ? ' new' : ''));
-      my $datum = DigestText(Invocation(T_CS('\lx@make@contact@'),
-##      my $datum = digestFrontmatterItem($stomach, Invocation(T_CS('\lx@make@contact@'),
+##      my $datum = DigestText(Invocation(T_CS('\lx@make@contact@'),
+      my $datum = digestFrontmatterItem($stomach, Invocation(T_CS('\lx@make@contact@'),
 ####          T_OTHER($role), T_OTHER($marks), $options{name} || Tokens(), $content));
           T_OTHER($role), T_OTHER($marks), $options{name}, $content));
       while (my $creator = pop(@creators)) {
@@ -373,8 +390,14 @@ DefConstructor('\lx@add@creator@mark[]{}', sub {
     if (my $creator = $document->findnode('ancestor::ltx:creator', $document->getNode)) {
       my $marks = $creator->getAttribute('_marks') || '';
       $mark = join(',', cleanFrontmatterMarks($mark, $prefix));
-      Debug("MARKS: $mark");
+      Debug("MARKS add: $mark");
       $creator->setAttribute(_marks => ($marks ? "$marks,$mark" : $mark)); } });
+DefConstructor('\lx@set@contact@label Semiverbatim', sub {
+    my ($document, $mark) = @_;
+    if (my $creator = $document->findnode('ancestor::ltx:contact', $document->getNode)) {
+      $mark = join(',', cleanFrontmatterMarks($mark, 'LABEL'));
+      Debug("MARKS set: $mark");
+      $creator->setAttribute(_mark => $mark); } });
 
 # Append a piece of data to an existing frontmatter item that is contained in <$tag>
 # If $label is given, look for an item which has label=>$label,
@@ -450,7 +473,7 @@ DefMacro('\lx@contact@altaffiliation@name', "Alternate Affiliation:~");
 DefMacro('\lx@contact@address@name',        "Address:~");
 DefMacro('\lx@contact@email@name',          "Email:~");
 DefMacro('\lx@contact@url@name',            "URL:~");
-DefMacro('\lx@contact@orchid@name',         "OrcID:~");
+DefMacro('\lx@contact@orcid@name',          "OrcID:~");
 DefMacro('\lx@contact@correspondent@name',  "Corresponding author:~");
 #======================================================================
 # This is called by afterOpen (by default on <ltx:document>) to
@@ -550,7 +573,7 @@ sub relocateContacts {
       if (my $person = $document->findnode('ltx:personname', $c)) {
         push(@marks, CleanLabel($person->textContent, "fuzzy")); }
       map { $marktable{$_} = ($marktable{$_} ? [@{ $marktable{$_} }, $c] : [$c]); } @marks; }
-    Debug("PENDING CONTACTS " . join(',', sort keys %marktable));
+    Debug("PENDING CONTACTS; Known marks:" . join(',', sort keys %marktable));
     foreach my $pending (@pending) {
       foreach my $contact (element_nodes($pending)) {
         my $mark     = $contact->getAttribute('_mark') || '';
