@@ -81,8 +81,6 @@ DefMacro('\slugcomment{}', '\@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
 
 DefMacro('\shorttitle{}',   '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthors{}', '');                                      # not useful?
-# Meant to be used redundantly with an \author macro, so just register the correspondence here
-DefMacro('\correspondingauthor{}', '\lx@contact{correspondent}{#1}');
 
 # I had thought that \lefthead,\righthead were obsolete forms of \shorttitle,\shortauthors,
 # but who knows which goes on which side.... anyway, they get misused too.
@@ -96,49 +94,54 @@ DefMacro('\righthead{}', '');    # Obsolete form
 
 #======================================================================
 # 2.3 Title and Author Information
-AssignMapping('DOCUMENT_CLASSES', ltx_authors_multiline => 1);
-DefConstructor('\@@personname[]{}', "<ltx:personname>" .
-    "?#1(<ltx:ref href='https://orcid.org/#1' class='orcid'>#2</ltx:ref>)(#2)" .
-    "</ltx:personname>)",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
 
+DefMacro('\allauthors', '');    # Presumably should collect all authors?
+
+# \author[orchid,KV]{name}  Use once per author
+# Note optional arg starts with orchid ID,
+# followed by keyval (gname,sname,suffix for parts of author's name)
 DefMacro('\author[]{}',
-  '\@add@frontmatter{ltx:creator}[role=author]{\@@personname[#1]{#2}}');
+  '\lx@add@creator[role=author]{#2\lx@aas@checkorchid{#1}}');
+DefMacro('\lx@aas@checkorchid{}', '\lx@aas@checkorchid@#1,\done');
+# In later aas, $junk make be keywords? (gname,sname,suffix,...?)
+DefMacro('\lx@aas@checkorchid@ Until:, Until:\done', sub {
+    my ($gullet, $possibleid, $junk) = @_;
+    if (ToString($possibleid) =~ /^\s*\d\d\d\d-\d\d\d\d-\d\d\d\d-\d\d\d\d\s*$/) {
+      return Invocation('\lx@add@contact[role=orcid]{#1}', $possibleid); }
+    return; });
 
-DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefMacro('\affil',         '\affiliation');
-DefConstructor('\@@@altaffil{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\altaffiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@altaffil{#1}}');
-DefConstructor('\@@@authoraddr{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\authoraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@authoraddr{#1}}');
+# \email[]{addr} applies to previous author
+# \correspondingauthor{name}
+DefMacro('\correspondingauthor{}', '\lx@add@contact[role=correspondent,mark={fuzzy:#1}]{#1}');
 
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+# Various contact information attaches to previous \author
+DefMacro('\affiliation{}',    '\lx@add@contact[role=affiliation]{#1}');
+DefMacro('\altaffiliation{}', '\lx@add@contact[role=altaffiliation]{#1}');
+DefMacro('\affil',            '\affiliation');
+DefMacro('\authoraddr{}',     '\lx@add@contact[role=address]{#1}');
+DefMacro('\email{}',          '\lx@add@contact[role=email]{#1}');
+
+# \collaboration{n}{name} applies to previous n authors [can be 0 or all]
+# \nocollaboration{n} ???
+DefMacro('\collaboration{}{}', '\lx@add@contact[role=collaboration,attach={#1}]{#2}');
+DefMacro('\nocollaboration{}', '');
+
+# Older aas versions: put mark within \author, text will be attached
+DefMacro('\altaffilmark{}',    '\lx@add@creator@mark[altaffil]{#1}');
+DefMacro('\altaffilteext{}{}', '\lx@add@contact[role=altaffiliation,mark=altaffil#1]{#2}');
+DefMacro('\authoremail',       '\email');    # Obsolete form
+
 # Redefine to straight email address after document begin.
-AddToMacro(T_CS('\@startsection@hook'), TokenizeInternal('\let\email\@@email'));
+###AddToMacro(T_CS('\@startsection@hook'), TokenizeInternal('\let\email\@@email'));
 
 DefPrimitive('\and', undef);
-DefMacro('\authoremail', '\email');    # Obsolete form
-
-# NOTE: the the footnote machinery in LaTeX.pool will connect these.
-# Ideally, we'd like these comma separated!
-DefMacro('\altaffilmark{}', sub {
-    my ($gullet, $marks) = @_;
-    map { (T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END) } SplitTokens($marks, T_OTHER(',')); });
-DefConstructor('\@altaffilmark{}',
-  "?#1(<ltx:note role='affiliationmark' mark='#1'/> )()");
-DefConstructor('\altaffiltext{}{}',
-  "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)()");
 
 DefMacro('\software{}',      '\@add@frontmatter{ltx:note}[role=software]{#1}');
 DefMacro('\submitjournal{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
 # Alas \doi is not frontmatter.
 DefConstructor('\doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>',
   enterHorizontal => 1);
-DefConstructor('\@@@collaborator{}', "<ltx:note role='collaborator'>#1</ltx:note>");
-DefMacro('\collaboration{}{}', '\@add@to@frontmatter{ltx:creator}{\@@@collaborator{#2}}');
-DefMacro('\nocollaboration{}', '');
+
 #======================================================================
 # 2.4 Abstract
 # normal LaTeX

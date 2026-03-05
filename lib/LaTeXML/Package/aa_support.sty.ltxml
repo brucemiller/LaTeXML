@@ -26,7 +26,7 @@ use LaTeXML::Package;
 foreach my $option (qw(10pt 11pt 12pt twoside onecolumn twocolumn
   draft final referee
   leqno fleqn longauth rnote
-  oldversion
+  oldversion utf8 hideoverfull
   runningheads
   envcountreset envcountsect
   structabstract traditabstract
@@ -105,8 +105,8 @@ DefMacro('\titrun',  '');
 
 # undocumented ?
 DefMacro('\offprints{}', '\@add@frontmatter{ltx:note}[role=offprints]{#1}');
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+
+DefMacro('\email Semiverbatim', '\lx@add@contact[role=email]{#1}');
 
 DefMacro('\journalname{}', '');
 DefMacro('\rnotename',     '(Research Note)');
@@ -115,10 +115,9 @@ DefMacro('\rnotname',      '(RN)');
 # should add a note?
 DefMacro('\headnote{}',   '\@add@frontmatter{ltx:note}{#1}');
 DefMacro('\dedication{}', '\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
-DefConstructor('\@@@mail{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\mail Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
-DefMacro('\mailname',          '\it Correspondence to \/');
-DefMacro('\doi{}',             '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
+DefMacro('\mailname',     '\it Correspondence to \/');
+DefMacro('\mail {}',      '\lx@add@contact[role=address,name={\mailname}]{#1}');
+DefMacro('\doi{}',        '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
 
 DefMacro('\idline{}{}',    '');                             # ?
 DefMacro('\msnr{}',        '');                             # ??
@@ -237,6 +236,7 @@ DefMacro('\tablefoottext{}{}', '\footnotetext[$#1$]{#2}');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Typography
 
+DefConstructor('\mdash', "\x{2014}");
 DefMacro('\vec{}', '\ensuremath{\@vec{#1}}');
 DefMath('\@vec{}', '#1', role => 'ID', font => { forcebold => 1 });
 DefMacro('\tens{}', '\ensuremath{\@tens{#1}}');

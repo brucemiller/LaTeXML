@@ -127,9 +127,6 @@ DeclareOption(undef, sub {
 ProcessOptions();
 LoadClass('article');
 
-#RequirePackage('multicol');
-#RequirePackage('inst_support');
-
 # This seems to be just to save stuff so that \maketitle can format it?
 DefMacro('\IEEEtitleabstractindextext{}',                '#1');
 DefMacro('\IEEEdisplaynontitleabstractindextext',        '');
@@ -429,7 +426,7 @@ DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
   enterHorizontal => 1,
-  reversion => '\qed');
+  reversion       => '\qed');
 Let('\proof',    '\IEEEproof');
 Let('\endproof', '\endIEEEproof');
 # V1.8 no longer support biography or biographynophoto

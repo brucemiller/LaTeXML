@@ -17,7 +17,6 @@ use LaTeXML::Package;
 
 # Only if option natbib!
 RequirePackage('natbib');
-RequirePackage('inst_support');
 
 #======================================================================
 # Frontmatter
@@ -29,13 +28,43 @@ DefRegister('\authorrunning', Tokens());
 DefMacro('\authrun', Tokens());
 
 DefMacro('\emailname', 'E-mail');
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
-  properties => { (name => Digest(T_CS('\emailname'))) });
-DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
-DefMacro('\mailname',           '\textit{Correspondence}');
-DefConstructor('\@@@mail{}', "^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
-  properties => { (name => Digest(T_CS('\mailname'))) });
-DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
+##DefConstructor('\@@@email{}', "^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
+##  properties => { (name => Digest(T_CS('\emailname'))) });
+##DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+DefMacro('\mailname', '\textit{Correspondence}');
+##DefConstructor('\@@@mail{}', "^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
+##  properties => { (name => Digest(T_CS('\mailname'))) });
+##DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
+
+# Single \author containing multiple authors separated by \and
+DefMacro('\author{}',
+  '\lx@clear@creators[role=author]'
+    . '\lx@splitting{\lx@add@author}{\and\And,}{#1}');
+# Single \institute containing name \at institute \and ... repeating.
+# Note that the name corresponds to (but probably won't match exactly!) an author name
+# We'll want some kind of fuzzy matching of marks to attach institute to author
+DefMacro('\institute{}',
+  '\lx@clear@frontmatter{ltx:contact}[role=affiliation]'
+    . '\lx@splitting{\lx@sv@institute}{\and\And}{#1}');
+Let('\at', '\relax');
+DefMacro('\lx@sv@institute{}', '\lx@sv@institute@#1\at\done');
+DefMacro('\lx@sv@institute@ Until:\at Until:\done',
+  '\ifx.#2.\lx@add@contact[role=affiliation]{#1}'
+    . '\else\lx@add@contact[role=affiliation,mark={fuzzy:#1}]{#2}\fi');
+
+# \email should be used within \institute, (but CAN be used anywhere; it only formats)
+DefMacro('\email Semiverbatim', '\lx@add@contact[role=email,name={\emailname: }]{#1}');
+
+# Are these actually defined in svjour?
+DefMacro('\address{}', '\lx@add@contact[attach=new,role=address]{#1}');
+DefMacro('\affil[]{}',
+  '\lx@add@contact[role=affiliation,attach={\ifx.#1.new\else 1\fi},mark={#1}]{#2}');
+# These add contacts to most recent author
+# The optional arguments here are a sort of prefix to the footnote.
+DefMacro('\mail {}',                 '\lx@add@contact[role=address,name={\mailname: }]{#1}');
+DefMacro('\homepage[] Semiverbatim', '\lx@add@contact[role=url,name={\ifx.#1.URL:~\else#1\fi}]{#2}');
+DefMacro('\thanks[]{}',              '\lx@add@contact[role=thanks,name={#1}]{#2}');
+DefMacro('\orcid[]{}',               '\lx@add@contact[role=orcid,name={#1}]{#2}');    # ?
 
 DefMacro('\keywordname',  '\textbf{Keywords}');
 DefMacro('\keywords{}',   '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
@@ -232,7 +261,7 @@ DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
   enterHorizontal => 1,
-  reversion => '\qed');
+  reversion       => '\qed');
 Let('\smartqed',     '\qed');
 Let('\squareforqed', '\qed');
 

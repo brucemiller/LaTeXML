@@ -8,17 +8,17 @@
   <title>Sample amsart</title>
   <creator role="author">
     <personname>Joe Blow</personname>
-    <contact role="address">Somewhere, USA</contact>
-    <contact role="current_address">same as above</contact>
-    <contact role="email">joe@blow</contact>
+    <contact name="Address: " role="address">Somewhere, USA</contact>
+    <contact name="Current address: " role="current_address">same as above</contact>
+    <contact name="Email address: " role="email">joe@blow</contact>
   </creator>
   <creator before=", " role="author">
     <personname>Frank Zappa</personname>
-    <contact role="address">Baltimore</contact>
+    <contact name="Address: " role="address">Baltimore</contact>
   </creator>
   <creator before=" and " role="author">
     <personname>Someone Else</personname>
-    <contact role="address">Somewhere Else</contact>
+    <contact name="Address: " role="address">Somewhere Else</contact>
     <contact role="dedicatory">To all those who went before</contact>
   </creator>
   <date name="Date:" role="creation">February 14, 2013</date>

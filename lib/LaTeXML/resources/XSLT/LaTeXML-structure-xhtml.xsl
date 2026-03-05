@@ -554,9 +554,12 @@
       <xsl:if test="ltx:contact">
         <xsl:element name="span" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_author_notes</xsl:attribute>
-          <xsl:apply-templates select="ltx:contact">
-            <xsl:with-param name="context" select="$innercontext"/>
-          </xsl:apply-templates>
+          <xsl:element name="span" namespace="{$html_ns}">
+            <xsl:attribute name="class">ltx_author_notes_content</xsl:attribute>
+            <xsl:apply-templates select="ltx:contact">
+              <xsl:with-param name="context" select="$innercontext"/>
+            </xsl:apply-templates>
+          </xsl:element>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates select="." mode="end">
@@ -606,7 +609,8 @@
   </xsl:template>
 
   <xsl:preserve-space elements="ltx:contact"/>
-  <xsl:template match="ltx:contact[@role='address' or @role='affiliation']">
+
+  <xsl:template match="ltx:contact">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
@@ -617,6 +621,9 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
+      <xsl:if test="@name">
+        <xsl:value-of select="@name"/>
+      </xsl:if>
       <xsl:apply-templates>
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
@@ -638,6 +645,9 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
+      <xsl:if test="@name">
+        <xsl:value-of select="@name"/>
+      </xsl:if>
       <xsl:element name="a" namespace="{$html_ns}">
         <xsl:attribute name="href"><xsl:value-of select="concat('mailto:',text())"/></xsl:attribute>
         <xsl:apply-templates>
@@ -662,9 +672,26 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
-      <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
+      <xsl:if test="@name">
+        <xsl:value-of select="@name"/>
+      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="ltx:ref"> <!--Already formatted as link?-->
+          <xsl:apply-templates>
+            <xsl:with-param name="context" select="$innercontext"/>
+          </xsl:apply-templates>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:element name="a" namespace="{$html_ns}">
+            <xsl:attribute name="href">
+              <xsl:value-of select="concat('https://orcid.org/',text())"/>
+            </xsl:attribute>
+            <xsl:apply-templates>
+              <xsl:with-param name="context" select="$innercontext"/>
+            </xsl:apply-templates>
+          </xsl:element>
+        </xsl:otherwise>
+      </xsl:choose>
       <xsl:apply-templates select="." mode="end">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
@@ -683,6 +710,9 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
+      <xsl:if test="@name">
+        <xsl:value-of select="@name"/>
+      </xsl:if>
       <xsl:element name="a" namespace="{$html_ns}">
         <xsl:attribute name="href"><xsl:value-of select="text()"/></xsl:attribute>
         <xsl:apply-templates>
