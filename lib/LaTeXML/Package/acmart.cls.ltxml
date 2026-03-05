@@ -93,31 +93,22 @@ DefMacro('\email [] Semiverbatim',   '\lx@add@contact[role=email,name={email: }]
 DefMacro('\orcid{}',                 '\lx@add@contact[role=orcid, name={OrcID: }]{#1}');
 
 # Internal structure to affiliation
-# Note: \affiliation should arrange to join these with ", "
-DefConstructor('\position{}',
-  "?#1(<ltx:text class='ltx_affiliation_position' _noautoclose='1'>#1</ltx:text>, )()",
+DefMacro('\lx@acm@addresspartsep','');
+DefMacro('\lx@acm@addresspart{}{}',
+         '\ifx.#2.\else'
+         .'\lx@acm@addresspartsep\def\lx@acm@addresspartsep{,~}'
+         .'\lx@acm@addresspart@{#1}{#2}\fi');
+DefConstructor('\lx@acm@addresspart@{}{}',
+  "<ltx:text class='ltx_affiliation_#1' _noautoclose='1'>#2</ltx:text>",
   mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\institution{}',
-  "?#1(<ltx:text class='ltx_affiliation_institution' _noautoclose='1'>#1</ltx:text>, )()",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\department{}',
-  "?#1(<ltx:text class='ltx_affiliation_department' _noautoclose='1'>#1</ltx:text>, )()",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\streetaddress{}',
-  "?#1(<ltx:text class='ltx_affiliation_streetaddress' _noautoclose='1'>#1</ltx:text>, )()",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\city{}',
-  "?#1(<ltx:text class='ltx_affiliation_city' _noautoclose='1'>#1</ltx:text>, )()",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\state{}',
-  "?#1(<ltx:text class='ltx_affiliation_state' _noautoclose='1'>#1</ltx:text>, )()",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\postcode{}',
-  "?#1(<ltx:text class='ltx_affiliation_postcode' _noautoclose='1'>#1</ltx:text>, )()",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\country{}',
-  "?#1(<ltx:text class='ltx_affiliation_country' _noautoclose='1'>#1</ltx:text>)().",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
+DefMacro('\position{}',      '\lx@acm@addresspart{position}{#1}');
+DefMacro('\institution{}',   '\lx@acm@addresspart{institution}{#1}');
+DefMacro('\department{}',    '\lx@acm@addresspart{department}{#1}');
+DefMacro('\streetaddress{}', '\lx@acm@addresspart{streetaddress}{#1}');
+DefMacro('\city{}',          '\lx@acm@addresspart{city}{#1}');
+DefMacro('\state{}',         '\lx@acm@addresspart{state}{#1}');
+DefMacro('\postcode{}',      '\lx@acm@addresspart{postcode}{#1}');
+DefMacro('\country{}',       '\lx@acm@addresspart{country}{#1}');
 
 DefMacro('\titlenote{}',    '\@add@frontmatter{ltx:note}[role=note]{#1}');
 DefMacro('\subtitlenote{}', '\@add@frontmatter{ltx:note}[role=note]{#1}');
