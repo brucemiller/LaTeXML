@@ -229,23 +229,27 @@ DefPrimitive('\lx@clear@creators OptionalKeyVals:Frontmatter', sub {
 #DefMacro('\lx@clear@creators OptionalKeyVals:Frontmatter', '\lx@clear@frontmatter{ltx:creator)[#1]');
 DefMacro('\lx@clear@creators []', '\lx@clear@frontmatter{ltx:creator}[#1]');
 
-# trailing \\ should disappear.
-# OR alternatively a Tag if <ltx:break/> is last element?
-DefMacro('\lx@ignored OptionalMatch:* [Glue]', sub {
-  my ($gullet, $star, $dim) = @_;
-  return ($gullet->peekToken ? Invocation(T_CS('\lx@newline'),$star, $dim) : ()); });
-
-# Digest the content for a frontmatter item, disabling certain commands
+# Digest the content for a frontmatter item, disabling or masking certain commands
 # Note that we shouldn't be digesting any frontmatter until within document, so inPreamble unnec.
-# NOTE: shouldn't actually ignore \\, but trailing onces should be stripped!!!
+# See cleanTrailingBreak for cleanup of misused \\.
 sub digestFrontmatterItem {
   my ($stomach, $item) = @_;
   $stomach->bgroup;
-  Let('\\\\', '\lx@ignored');
   Let('\label','\lx@set@contact@label');
   my $digested = DigestText($item);
   $stomach->egroup;
   return $digested; }
+
+sub cleanTrailingBreak {
+  my ($document, $node) = @_;
+  while (my $last = $node->lastChild ) {
+    my $tag = $document->getNodeQName($last);
+    last unless (($tag eq '#PCDATA') && ($last->toString =~ /^\s*$/s))
+        || ($tag eq 'ltx:break');
+    $node->removeChild($last); }
+  return; }
+Tag('ltx:personname', afterClose => \&cleanTrailingBreak);
+Tag('ltx:contact',    afterClose => \&cleanTrailingBreak);
 
 # Add a new frontmatter item that will be enclosed in <$tag %attr>...</$tag>
 # The content is the result of digesting $tokens.
@@ -317,6 +321,7 @@ DefPrimitive('\lx@add@contact OptionalKeyVals:Frontmatter {}', sub {
     my ($stomach, $kv, $content) = @_;
     saveFrontMatter($stomach, 'ltx:contact', $kv, Invocation(T_CS('\lx@add@contact@now'), $kv, $content));
     return; });
+
 DefPrimitive('\lx@add@contact@now OptionalKeyVals:Frontmatter {}', sub {
 ##DefPrimitive('\lx@add@contact OptionalKeyVals:Frontmatter {}', sub {
     my ($stomach, $kv, $content) = @_;
@@ -330,7 +335,7 @@ DefPrimitive('\lx@add@contact@now OptionalKeyVals:Frontmatter {}', sub {
     AssignMapping('num_contacts', $role => $n);
     if (!$options{name} || ! scalar($options{name}->unlist)) {
       my $cs = T_CS('\lx@contact@' . $role . '@name');
-      $options{name} = (LookupDefinition($cs) ? $cs : Tokens()); }
+      $options{name} = DigestText($cs) if LookupDefinition($cs); }
     my @allcreators = @{ $$frontmatter{'ltx:creator'} || [] };
     my @creators    = grep { ($$_[1]{role} || '') ne 'pending'; } @allcreators;
     my $ncreators   = scalar(@creators);
@@ -343,16 +348,19 @@ DefPrimitive('\lx@add@contact@now OptionalKeyVals:Frontmatter {}', sub {
     Debug("ADD contact: [" .
         join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options)
         . "] " . ToString($content) . " (with $ncreators available)");
+    # Tentatively create new entry in frontmatter, in case digestion changes marks!
+    my $entry = ['ltx:creator', { role => 'pending', _marks => $marks }, 'place_keeper'];
+    push(@{ $$frontmatter{'ltx:creator'} }, $entry);
+    my $xcontent = digestFrontmatterItem($stomach, $content);
+    $marks = $$entry[1]{_marks}; # Reset if changed!
+    my $datum = LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\lx@make@contact@@')),
+      [$role,$marks,$options{name},$xcontent]);
     if ($marks || !$ncreators) {    # deferred until we can compare marks
-      my $entry = ['ltx:creator', { role => 'pending', _marks => $marks }, 'place_keeper'];
-      push(@{ $$frontmatter{'ltx:creator'} }, $entry);
-      # NOW, with that context saved, we can digest, THEN store the contact's content.
       Debug("... deferring to mark=$marks");
-##      $$entry[2] = DigestText(Invocation(T_CS('\lx@make@contact@'),
-      $$entry[2] = digestFrontmatterItem($stomach, Invocation(T_CS('\lx@make@contact@'),
-####          T_OTHER($role), T_OTHER($marks), $options{name} || Tokens(), $content)); }
-          T_OTHER($role), T_OTHER($marks), $options{name}, $content)); }
+      $$entry[2] = $datum; }
     else {
+      $$frontmatter{'ltx:creator'} # Remove unneeded entry.
+         = [grep { $_ ne $entry; } @{ $$frontmatter{'ltx:creator'} }];
       my ($nprev, $newonly) = (1, 0);
       my $attach = ToString($options{attach});
       if    ((!defined $attach) || ($attach eq '')) { }
@@ -362,15 +370,14 @@ DefPrimitive('\lx@add@contact@now OptionalKeyVals:Frontmatter {}', sub {
       elsif ($attach eq 'new') { $nprev = $ncreators; $newonly = 1; }
       else { Info('unexpected', 'contact', $stomach, "Contact attach '$attach' unrecognized"); }
       Debug("...adding to  $nprev previous" . ($newonly ? ' new' : ''));
-##      my $datum = DigestText(Invocation(T_CS('\lx@make@contact@'),
-      my $datum = digestFrontmatterItem($stomach, Invocation(T_CS('\lx@make@contact@'),
-####          T_OTHER($role), T_OTHER($marks), $options{name} || Tokens(), $content));
-          T_OTHER($role), T_OTHER($marks), $options{name}, $content));
       while (my $creator = pop(@creators)) {
         push(@$creator, $datum);
         $$creator[1]{"_has$role"} = 1;
         last if (--$nprev <= 0) || ($newonly && $creators[-1][1]{"_has$role"}); } }
     return; });
+
+DefConstructor('\lx@make@contact@@ Undigested Undigested {} Undigested',
+  "^<ltx:contact role='#1'_mark='#2' name='#3'>#4</ltx:contact>");
 
 sub show_frontmatter_entry {
   my ($entry) = @_;
@@ -379,25 +386,41 @@ sub show_frontmatter_entry {
     join(',', map { $_ . '=' . ToString($$attr{$_}); } sort keys %$attr) . "} "
     . join('', map { ToString($_); } @content) . "]"; }
 
-# Add comma-separated marks to the current ltx:creator by which some other ltx:contact
-# data can be attached; expected to be embedded within the (eg) \author text.
-# Canonical example: \inst,  typically \inst is let to \lx@add@creator@mark in classes.
-# If there are distinct kinds of marks, might want to prefix the mark
-# with some unique text?
-# NOTE: Could also treat \label & \ref as a mark pair?
-DefConstructor('\lx@add@creator@mark[]{}', sub {
-    my ($document, $prefix, $mark) = @_;
-    if (my $creator = $document->findnode('ancestor::ltx:creator', $document->getNode)) {
-      my $marks = $creator->getAttribute('_marks') || '';
-      $mark = join(',', cleanFrontmatterMarks($mark, $prefix));
-      Debug("MARKS add: $mark");
-      $creator->setAttribute(_marks => ($marks ? "$marks,$mark" : $mark)); } });
-DefConstructor('\lx@set@contact@label Semiverbatim', sub {
-    my ($document, $mark) = @_;
-    if (my $creator = $document->findnode('ancestor::ltx:contact', $document->getNode)) {
-      $mark = join(',', cleanFrontmatterMarks($mark, 'LABEL'));
-      Debug("MARKS set: $mark");
-      $creator->setAttribute(_mark => $mark); } });
+# Find the entry for the ltx:creator/ltx:contact currently being digested.
+sub fetchPendingCreatorEntry {
+  my $frontmatter = LookupValue('frontmatter');
+  my @allcreators = @{ $$frontmatter{'ltx:creator'} || [] };
+  if (my $last = $allcreators[-1]) {
+###    if ((($$last[1]{role} || '') eq 'pending') && (($$last[2] || '') eq 'place_keeper')) {
+    if (($$last[2] || '') eq 'place_keeper') {
+      return $last; } }
+  return; }
+
+# These next two are primitives executing during digestion (BEFORE XML);
+# they add to or replace marks to be used when building the frontmatter plan.
+
+# \lx@add@creator@mark adds comma separated marks to the currently digesting creator;
+# Typically would  \let\inst to this, and used within creator's content
+# to identify contacts to include.
+# Can provide the prefix to distinguish different sets of marks
+DefPrimitive('\lx@add@creator@mark[]{}', sub {
+  my ($document, $prefix, $mark) = @_;
+  if (my $current = fetchPendingCreatorEntry()) {
+    my $marks = $$current[1]{_marks};
+    $mark     = join(',', cleanFrontmatterMarks($mark, $prefix));
+    $$current[1]{_marks} = ($marks ? "$marks,$mark" : $mark);
+    Debug("MARKS add: $mark"); } });
+
+# \lx@set@contact@label sets (replaces) the _marks on the currently digesting creator
+# which could be a stub (role=pending) for a to-be-inserted contact.
+# Typically would \let\label to this so that a \ref within a creator
+# will get a contact with corresponding \label will be attached.
+DefPrimitive('\lx@set@contact@label Semiverbatim', sub {
+  my ($stomach, $label) = @_;
+  if (my $current = fetchPendingCreatorEntry()) {
+    $label = CleanLabel($label,'LABEL');
+    $$current[1]{_marks} = $label;
+    Debug("MARKS set: $label"); } });
 
 # Append a piece of data to an existing frontmatter item that is contained in <$tag>
 # If $label is given, look for an item which has label=>$label,
@@ -452,21 +475,10 @@ DefMacro('\lx@add@authors{}',
     . '\lx@clear@frontmatter{ltx:contact}'
     # Note: must keep affiliations (after \\) embedded, to simplify clear@author removal
     . '\lx@splitting{\lx@author@and@affil}{\and,\And}{#1}');
-# NOTE: Dangling <ltx:break> in affiliation???
 DefMacro('\lx@author@and@affil{}', '\lx@author@and@affil@#1\\\\\done');
 DefMacro('\lx@author@and@affil@ Until:\\\\ Until:\\done',
   '\ifx.#2.\lx@add@creator[role=author]{#1}'
     . '\else\lx@add@creator[role=author]{#1\lx@add@contact[role=affiliation]{#2}}\fi');
-
-# THIS SHOULD GO AWAY
-DefConstructor('\lx@contact@{}{}{}',
-  "^<ltx:contact role='#1' _mark='#2'>#3</ltx:contact>");
-
-DefConstructor('\lx@make@contact@ Undigested Undigested {} {}',
-  "^<ltx:contact role='#role'_mark='#mark' name='#name'>#4</ltx:contact>",
-  properties => sub {
-    my ($stomach, $role, $mark, $name, $content) = @_;
-    (role => $role, mark => $mark, name => $name); });
 
 DefMacro('\lx@contact@affiliation@name',    "Affiliation:~");
 DefMacro('\lx@contact@altaffiliation@name', "Alternate Affiliation:~");
