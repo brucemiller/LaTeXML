@@ -236,6 +236,7 @@ DefMacro('\tablefoottext{}{}', '\footnotetext[$#1$]{#2}');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Typography
 
+DefConstructor('\mdash', "\x{2014}");
 DefMacro('\vec{}', '\ensuremath{\@vec{#1}}');
 DefMath('\@vec{}', '#1', role => 'ID', font => { forcebold => 1 });
 DefMacro('\tens{}', '\ensuremath{\@tens{#1}}');
