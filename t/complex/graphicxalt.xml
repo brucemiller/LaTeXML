@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="graphicx"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:aria="http://www.w3.org/ns/wai-aria">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <graphics candidates="sunset.jpg" graphic="sunset" xml:id="p1.g1"/>
+    <graphics candidates="sunset.jpg" description="alt text" graphic="sunset" options="alt=alt text" xml:id="p1.g2"/>
+    <graphics candidates="sunset.jpg" description="actual text" graphic="sunset" options="actualtext=actual text" xml:id="p1.g3"/>
+    <graphics aria:description="alt text" candidates="sunset.jpg" description="actual text" graphic="sunset" options="actualtext=actual text,alt=alt text" xml:id="p1.g4"/>
+    <graphics aria:hidden="true" candidates="sunset.jpg" description="" graphic="sunset" options="artifact=true" xml:id="p1.g5"/>
+    <graphics aria:hidden="true" candidates="sunset.jpg" description="alt text" graphic="sunset" options="artifact=true,alt=alt text" xml:id="p1.g6"/>
+    <graphics aria:hidden="true" candidates="sunset.jpg" description="actual text" graphic="sunset" options="artifact=true,actualtext=actual text" xml:id="p1.g7"/>
+    <graphics aria:description="alt text" aria:hidden="true" candidates="sunset.jpg" description="actual text" graphic="sunset" options="artifact=true,actualtext=actual text,alt=alt text" xml:id="p1.g8"/>
+  </para>
+</document>
