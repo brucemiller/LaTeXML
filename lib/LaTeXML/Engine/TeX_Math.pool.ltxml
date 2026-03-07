@@ -776,7 +776,15 @@ DefConstructor('\left TeXDelimiter', "#1",
     return; },
   afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], 'OPEN', 1); });
 
-DefMacro('\right', '\lx@hidden@egroup@right\lx@right');
+# \right
+#   combines '\lx@hidden@egroup@right' and '\lx@right' into a single constructor
+#   this is IMPORTANT, because \right is used in the LaTeX 3 kernel with the assumption that it is
+#   idempotent to expansion.
+DefConstructor('\right', '',
+  beforeDigest => sub {
+    $_[0]->getGullet->unread(T_CS('\lx@hidden@egroup@right'), T_CS('\lx@right'));
+    return;
+  }, reversion => '');
 
 # \lx@hidden@egroup@right tries to manage unbalanced {} errors, if an \left was forgotten.
 DefConstructor('\lx@hidden@egroup@right', '',

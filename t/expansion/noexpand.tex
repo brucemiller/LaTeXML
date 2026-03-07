@@ -97,6 +97,14 @@ Got: \expanded.
 Expect: NOW a MUCHLATER b.\\
 Got: \expanded.
 
-
-
+\section{Expandafter cascade with conditional}
+\def\stop{\stop}
+\def\tail{\tail}
+\def\guard#1\stop{}
+\def\badloop#1{Stop?~%
+  \def\aux{\fi here.\ifx\tail#1\expandafter\guard\fi\badloop}%
+  %
+  \ifcat\expandafter\expandafter\expandafter\aux\expandafter\noexpand}
+\badloop\tail\stop
+fin.
 \end{document}

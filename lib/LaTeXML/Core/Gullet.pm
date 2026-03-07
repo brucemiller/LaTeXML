@@ -110,26 +110,26 @@ sub readingFromMouth {
   my $mouth;
   my $intokens;
   my $sourcetype = ref $source;
-  if (! $sourcetype) {          # for a string, create Mouth to read its content
+  if (!$sourcetype) {    # for a string, create Mouth to read its content
     $mouth = LaTeXML::Core::Mouth->new($source); }
-  elsif ($sourcetype =~ /^LaTeXML::Core::Tokens?$/) { # Tokens will be unread into Mouth
-    $mouth = LaTeXML::Core::Mouth->new();
+  elsif ($sourcetype =~ /^LaTeXML::Core::Tokens?$/) {    # Tokens will be unread into Mouth
+    $mouth    = LaTeXML::Core::Mouth->new();
     $intokens = $source; }
-  elsif (! $source->isa('LaTeXML::Core::Mouth')) {
-    Error('expected','Mouth', $self,
+  elsif (!$source->isa('LaTeXML::Core::Mouth')) {
+    Error('expected', 'Mouth', $self,
       "Input source was not a string, Tokens or Mouth: $source; ignoring it.");
     $mouth = LaTeXML::Core::Mouth->new(); }
   else {
     $mouth = $source; }
-  openMouth($self, $mouth, 1);    # only allow mouth to be explicitly closed here.
-  $self->unread($intokens) if $intokens; # Preload the mouth
+  openMouth($self, $mouth, 1);              # only allow mouth to be explicitly closed here.
+  $self->unread($intokens) if $intokens;    # Preload the mouth
   my ($result, @result);
   if (wantarray) {
     @result = &$closure($self); }
   else {
     $result = &$closure($self); }
-  $self->skipSpaces;            # Skip any remaining spaces on input.
-  # $mouth must still be open, with (at worst) empty autoclosable mouths in front of it
+  $self->skipSpaces;                        # Skip any remaining spaces on input.
+      # $mouth must still be open, with (at worst) empty autoclosable mouths in front of it
   while (1) {
     if ($$self{mouth} eq $mouth) {
       closeMouth($self, 1); last; }
@@ -186,10 +186,10 @@ sub showUnexpected {
   my ($self) = @_;
   my $message = "Input is empty";
   if (my $token = peekToken($self)) {
-    my @pb = @{ $$self{pushback} }[1..-1];
+    my @pb = @{ $$self{pushback} }[1 .. -1];
     $message = "Next token is " . Stringify($token)
       . " ( == " . Stringify($STATE->lookupMeaning($token)) . ")"
-        . (@pb ? " more: " . ToString(TokensI(@pb)) : ''); }
+      . (@pb ? " more: " . ToString(TokensI(@pb)) : ''); }
   return $message; }
 
 sub show_pushback {
@@ -311,8 +311,10 @@ sub readToken {
       && (($atoken, $atype, $ahidden) = isColumnEnd($self, $token))) {
       handleTemplate($self, $LaTeXML::READING_ALIGNMENT, $token, $atype, $ahidden); }
     elsif ((defined $token) && ($$token[1] == CC_CS) && ($$token[0] eq '\dont_expand')) {
-      my $unexpanded = readToken($self);    # Replace next token with a special \relax
-      return T_CS('\special_relax'); }
+      my $unexpanded    = readToken($self);         # Replace next token with a special \relax
+      my $special_relax = T_CS('\special_relax');
+      $$special_relax[2] = $unexpanded; # Smuggle the unexpanded token in the "meaning" slot of \special_relax
+      return $special_relax; }
     else {
       last; } }
   if ($token) {
@@ -328,7 +330,7 @@ sub readToken {
 # This might be needed in more places?
 sub peekToken {
   my ($self) = @_;
-  local $LaTeXML::ALIGN_STATE = 1000000; # Inhibit readToken from processing {}!!!
+  local $LaTeXML::ALIGN_STATE = 1000000;    # Inhibit readToken from processing {}!!!
   if (my $token = readToken($self)) {
     unshift(@{ $$self{pushback} }, $token);
     return $token; }
@@ -606,7 +608,8 @@ sub readMatch {
     my @matched = ();
     my $token;
     while (@tomatch && defined($token = readToken($self))
-      && push(@matched, $token) && ($token->equals($tomatch[0]))) {
+      && push(@matched, $token) && ($token->equals($tomatch[0]) ||
+        ($$token[2] && ($$token[0] eq '\special_relax') && $$token[2]->equals($tomatch[0])))) {
       shift(@tomatch);
       if ($$token[1] == CC_SPACE) {    # If this was space, SKIP any following!!!
         while (defined($token = readToken($self)) && ($$token[1] == CC_SPACE)) {
@@ -656,6 +659,8 @@ sub readUntil {
         push(@tokens, $token);
         $nbraces++;
         push(@tokens, readBalanced($self)->unlist, T_END); }
+      elsif ($$token[2] && ($$token[0] eq '\special_relax') && $$token[2]->equals($want)) { # if it was a special relax,
+        last; }
       else {
         push(@tokens, $token); } } }
   else {
@@ -734,7 +739,7 @@ sub readArg {
   else {
     if ($expanded) {
       return $self->readingFromMouth(Tokens(T_BEGIN, $token, T_END), sub {
-         readBalanced($self, $expanded, 0, 1); } ); }
+          readBalanced($self, $expanded, 0, 1); }); }
     else {
       return Tokens($token); } } }
 
