@@ -20,6 +20,8 @@ use LaTeXML::Package;
 RequirePackage('textcomp');
 InputDefinitions('french', type => 'ldf', noltxml => 1);
 
+Let('\xspace', '\relax');
+DefConstructor('\up{}',         "<ltx:sup>#1</ltx:sup>");
 DefConstructor('\fup{}',        "<ltx:sup>#1</ltx:sup>");
 DefConstructor('\FB@up@fake{}', "<ltx:sup>#1</ltx:sup>");
 
@@ -34,4 +36,3 @@ AtBeginDocument(sub {
 });
 
 1;
-
