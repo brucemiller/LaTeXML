@@ -114,9 +114,9 @@ sub new {
       $$self{catcode}{ chr($c) } = [CC_LETTER];
       $$self{catcode}{ chr($c + ord('a') - ord('A')) } = [CC_LETTER]; }
   }
-  $$self{value}{MODE}         = ['vertical'];
-  $$self{value}{BOUND_MODE}   = ['vertical'];
-  $$self{value}{SPECIALS}     = [['^', '_', '~', '&', '$', '#', "'"]];
+  $$self{value}{MODE}       = ['vertical'];
+  $$self{value}{BOUND_MODE} = ['vertical'];
+  $$self{value}{SPECIALS}   = [['^', '_', '~', '&', '$', '#', "'"]];
   if ($options{catcodes} eq 'style') {
     $$self{catcode}{'@'} = [CC_LETTER]; }
   $$self{mathcode}            = {};
@@ -143,8 +143,8 @@ sub assign_internal {
   # since this is called extremely often and should be highly standardized
   if (my $globaldefs = $$self{value}{'\globaldefs'}) {
     if (my $global_value = $$globaldefs[0][0]) {
-      if($scope && ($scope ne 'global') && ($scope ne 'local')){} # ONLY override these
-      # magic TeX register override: \globaldefs
+      if ($scope && ($scope ne 'global') && ($scope ne 'local')) { }    # ONLY override these
+          # magic TeX register override: \globaldefs
       elsif ($global_value == 1) {
         $scope = 'global'; }
       elsif ($global_value == -1) {
@@ -173,12 +173,12 @@ sub assign_internal {
       $$self{undo}[0]{$table}{$key} = 1;
       unshift(@{ $$self{$table}{$key} }, $value); } }    # And push new binding.
   elsif ($scope eq 'inplace') {                          # Special case for \box & friends
-    if (exists $$self{$table}{$key}) {        # If the value was previously assigned AT ALL
-      $$self{$table}{$key}[0] = $value; }     # Simply replace the value in its frame
-    elsif ($value) {                          # Otherwise, push new value, globally
+    if (exists $$self{$table}{$key}) {                   # If the value was previously assigned AT ALL
+      $$self{$table}{$key}[0] = $value; }                # Simply replace the value in its frame
+    elsif ($value) {                                     # Otherwise, push new value, globally
       my $frame;
       my @frames = @{ $$self{undo} };
-      while (@frames) {                       # Find top frame
+      while (@frames) {                                  # Find top frame
         $frame = shift(@frames);
         last if $$frame{_FRAME_LOCK_}; }
       $$frame{$table}{$key} = 1;
@@ -555,7 +555,7 @@ sub generateErrorStub {
 #======================================================================
 
 sub pushFrame {
-  my ($self, $nobox) = @_;
+  my ($self) = @_;
   # Easy: just push a new undo hash.
   unshift(@{ $$self{undo} }, {});
   return; }
@@ -577,9 +577,12 @@ sub popFrame {
 # Determine depth of group nesting created by {,},\bgroup,\egroup,\begingroup,\endgroup
 # by counting all frames which are not Daemon frames (and thus don't possess _FRAME_LOCK_).
 # This may give incorrect results for some special environments (e.g. minipage)
+#
+# Min depth is 0.
 sub getFrameDepth {
   my ($self) = @_;
-  return scalar(grep { not defined $$_{_FRAME_LOCK_} } @{ $$self{undo} }) - 1; }
+  my $stack_depth = scalar(grep { not defined $$_{_FRAME_LOCK_} } @{ $$self{undo} }) - 1;
+  return $stack_depth >= 0 ? $stack_depth : 0; }
 
 #======================================================================
 # This is primarily about catcodes, but a bit more...
@@ -651,7 +654,7 @@ sub popDaemonFrame {
       unless (exists $$pool_preloaded_hash{$subname}) {
         undef $LaTeXML::Package::Pool::{$subname};
         delete $LaTeXML::Package::Pool::{$subname};
-    } }
+      } }
     # Finally, pop the frame
     popFrame($self); }
   else {
