@@ -1,8 +1,5 @@
-\edef\initlvl{Init Level is \number\currentgrouplevel.}
 \documentclass{article}
-\edef\prelvl{Preamble Level is \number\currentgrouplevel.}
 \begin{document}
-\edef\bodylvl{Body Level is \number\currentgrouplevel.}
 \section{Version}
 Running eTeX version \the\eTeXversion\eTeXrevision.
 
@@ -202,16 +199,5 @@ widowpenalties, displaywidowpenalties should behave the similarly.
 \font\tenrm=cmr10
 Size of x: \charsize\tenrm x.
 Size of X: \charsize\tenrm X.
-
-\section{Values of currentgrouplevel}
-\initlvl
-
-\prelvl
-
-\bodylvl
-
-\begingroup
-{In-group Level is \number\currentgrouplevel.}
-\endgroup
 
 \end{document}
