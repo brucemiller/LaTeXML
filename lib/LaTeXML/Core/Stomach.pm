@@ -282,8 +282,9 @@ sub pushStackFrame {
   push(@{ $$self{boxing} }, $LaTeXML::CURRENT_TOKEN) unless $nobox;    # For begingroup/endgroup
   return; }
 
-sub popStackFrame {
-  my ($self, $nobox) = @_;
+# Execute tokens stored on beforeAfterGroup (if any); done before popping a stack frame.
+sub executeBeforeAfterGroup {
+  my ($self) = @_;
   if (my $beforeafter = $STATE->lookupValue('beforeAfterGroup')) {
     if (@$beforeafter) {
       my @result = map { $_->beDigested($self) } @$beforeafter;
@@ -291,7 +292,12 @@ sub popStackFrame {
         Error('misdefined', $x, $self, "Expected a Box|List|Whatsit, but got '" . Stringify($x) . "'");
         @result = (makeMisdefinedError(@result)); }
       push(@LaTeXML::LIST, @result); } }
+  return; }
+
+sub popStackFrame {
+  my ($self, $nobox) = @_;
   my $after = $STATE->lookupValue('afterGroup');
+  $self->executeBeforeAfterGroup;
   $STATE->popFrame;
   pop(@{ $$self{boxing} }) unless $nobox;    # For begingroup/endgroup
   $$self{gullet}->unread(@$after) if $after;
@@ -462,14 +468,17 @@ sub leaveHorizontal_internal {
     $STATE->assignValue(MODE => $bound, 'inplace'); }
  return; }
 
+# Mode switch to $umode; generally pushes a new stack frame, sets various state variables
+# In RARE cases, we need to do this WITHOUT a new stack frome (eg. \begin{document})
+# This is controlled by setting $noframe.
 sub beginMode {
-  my ($self, $umode) = @_;
+  my ($self, $umode, $noframe) = @_;
   if (my $mode = $bindable_mode{$umode}) {
     my $prevmode  = $STATE->lookupValue('MODE');
     my $prevbound = $STATE->lookupValue('BOUND_MODE');
     my $ismath    = $mode =~ /math$/;
     my $wasmath   = $prevmode =~ /math$/;
-    pushStackFrame($self);    # Effectively bgroup
+    pushStackFrame($self) unless $noframe;    # Effectively bgroup
     $STATE->assignValue(BOUND_MODE => $mode,   'local'); # New value within this frame!
     $STATE->assignValue(MODE       => $mode,   'local');
     $STATE->assignValue(IN_MATH    => $ismath, 'local');
@@ -507,8 +516,11 @@ sub beginMode {
     Warn('unexpected',$mode,$self, "Cannot enter $mode mode"); }
   return; }
 
+# End the mode $umode; generally pops the stack frome.
+# In RARE cases, we mignt want the same effect, w/o having pushed a stack frome (see above)
+# In that case, we'll still want to do BeforeAfterGroup as-if we had an end group.
 sub endMode {
-  my ($self, $umode) = @_;
+  my ($self, $umode, $noframe) = @_;
   if (my $mode = $bindable_mode{$umode}) {
     if ((!$STATE->isValueBound('BOUND_MODE', 0))    # Last stack frame was NOT a mode switch!?!?!
       || ($STATE->lookupValue('BOUND_MODE') ne $mode)) {    # Or was a mode switch to a different mode
@@ -517,7 +529,10 @@ sub endMode {
         currentFrameMessage($self)); }
     else {
       leaveHorizontal_internal($self) if $mode =~ /vertical$/; # nopar version!
-      popStackFrame($self);        # Effectively egroup.
+      if ($noframe) {
+        $self->executeBeforeAfterGroup; } # No pop, but at least, do beforeAfterGrup
+      else {
+        popStackFrame($self); }        # Effectively egroup.
       Debug("MODE unbind $mode, resume ".$STATE->lookupValue('MODE').", for ".Stringify($LaTeXML::CURRENT_TOKEN))
           if $LaTeXML::DEBUG{modes};
     }}
