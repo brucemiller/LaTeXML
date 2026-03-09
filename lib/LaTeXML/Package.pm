@@ -1904,7 +1904,8 @@ sub DefEnvironmentI {
           ($b ? Digest(@$b) : ()); },
         ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; })  : ()),
         ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; })  : ()),
-        ($mode                     ? (sub { $_[0]->beginMode($mode); }) : ()),
+        # if mode switch, do now (after @atbegin) WITHOUT pushing stack, since already done
+        ($mode                     ? (sub { $_[0]->beginMode($mode, 1); }) : ()),
         sub { AssignValue(current_environment => $name);
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1940,8 +1941,8 @@ sub DefEnvironmentI {
             Error('unexpected', "\\end{$name}", $_[0],
               "Can't close environment $name;", "Current are:", @lines); }
           return; },
-        ($mode ? (sub { $_[0]->endMode($mode) }) : ()),
-        sub { $_[0]->egroup; },
+        # Switch mode (w/stack frame pop), OR egroup
+        ($mode ? (sub { $_[0]->endMode($mode) }) : sub { $_[0]->egroup; }),
       ),
       ), $options{scope});
   # For the uncommon case opened by \csname env\endcsname
