@@ -476,8 +476,9 @@ sub revertKeyVal {
 sub rebrace {
   my ($self, $tokens) = @_;
   my $level       = 0;
-  my $needs_brace = 0;
-  foreach my $t ($tokens->unlist) {
+  my @tokens      = $tokens->unlist;
+  my $needs_brace = (@tokens ? 0 : 1);
+  foreach my $t (@tokens) {
     my $cc = $$t[1];    # INLINE
     $level++ if $cc == CC_BEGIN;
     if ($cc == CC_END) {
