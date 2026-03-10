@@ -309,7 +309,8 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
       $document->openElement('ltx:document', 'xml:id' => $id); } },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $stomach->beginMode('internal_vertical');
+    # Begin internal_vertical mode, but WITHOUT pushing stack frame, keeping level=0
+    $stomach->beginMode('internal_vertical', 1);
     DefMacroI('\@currenvir', undef, 'document');
     AssignValue(current_environment => 'document');
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
@@ -372,7 +373,8 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
       Warn('unexpected', '\end{document}', $stomach,
         "Attempt to end document with open groups, environments or conditionals", @lines);
     }
-    $stomach->endMode('internal_vertical');
+    # end mode, but WITHOUT popping the stack frame
+    $stomach->endMode('internal_vertical', 1);
     # ???? don't push? or what
     #    if (my $ops = LookupValue('@after@end@document')) {
     #      push(@boxes, Digest(Tokens(@$ops))); }
