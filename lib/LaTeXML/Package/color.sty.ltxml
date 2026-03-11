@@ -108,7 +108,7 @@ DefMacro('\colorbox[]{}{}', '\hbox{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}
 DefConstructor('\fcolorbox[]{}{} Undigested',
   "<ltx:text framed='rectangle' framecolor='#framecolor'"
     . " _noautoclose='1'>#text</ltx:text>",
-  mode => 'internal_vertical',
+  mode        => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;
@@ -119,8 +119,12 @@ DefConstructor('\fcolorbox[]{}{} Undigested',
 #********************************************************************************
 # Low-level stuff; redefined from LaTeX stubs
 
-# Not sure what \current@color should return... the string form?
-# \current@color
+# \current@color holds the current color specification for the DVI driver.
+# For LaTeXML, provide a safe default so packages using it (e.g. pgf/tikz) don't error.
+# The value must NOT contain braces since it may appear inside \csname...\endcsname.
+DefMacroI('\current@color', undef, '0 0 0');
+DefMacroI('\default@color', undef, '0 0 0');
+DefMacroI('\reset@color',   undef, '');
 # Similarly, I'm not sure what set@color needs to do that isn't redundant
 DefMacroI('\set@color', undef, '');
 

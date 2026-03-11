@@ -20,8 +20,9 @@ DefRegister('\doublecol@number' => Number(0));
 # Ensure only unbreakable mode is possible
 DefMacro('\tcb@init@breakable', '\tcb@init@unbreakable', locked => 1);
 
-RequirePackage('expl3');
-RequirePackage('xparse');
+# Pre-define \tcb@use@autoparskip before loading the raw tcolorbox.sty,
+# as a safety net in case the pgfkeys initialization doesn't fully complete.
+DefMacroI('\tcb@use@autoparskip', undef, '\relax');
 
 InputDefinitions('tcolorbox', type => 'sty', noltxml => 1);
 
