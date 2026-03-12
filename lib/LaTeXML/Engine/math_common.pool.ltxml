@@ -356,7 +356,7 @@ DefRewrite(select => ["descendant-or-self::ltx:XMTok[text()='\x{FF0F}' and \@mea
       if (my $id = $not->getAttribute('xml:id')) {
         foreach my $n ($doc->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']")) {
           $doc->removeNode($n); } }    # ? Hopefully this is safe.
-} });
+    } });
 
 #----------------------------------------------------------------------
 # \joinrel
@@ -400,7 +400,7 @@ DefConstructor('\@@joinrel{}{}', sub {
         my $role = (scalar(keys %roles) == 1 ? [keys %roles]->[0] : ($roles{ARROW} ? 'ARROW' : 'RELOP'));
         map { $node->removeChild($_) } @rels;
         $document->insertElement('ltx:XMTok', [map { $_->textContent } @rels], role => $role);
-  } } },
+      } } },
   reversion => '#1\joinrel #2');
 
 #----------------------------------------------------------------------
@@ -468,9 +468,9 @@ DefConstructorI('\lx@ldots', undef,
                     # And so can \vdots
 DefConstructorI('\vdots', undef,
   "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
-  sizer      => "\x{22EE}",
+  sizer           => "\x{22EE}",
   enterHorizontal => 1,
-  properties => sub {
+  properties      => sub {
     (LookupValue('IN_MATH')
       ? (font => LookupValue('font')->merge(family => 'serif',
           series => 'medium', shape => 'upright')->specialize("\x{22EE}"))
@@ -484,9 +484,9 @@ DefMathI('\colon', undef, ':',        role => 'METARELOP');    # Seems like good
     # Aha, also can be in text...
 DefConstructorI('\dots', undef,
   "?#isMath(<ltx:XMTok name='dots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
-  sizer      => "\x{2026}",
+  sizer           => "\x{2026}",
   enterHorizontal => 1,
-  properties => sub {
+  properties      => sub {
     (LookupValue('IN_MATH')
       ? (font => LookupValue('font')->merge(family => 'serif',
           series => 'medium', shape => 'upright')->specialize("\x{2026}"))
@@ -574,9 +574,9 @@ DefMathI('\langle', undef, "\x{27E8}", role => 'OPEN', stretchy => 'false'); # L
 DefMathI('\rangle', undef, "\x{27E9}", role => 'CLOSE', stretchy => 'false'); # RIGHT-POINTING ANGLE BRACKET
 
 # Not sure these should be defined here, or latex, or even latex compat mode.
-DefMathI('\lgroup', undef, "\x{27EE}", role => 'OPEN',  stretchy => 'false');
-DefMathI('\rgroup', undef, "\x{27EF}", role => 'CLOSE', stretchy => 'false');
-DefMathI('\bracevert', undef, "|", font => { series => 'bold' }, role => 'VERTBAR');
+DefMathI('\lgroup',    undef, "\x{27EE}", role => 'OPEN',               stretchy => 'false');
+DefMathI('\rgroup',    undef, "\x{27EF}", role => 'CLOSE',              stretchy => 'false');
+DefMathI('\bracevert', undef, "|",        font => { series => 'bold' }, role     => 'VERTBAR');
 
 ## DefMath('\lmoustache',"???", font=>{series=>'bold'}, role=>'OPEN');
 ## DefMath('\rmoustache',"???", font=>{series=>'bold'}, role=>'OPEN');
@@ -587,9 +587,9 @@ DefMathI('\bracevert', undef, "|", font => { series => 'bold' }, role => 'VERTBA
 # mapping.  Unfortunately, this doesn't (yet) support people declaring thier own delimiters!
 
 # These expand into \left#1, so the bracing disappears; only enlarge the 1st part of #1!
-DefConstructor('\big TeXDelimiter',  '#1', bounded => 1, font => { size => 'big' },
+DefConstructor('\big TeXDelimiter', '#1', bounded => 1, font => { size => 'big' },
   afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], undef, 0); });
-DefConstructor('\Big TeXDelimiter',  '#1', bounded => 1, font => { size => 'Big' },
+DefConstructor('\Big TeXDelimiter', '#1', bounded => 1, font => { size => 'Big' },
   afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], undef, 0); });
 DefConstructor('\bigg TeXDelimiter', '#1', bounded => 1, font => { size => 'bigg' },
   afterConstruct => sub { augmentDelimiterProperties($_[0], $_[1], undef, 0); });
@@ -655,9 +655,24 @@ DefConstructor('\phantom{}',
 DefConstructor('\hphantom{}',
   "?#isMath(<ltx:XMHint width='#width' name='hphantom'/>)"
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
-  properties  => { isSpace => 1 },
+  properties => { isSpace => 1 },
+  # In TeX, \hphantom always processes its argument inside an \hbox.
+  # In text/horizontal mode, we enforce restricted_horizontal to prevent
+  # display math from leaking through the argument (as can happen with
+  # complex TikZ library expansions like quantikz2).
+  # In math mode, we preserve the current mode for correct font metrics.
+  beforeDigest => sub {
+    my ($stomach) = @_;
+    if (!$STATE->lookupValue('IN_MATH')) {
+      $stomach->beginMode('restricted_horizontal');
+      AssignValue('_hphantom_mode_override' => 1); }
+    else {
+      AssignValue('_hphantom_mode_override' => 0); }
+    return; },
   afterDigest => sub {
-    my $whatsit = $_[1];
+    my ($stomach, $whatsit) = @_;
+    if (LookupValue('_hphantom_mode_override')) {
+      $stomach->endMode('restricted_horizontal'); }
     my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
     $whatsit->setProperties(width => $w, height => $h, depth => $d);
     return; });
@@ -795,7 +810,7 @@ DefRewrite(xpath => 'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
       $document->setNodeFont($wrap, $document->getNodeFont($node));
       ## WHY THIS????
       $document->getNode->appendChild($node);
-} });
+    } });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Stop at
