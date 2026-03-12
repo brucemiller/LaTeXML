@@ -111,7 +111,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
 
   # Random low-level token or string operations.
   qw(&CleanID &CleanLabel &CleanIndexKey  &CleanClassName &CleanBibKey &NormalizeBibKey &CleanURL
-    &ComposeURL &TrimmedCommaList
+    &ComposeURL
     &roman &Roman),
   # Math & font state.
   qw(&MergeFont),
@@ -566,13 +566,6 @@ sub ComposeURL {
         : ''),
       $url,
       ($fragid ? '#' . CleanID($fragid) : ''))); }
-
-sub TrimmedCommaList {
-  my ($text) = @_;
-  $text = ToString($text);
-  $text =~ s/^\s+//;
-  $text =~ s/\s+$//;
-  return split(/\s*,\s*/, $text); }
 
 #======================================================================
 # Defining new Control-sequence Parameter types.
@@ -2548,7 +2541,6 @@ sub InputDefinitions {
   my $mode = $STATE->lookupValue('MODE');
   my $prevname = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Expand(T_CS('\@currname')));
   my $prevext = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currext')) && ToString(Expand(T_CS('\@currext')));
-
   # This file will be treated somewhat as if it were a class
   # IF as_class is true
   # OR if it is loaded by such a class, and has withoptions true!!! (yikes)

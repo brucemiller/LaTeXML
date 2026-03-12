@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml" options="bibconfig=bbl,bib"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>bbl</p>
+  </para>
+  <bibliography bibstyle="plain" citestyle="numbers" files="bibconfig" xml:id="bib">
+    <title>References</title>
+  </bibliography>
+  <para xml:id="p2">
+    <p><cite><bibref bibrefs="*" show="nothing"/></cite></p>
+  </para>
+</document>
