@@ -59,7 +59,7 @@ sub invoke_conditional {
   my ($self, $gullet) = @_;
   # Keep a stack of the conditionals we are processing.
   my $ifid = $STATE->lookupValue('if_count') || 0;
-  $STATE->assignValue(if_count => ++$ifid, 'global') if $LaTeXML::IF_LIMIT;
+  $STATE->assignValue(if_count => ++$ifid, 'global');
   if ($LaTeXML::IF_LIMIT and $ifid > $LaTeXML::IF_LIMIT) {
     Fatal('timeout', 'if_limit', $self,
       "Conditional limit of $LaTeXML::IF_LIMIT exceeded, infinite loop?"); }
