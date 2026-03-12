@@ -59,8 +59,8 @@ Let('\tablefontsize', '\tabletypesize');
 
 DefMacro('\subtitle', '');
 
-DefMacro('\submitted{}',   '\@add@frontmatter{ltx:date}[role=submitted]{#1}');
-DefMacro('\journalinfo{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\submitted{}',   '\lx@add@date[role=submitted]{#1}');
+DefMacro('\journalinfo{}', '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
 
 DefMacro('\keywordsname', 'Subject headings');
 

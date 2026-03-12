@@ -40,14 +40,14 @@ DefMacro('\note{}', '\lx@add@contact[role=note]{#1}');
 DefMacro('\emailAdd Semiverbatim', '\lx@add@contact[role=email,markseq=author]{#1}');
 
 DefMacro('\keywordname', '\textbf{Keywords}');
-DefMacro('\keywords{}',  '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
+DefMacro('\keywords{}',  '\lx@add@keywords[name={\keywordname}]{#1}');
 
-DefMacro('\arxivnumber{}',        '\@add@frontmatter{ltx:note}[role=arxiv]{#1}');
-DefMacro('\preprint{}',           '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
-DefMacro('\proceeding{}',         '\@add@frontmatter{ltx:note}[role=proceeding]{#1}');
-DefMacro('\dedicated{}',          '\@add@frontmatter{ltx:note}[role=dedication]{#1}');
-DefMacro('\collaboration{}',      '\@add@frontmatter{ltx:note}[role=collaboration]{#1}');
-DefMacro('\collaborationImg[]{}', '');                                                      # ?
+DefMacro('\arxivnumber{}',        '\lx@add@frontmatter{ltx:note}[role=arxiv]{#1}');
+DefMacro('\preprint{}',           '\lx@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\proceeding{}',         '\lx@add@frontmatter{ltx:note}[role=proceeding]{#1}');
+DefMacro('\dedicated{}',          '\lx@add@frontmatter{ltx:note}[role=dedication]{#1}');
+DefMacro('\collaboration{}',      '\lx@add@frontmatter{ltx:note}[role=collaboration]{#1}');
+DefMacro('\collaborationImg[]{}', '');                                                        # ?
 
 DefMacro('\acknowledgmentsname', 'Acknowledgements');
 DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",

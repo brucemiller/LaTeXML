@@ -38,24 +38,19 @@ RequirePackage('floatflt');
 
 #======================================================================
 # Frontmatter
-DefMacro('\speaker{}', '\@add@frontmatter{ltx:creator}[role=speaker]{\@personname{#1}}');
+DefMacro('\speaker{}',          '\lx@add@creator[role=speaker]{#1}');
+DefMacro('\abstract{}',         '\lx@add@abstract{#1}');
+DefMacro('\email Semiverbatim', '\lx@add@email{#1}');
 
-DefConstructor('\@@@abstract{}', "^ <ltx:abstract name='#name'>#1</ltx:abstract>",
-  properties => sub { (name => Digest(T_CS('\abstractname'))); });
-DefMacro('\abstract{}', '\@add@to@frontmatter{ltx:abstract}{\@@@abstract{#1}}');
+DefMacro('\received{}',     '\lx@add@date[role=received,name={\receivedname}]{#1}');
+DefMacro('\revised{}',      '\lx@add@date[role=revised,name={\revisedname}]{#1}');
+DefMacro('\accepted{}',     '\lx@add@date[role=accepted,name={\acceptedname}]{#1}');
+DefMacro('\JHEPcopydate{}', '\lx@add@date[role=copydate]{#1}');
 
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
-
-DefMacro('\received{}',     '\@add@frontmatter{ltx:date}[role=received,name={\receivedname}]{#1}');
-DefMacro('\revised{}',      '\@add@frontmatter{ltx:date}[role=revised,name={\revisedname}]{#1}');
-DefMacro('\accepted{}',     '\@add@frontmatter{ltx:date}[role=accepted,name={\acceptedname}]{#1}');
-DefMacro('\JHEPcopydate{}', '\@add@frontmatter{ltx:date}[role=copydate]{#1}');
-
-DefMacro('\dedicated{}',  '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
-DefMacro('\conference{}', '\@add@frontmatter{ltx:note}[role=conference]{#1}');
-DefMacro('\preprint{}',   '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
-DefMacro('\keywords{}',   '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\dedicated{}',  '\lx@add@frontmatter{ltx:note}[role=dedicated]{#1}');
+DefMacro('\conference{}', '\lx@add@frontmatter{ltx:note}[role=conference]{#1}');
+DefMacro('\preprint{}',   '\lx@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\keywords{}',   '\lx@add@keywords{#1}');
 
 # There's no explicit "end of acknowledgements"
 DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",
@@ -133,7 +128,7 @@ DefEnvironment('{floatingtable}[]',
 DefConstructor('\href Semiverbatim  Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
   enterHorizontal => 1,
-  properties => sub { (href => ComposeURL((LookupValue('BASE_URL') || ''), $_[1])); });
+  properties      => sub { (href => ComposeURL((LookupValue('BASE_URL') || ''), $_[1])); });
 
 DefMacro('\JHEPspecialurl Semiverbatim', '');    # ???
 DefMacro('\base Semiverbatim',           '');

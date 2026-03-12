@@ -140,25 +140,24 @@ DefMacro('\overrideIEEEmargins', '');
 DefMacro('\IEEEaftertitletext{}',     '');    # ?
 DefMacro('\IEEEspecialpapernotice{}', '');    # ?
 
-DefMacro('\IEEEmembership{}',   '');          # nothing for now.
-DefMacro('\IEEEauthorblockN{}', '#1');        # author
-
-DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\IEEEauthorblockA{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\IEEEmembership{}',   '');                          # nothing for now.
+DefMacro('\IEEEauthorblockN{}', '#1');                        # author
+DefMacro('\IEEEauthorblockA{}', '\lx@add@affiliation{#1}');
 
 DefMacro(T_CS('\begin{IEEEkeywords}'), '\@IEEEkeywords');
 DefMacro(T_CS('\end{IEEEkeywords}'),   '\@endIEEEkeywords');
-Let('\@endIEEEkeywords', '\relax');                # stub
-DefMacro('\@IEEEkeywords XUntil:\@endIEEEkeywords', '\@add@frontmatter{ltx:keywords}[name={\IEEEkeywordsname}]{#1}');
+Let('\@endIEEEkeywords', '\relax');                           # stub
+DefMacro('\@IEEEkeywords XUntil:\@endIEEEkeywords',
+  '\lx@add@keywords[name={\IEEEkeywordsname}]{#1}');
 DefMacro('\IEEEraisesectionheading{}', '#1');
-DefMacro('\IEEEPARstart{}{}',          '#1#2');    # Eventually, dropcap?
+DefMacro('\IEEEPARstart{}{}',          '#1#2');               # Eventually, dropcap?
 
 DefMacro('\IEEEcompsocitemizethanks{}', '\thanks{#1}');
 DefMacro('\IEEEcompsocthanksitem[]',    '');
 DefMacro('\IEEEauthorrefmark',          '');
 DefMacro('\IEEEtriggeratref{}',         '');
 
-DefMacro('\IEEEpubid{}',     '\@add@frontmatter{ltx:note}[role=publicationid]{pubid: #1}');
+DefMacro('\IEEEpubid{}',     '\lx@add@frontmatter{ltx:note}[role=publicationid]{pubid: #1}');
 DefMacro('\IEEEpubidadjcol', '');
 
 RawTeX(<<'EoTeX');

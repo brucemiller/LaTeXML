@@ -59,8 +59,8 @@ DefEnvironment('{frontmatter}', '#body');
 DefEnvironment('{mainmatter}',  '#body');
 DefEnvironment('{backmatter}',  '#body');
 
-DefMacro('\shorttitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
-DefMacro('\subtitle{}',   '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\shorttitle{}', '\lx@add@toctitle{#1}');
+DefMacro('\subtitle{}',   '\lx@add@subtitle{#1}');
 
 DefMacro('\shortauthor{}', '');
 DefRegister('\titlerunning',  Tokens());
@@ -75,30 +75,30 @@ DefMacro('\authors{}',      Tokens());
 DefMacro('\shortauthors{}', Tokens());
 DefMacro('\alignauthor',    Tokens());
 
-DefConstructor('\@@@email{}{}', "^ <ltx:contact role='#2'>#1</ltx:contact>");
-DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{email}}');
-Let('\emailaddr', '\email');
-DefMacro('\ead{}[]',   '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{#2}}');
+DefMacro('\email{}',     '\lx@add@email{#1}');
+DefMacro('\emailaddr{}', '\lx@add@email{#1}');
+DefMacro('\ead{}[]',     '\lx@add@email{#2}}');
+
 DefMacro('\emailname', 'E-mail');
-DefMacro('\speaker{}', '\@add@frontmatter{ltx:creator}[role=speaker]{\@personname{#1}}');
+DefMacro('\speaker{}', '\lx@add@creator[role=speaker]{#1}');
 
 # like from aas
-DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affil{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefMacro('\altaffilmark{}', sub {
-    my ($gullet, $marks) = @_;
-    map { (T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END) } SplitTokens($marks, T_OTHER(',')); });
-DefConstructor('\@altaffilmark{}',
-  "?#1(<ltx:note role='affiliationmark' mark='#1'/> )()");
-Let('\affilnum', '\@altaffilmark');
+# How to handle these?
+# DefMacro('\altaffilmark{}', sub {
+#     my ($gullet, $marks) = @_;
+#     map { (T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END) } SplitTokens($marks, T_OTHER(',')); });
+# DefConstructor('\@altaffilmark{}',
+#   "?#1(<ltx:note role='affiliationmark' mark='#1'/> )()");
+# Let('\affilnum', '\@altaffilmark');
 
 DefConstructor('\altaffiltext{}{}',
   "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)()");
 
 DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\address[]{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
+DefMacro('\address[]{}', '\lx@add@address{#2}');
 Let('\affaddr', '\address');
-DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\affil{}',       '\lx@add@affiliation{#1}}');
+DefMacro('\affiliation{}', '\lx@add@affiliation{#1}');
 DefRegister('\affilskip' => Dimension(0));
 
 # some rarer name macros that are functionally no-ops for latexml
@@ -119,16 +119,16 @@ DefMacro('\indexauthor{}',     Tokens());
 DefMacro('\preface',           Tokens());
 DefMacro('\thankstext',        Tokens());
 DefMacro('\numberofauthors{}', Tokens());
-DefMacro('\resumen{}',         '\@add@frontmatter{ltx:abstract}{#1}');
+DefMacro('\resumen{}',         '\lx@add@abstract{#1}');
 DefMacro('\ion{}{}',           '{#1 \textsc{#2}}');
 Let(T_CS('\fulladdresses'), T_CS('\address'));
 Let(T_CS('\smonth'),        T_CS('\month'));
 Let(T_CS('\syear'),         T_CS('\year'));
 
 # Comes as both macro with arg, and environment! w/ or w/o "s"!
-DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
-DefMacro('\kword{}',    '\@add@frontmatter{ltx:keywords}{#1}');
-DefMacro('\kwd[]{}',    '\@add@frontmatter{ltx:keywords}{#2, }');
+DefMacro('\keywords{}', '\lx@add@keywords{#1}');
+DefMacro('\kword{}',    '\lx@add@keywords{#1}');
+DefMacro('\kwd[]{}',    '\lx@add@keywords{#2, }');
 
 # {keyword}, {keywords}
 sub after_digest_keywords {
@@ -155,16 +155,16 @@ DefMacro('\keywords@onearg{}', '\begin{keywords}#1\end{keywords}\let\endkeyword\
 DefMacroI('\maybe@end@keywords', undef, '\endkeywords\let\maybe@end@keywords\relax');
 Let(T_CS('\addto@keywords@list'), T_CS('\keyword'));
 
-DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
-DefMacro('\pacs{}', '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}', locked => 1);
+DefMacro('\classification{}', '\lx@add@classification{#1}');
+DefMacro('\pacs{}', '\lx@add@classification}[scheme=pacs]{#1}', locked => 1);
 # \doi{doi} might be frontmatter, or just a \url-like thing.  So, let's guess!
 DefMacro('\doi{}',
-  '\if@in@preamble{\@add@frontmatter{ltx:classification}[scheme=doi]{#1}'
+  '\if@in@preamble{\lx@add@frontmatter{ltx:classification}[scheme=doi]{#1}'
     . '\else\lx@doi{#1}\fi');
 DefConstructor('\lx@doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>');
 
 # from acm_proc_article, is it general enough?
-DefMacro('\category{}{}{}[]', '\@add@frontmatter{ltx:classification}[scheme=category]{#1 #2 #3}\keywords{#4}');
+DefMacro('\category{}{}{}[]', '\lx@add@classification[scheme=category]{#1 #2 #3}\keywords{#4}');
 
 our $omni_theorem_main = <<'EOL';
 \newtheorem{theorem}{Theorem}[section]
@@ -234,24 +234,24 @@ Let('\endacknowledgements',   '\endacknowledgments');
 Let('\theacknowledgments',    '\acknowledgments');
 Let('\endtheacknowledgments', '\endacknowledgments');
 
-DefMacro('\editors{}',          '\@add@frontmatter{ltx:note}[role=editors]{#1}');
-DefMacro('\received{}',         '\@add@frontmatter{ltx:date}[role=received]{#1}');
-DefMacro('\revised{}',          '\@add@frontmatter{ltx:date}[role=revised]{#1}');
-DefMacro('\accepted{}',         '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
-DefMacro('\pubyear{}',          '\@add@frontmatter{ltx:date}[role=publication]{#1}');
-DefMacro('\copyrightyear{}',    '\@add@frontmatter{ltx:date}[role=copyright]{#1}');
-DefMacro('\preprint{}',         '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
-DefMacro('\communicated{}',     '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
-DefMacro('\dedicated{}',        '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
-DefMacro('\presented{}',        '\@add@frontmatter{ltx:date}[role=presented]{#1}');
-DefMacro('\articletype{}',      '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
-DefMacro('\issue{}',            '\@add@frontmatter{ltx:note}[role=issue]{#1}');
-DefMacro('\journal{}',          '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\jname{}',            '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\volume{}',           '\@add@frontmatter{ltx:note}[role=volume]{#1}');
-DefMacro('\titlenote{}',        '\@add@frontmatter{ltx:note}[role=titlenote]{#1}');
-DefMacro('\terms{}',            '\@add@frontmatter{ltx:note}[role=terms]{#1}');
-DefMacro('\conferenceinfo{}{}', '\@add@frontmatter{ltx:note}[role=conference]{#1 #2}');
+DefMacro('\editors{}',          '\lx@add@editors{#1}');
+DefMacro('\received{}',         '\lx@add@date[role=received]{#1}');
+DefMacro('\revised{}',          '\lx@add@date[role=revised]{#1}');
+DefMacro('\accepted{}',         '\lx@add@date[role=accepted]{#1}');
+DefMacro('\pubyear{}',          '\lx@add@date[role=publication]{#1}');
+DefMacro('\copyrightyear{}',    '\lx@add@date[role=copyright]{#1}');
+DefMacro('\communicated{}',     '\lx@add@date[role=communicated]{#1}');
+DefMacro('\preprint{}',         '\lx@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\dedicated{}',        '\lx@add@frontmatter{ltx:note}[role=dedicated]{#1}');
+DefMacro('\presented{}',        '\lx@add@frontmatter{ltx:date}[role=presented]{#1}');
+DefMacro('\articletype{}',      '\lx@add@frontmatter{ltx:note}[role=articletype]{#1}');
+DefMacro('\issue{}',            '\lx@add@frontmatter{ltx:note}[role=issue]{#1}');
+DefMacro('\journal{}',          '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\jname{}',            '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\volume{}',           '\lx@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\titlenote{}',        '\lx@add@frontmatter{ltx:note}[role=titlenote]{#1}');
+DefMacro('\terms{}',            '\lx@add@frontmatter{ltx:note}[role=terms]{#1}');
+DefMacro('\conferenceinfo{}{}', '\lx@add@frontmatter{ltx:note}[role=conference]{#1 #2}');
 
 # what useful behavior can we add here? e.g. see arxiv:math/0601658
 DefMacro('\thanksref{}', Tokens());

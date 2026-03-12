@@ -29,7 +29,7 @@ RequirePackage('natbib');
 Let('\AND',      '\and');
 Let('\And',      '\and');
 Let('\leftcite', '\cite');
-DefMacro('\pubnote{}', '\@add@frontmatter{ltx:note}[role=pubnote]{#1}');
+DefMacro('\pubnote{}', '\lx@add@frontmatter{ltx:note}[role=pubnote]{#1}');
 
 # These are used as separators within \author, so... no real way to guess their arguments
 DefMacro('\affiliations', Tokens());
@@ -54,9 +54,9 @@ DefMacro('\affiliations{}',
 DefMacro('\emails{}',
   '\lx@clear@frontmatter{ltx:contact}[role=email]'
     . '\lx@splitting{\lx@ijcai@email}{,}{#1}');
-DefMacro('\lx@ijcai@author{}',      '\lx@add@creator[role=author]{#1}');
-DefMacro('\lx@ijcai@affiliation{}', '\lx@add@contact[role=affiliation,markseq=author]{#1}');
-DefMacro('\lx@ijcai@email{}',       '\lx@add@contact[role=email,markseq=author]{#1}');
+DefMacro('\lx@ijcai@author{}',      '\lx@add@author{#1}');
+DefMacro('\lx@ijcai@affiliation{}', '\lx@add@affiliation[markseq=author]{#1}');
+DefMacro('\lx@ijcai@email{}',       '\lx@add@email[markseq=author]{#1}');
 
 #**********************************************************************
 

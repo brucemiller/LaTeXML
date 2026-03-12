@@ -40,9 +40,9 @@ RequirePackage('ulem');
 #======================================================================
 # 2.1.3 Editorial Information
 
-DefMacro('\received{}', '\@add@frontmatter{ltx:date}[role=received,name=Received]{#1}');
-DefMacro('\revised{}',  '\@add@frontmatter{ltx:date}[role=revised,name=Revised]{#1}');
-DefMacro('\accepted{}', '\@add@frontmatter{ltx:date}[role=accepted,name=Accepted]{#1}');
+DefMacro('\received{}', '\lx@add@date[role=received,name=Received]{#1}');
+DefMacro('\revised{}',  '\lx@add@date[role=revised,name=Revised]{#1}');
+DefMacro('\accepted{}', '\lx@add@date[role=accepted,name=Accepted]{#1}');
 
 # Could add more metadata..
 DefMacro('\journalid{}{}', '');
@@ -59,7 +59,7 @@ DefMacro('\edit{}{}',      '');
 DefMacro('\ccc{}', '');            # Ignorable?
 #\cpright{type}{year}   Should be recorded somehow?
 # type is AAS, ASP, PD, none
-DefMacro('\cpright{}{}', '\@add@frontmatter{ltx:note}[role=copyright]{\copyright #2: #1}');
+DefMacro('\cpright{}{}', '\lx@add@frontmatter{ltx:note}[role=copyright]{\copyright #2: #1}');
 
 # Editorial additions?
 DefMacro('\journal{}',    '');
@@ -74,13 +74,13 @@ DefMacro('\SGML{}',       '');
 #======================================================================
 # 2.1.4 Short Comment
 
-DefMacro('\slugcomment{}', '\@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
+DefMacro('\slugcomment{}', '\lx@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
 
 #======================================================================
 # 2.1.5 Running Heads
 
-DefMacro('\shorttitle{}',   '\@add@frontmatter{ltx:toctitle}{#1}');
-DefMacro('\shortauthors{}', '');                                      # not useful?
+DefMacro('\shorttitle{}',   '\lx@add@toctitle{#1}');
+DefMacro('\shortauthors{}', '');                       # not useful?
 
 # I had thought that \lefthead,\righthead were obsolete forms of \shorttitle,\shortauthors,
 # but who knows which goes on which side.... anyway, they get misused too.
@@ -101,13 +101,13 @@ DefMacro('\allauthors', '');    # Presumably should collect all authors?
 # Note optional arg starts with orchid ID,
 # followed by keyval (gname,sname,suffix for parts of author's name)
 DefMacro('\author[]{}',
-  '\lx@add@creator[role=author]{#2\lx@aas@checkorchid{#1}}');
+  '\lx@add@author{#2\lx@aas@checkorchid{#1}}');
 DefMacro('\lx@aas@checkorchid{}', '\lx@aas@checkorchid@#1,\done');
 # In later aas, $junk make be keywords? (gname,sname,suffix,...?)
 DefMacro('\lx@aas@checkorchid@ Until:, Until:\done', sub {
     my ($gullet, $possibleid, $junk) = @_;
     if (ToString($possibleid) =~ /^\s*\d\d\d\d-\d\d\d\d-\d\d\d\d-\d\d\d\d\s*$/) {
-      return Invocation('\lx@add@contact[role=orcid]{#1}', $possibleid); }
+      return Invocation('\lx@add@orcid{#1}', $possibleid); }
     return; });
 
 # \email[]{addr} applies to previous author
@@ -115,11 +115,11 @@ DefMacro('\lx@aas@checkorchid@ Until:, Until:\done', sub {
 DefMacro('\correspondingauthor{}', '\lx@add@contact[role=correspondent,mark={fuzzy:#1}]{#1}');
 
 # Various contact information attaches to previous \author
-DefMacro('\affiliation{}',    '\lx@add@contact[role=affiliation]{#1}');
-DefMacro('\altaffiliation{}', '\lx@add@contact[role=altaffiliation]{#1}');
+DefMacro('\affiliation{}',    '\lx@add@affiliation{#1}');
+DefMacro('\altaffiliation{}', '\lx@add@altaffiliation{#1}');
 DefMacro('\affil',            '\affiliation');
-DefMacro('\authoraddr{}',     '\lx@add@contact[role=address]{#1}');
-DefMacro('\email{}',          '\lx@add@contact[role=email]{#1}');
+DefMacro('\authoraddr{}',     '\lx@add@address{#1}');
+DefMacro('\email{}',          '\lx@add@email{#1}');
 
 # \collaboration{n}{name} applies to previous n authors [can be 0 or all]
 # \nocollaboration{n} ???
@@ -136,8 +136,8 @@ DefMacro('\authoremail',       '\email');    # Obsolete form
 
 DefPrimitive('\and', undef);
 
-DefMacro('\software{}',      '\@add@frontmatter{ltx:note}[role=software]{#1}');
-DefMacro('\submitjournal{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\software{}',      '\lx@add@frontmatter{ltx:note}[role=software]{#1}');
+DefMacro('\submitjournal{}', '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
 # Alas \doi is not frontmatter.
 DefConstructor('\doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>',
   enterHorizontal => 1);
@@ -149,7 +149,7 @@ DefConstructor('\doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>',
 #======================================================================
 # 2.5 Keywords
 
-DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}[name={\@ifundefined{keywordsname}{}{\keywordsname}}]{#1}');
+DefMacro('\keywords{}', '\lx@add@keywords[name={\@ifundefined{keywordsname}{}{\keywordsname}}]{#1}');
 Let('\subjectheadings', '\keywords');
 
 #======================================================================
@@ -240,7 +240,7 @@ Let('\acknowledgments', '\acknowledgements');
 # \facility{facilityID}
 DefConstructor('\facility{}', "<ltx:text class='ltx_ast_facility'>#1</ltx:text>",
   enterHorizontal => 1);
-DefMacro('\facilities{}', '\@add@frontmatter{ltx:note}[role=facilities]{#1}');
+DefMacro('\facilities{}', '\lx@add@frontmatter{ltx:note}[role=facilities]{#1}');
 
 #======================================================================
 # 2.11 Appendices
@@ -362,12 +362,12 @@ DefMacro('\aas@start@D@column XUntil:\aas@end@D@column', sub {
     my ($gullet, $n) = @_;
     my ($m,      $f) = SplitTokens($n, T_OTHER('.'));
     return ($f ? (@$m,
-        T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_norightpad'), T_END,
+        T_CS('\lx@add@cssclass'), T_BEGIN, T_OTHER('ltx_norightpad'), T_END,
         T_CS('\lx@alignment@align'),
-        T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_noleftpad'), T_END,
-        T_OTHER('.'),       @$f)
+        T_CS('\lx@add@cssclass'), T_BEGIN, T_OTHER('ltx_noleftpad'), T_END,
+        T_OTHER('.'),             @$f)
       : ($n,
-        T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_norightpad'), T_END,
+        T_CS('\lx@add@cssclass'), T_BEGIN, T_OTHER('ltx_norightpad'), T_END,
         T_CS('\lx@alignment@align')));
 });
 DefPrimitive('\aas@end@D@column', '');

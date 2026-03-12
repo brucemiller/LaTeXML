@@ -37,24 +37,24 @@ RequirePackage('dcolumn');
 # 4.3
 DefMacro('\title[]{}',
   '\gdef\@shorttitle{#1}\gdef\@title{#2}'
-    . '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
-    . '\@add@frontmatter{ltx:title}{#2}');
+    . '\ifx.#1.\else\lx@add@toctitle{#1}\fi'
+    . '\lx@add@title{#2}');
 
 # \author[mark]{name}   One \author per author
 # If mark given, the corresponding affiliation from \affil is attached
 # otherwise, \author should be followed by \affiliation
-DefMacro('\author[]{}',    '\lx@add@creator[role=author,mark={#1}]{#2}');
-DefMacro('\affiliation{}', '\lx@add@contact[attach=new,role=affiliation]{#1}');
+DefMacro('\author[]{}',    '\lx@add@author[mark={#1}]{#2}');
+DefMacro('\affiliation{}', '\lx@add@affiliation[attach=new]{#1}');
 DefMacro('\affil[]{}',
-  '\lx@add@contact[role=affiliation,attach={\ifx.#1.new\else 1\fi},mark={#1}]{#2}');
+  '\lx@add@affiliation[attach={\ifx.#1.new\else 1\fi},mark={#1}]{#2}');
 # \address provides an address to the previous \author
-DefMacro('\address{}', '\lx@add@contact[attach=new,role=address]{#1}');
+DefMacro('\address{}', '\lx@add@address[attach=new]{#1}');
 # These add contacts to most recent author
 # The optional arguments here are a sort of prefix to the footnote. (NOT marks)
-DefMacro('\email[] Semiverbatim',    '\lx@add@contact[role=email,name={#1}]{#2}');
-DefMacro('\homepage[] Semiverbatim', '\lx@add@contact[role=url,name={#1}]{#2}');
+DefMacro('\email[] Semiverbatim',    '\lx@add@email[name={#1}]{#2}');
+DefMacro('\homepage[] Semiverbatim', '\lx@add@url[name={#1}]{#2}');
 DefMacro('\thanks[]{}',              '\lx@add@contact[role=thanks,name={#1}]{#2}');
-DefMacro('\orcid[]{}',               '\lx@add@contact[role=orcid,name={#1}]{#2}');    # ?
+DefMacro('\orcid[]{}',               '\lx@add@orcid[name={#1}]{#2}');                 # ?
 
 DefMacro('\collaboration{}',    '\author{#1}');
 DefMacro('\altaffiliation[]{}', '\lx@add@contact[attach=new,role=affiliation,name={#1}]{#2}');
@@ -65,23 +65,18 @@ DefConstructor('\surname{}', "#1");
 # 4.4
 DefMacro('\abstractname', 'Abstract');
 
-# 4.5
-DefMacro('\pacs{}', '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
-
-# 4.6
-DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
-
-# 4.7
-DefMacro('\preprint{}', '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\pacs{}',     '\lx@add@classification[scheme=pacs]{#1}');
+DefMacro('\keywords{}', '\lx@add@keywords{#1}');
+DefMacro('\preprint{}', '\lx@add@frontmatter{ltx:note}[role=preprint]{#1}');
 
 # Extra stuff
 DefMacro('\blankaffiliation', '');
 DefMacro('\checkindate',      '\today');
 
-DefMacro('\received[]{}',  '\@add@frontmatter{ltx:date}[role=received]{#2}');
-DefMacro('\revised[]{}',   '\@add@frontmatter{ltx:date}[role=revised]{#2}');
-DefMacro('\accepted[]{}',  '\@add@frontmatter{ltx:date}[role=accepted]{#2}');
-DefMacro('\published[]{}', '\@add@frontmatter{ltx:date}[role=published]{#2}');
+DefMacro('\received[]{}',  '\lx@add@date[role=received]{#2}');
+DefMacro('\revised[]{}',   '\lx@add@date[role=revised]{#2}');
+DefMacro('\accepted[]{}',  '\lx@add@date[role=accepted]{#2}');
+DefMacro('\published[]{}', '\lx@add@date[role=published]{#2}');
 
 #======================================================================
 # 5. The body of the paper

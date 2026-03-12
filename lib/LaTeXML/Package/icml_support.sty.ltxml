@@ -51,7 +51,7 @@ DefMacro('\icmlcorrespondingauthor{}{}', '\lx@add@contact[mark={fuzzy:#1},role=e
 DefMacro('\printAffiliationsAndNotice{}', '');
 DefMacro('\icmlEqualContribution',        'Equal contribution');
 
-DefMacro('\icmlkeywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\icmlkeywords{}', '\lx@add@keywords{#1}');
 
 #======================================================================
 # Random extra bits

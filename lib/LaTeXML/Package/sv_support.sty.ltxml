@@ -22,19 +22,13 @@ RequirePackage('natbib');
 # Frontmatter
 DefRegister('\titlerunning', Tokens());
 DefMacro('\titrun',     Tokens());
-DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\subtitle{}', '\lx@add@subtitle{#1}');
 
 DefRegister('\authorrunning', Tokens());
 DefMacro('\authrun', Tokens());
 
 DefMacro('\emailname', 'E-mail');
-##DefConstructor('\@@@email{}', "^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
-##  properties => { (name => Digest(T_CS('\emailname'))) });
-##DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
-DefMacro('\mailname', '\textit{Correspondence}');
-##DefConstructor('\@@@mail{}', "^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
-##  properties => { (name => Digest(T_CS('\mailname'))) });
-##DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
+DefMacro('\mailname',  '\textit{Correspondence}');
 
 # Single \author containing multiple authors separated by \and
 DefMacro('\author{}',
@@ -49,11 +43,11 @@ DefMacro('\institute{}',
 Let('\at', '\relax');
 DefMacro('\lx@sv@institute{}', '\lx@sv@institute@#1\at\done');
 DefMacro('\lx@sv@institute@ Until:\at Until:\done',
-  '\ifx.#2.\lx@add@contact[role=affiliation]{#1}'
-    . '\else\lx@add@contact[role=affiliation,mark={fuzzy:#1}]{#2}\fi');
+  '\ifx.#2.\lx@add@affiliation{#1}'
+    . '\else\lx@add@affiliation[mark={fuzzy:#1}]{#2}\fi');
 
 # \email should be used within \institute, (but CAN be used anywhere; it only formats)
-DefMacro('\email Semiverbatim', '\lx@add@contact[role=email,name={\emailname: }]{#1}');
+DefMacro('\email Semiverbatim', '\lx@add@email[name={\emailname: }]{#1}');
 
 # Are these actually defined in svjour?
 DefMacro('\address{}', '\lx@add@contact[attach=new,role=address]{#1}');
@@ -66,21 +60,21 @@ DefMacro('\homepage[] Semiverbatim', '\lx@add@contact[role=url,name={\ifx.#1.URL
 DefMacro('\thanks[]{}',              '\lx@add@contact[role=thanks,name={#1}]{#2}');
 DefMacro('\orcid[]{}',               '\lx@add@contact[role=orcid,name={#1}]{#2}');    # ?
 
-DefMacro('\keywordname',  '\textbf{Keywords}');
-DefMacro('\keywords{}',   '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
-DefMacro('\subclassname', '\textbf{Mathematics Subject Classification (2000)}');
-DefMacro('\subclass{}', '\@add@frontmatter{ltx:classification}[scheme=MSC,name={\subclassname}]{#1}');
-DefMacro('\CRclassname', '\textbf{CR Subject Classification}');
-DefMacro('\CRclass{}',  '\@add@frontmatter{ltx:classification}[scheme=CR,name={\CRclassname}]{#1}');
-DefMacro('\ESMname',    '\textbf{Electronic Supplementary Material}');
-DefMacro('\ESM{}',      '\@add@frontmatter{ltx:note}[role=supplemental,name={\ESMname}]{#1}');
-DefMacro('\PACSname',   '\textbf{PACS}');
-DefMacro('\PACS{}',     '\@add@frontmatter{ltx:classification}[scheme=pacs,name={\PACSname}]{#1}');
-DefMacro('\headnote{}', '\@add@frontmatter{ltx:note}{#1}');
-DefMacro('\dedication{}',  '\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
-DefMacro('\offprints{}',   '\@add@frontmatter{ltx:note}[role=offprints]{#1}');
-DefMacro('\journalname{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\papertype{}',   '\@add@frontmatter{ltx:classification}[scheme=papertype]{#1}');
+DefMacro('\keywordname',   '\textbf{Keywords}');
+DefMacro('\keywords{}',    '\lx@add@keywords[name={\keywordname}]{#1}');
+DefMacro('\subclassname',  '\textbf{Mathematics Subject Classification (2000)}');
+DefMacro('\subclass{}',    '\lx@add@classification[scheme=MSC,name={\subclassname}]{#1}');
+DefMacro('\CRclassname',   '\textbf{CR Subject Classification}');
+DefMacro('\CRclass{}',     '\lx@add@classification[scheme=CR,name={\CRclassname}]{#1}');
+DefMacro('\ESMname',       '\textbf{Electronic Supplementary Material}');
+DefMacro('\ESM{}',         '\lx@add@frontmatter{ltx:note}[role=supplemental,name={\ESMname}]{#1}');
+DefMacro('\PACSname',      '\textbf{PACS}');
+DefMacro('\PACS{}',        '\lx@add@classification[scheme=pacs,name={\PACSname}]{#1}');
+DefMacro('\headnote{}',    '\lx@add@frontmatter{ltx:note}{#1}');
+DefMacro('\dedication{}',  '\lx@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
+DefMacro('\offprints{}',   '\lx@add@frontmatter{ltx:note}[role=offprints]{#1}');
+DefMacro('\journalname{}', '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\papertype{}',   '\lx@add@frontmatter{ltx:classification}[scheme=papertype]{#1}');
 
 Let('\journalopt', '\@empty');
 
@@ -101,7 +95,7 @@ DefMacro('\abstract OptionalMatch:*', sub {
 
 # Just ignore \abstract* (what's it for?)
 DefMacro('\lx@ignore@sv@abstract{}', '');
-DefMacro('\@abstract@with@arg{}',    '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{#1}');
+DefMacro('\@abstract@with@arg{}',    '\lx@add@abstract[name={\abstractname}]{#1}');
 
 DefMacro('\makereferee', Tokens());
 

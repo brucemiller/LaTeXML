@@ -86,18 +86,18 @@ DefMacro('\author{} RequiredKeyVals', sub {
       my ($key, $code) = @$entry;
       if (my $value = $kv->getValue($key)) {
         push(@content, Invocation($code, $value)); } }
-    return Invocation('\lx@add@creator[role=author]{#1}', Tokens(@content)); });
+    return Invocation('\lx@add@author{#1}', Tokens(@content)); });
 
 DefMacroI('\keywordsname', undef, 'Keywords');
-DefMacro('\keywords{}',       '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
-DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
+DefMacro('\keywords{}',       '\lx@add@keywords[name={\keywordsname}]{#1}');
+DefMacro('\classification{}', '\lx@add@classification{#1}');
 
-DefMacro('\received{}',        '\@add@frontmatter{ltx:date}[role=received]{#1}');
-DefMacro('\revised{}',         '\@add@frontmatter{ltx:date}[role=revised]{#1}');
-DefMacro('\accepted{}',        '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
-DefMacro('\draftdate{}',       '\@add@frontmatter{ltx:date}[role=draft]{#1}');
-DefMacro('\copyrightholder{}', '\@add@frontmatter{ltx:date}[role=copyrightholder]{#1}');
-DefMacro('\copyrightyear{}',   '\@add@frontmatter{ltx:date}[role=copyright]{#1}');
+DefMacro('\received{}',        '\lx@add@date[role=received]{#1}');
+DefMacro('\revised{}',         '\lx@add@date[role=revised]{#1}');
+DefMacro('\accepted{}',        '\lx@add@date[role=accepted]{#1}');
+DefMacro('\draftdate{}',       '\lx@add@date[role=draft]{#1}');
+DefMacro('\copyrightholder{}', '\lx@add@date[role=copyrightholder]{#1}');
+DefMacro('\copyrightyear{}',   '\lx@add@date[role=copyright]{#1}');
 
 DefEnvironment('{theacknowledgments}', "<ltx:acknowledgements>#body</ltx:acknowledgements>");
 #======================================================================

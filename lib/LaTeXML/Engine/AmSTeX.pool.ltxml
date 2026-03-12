@@ -130,15 +130,12 @@ DefConstructor('\enddocument', "</ltx:document>",
 #======================================================================
 # Front Matter
 
-DefMacro('\topmatter',             '');
-DefMacro('\endtopmatter',          '');
-DefMacro('\title Until:\endtitle', '\@add@frontmatter{ltx:title}{#1}');
-DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
-  mode => 'restricted_horizontal');
-DefMacro('\author Until:\endauthor', '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
-DefConstructor('\@institute{}', "<ltx:contact role='affiliation'>#1</ltx:contact>", bounded => 1);
-DefMacro('\thanks Until:\endthanks',     '\@add@to@frontmatter{ltx:creator}{\@institute{#1}}');
-DefMacro('\abstract Until:\endabstract', '\@add@frontmatter{ltx:abstract}{#1}');
+DefMacro('\topmatter',                   '');
+DefMacro('\endtopmatter',                '');
+DefMacro('\title Until:\endtitle',       '\lx@add@title{#1}');
+DefMacro('\author Until:\endauthor',     '\lx@add@author{#1}');
+DefMacro('\thanks Until:\endthanks',     '\lx@add@affiliation{#1}');
+DefMacro('\abstract Until:\endabstract', '\lx@add@abstract{#1}');
 
 #======================================================================
 # Document structure
@@ -239,7 +236,7 @@ DefMacro("\\format Until:\\\\", '');
 
 DefConstructor('\text {}',
   "<ltx:text _noautoclose='1'>#1</ltx:text>",
-  mode => 'restricted_horizontal',
+  mode            => 'restricted_horizontal',
   enterHorizontal => 1);
 
 DefConstructor('\overset Until:\to {}',
@@ -268,18 +265,18 @@ DefConstructor('\frac InFractionStyle InFractionStyle',
   properties => { mathstyle => sub { LookupValue('font')->getMathstyle; } });
 
 DefConstructor('\Cal{}', '#1', bounded => 1, requireMath => 1,
-  font => { family => 'caligraphic', series => 'medium', shape => 'upright' },
+  font            => { family => 'caligraphic', series => 'medium', shape => 'upright' },
   enterHorizontal => 1);
 
 # \bold in amsfonts
 DefConstructor('\roman{}', '#1', bounded => 1, requireMath => 1,
-  font => { family => 'serif', series => 'medium', shape => 'upright' },
+  font            => { family => 'serif', series => 'medium', shape => 'upright' },
   enterHorizontal => 1);
 DefConstructor('\italic{}', '#1', bounded => 1, requireMath => 1,
-  font => { shape => 'italic', series => 'medium', shape => 'upright' },
+  font            => { shape => 'italic', series => 'medium', shape => 'upright' },
   enterHorizontal => 1);
 DefConstructor('\slanted{}', '#1', bounded => 1, requireMath => 1,
-  font => { shape => 'slanted', series => 'medium', shape => 'upright' },
+  font            => { shape => 'slanted', series => 'medium', shape => 'upright' },
   enterHorizontal => 1);
 DefConstructor('\boldkey{}', '#1', bounded => 1, requireMath => 1,
   font => { series => 'bold', family => 'typewriter', series => 'medium', shape => 'upright' },
@@ -354,8 +351,8 @@ DefMacro('\minCDarrowwidth Dimension',  '');
 DefMacro('\pretend Until:\haswidth {}', '#1');
 
 DefMacro('\snug', '');
-DefConstructor('\topsmash{}', "#1",   enterHorizontal => 1);
-DefConstructor('\botsmash{}', "#1",   enterHorizontal => 1);
+DefConstructor('\topsmash{}', "#1", enterHorizontal => 1);
+DefConstructor('\botsmash{}', "#1", enterHorizontal => 1);
 
 DefConstructor('\spreadmatrixlines Dimension', '');
 
