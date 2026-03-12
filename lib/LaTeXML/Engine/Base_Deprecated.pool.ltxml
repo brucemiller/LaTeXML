@@ -152,6 +152,16 @@ DefMacro('\@@POSTSUPERSCRIPT',
 DefMacro('\@ASSERT@MEANING',
   '\lx@DEPRECATE{\@ASSERT@MEANING}{\lx@assert@meaning}\lx@assert@meaning');
 
+DefMacro('\@personname',
+  '\lx@DEPRECATE{\@personname}{{\lx@personname}\lx@personname');
+DefMacro('\@add@frontmatter',
+  '\lx@DEPRECATE{\@add@frontmatter}{\lx@add@frontmatter}\lx@add@frontmatter');
+DefMacro('\@add@to@frontmatter {}[]{}',
+  '\lx@DEPRECATE{\@add@to@frontmatter}{\lx@add@to@frontmatter}'
+    . '\lx@add@to@frontmatter{#1}{preformatted}[#2]{#3}');
+DefMacro('\@ADDCLASS',
+  '\lx@DEPRECATE{\@ADDCLASS}{{\lx@add@cssclass}\lx@add@cssclass');
+
 #======================================================================
 # Older deprecations
 # (but there was no warning mechanism then)
