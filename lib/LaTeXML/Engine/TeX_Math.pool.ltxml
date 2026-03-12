@@ -635,7 +635,7 @@ DefRegister('\delcode Number', Number(-1),
 # but it should be initialized to -1 at beginning of every math!
 DefRegister('\fam' => Number(-1),
   getter => sub {
-    $STATE->lookupValue('fontfamily'); },
+    Number($STATE->lookupValue('fontfamily')); },
   setter => sub {
     my ($fam, $scope) = @_;
     $STATE->assignValue('fontfamily' => $fam->valueOf, $scope);

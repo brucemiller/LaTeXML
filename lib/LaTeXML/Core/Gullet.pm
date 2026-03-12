@@ -805,6 +805,8 @@ sub readRegisterValue {
     # Careful: $value may be a scalar in Erroneous(?) cases (`\number \fam`)
     if (!ref $value) {
       if ($coercer = $RegisterCoercionTypes{$type}{$rtype}) {
+        Error("unexpected", "value", $self,
+          "Got a scalar with value $value, will coerce from $type into $rtype");
         $value = &$coercer($value); }
       else {
         Error("unexpected", "value", $self,
