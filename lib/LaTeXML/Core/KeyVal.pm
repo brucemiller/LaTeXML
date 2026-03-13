@@ -102,13 +102,14 @@ sub define {
   if ($kind eq 'ordinary') {
     defineOrdinary($qname, $options{code}); }
   elsif ($kind eq 'command') {
-    my $macroname = ($options{macroprefix} ? $options{macroprefix} . $key : "cmd" . $qname);
+    my $macroname = (defined($options{macroprefix}) && $options{macroprefix} ne ''
+      ? $options{macroprefix} . $key : "cmd" . $qname);
     defineCommand($qname, $options{code}, $macroname); }
   elsif ($kind eq 'choice') {
     defineChoice($qname, $options{code}, $options{mismatch},
       $options{choices}, ($options{normalize} || 0), $options{bin}); }
   elsif ($kind eq 'boolean') {
-    my $macroname = ($options{macroprefix} ? $options{macroprefix} . $key : $qname);
+    my $macroname = (defined($options{macroprefix}) ? $options{macroprefix} . $key : $qname);
     defineBoolean($qname, $options{code}, $options{mismatch}, $macroname); }
   else {
     Warn('unknown', undef, "Unknown KeyVals kind $kind",

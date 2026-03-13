@@ -13,6 +13,11 @@
 package LaTeXML::Package::Pool;
 use LaTeXML::Package;
 use strict;
+use warnings;
 
-InputDefinitions('pstricks', type=>'sty');
+# Load raw pstricks.tex so its internal registers (\pst@dima, etc.),
+# utility macros (\pstheader, \pst@number, etc.), and key-value handlers
+# are available for downstream raw packages.
+# The pstricks.sty.ltxml binding then overrides the user-facing commands.
+InputDefinitions('pstricks', type => 'tex', noltxml => 1);
 1;
