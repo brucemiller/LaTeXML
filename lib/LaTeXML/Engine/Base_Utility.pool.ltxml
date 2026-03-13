@@ -299,7 +299,10 @@ DefConstructor('\lx@frontmatterhere', sub { insertFrontMatter($_[0]); },
     my ($stomach) = @_;
     my @boxes = ();
     if (my $frontmatter_tks = LookupValue('@at@begin@maketitle')) {
+      Let('\@add@to@frontmatter@save','\@add@to@frontmatter');
+      Let('\@add@to@frontmatter','\@add@to@frontmatter@now');
       push(@boxes, $stomach->digest(Tokens(@$frontmatter_tks)));
+      Let('\@add@to@frontmatter','\@add@to@frontmatter@save');
       AssignValue('@at@begin@maketitle', undef, 'global'); }
     AssignValue(frontmatter_deferred => 1, 'global');
     return @boxes; });

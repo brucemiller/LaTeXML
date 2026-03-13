@@ -554,9 +554,12 @@
       <xsl:if test="ltx:contact">
         <xsl:element name="span" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_author_notes</xsl:attribute>
-          <xsl:apply-templates select="ltx:contact">
-            <xsl:with-param name="context" select="$innercontext"/>
-          </xsl:apply-templates>
+          <xsl:element name="span" namespace="{$html_ns}">
+            <xsl:attribute name="class">ltx_author_notes_content</xsl:attribute>
+            <xsl:apply-templates select="ltx:contact">
+              <xsl:with-param name="context" select="$innercontext"/>
+            </xsl:apply-templates>
+          </xsl:element>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates select="." mode="end">
