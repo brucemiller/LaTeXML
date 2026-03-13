@@ -15,7 +15,8 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Geometry;
-use List::Util qw(min max);
+use List::Util   qw(min max);
+use Scalar::Util qw(looks_like_number);
 
 # NOTE: since *.code.tex is read with \input, the .ltxml may be loaded more than once.
 no warnings 'redefine';
@@ -87,7 +88,8 @@ sub pgfmathresult {
   if (!$presanitized && $value =~ /[.e]/) {
     $value = sprintf("%.5f", $value);
     $value =~ s/([^.])0+$/$1/; }
-  return Tokens(T_CS('\def'), T_CS('\pgfmathresult'), T_BEGIN, ExplodeText($value), T_END); }
+  # the result may contain TeX macros, retokenize them with the current cattable
+  return Tokens(T_CS('\def'), T_CS('\pgfmathresult'), T_BEGIN, LaTeXML::Core::Mouth->new($value)->readTokens, T_END); }
 
 DefMacro('\@@@show@mathresult{}', sub {
     my ($gulet, $result) = @_;
@@ -325,7 +327,9 @@ sub pgfmathparse {
   Let('\widthof',  '\pgfmath@calc@widthof');
   Let('\heightof', '\pgfmath@calc@heightof');
   Let('\depthof',  '\pgfmath@calc@depthof');
-  my $string = (ref $tokens ? ToString(Expand($tokens)->stripBraces) : $tokens);
+  my $string = (ref $tokens ? UnTeX(Expand($tokens)->stripBraces, 1) : $tokens);
+  # Normalize spaces and remove braces
+  $string =~ s/[}{]/ /g;
   $string =~ s/^\s+//; $string =~ s/\s+$//; $string =~ s/\s+/ /gs;
   my $input = $string;
   # simple number-like thing? return as-is without any changes.
@@ -358,29 +362,33 @@ sub pgfmathparse {
     # note: trig functions may be tempting, but their precedence differs
     # e.g. perl's eval of 'cos 1260/5' is 0.7822121... , while PGF computes
     # \def\e{1260}\pgfmathparse{cos \e/5} to -0.2 - i.e. "cos" binds stronger than "/"
+    # also ^ associates to the left rather than the right
     && ($string !~ /\b(?:a?(sin|cos|tan2?)h?)|bin|add|array|tan|cot|sec|(?:co)?sec|
     deg|depth|dim|div|divide|(?:(?:not)?(?:equal|greater|less))|oct|pi|pow|multiply|
-    rand|scalar|sign|vec|width/x)) { {
+    rand|scalar|sign|vec|width|hex|frac|ifthenelse|\\|\^/x)) { {
       # special case! the ^ in tikz is used for power, but NOT so in perl.
-      $string =~ s/\^/**/g;
+      my $perlstring = $string =~ s/\^/**/gr;
       local $LaTeXML::IGNORE_ERRORS = 1;
       local $@;
       no warnings;
-      $result = eval $string;
+      $result = eval $perlstring;
       if (!$@) {
         # need to erase string when perl eval works, to keep it consistent with recdescent
         $string = ''; }
   } }
+  $result = $result || 0.0;
   if ($string && !$result) {
     $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
-    $result         = $PGFMATHGrammar->expr(\$string); }
-  $result = $result || 0.0;
+    $result         = $PGFMATHGrammar->formula(\$string); }
   $string =~ s/^[\)\]]+$//;    # Forgive excess trailing ) !?!?!?!?!
   if ($string) {
     Error('pgfparse', 'pgfparse', $gullet,
       "Parse of '$input' failed",
       "LTX: '$result'",
       "Left: $string"); }
+  elsif (!looks_like_number($result)) {
+    # result is a string, leave untouched
+    return $result; }
   # NOT really correct, but would like to use an internal to distinguish 1.0 from int(1.0)!!!
   elsif ($result == int($result)) {
     $result = int($result);
@@ -398,7 +406,8 @@ DefMacro('\lx@pgfmath@parseX{}', sub {
     return Tokens(T_CS('\def'), T_CS('\lx@pgfmathresult'),
       T_BEGIN, pgfmathparse($gullet, $tokens), T_END); });
 
-DefMacro('\lx@pgfmath@parse{}', sub {
+# TODO argument should actually go through \protected@edef if that is defined (i.e. with the LaTeX engine)
+DefMacro('\lx@pgfmath@parse ExpandedPartially', sub {
     my ($gullet, $tokens) = @_;
     return pgfmathresult(pgfmathparse($gullet, $tokens), 1); });
 
@@ -522,8 +531,6 @@ sub pgfmath_getdepth {
 
 sub pgfmath_sizer {
   my ($dimension, $rawtex) = @_;
-  $rawtex =~ s/^"//;
-  $rawtex =~ s/"$//;
   my $result;
   if (my $boxed = Digest($rawtex)) {
     if ($dimension eq 'height') {
@@ -555,90 +562,100 @@ sub pgfmath_checkuserfunction {
 
 BEGIN {
   $PGFMathFunctions = {
-    '=='       => sub { $_[0] == $_[1]; },
-    equal      => sub { $_[0] == $_[1]; },
-    '>'        => sub { $_[0] > $_[1]; },
-    greater    => sub { $_[0] > $_[1]; },
-    '<'        => sub { $_[0] < $_[1]; },
-    less       => sub { $_[0] < $_[1]; },
-    '!='       => sub { $_[0] != $_[1]; },
-    notequal   => sub { $_[0] != $_[1]; },
-    '>='       => sub { $_[0] >= $_[1]; },
-    notless    => sub { $_[0] >= $_[1]; },
-    '<='       => sub { $_[0] <= $_[1]; },
-    notgreater => sub { $_[0] <= $_[1]; },
-    '&&'       => sub { $_[0] && $_[1]; },
-    'and'      => sub { $_[0] && $_[1]; },
-    '||'       => sub { $_[0] || $_[1]; },
-    or         => sub { $_[0] || $_[1]; },
-    '+'        => sub { (defined $_[1] ? $_[0] + $_[1] : $_[0]); },
-    'add'      => sub { (defined $_[1] ? $_[0] + $_[1] : $_[0]); },
-    '-'        => sub { (defined $_[1] ? $_[0] - $_[1] : -$_[0]); },    # prefix or infix
-    neg        => sub { -$_[0]; },
-    '*'        => sub { $_[0] * $_[1]; },
-    multiply   => sub { $_[0] * $_[1]; },
-    '/'        => sub { $_[0] / pgfmath_divisor($_[1]); },
-    divide     => sub { $_[0] / pgfmath_divisor($_[1]); },
-    div        => sub { int($_[0] / pgfmath_divisor($_[1])); },
-    '!'        => sub { pgfmathfactorial($_[0]); },
-    'r'        => sub { rad2deg($_[0]); },
-    e          => sub { $E; },
-    pi         => sub { $PI; },
-    abs        => sub { abs($_[0]); },
-    acos       => sub { acos($_[0]); },
-    array      => sub { },
-    asin       => sub { rad2deg(asin($_[0])); },
-    atan       => sub { rad2deg(atan($_[0])); },
-    atan2      => sub { rad2deg(atan2($_[0], $_[1])); },
-    angle      => sub { rad2deg(atan2($_[0], $_[1])); },    # Assume same? Where's documentation?
-                                                            #    bin   => sub { },
-    ceil       => sub { ceil($_[0]); },
-    cos        => sub { cos(pgfmathargradians($_[0])); },
-    cosec      => sub { cosec(pgfmathargradians($_[0])); },
-    cosh       => sub { cosh($_[0]); },
-    cot        => sub { cot(pgfmathargradians($_[0])); },
-    deg        => sub { rad2deg($_[0]); },
+    '!pref'    => sub { int(!$_[0]); },
+    not        => sub { int(!$_[0]) },
+    '=='       => sub { int($_[0] == $_[1]) },
+    equal      => sub { int($_[0] == $_[1]) },
+    '>'        => sub { int($_[0] > $_[1]) },
+    greater    => sub { int($_[0] > $_[1]) },
+    '<'        => sub { int($_[0] < $_[1]) },
+    less       => sub { int($_[0] < $_[1]) },
+    '!='       => sub { int($_[0] != $_[1]) },
+    notequal   => sub { int($_[0] != $_[1]) },
+    '>='       => sub { int($_[0] >= $_[1]) },
+    notless    => sub { int($_[0] >= $_[1]) },
+    '<='       => sub { int($_[0] <= $_[1]) },
+    notgreater => sub { int($_[0] <= $_[1]) },
+    '&&'       => sub { int($_[0] && $_[1]) },
+    'and'      => sub { int($_[0] && $_[1]) },
+    '||'       => sub { int($_[0] || $_[1]) },
+    or         => sub { int($_[0] || $_[1]) },
+    iseven     => sub { int((int($_[0]) % 2) == 0) },
+    isodd      => sub { int((int($_[0]) % 2) == 1) },
+    #    isprime    => sub { },
+    false    => sub { 0; },
+    true     => sub { 1; },
+    '+'      => sub { (defined $_[1] ? $_[0] + $_[1] : $_[0]); },
+    'add'    => sub { (defined $_[1] ? $_[0] + $_[1] : $_[0]); },
+    '-'      => sub { (defined $_[1] ? $_[0] - $_[1] : -$_[0]); },    # prefix or infix
+    neg      => sub { -$_[0]; },
+    '*'      => sub { $_[0] * $_[1]; },
+    multiply => sub { $_[0] * $_[1]; },
+    '/'      => sub { $_[0] / pgfmath_divisor($_[1]); },
+    divide   => sub { $_[0] / pgfmath_divisor($_[1]); },
+    div      => sub { int($_[0] / pgfmath_divisor($_[1])); },
+    '^'      => sub { $_[0]**$_[1]; },
+    e        => sub { $E; },
+    pi       => sub { $PI; },
+    abs      => sub { abs($_[0]); },
+    acos     => sub { acos($_[0]); },
+    array    => sub { },
+    asin     => sub { rad2deg(asin($_[0])); },
+    atan     => sub { rad2deg(atan($_[0])); },
+    atan2    => sub { rad2deg(atan2($_[0], $_[1])); },
+    angle    => sub { rad2deg(atan2($_[0], $_[1])); },    # Assume same? Where's documentation?
+    bin      => sub { sprintf("%b", $_[0]); },
+    ceil     => sub { ceil($_[0]); },
+    cos      => sub { cos(pgfmathargradians($_[0])); },
+    cosec    => sub { cosec(pgfmathargradians($_[0])); },
+    cosh     => sub { cosh($_[0]); },
+    cot      => sub { cot(pgfmathargradians($_[0])); },
+    deg      => sub { rad2deg($_[0]); },
     #    depth => sub { },
     exp       => sub { exp($_[0]); },
     factorial => sub { pgfmathfactorial($_[0]); },
-    false     => sub { 0; },
     floor     => sub { floor($_[0]); },
-    #    frac       => sub { },
-    #    gcd        => sub { },
+    frac      => sub { $_[0] < 0 ? ceil($_[0]) - $_[0] : $_[0] - floor($_[0]); },
+    gcd       => sub {
+      # PGF computes the gcd of the underlying TeX integers!
+      my ($lhs, $rhs) = (abs($_[0]) * 65536, abs($_[1]) * 65536);
+      ($lhs, $rhs) = ($rhs, $lhs) if $rhs > $lhs;
+      while ($rhs > 0) { ($lhs, $rhs) = ($rhs, $lhs % $rhs); }
+      int($lhs / 65536); },
     #    height     => sub { },
     hex        => sub { sprintf("%x", $_[0]); },
     Hex        => sub { sprintf("%X", $_[0]); },
-    int        => sub { int($_[0]); },
+    int        => sub { $_[0] < 0 ? ceil($_[0]) : floor($_[0]); },
     ifthenelse => sub { ($_[0] ? $_[1] : $_[2]); },
-    iseven     => sub { (int($_[0]) % 2) == 0 },
-    isodd      => sub { (int($_[0]) % 2) == 1 },
-    #    isprime    => sub { },
-    ln    => sub { log($_[0]); },
-    log10 => sub { log($_[0]) / $LOG10; },
-    log2  => sub { log($_[0]) / $LOG2; },
-    max   => sub { max(@_); },
-    min   => sub { min(@_); },
-    mod   => sub { pgfmath_mod_trunc($_[0], $_[1]); },
-    Mod   => sub { pgfmath_mod_floor($_[0], $_[1]); },
-    not   => sub { !$_[0]; },
-    oct   => sub { sprintf("%o", $_[0]); },
-    pow   => sub { $_[0]**$_[1]; },
-    rad   => sub { deg2rad($_[0]); },
+    ln         => sub { log($_[0]); },
+    log10      => sub { log($_[0]) / $LOG10; },
+    log2       => sub { log($_[0]) / $LOG2; },
+    max        => sub { max(@_); },
+    min        => sub { min(@_); },
+    mod        => sub { pgfmath_mod_trunc($_[0], $_[1]); },
+    Mod        => sub { pgfmath_mod_floor($_[0], $_[1]); },
+    oct        => sub { sprintf("%o", $_[0]); },
+    pow        => sub { $_[0]**$_[1]; },
+    rad        => sub { deg2rad($_[0]); },
     #    rand     => sub { },
     #    random   => sub { },
     real => sub { $_[0] + 0.0; },
     #    rnd      => sub { },
-    round    => sub { round($_[0]); },
-    scalar   => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
-    sec      => sub { sec(pgfmathargradians($_[0])); },
-    sign     => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
-    sin      => sub { sin(pgfmathargradians($_[0])); },
-    sinh     => sub { sinh($_[0]); },
-    sqrt     => sub { sqrt($_[0]); },
+    round  => sub { round($_[0]); },
+    scalar => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
+    sec    => sub { sec(pgfmathargradians($_[0])); },
+    sign   => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
+    sin    => sub { sin(pgfmathargradians($_[0])); },
+    sinh   => sub { sinh($_[0]); },
+    sqrt   => sub {
+      if ($_[0] >= 0) {
+        return sqrt($_[0]); }
+      else {
+        Error("pgfmath", "sqrt", undef, "Undefined sqrt on negative number: " . $_[0]);
+        return $_[0]; } },
     subtract => sub { $_[0] - $_[1]; },
     tan      => sub { tan(pgfmathargradians($_[0])); },
     tanh     => sub { tanh($_[0]); },
-    true     => sub { 1; },
     veclen   => sub { sqrt($_[0] * $_[0] + $_[1] * $_[1]); },
     #    width    => sub { },
     # Additional functions from tikz-cd; these need to get parameters from the current math font!
@@ -647,6 +664,17 @@ BEGIN {
   };
 
   $::RD_HINT = 1;
+  # $::RD_TRACE = 1;
+
+  # The PGF grammar is simple enough that can be parsed from left to right:
+  # once a part of the text has been parsed successfully, its meaning will not
+  # change. To ensure we do not waste energy on reparsing the same text, follow
+  #
+  # REQUIREMENT: alternations MUST be disambiguated by the first character
+  #
+  # In other words, the parser must never backtrack. This guarantees that
+  # successful matches and effectful computations such as 'rand' are not
+  # repeated multiple times.
 
   # Why can't I manage to import a few functions to be visible to the grammar actions?
   # NOTE Not yet done: quoted strings, extensible functions
@@ -654,80 +682,126 @@ BEGIN {
 #  {BEGIN { use LaTeXML::Package::Pool; }}
 #  { use LaTeXML::Package::Pool; }
 #  { LaTeXML::Package::Pool->import(qw(pgfmath_apply)); }
-  <skip:'[\s\{\}]*'>            # braces ignored during parse...
-  formula :
-    expr /\?/ expr /:/ expr { ($item[1] ? $item[3] : $item[5]); }
-  | expr CMP expr           { LaTeXML::Package::Pool::pgfmath_apply($item[2], $item[1], $item[3]); }
-  | expr
 
-expr :
-     term (ADDOP term { [$item[1],$item[2]]; })(s?)
-          { LaTeXML::Package::Pool::pgfmath_leftrecapply($item[1],map(@$_,@{$item[2]})); }
+<skip:'[\s\{\}]*'>            # braces ignored during parse...
 
-  term :
-     factor (MULOP factor { [$item[1],$item[2]]; })(s?)
-          { LaTeXML::Package::Pool::pgfmath_leftrecapply($item[1],map(@$_,@{$item[2]})); }
+formula : predicate conditional[$item{predicate}](?)
+  { defined $item[2][0] ? $item[2][0] : $item{predicate}; }
 
-   # addPostfix[$base] ; adds any following sub/super scripts to $base.
-   addPostfix :
-          /^\Z/ { $arg[0];}   # short circuit!
-        | POSTFIX          addPostfix[LaTeXML::Package::Pool::pgfmath_apply($item[1],$arg[0])]
-        | { $arg[0]; }
-  factor : simplefactor /\^/ simplefactor { $item[1] ** $item[3]; }
-    | simplefactor addPostfix[$item[1]]
+# conditional[$if]
+# '?' precedence 100, ':' precendence 101
+conditional : '?' then ':' else
+  { $arg[0] ? $item{then} : $item{else}; }
+  then: formula
+  else: formula
 
-  simplefactor :
-      /\(/ formula /(?:\)|^\Z)/     { $item[2]; } # Let unclosed () succeed at end?
-    | PREFIX simplefactor   { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
-    | SIZER /\(/ QTEX /\)/ { LaTeXML::Package::Pool::pgfmath_sizer($item[1], $item[3]); }
-    | FUNCTION /\(/ formula (/,/ formula { $item[2]; })(s?) /\)/
-           { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[3], @{$item[4]}); }
-    | FUNCTION simplefactor
-           { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[2]); }
-    | FUNCTION0                   { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
-    | NUMBER UNIT          { LaTeXML::Package::Pool::pgfmath_convert($item[1],$item[2]); }
-    | NUMBER REGISTER      { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
+# BOOLOP precedence 200
+predicate : atomic (BOOLOP atomic { [$item{BOOLOP},$item{atomic}]; })(s?)
+  { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{atomic}, map(@$_,@{$item[2]})); }
+
+# CMP precedence 250
+atomic : expr comparison[$item{expr}](?)
+  { defined $item[2][0] ? $item[2][0] : $item{expr}; }
+
+# comparison[$left]
+comparison : CMP expr
+  { LaTeXML::Package::Pool::pgfmath_apply($item{CMP}, $arg[0], $item{expr}); }
+
+# ADDOP precedence 500
+expr : QTEX | term (ADDOP term { [$item{ADDOP},$item{term}]; })(s?)
+  { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{term}, map(@$_,@{$item[2]})); }
+
+# MULOP precedence 700, 'r' precedence 600
+# the postfix 'r' is equivalent to multiplying by 180/pi, even accounting for predecence
+term :
+  PREFIX term { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
+  | factor ('r' { ['*',180/Math::Trig::pi]; } | MULOP factor { [$item{MULOP},$item{factor}]; })(s?)
+    { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{factor},map(@$_,@{$item[2]})); }
+
+# pgfmathparser has a hardcoded notion of 'double character' operator
+# '!' could be part of '!=', so we forbid that sequence
+# '!' postfix precedence 800
+factor : power ('!' ...!'=')(s?)
+  { $return = $item{power};
+    for my $i (@{$item[2]}) { $return = LaTeXML::Package::Pool::pgfmathfactorial($return); } }
+
+# '^' precedence 900
+power : simplefactor ('^' simplefactor { ['^',$item{simplefactor}]; })(s?)
+  { LaTeXML::Package::Pool::pgfmath_leftrecapply($item{simplefactor}, map(@$_,@{$item[2]})); }
+
+function : FUNCTION (arguments | simpleargument)[$item{FUNCTION}] { $item[2]; }
+  arguments : '(' formula (',' formula { $item[2]; })(s?) ')'
+    { LaTeXML::Package::Pool::pgfmath_apply($arg[0], $item{formula}, @{$item[3]}); }
+  # to respect the REQUIREMENT, forbid simplefactor starting with '('
+  simpleargument : ...!'(' simplefactor
+    { LaTeXML::Package::Pool::pgfmath_apply($arg[0], $item{simplefactor}); }
+
+# '!' precedence 975, rest of PREFIX precedence infinity
+# '(' precedence 5, ')' precedence 4
+simplefactor :
+    '(' formula /(?:\)|^\Z)/ { $item[2]; } # Let unclosed () succeed at end?
+  | PREFIX simplefactor      { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
+  | SIZER '(' QTEX ')'       { LaTeXML::Package::Pool::pgfmath_sizer($item[1], $item[3]); }
+  | function
+  | FUNCTION0 { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
+  | number
+  | register
+
+number : NUMBER postNumber[$item[1]]
+  postNumber :
+      /^\Z/    { $arg[0]; } # short circuit!
+    | REGISTER { LaTeXML::Package::Pool::pgfmath_apply('*', $arg[0], $item[1]); }
+    | UNIT     { LaTeXML::Package::Pool::pgfmath_convert($arg[0],$item[1]); }
+    |          { $arg[0]; }
+
+register : REGISTER postRegister[$item[1]]
+  postRegister :
+      /^\Z/    { $arg[0]; }   # short circuit!
       # really count_register dimension_register!
-    | REGISTER REGISTER    { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
-    | NUMBER
-    | REGISTER
+    | REGISTER { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
+    |          { $arg[0]; }
 
-    REGISTER :  # these need to set dimension flag!!!
-      /\\wd/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::Pool::pgfmath_getwidth($item[2]); }
-    | /\\ht/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::Pool::pgfmath_getheight($item[2]); }
-    | /\\dp/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::Pool::pgfmath_getdepth($item[2]); }
-    | CS                   { LaTeXML::Package::Pool::pgfmath_register($item[1]); }
+REGISTER :  # these need to set dimension flag!!!
+  '\wd' CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
+                          LaTeXML::Package::Pool::pgfmath_getwidth($item[2]); }
+| '\ht' CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
+                          LaTeXML::Package::Pool::pgfmath_getheight($item[2]); }
+| '\dp' CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
+                          LaTeXML::Package::Pool::pgfmath_getdepth($item[2]); }
+| CS                   { LaTeXML::Package::Pool::pgfmath_register($item[1]); }
 
-    CS : /\\[a-zA-Z@]*/
+CS : /\\[a-zA-Z@]*/
 
-    # NOTE: Need to recognize octal, binary and hex!  AND scientific notation!
-    NUMBER :
-      /(?:\d+\.?\d*|\d*\.?\d+)(:?[eE][+-]?\d+)?/ { $item[1]+0.0; }
-    | /0b[01]+/                  { oct($item[1]); } # !!!
-    | /0x[0-9a-fA-F]+/           { hex($item[1]); }
-    | /0[0-9]+/                  { oct($item[1]); }
-    | /\./                       { 0.0; } # pgf treats a single dot as a zero
+# NOTE: Need to recognize octal, binary and hex!  AND scientific notation!
+NUMBER :
+    /0(?:b|B)([01]+)/      { oct(lc($item[1])); }
+  | /0(?:x|X)[0-9a-fA-F]+/ { oct(lc($item[1])); }
+  | /0[0-7]+/              { oct($item[1]); }
+  | /(?:\d+\.?\d*|\d*\.?\d+)(:?[eE][+-]?\d+)?/
+    { $item[1]+0.0; }
+  | '.'                    { 0.0; } # pgf treats a single dot as a zero
 
-    UNIT :
-      /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/
+UNIT :
+  /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/
 
-    FUNCTION0 : /(?:e|pi|false|rand|rnd|true|axis_height|rule_thickness)/
-        | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserconstant($item[1]); }
+FUNCTION0 : /([a-zA-Z][a-zA-Z0-9_]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserconstant($item[1]); }
 
-    FUNCTION : /(?:abs|acos|asin|atan2|atan|angle|bin|ceil|cos|cosec|cosh|cot|deg|exp|factorial|floor|frac|hex|Hex|int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|rad|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse|veclen)/
-        | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserfunction($item[1]); }
-    # ? array|scalar
-    # These take boxes!
-    SIZER : /(?:depth|height|width)/
-    QTEX : /"[^"]*"/
-    CMP     : /==/ | /\>/ | /\</ | /!=/ | /\>=/ | /\<=/ | /&&/ | /||/
-    PREFIX  : /\-/ | /!/ | /\+/
-    POSTFIX : /!/ | /r/
-    ADDOP   : /\+/ | /=/ | /\-/
-    MULOP   : /\*/ | /\//
+FUNCTION : /([a-zA-Z][a-zA-Z0-9_]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserfunction($item[1]); }
+
+# ? array|scalar
+# These take boxes!
+SIZER   : /(?:depth|height|width)/
+QTEX    : '"' /[^"]*/ '"' { $item[2]; }
+CMP     : /==|>=?|<=?|!=/
+BOOLOP  : /&&|\|\|/
+
+# the meaning of ! depends on its position
+# pgfmathparser has a hardcoded notion of 'double character' operator
+# '!' could be part of '!=', so we forbid that sequence
+PREFIX  : /-|\+/ | '!' ...!'=' { '!pref'; }
+
+ADDOP   : /\+|=|-/
+MULOP   : /\*|\//
 
 EoGrammar
 
