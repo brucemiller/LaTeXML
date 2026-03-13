@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use File::Find;
 use File::Spec::Functions qw(catfile);
+use LaTeXML::Util::Pathname;
 
 use base qw(LaTeXML::Util::Pack);
 
@@ -29,7 +30,7 @@ sub unpack_source {
 sub find_file {
   my ($self, $name) = @_;
   my $filename = $$self{directory} . "/$name";
-  my $found    = -e $filename;
+  my $found    = pathname_test_e($filename);
   return $found && $filename; }
 
 sub full_filename {

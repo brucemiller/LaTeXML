@@ -67,7 +67,7 @@ sub newFromFile {
     "SEACHPATHS is " . join(', ', @$paths)) unless $file;
   my $BIB;
   $$self{file} = $bibname;
-  open($BIB, '<', $file) or Fatal('I/O', $file, undef, "Can't open BibTeX $file for reading", $!);
+  pathname_openfile($BIB, '<', $file) or Fatal('I/O', $file, undef, "Can't open BibTeX $file for reading", $!);
   $$self{lines} = [<$BIB>];
   close($BIB);
   $$self{line}   = shift(@{ $$self{lines} }) || '';

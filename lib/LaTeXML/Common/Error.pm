@@ -134,7 +134,7 @@ sub UseLog {
     $log_count++;
     return if $LOG or not($path);                 # already opened?
     pathname_mkdir(pathname_directory($path));    # and hopefully no errors! :>
-    open($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
+    pathname_openfile($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
     $LOG_PATH = $path;
     binmode($LOG, ":encoding(UTF-8)"); }
   return; }
