@@ -83,22 +83,26 @@ DefMacro('\setdefaultenum{}{}{}{}', sub {
 
 DefEnvironment('{inparaenum} OptionalUndigested',
   "<ltx:inline-enumerate xml:id='#id'>#body</ltx:inline-enumerate>",
-  properties => sub { beginItemize('inline@enumerate', 'enum'); },
+  mode             => 'internal_vertical',
+  properties       => sub { beginItemize('inline@enumerate', 'enum'); },
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); });
 DefEnvironment('{compactenum} OptionalUndigested',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-  properties => sub { beginItemize('enumerate', 'enum'); },
+  mode             => 'internal_vertical',
+  properties       => sub { beginItemize('enumerate', 'enum'); },
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); });
 DefEnvironment('{asparaenum} OptionalUndigested',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-  properties => sub { beginItemize('enumerate', 'enum'); },
+  mode             => 'internal_vertical',
+  properties       => sub { beginItemize('enumerate', 'enum'); },
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); });
 
 # Possibly redefine stock enumerate to take optional argument
 if (IfCondition(T_CS('\if@plnewenum'))) {
   DefEnvironment('{enumerate} OptionalUndigested',
     "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-    properties => sub { beginItemize('enumerate', 'enum'); },
+    mode             => 'internal_vertical',
+    properties       => sub { beginItemize('enumerate', 'enum'); },
     afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); }); }
 
 #======================================================================
@@ -113,34 +117,41 @@ DefMacro('\setdefaultitem{}{}{}{}', sub {
 
 DefEnvironment('{inparaitem} OptionalUndigested',
   "<ltx:inline-itemize xml:id='#id'>#body</ltx:inline-itemize>",
-  properties => sub { beginItemize('inline@itemize', '@item'); },
+  mode             => 'internal_vertical',
+  properties       => sub { beginItemize('inline@itemize', '@item'); },
   afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 DefEnvironment('{compactitem} OptionalUndigested',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  properties => sub { beginItemize('itemize', '@item'); },
+  mode             => 'internal_vertical',
+  properties       => sub { beginItemize('itemize', '@item'); },
   afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 DefEnvironment('{asparaitem} OptionalUndigested',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  properties => sub { beginItemize('itemize', '@item'); },
+  mode             => 'internal_vertical',
+  properties       => sub { beginItemize('itemize', '@item'); },
   afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 
 if (IfCondition(T_CS('\if@plnewitem'))) {
   DefEnvironment('{itemize} OptionalUndigested',
     "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-    properties => sub { beginItemize('itemize', '@item'); },
+    mode             => 'internal_vertical',
+    properties       => sub { beginItemize('itemize', '@item'); },
     afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); }); }
 
 #======================================================================
 # Descriptions
 DefEnvironment('{inparadesc}',
   "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
+  mode       => 'internal_vertical',
   properties => sub { beginItemize('inline@description', '@desc'); });
 
 DefEnvironment('{compactdesc}',
   "<ltx:description xml:id='#id'>#body</ltx:description>",
+  mode       => 'internal_vertical',
   properties => sub { beginItemize('description', '@desc'); });
 DefEnvironment('{asparadesc}',
   "<ltx:description xml:id='#id'>#body</ltx:description>",
+  mode       => 'internal_vertical',
   properties => sub { beginItemize('description', '@desc'); });
 # \paradescriptionlabel{}
 
