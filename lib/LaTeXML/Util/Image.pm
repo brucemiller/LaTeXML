@@ -18,6 +18,7 @@ use LaTeXML::Common::Dimension;
 use LaTeXML::Util::Pathname;
 use List::Util qw(first min max pairfirst pairgrep);
 use Image::Size;
+use URI::file;
 use POSIX;
 use base qw(Exporter);
 our @EXPORT = (
@@ -260,7 +261,7 @@ sub image_graphicx_sizer {
   my ($whatsit) = @_;
   if (my $candidates = $whatsit->getProperty('candidates')) {
     my $dpi = ($STATE && $STATE->lookupValue('DPI')) || $DPI;
-    foreach my $source (split(/,/, $candidates)) {
+    foreach my $source (map { URI->new($_, 'file')->file } split(/,/, $candidates)) {
       if (!pathname_is_absolute($source)) {
         if (my $base = $STATE->lookupValue('SOURCEDIRECTORY')) {
           $source = pathname_concat($base, $source); } }
