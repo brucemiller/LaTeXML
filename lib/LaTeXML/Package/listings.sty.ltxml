@@ -64,10 +64,16 @@ our $EMPTY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'none');
 #      stream would be intercepted as the box closer, causing a group stack
 #      mismatch and cascading errors.
 #
-# Solution: \lx@lst@egroup is a primitive that calls egroup during digestion.
-# For inline listings, it appears at the end of the returned token stream.
-# For display listings, lstProcessDisplay wraps the body in T_BEGIN/T_END,
-# so \lx@lst@egroup is placed AFTER that pair to pop the correct frame.
+# Solution: \lx@lst@bgroup and \lx@lst@egroup are primitives that call
+# bgroup/egroup during digestion. Unlike T_BEGIN/T_END (and \bgroup/\egroup
+# which are Let to them), these control sequences are NOT matched by
+# $t->defined_as(T_END) in readBoxContents, so they pass through safely.
+#
+# For inline listings, \lx@lst@egroup closes the listings bgroup.
+# For display listings, \lx@lst@bgroup/\lx@lst@egroup ALSO replace the
+# T_BEGIN/T_END wrapper around the body, with a second \lx@lst@egroup
+# closing the listings bgroup.
+DefPrimitiveI(T_CS('\lx@lst@bgroup'), undef, sub { $_[0]->bgroup; return; });
 DefPrimitiveI(T_CS('\lx@lst@egroup'), undef, sub { $_[0]->egroup; return; });
 
 # \leavevmode (or any primitive, really) to stop \halign from expanding too far.
@@ -226,15 +232,15 @@ sub lstProcessDisplay {
 
   return (
     ($numbered || $caption ? (T_CS('\par')) : ()),
-    T_BEGIN,
+    T_CS('\lx@lst@bgroup'),    # NOT T_BEGIN — safe inside readBoxContents (see comment above)
     ($name ? (T_CS('\def'), T_CS('\lstname'), T_BEGIN, $name->unlist, T_END) : ()),
     ($numbered || !IsEmpty($name)
       ? Invocation(T_CS('\@listings'), Tokens(@body))
       : ($caption
         ? Invocation(T_CS('\@@listings'), Tokens(@body))
         : @body)),
-    T_END,
-    T_CS('\lx@lst@egroup')); }    # close the listings bgroup AFTER the T_BEGIN/T_END pair
+    T_CS('\lx@lst@egroup'),       # close the display wrapper group
+    T_CS('\lx@lst@egroup')); }    # close the listings bgroup
 
 DefMacro('\lstlisting@makecaption[]{}',
   '\def\@captype{lstlisting}'
