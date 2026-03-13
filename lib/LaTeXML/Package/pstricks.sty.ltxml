@@ -33,6 +33,14 @@ use LaTeXML::Util::Geometry;
 #           special box commands (Help part A, ...)
 
 RequirePackage('xcolor');
+
+# Load the raw pstricks.sty and pstricks.tex so that internal registers
+# (\pst@dima, etc.), utility macros (\pstheader, \pst@number, etc.),
+# conditionals (\ifpst@useCalc, etc.), and key-value handlers are available
+# for downstream raw packages (pst-3d.tex, pst-plot.tex, pstricks-add.tex, etc.).
+# The ltxml definitions below then override the user-facing commands.
+InputDefinitions('pstricks', type => 'sty', noltxml => 1);
+
 ##############################################################
 ##  Parameter type definitions
 ##############################################################
@@ -223,7 +231,7 @@ sub ReadPSAngle {
   foreach my $letter (qw(N W S E U L D R u d l r u d)) {
     if ($gullet->ifNext(T_LETTER($letter))) {
       $gullet->readToken; $gullet->skipSpaces; $angle .= $letter;
-  } }
+    } }
   if ($angle) {
     return LaTeXML::PSAngle->new($angle, $pre); }
   elsif ($angle = ReadFloat($gullet)) {
@@ -350,8 +358,9 @@ sub setGraphParams {
         AssignRegister('\psxunit', $value);
         AssignRegister('\psyunit', $value);
         AssignRegister('\psrunit', $value); }
-      elsif ($key =~ /color/) {
-        AssignValue('\ps' . $key, LookupColor($strval)->toHex); }
+      elsif ($key =~ /[Cc]olor$/ && $strval !~ /^(?:true|false|)$/) {
+        my $c = LookupColor($strval);
+        AssignValue('\ps' . $key, $c ? $c->toHex : $strval); }
       else {
         AssignValue('\ps' . $key, $KeyAsValue{$key} ? $value : $strval); } }
   }
@@ -635,11 +644,11 @@ sub getNecessaryTransform {
   $transf .= 'rotate(-90) scale(-1,1) ' if ($value eq 'true');
   return Transform($transf); }
 
-DefConstructor('\psset RequiredKeyVals:pstricks',
+DefConstructor('\psset [] RequiredKeyVals:pstricks',
   "?#need(<ltx:g transform='#transform'>)",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    setGraphParams(%{ GetKeyVals($whatsit->getArg(1)) });
+    setGraphParams(%{ GetKeyVals($whatsit->getArg(2)) });
     my ($need, $have) = (getNecessaryTransform(), LookupValue('_psActiveCCTransform'));
     if (!$need->equals($have)) {
       AssignValue('_psActiveCCTransform', $need);
