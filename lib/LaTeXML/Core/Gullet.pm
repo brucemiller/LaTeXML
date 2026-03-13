@@ -783,9 +783,11 @@ sub readValue {
 # Read a value from a numeric register, possibly changing sign,
 # possibly coercing from a bigger type (eg. a Number from a Dimension)
 our %RegisterCoercionTypes = (
-  Number      => { Dimension => \&Number, Glue => \&Number },
-  Dimension   => { Glue      => \&Dimension },
-  MuDimension => { MuGlue    => \&MuDimension },
+  Number      => { Number      => \&Number,      Dimension => \&Number, Glue => \&Number },
+  Dimension   => { Dimension   => \&Dimension,   Glue      => \&Dimension },
+  MuDimension => { MuDimension => \&MuDimension, MuGlue    => \&MuDimension },
+  Glue        => { Glue        => \&Glue },
+  MuGlue      => { MuGlue      => \&MuGlue },
 );
 
 sub readRegisterValue {
@@ -800,6 +802,15 @@ sub readRegisterValue {
     local $LaTeXML::CURRENT_TOKEN = $token;
     my $parms = $$defn{parameters};
     my $value = $defn->valueOf(($parms ? $parms->readArguments($self) : ()));
+    # Careful: $value may be a scalar in Erroneous(?) cases (`\number \fam`)
+    if (!ref $value) {
+      if ($coercer = $RegisterCoercionTypes{$type}{$rtype}) {
+        Error("unexpected", "value", $self,
+          "Got a scalar with value $value, will coerce from $type into $rtype");
+        $value = &$coercer($value); }
+      else {
+        Error("unexpected", "value", $self,
+          "Got a scalar with value $value, and no map to coerce $type into $rtype"); } }
     if ($type eq $rtype) {
       return ($sign < 0 ? $value->negate : $value); }
     else {
