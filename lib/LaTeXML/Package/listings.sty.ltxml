@@ -50,6 +50,32 @@ sub lstPushValueLocally {
 
 our $EMPTY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'none');
 
+# Grouping in listings macros:
+#
+# The listings macros (\lstinline, \begin{lstlisting}, etc.) call bgroup
+# imperatively during macro expansion to localize the effects of lstActivate
+# (language, style, catcode changes). The matching group close must happen
+# during digestion (not expansion) so that:
+#   1. State set by lstActivate (language, frame, background, etc.) remains
+#      available when the returned constructor tokens are digested.
+#   2. The group closer is NOT a T_END token, because readBoxContents (used by
+#      \hbox, \colorbox, \raisebox, table column \vtop, etc.) loops until T_END
+#      to find the closing brace of the box. A T_END in the listings token
+#      stream would be intercepted as the box closer, causing a group stack
+#      mismatch and cascading errors.
+#
+# Solution: \lx@lst@bgroup and \lx@lst@egroup are primitives that call
+# bgroup/egroup during digestion. Unlike T_BEGIN/T_END (and \bgroup/\egroup
+# which are Let to them), these control sequences are NOT matched by
+# $t->defined_as(T_END) in readBoxContents, so they pass through safely.
+#
+# For inline listings, \lx@lst@egroup closes the listings bgroup.
+# For display listings, \lx@lst@bgroup/\lx@lst@egroup ALSO replace the
+# T_BEGIN/T_END wrapper around the body, with a second \lx@lst@egroup
+# closing the listings bgroup.
+DefPrimitiveI(T_CS('\lx@lst@bgroup'), undef, sub { $_[0]->bgroup; return; });
+DefPrimitiveI(T_CS('\lx@lst@egroup'), undef, sub { $_[0]->egroup; return; });
+
 # \leavevmode (or any primitive, really) to stop \halign from expanding too far.
 DefMacro('\lstinline', '\leavevmode\lx@lstinline');
 DefMacro('\lx@lstinline OptionalKeyVals:LST', sub {
@@ -64,7 +90,7 @@ DefMacro('\lx@lstinline OptionalKeyVals:LST', sub {
       @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
       lstProcessInline($body),
       @{ LookupValue('LISTINGS_POSTAMBLE') },
-      T_END); });    # to balance ->bgroup
+      T_CS('\lx@lst@egroup')); });    # to balance ->bgroup
 
 DefPrimitive('\lstMakeShortInline [] DefToken', sub {
     my ($stomach, $kv, $token) = @_;
@@ -97,7 +123,7 @@ DefMacroI(T_CS('\begin{lstinline}'), 'OptionalKeyVals:LST', sub {
       @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
       lstProcessInline($text),
       @{ LookupValue('LISTINGS_POSTAMBLE') },
-      T_END); });    # to balance ->bgroup
+      T_CS('\lx@lst@egroup')); });    # to balance ->bgroup
 
 sub lstProcessInline {
   my ($text) = @_;
@@ -107,7 +133,7 @@ sub lstProcessInline {
 DefConstructor('\@listings@inline {}',
   "<ltx:text class='ltx_lstlisting' _noautoclose='1'>#1</ltx:text>",
   enterHorizontal => 1,
-  reversion => '\lstinline{#1}');
+  reversion       => '\lstinline{#1}');
 
 # Not a regular environment, since we're going to read the body verbatim!
 DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST', sub {
@@ -162,8 +188,7 @@ sub lstProcessBlock {
   return (
     [@{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
       Invocation(T_CS('\@@listings@block'), $c, lstProcess('block', $text), $name)],
-    [@{ LookupValue('LISTINGS_POSTAMBLE') },
-      T_END]); }
+    [@{ LookupValue('LISTINGS_POSTAMBLE') }]); }
 
 our %lstFilenameRPL = (
   '_' => T_CS('\textunderscore'), '$' => T_CS('\textdollar'),
@@ -207,14 +232,15 @@ sub lstProcessDisplay {
 
   return (
     ($numbered || $caption ? (T_CS('\par')) : ()),
-    T_BEGIN,
+    T_CS('\lx@lst@bgroup'),    # NOT T_BEGIN — safe inside readBoxContents (see comment above)
     ($name ? (T_CS('\def'), T_CS('\lstname'), T_BEGIN, $name->unlist, T_END) : ()),
     ($numbered || !IsEmpty($name)
       ? Invocation(T_CS('\@listings'), Tokens(@body))
       : ($caption
         ? Invocation(T_CS('\@@listings'), Tokens(@body))
         : @body)),
-    T_END); }
+    T_CS('\lx@lst@egroup'),       # close the display wrapper group
+    T_CS('\lx@lst@egroup')); }    # close the listings bgroup
 
 DefMacro('\lstlisting@makecaption[]{}',
   '\def\@captype{lstlisting}'
@@ -249,7 +275,7 @@ DefConstructor('\@@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
-  mode           => 'internal_vertical',
+  mode       => 'internal_vertical',
   properties => sub {
     my %props = RefStepID('lstlisting');
     return %props; },
@@ -1489,7 +1515,7 @@ DefConstructor('\@listingLiterate {}',
 DefConstructor('\@listingKeyword Semiverbatim {}',
   "?#class(<ltx:text class='ltx_lst_#class' _noautoclose='1'>#2</ltx:text>)(#2)",
   enterHorizontal => 1,
-  properties => { class => sub {
+  properties      => { class => sub {
       my $classname = ToString($_[1]);
       my $class     = $classname && LookupValue('LST_CLASSES')->{$classname};
       my $cssclass  = $class     && $$class{cssclass};
