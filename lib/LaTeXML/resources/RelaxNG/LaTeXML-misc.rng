@@ -121,7 +121,9 @@ to be used in processing the graphic.</a:documentation>
   </define>
   <define name="graphics_model">
     <a:documentation>Content model for \elementref{graphics}.</a:documentation>
-    <empty/>
+    <zeroOrMore>
+      <ref name="Meta.class"/>
+    </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
   <define name="svgForeign.attributes">

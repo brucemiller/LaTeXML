@@ -24,6 +24,8 @@ they can appear in both inline and block contexts.</a:documentation>
       <ref name="rdf"/>
       <ref name="resource"/>
       <ref name="navigation"/>
+      <ref name="alternate-text"/>
+      <ref name="long-description"/>
     </choice>
   </define>
   <!-- ====================================================================== -->
@@ -250,6 +252,45 @@ used to crossreference.</a:documentation>
   </define>
   <define name="rdf_model">
     <a:documentation>Content model for \elementref{rdf}</a:documentation>
+    <ref name="Flow.model"/>
+  </define>
+  <!--
+    ======================================================================
+    Descriptions & Accessibilty
+  -->
+  <define name="alternate-text">
+    <element name="alternate-text">
+      <a:documentation>A container for alternative or replacement text for another element (the parent);
+This would typically be used when the parent cannot or should not be rendered;
+for example, spoken by screen readers as a replacement for images.</a:documentation>
+      <ref name="alternate-text_attributes"/>
+      <ref name="alternate-text_model"/>
+    </element>
+  </define>
+  <define name="alternate-text_attributes">
+    <a:documentation>Attributes for \elementref{alternate-text}</a:documentation>
+    <empty/>
+  </define>
+  <define name="alternate-text_model">
+    <a:documentation>Content for \elementref{alternate-text}</a:documentation>
+    <ref name="Flow.model"/>
+  </define>
+  <define name="long-description">
+    <element name="long-description">
+      <a:documentation>A container for a detailed description of another element (the parent);
+This would typically be used to describe the actual contents of
+a figure or image, as distinct from a caption which may only describe its
+source or purpose.</a:documentation>
+      <ref name="long-description_attributes"/>
+      <ref name="long-description_model"/>
+    </element>
+  </define>
+  <define name="long-description_attributes">
+    <a:documentation>Attributes for \elementref{long-description}</a:documentation>
+    <empty/>
+  </define>
+  <define name="long-description_model">
+    <a:documentation>Content for \elementref{long-description}</a:documentation>
     <ref name="Flow.model"/>
   </define>
   <!--
