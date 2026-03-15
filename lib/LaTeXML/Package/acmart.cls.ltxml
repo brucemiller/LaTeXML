@@ -52,26 +52,25 @@ RequirePackage('balance');
 
 #======================================================================
 # Various bits of frontmatter
-DefMacro('\copyrightyear{}',       '\@add@frontmatter{ltx:date}[role=copyright]{#1}');
-DefMacro('\setcopyright{}',        '\@add@frontmatter{ltx:note}[role=copyright]{#1}');
-DefMacro('\received[]{}',          '\@add@frontmatter{ltx:date}[role=received]{#2}');
-DefMacro('\acmJournal{}',          '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\acmSubmissionID{}',     '\@add@frontmatter{ltx:note}[role=submissionid]{#1}');
-DefMacro('\acmConference[]{}{}{}', '\@add@frontmatter{ltx:note}[role=conference]{#2; #3; #4}');
-DefMacro('\acmBooktitle{}',        '\@add@frontmatter{ltx:note}[role=booktitle]{#1}');
-DefMacro('\acmArticle{}',          '\@add@frontmatter{ltx:note}[role=article]{#1}');
-DefMacro('\acmArticleSeq{}',       '\@add@frontmatter{ltx:note}[role=articleseq]{#1}');
-DefMacro('\acmDOI{}',              '\@add@frontmatter{ltx:note}[role=doi]{#1}');
-DefMacro('\acmISBN{}',             '\@add@frontmatter{ltx:note}[role=isbn]{#1}');
-DefMacro('\acmMonth{}',            '\@add@frontmatter{ltx:note}[role=publicationmonth]{#1}');
-DefMacro('\acmNumber{}',           '\@add@frontmatter{ltx:note}[role=journalnumber]{#1}');
-DefMacro('\acmPrice{}',            '\@add@frontmatter{ltx:note}[role=price]{#1}');
-DefMacro('\acmVolume{}',           '\@add@frontmatter{ltx:note}[role=journalvolume]{#1}');
-DefMacro('\acmYear{}',             '\@add@frontmatter{ltx:note}[role=journalyear]{#1}');
-DefMacro('\editor{}',              '\@add@frontmatter{ltx:creator}[role=editor]{\@personname{#1}}');
-DefMacro('\subtitle{}',            '\@add@frontmatter{ltx:subtitle}{#1}');
-DefMacro('\keywords{}',            '\@add@frontmatter{ltx:keywords}{#1}');
-DefMacro('\terms{}',               '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\copyrightyear{}',       '\lx@add@frontmatter{ltx:date}[role=copyright]{#1}');
+DefMacro('\setcopyright{}',        '\lx@add@frontmatter{ltx:note}[role=copyright]{#1}');
+DefMacro('\received[]{}',          '\lx@add@date[role=received]{#2}');
+DefMacro('\acmJournal{}',          '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\acmSubmissionID{}',     '\lx@add@frontmatter{ltx:note}[role=submissionid]{#1}');
+DefMacro('\acmConference[]{}{}{}', '\lx@add@frontmatter{ltx:note}[role=conference]{#2; #3; #4}');
+DefMacro('\acmBooktitle{}',        '\lx@add@frontmatter{ltx:note}[role=booktitle]{#1}');
+DefMacro('\acmArticle{}',          '\lx@add@frontmatter{ltx:note}[role=article]{#1}');
+DefMacro('\acmArticleSeq{}',       '\lx@add@frontmatter{ltx:note}[role=articleseq]{#1}');
+DefMacro('\acmDOI{}',              '\lx@add@frontmatter{ltx:note}[role=doi]{#1}');
+DefMacro('\acmISBN{}',             '\lx@add@frontmatter{ltx:note}[role=isbn]{#1}');
+DefMacro('\acmMonth{}',            '\lx@add@frontmatter{ltx:note}[role=publicationmonth]{#1}');
+DefMacro('\acmNumber{}',           '\lx@add@frontmatter{ltx:note}[role=journalnumber]{#1}');
+DefMacro('\acmPrice{}',            '\lx@add@frontmatter{ltx:note}[role=price]{#1}');
+DefMacro('\acmVolume{}',           '\lx@add@frontmatter{ltx:note}[role=journalvolume]{#1}');
+DefMacro('\acmYear{}',             '\lx@add@frontmatter{ltx:note}[role=journalyear]{#1}');
+DefMacro('\subtitle{}',            '\lx@add@subtitle{#1}');
+DefMacro('\keywords{}',            '\lx@add@keywords{#1}');
+DefMacro('\terms{}',               '\lx@add@keywords{#1}');
 
 # Accessible figure descriptions
 NewCounter('acmlabel');
@@ -84,50 +83,39 @@ DefConstructor('\Description[]{}', '^^<ltx:note xml:id="#id" class="ltx_nodispla
     $document->setAttribute($figure, 'aria:labelledby', $whatsit->getProperty('id'));
     return; });
 
-# Use multiple style, repeating \author, \orcid, \affiliation, \email as needed.
-DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefConstructor('\@@@addaffiliation{}', "^ <ltx:contact role='additional_affiliation'>#1</ltx:contact>");
-DefMacro('\additionalaffiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@addaffiliation{#1}}');
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
-DefMacro('\orcid Semiverbatim',    '\@add@to@frontmatter{ltx:creator}{\@@@orcid{\@@orcid{#1}}}');
-DefConstructor('\@@orcid{}',
-  '<ltx:ref title="ORCID identifier" href="https://orcid.org/#1">#1</ltx:ref>',
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\@@@orcid{}', "^ <ltx:contact role='orcid'>#1</ltx:contact>");
+# Use \author for EACH author, follow with \orcid, \affiliation, \email as needed.
+# Note that \affiliation can apply to all preceding authors without one
+DefMacro('\author{}',                '\lx@add@creator[role=author]{#1}');
+DefMacro('\editor{}',                '\lx@add@creator[role=editor]{#1}');
+DefMacro('\affiliation{}',           '\lx@add@contact[role=affiliation,attach=new]{#1}');
+DefMacro('\additionalaffiliation{}', '\lx@add@contact[role=altaffiliation]{#1}');
+DefMacro('\email [] Semiverbatim',   '\lx@add@contact[role=email,name={email: }]{#2}');
+DefMacro('\orcid{}',                 '\lx@add@contact[role=orcid, name={OrcID: }]{#1}');
 
 # Internal structure to affiliation
-DefConstructor('\position{}',
-  "<ltx:text class='ltx_affiliation_position' _noautoclose='1'>#1</ltx:text>",
+DefMacro('\lx@acm@addresspartsep', '');
+DefMacro('\lx@acm@addresspart{}{}',
+  '\ifx.#2.\else'
+    . '\lx@acm@addresspartsep\def\lx@acm@addresspartsep{,~}'
+    . '\lx@acm@addresspart@{#1}{#2}\fi');
+DefConstructor('\lx@acm@addresspart@{}{}',
+  "<ltx:text class='ltx_affiliation_#1' _noautoclose='1'>#2</ltx:text>",
   mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\institution{}',
-  "<ltx:text class='ltx_affiliation_institution' _noautoclose='1'>#1</ltx:text>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\department{}',
-  "<ltx:text class='ltx_affiliation_department' _noautoclose='1'>#1</ltx:text>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\streetaddress{}',
-  "<ltx:text class='ltx_affiliation_streetaddress' _noautoclose='1'>#1</ltx:text>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\city{}',
-  "<ltx:text class='ltx_affiliation_city' _noautoclose='1'>#1</ltx:text>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\state{}',
-  "<ltx:text class='ltx_affiliation_state' _noautoclose='1'>#1</ltx:text>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\postcode{}',
-  "<ltx:text class='ltx_affiliation_postcode' _noautoclose='1'>#1</ltx:text>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\country{}',
-  "<ltx:text class='ltx_affiliation_country' _noautoclose='1'>#1</ltx:text>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
+DefMacro('\position{}',      '\lx@acm@addresspart{position}{#1}');
+DefMacro('\institution{}',   '\lx@acm@addresspart{institution}{#1}');
+DefMacro('\department{}',    '\lx@acm@addresspart{department}{#1}');
+DefMacro('\streetaddress{}', '\lx@acm@addresspart{streetaddress}{#1}');
+DefMacro('\city{}',          '\lx@acm@addresspart{city}{#1}');
+DefMacro('\state{}',         '\lx@acm@addresspart{state}{#1}');
+DefMacro('\postcode{}',      '\lx@acm@addresspart{postcode}{#1}');
+DefMacro('\country{}',       '\lx@acm@addresspart{country}{#1}');
+
+DefMacro('\titlenote{}',    '\lx@add@frontmatter{ltx:note}[role=note]{#1}');
+DefMacro('\subtitlenote{}', '\lx@add@frontmatter{ltx:note}[role=note]{#1}');
+DefMacro('\authornote{}',   '\lx@add@contact[role=note]{#1}');
 
 # Ignorable stuff ?
 DefMacro('\shortauthors{}',                  '');
-DefMacro('\titlenote{}',                     '');
-DefMacro('\subtitlenote{}',                  '');
-DefMacro('\authornote{}',                    '');
 DefMacro('\authornotemark[]',                '');
 DefMacro('\authorsaddresses{}',              '');
 DefMacro('\startPage',                       '');
@@ -156,7 +144,7 @@ DefEnvironment('{printonly}',    '');
 DefEnvironment('{screenonly}',   '#body');
 DefEnvironment('{anonsuppress}', '');
 
-DefMacro('\ccsdesc[]{}', '\@add@frontmatter{ltx:note}[role=ccs]{#2}');
+DefMacro('\ccsdesc[]{}', '\lx@add@frontmatter{ltx:note}[role=ccs]{#2}');
 # Could embed this as XML in some namespace, or....
 # For now, just skip it.
 # DefEnvironment('{CCSXML}','#body');

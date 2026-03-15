@@ -20,14 +20,43 @@ use LaTeXML::Package;
 # borrow a few of the cite-related definitions from natbib
 RequirePackage('natbib');
 
+# \author{} : used once, separates multiple authors by \and (\And for last), followed by \\ !!!
+# Bizarrely, \affiliations and \emails shold be WITHIN \author!
+# \affiliations{} gives \\ seperated set of affiliations, corresponding to author in order
+# \emails{} gives a ", " separated set of emails, corresponding to author in order
+# If the association isn't "obvious" (one-to-one, or only a single affil?),
+# the author is expected to use $^{1,2}$ superscript markers!!
 Let('\AND',      '\and');
 Let('\And',      '\and');
 Let('\leftcite', '\cite');
-DefMacro('\pubnote{}', '\@add@frontmatter{ltx:note}[role=pubnote]{#1}');
+DefMacro('\pubnote{}', '\lx@add@frontmatter{ltx:note}[role=pubnote]{#1}');
 
 # These are used as separators within \author, so... no real way to guess their arguments
 DefMacro('\affiliations', Tokens());
 DefMacro('\emails',       Tokens());
+
+# Clear any \authors already defined
+# Then split the authors on \and|\And.
+# The authors will be numbered by position, internally.
+DefMacro('\author{}',
+  '\lx@clear@creators[role=author]'
+    # Note: must keep affiliations (after \\) embedded, to simplify clear@author removal
+    . '\lx@splitting{\lx@ijcai@author}{\and\And,}{#1}');
+# Affiliations is expected WITHIN \author.
+# Multiple affiliations separated by \\
+# the n-th affiliation is attached to n-th author
+DefMacro('\affiliations{}',
+  '\lx@clear@frontmatter{ltx:contact}[role=affiliation]'
+    . '\lx@splitting{\lx@ijcai@affiliation}{\\\\}{#1}');
+# emails is expected WITHIN \author.
+# Multiple affiliations separated by ,
+# the n-th email is attached to n-th author
+DefMacro('\emails{}',
+  '\lx@clear@frontmatter{ltx:contact}[role=email]'
+    . '\lx@splitting{\lx@ijcai@email}{,}{#1}');
+DefMacro('\lx@ijcai@author{}',      '\lx@add@author{#1}');
+DefMacro('\lx@ijcai@affiliation{}', '\lx@add@affiliation[markseq=author]{#1}');
+DefMacro('\lx@ijcai@email{}',       '\lx@add@email[markseq=author]{#1}');
 
 #**********************************************************************
 

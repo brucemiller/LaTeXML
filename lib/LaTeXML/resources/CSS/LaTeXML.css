@@ -74,11 +74,13 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 .ltx_authors_1line .ltx_author_after { display:inline;}
 .ltx_authors_1line .ltx_author_notes { display:inline-block; }
 .ltx_authors_1line .ltx_author_notes:before { content:"*"; color:blue;}
-.ltx_authors_1line .ltx_author_notes span { display:none; }
-.ltx_authors_1line .ltx_author_notes:hover span {
+.ltx_authors_1line .ltx_author_notes .ltx_author_notes_content { display:none; }
+.ltx_authors_1line .ltx_author_notes:hover .ltx_author_notes_content {
     display:block; position:absolute; z-index:10;
     background:white; text-align:left;
     border: 1px solid black; border-radius: 0 5px 5px 5px; box-shadow: 5px 5px 10px gray; }
+.ltx_authors_1line .ltx_author_notes:hover .ltx_author_notes_content .ltx_contact {
+    display:block; }
 
 /* add class=ltx_authors_multiline to get authors & affliations on separate lines*/
 .ltx_authors_multiline .ltx_creator,

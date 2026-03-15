@@ -76,8 +76,9 @@ RequirePackage('makeidx');
 # #======================================================================
 # # Sec. 4. Top Matter
 # # FrontMatter:
-DefMacro('\shorttitle{}',   '\@add@frontmatter{ltx:toctitle}{#1}');
-DefMacro('\shortauthor{}',  Tokens());                                # Not useful?
+DefMacro('\shorttitle{}',  '\lx@add@toctitle{#1}');
+DefMacro('\shortauthor{}', Tokens());                 # Not useful?
+# these next three SHOULD accumulate formatted list of authors, etc.
 DefMacro('\authors{}',      Tokens());
 DefMacro('\shortauthors{}', Tokens());
 DefMacro('\addresses{}',    Tokens());
@@ -85,53 +86,45 @@ DefMacro('\publname{}',     Tokens());
 DefMacro('\publname{}',     Tokens());
 
 DefMacro('\title[]{}',
-  '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
-    . '\@add@frontmatter{ltx:title}{#2}');
+  '\gdef\@shorttitle{#1}\gdef\@title{#2}'
+    . '\ifx.#1.\else\lx@add@toctitle{#1}\fi'
+    . '\lx@add@title{#2}');
 
 DefMacro('\lx@author@sep',  ',\ ');
-DefMacro('\lx@author@conj', '\ and\ ');                               # \@@and
+DefMacro('\lx@author@conj', '\ and\ ');    # \@@and
 
+# \author[shortname]{name} Use one \author per author
+# followed by whever contact information applies to that author.
+# What to do with shortauthor ?
 DefMacro('\author[]{}',
-  '\if.#1.\else\def\shortauthor{#1}\fi'
-    . '\def\@author{#2}\lx@author{#2}');
+  '\def\@shortauthor{#1}\def\@author{#2}'
+    . '\lx@add@author{#2}');
 
 DefMacroI('\datename', undef, '\textit{Date}:');
 
-DefMacro('\contrib[]{}',
-  '\@add@frontmatter{ltx:creator}[role=contributor]{\@personname{#2}}');
+DefMacro('\@commby',       'Communicated by');
+DefMacro('\curraddrname',  '{\itshape Current address}');
+DefMacro('\emailaddrname', '{\itshape Email address}');
+DefMacro('\urladdrname',   '{\itshape URL}');
+DefMacro('\translname',    'Translated by');
+DefMacro('\keywordsname',  'Key words and phrases');
 
-DefMacro('\commby{}',
-  '\@add@frontmatter{ltx:creator}[role=communicator]{\@personname{#1}}');
-
-DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\address[]{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
-
-DefConstructor('\@@@curraddr{}', "^ <ltx:contact role='current_address'>#1</ltx:contact>");
-DefMacro('\curraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@curraddr{#1}}');
-
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email[]{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
-
-DefConstructor('\@@@urladdr{}', "^ <ltx:contact role='url'>#1</ltx:contact>");
-DefMacro('\urladdr{}', '\@add@to@frontmatter{ltx:creator}{\@@@urladdr{#1}}');
-
-DefConstructor('\@@@dedicatory{}', "^ <ltx:contact role='dedicatory'>#1</ltx:contact>");
-DefMacro('\dedicatory{}', '\@add@to@frontmatter{ltx:creator}{\@@@dedicatory{#1}}');
-
-# \date{}
-DefMacro('\dateposted{}', '\@add@frontmatter{ltx:date}[role=posted]{#1}');
+# Various frontmatter creator contact information; attaches to previous \author
+DefMacro('\contrib[]{}', '\lx@add@creator[role=contributor, name={#1}]{#2}');
+DefMacro('\commby{}',    '\lx@add@creator[role=communicator,name={\@commby}]{#1}');
+DefMacro('\address[]{}', '\lx@add@address[name={#1}]{#2}');
+DefMacro('\curraddr[]{}', '\lx@add@contact[role=current_address,name={\curraddrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
+DefMacro('\email[]{}',      '\lx@add@email[name={\emailaddrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
+DefMacro('\urladdr[]{}',    '\lx@add@url[name={\urladdrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
+DefMacro('\dedicatory{}',   '\lx@add@contact[role=dedicatory]{#1}');
+DefMacro('\dateposted{}',   '\lx@add@date[role=posted]{#1}');
+DefMacro('\translator[]{}', '\lx@add@translator[name={\trnaslname}]{#2}');
+DefMacro('\keywords{}',     '\lx@add@keywords[name={\keywordsname}]{#1}');
 
 # \thanks{} ( == ack, not latex's \thanks, not in author)
 # make a throwaway optional argument available for OmniBus use
 DefMacro('\thanks[]{}',
-  '\@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#2}');
-
-DefMacro('\translator[]{}',
-  '\@add@frontmatter{ltx:creator}[role=translator]{\@personname{#2}}');
-
-DefMacroI('\keywordsname', undef, 'Key words and phrases');
-DefMacro('\keywords{}',
-  '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
+  '\lx@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#2}');
 
 # Non-standard but makes it easier to create bindings for variations on AMS classes;
 # just redefine this macro
@@ -140,17 +133,15 @@ DefMacroI('\@subjclassyear', undef, '1991');
 DefMacroI('\subjclassname', undef, '\textup{\@subjclassyear} Mathematics Subject Classification');
 DefMacro('\subjclass[Default:\@subjclassyear]{}',
   '\ifx.#1.\else\xdef\@subjclassyear{#1}\fi'
-    . '\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification},'
+    . '\lx@add@classification[scheme={#1 Mathematics Subject Classification},'
     . 'name={\subjclassname}]{#2}');
 
 DefMacro('\copyrightinfo{}{}',
-  '\@add@frontmatter{ltx:note}[role=copyright]{\copyright #1: #2}');
+  '\lx@add@frontmatter{ltx:note}[role=copyright]{\copyright #1: #2}');
 
-DefMacro('\pagespan{}{}', '');    # ?
-DefMacro('\PII{}',
-  '\@add@frontmatter{ltx:classification}[scheme=PII]{#1}');
-DefMacro('\ISSN{}',
-  '\@add@frontmatter{ltx:classification}[scheme=ISSN]{#1}');
+DefMacro('\pagespan{}{}', '');                                          # ?
+DefMacro('\PII{}',        '\lx@add@classification[scheme=PII]{#1}');
+DefMacro('\ISSN{}',       '\lx@add@classification[scheme=ISSN]{#1}');
 
 DefMacroI('\currentvolume', undef, Tokens());
 DefMacroI('\currentissue',  undef, Tokens());
@@ -160,7 +151,7 @@ DefMacroI('\volinfo',       undef, Tokens());
 DefMacro('\issueinfo{}{}{}{}',
   '\def\currentvolume{#1}\def\currentissue{#2}\def\currentmonth{#3}\def\currentyear{#4}'
     . '\def\volinfo{Volume \currentvolume, Number \number0\currentissue, \currentmonth\ \currentyear}'
-    . '\@add@frontmatter{ltx:note}[role=volume-info]{\volinfo}');
+    . '\lx@add@frontmatter{ltx:note}[role=volume-info]{\volinfo}');
 
 # abstract otherwise defined in LaTeX.pool
 DefMacroI('\abstractname', undef, '\textsc{Abstract}');

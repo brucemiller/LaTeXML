@@ -244,7 +244,7 @@ DefPrimitive('\lxRequireResource OptionalKeyVals {}', sub {
 #    headers, footers
 
 DefMacro('\lxKeywords{}',
-  '\@add@frontmatter{ltx:keywords}[name={keywords}]{#1}');
+  '\lx@add@keywords[name={keywords}]{#1}');
 
 DefConstructor('\lxContextTOC',
   "<ltx:TOC format='context'/>");

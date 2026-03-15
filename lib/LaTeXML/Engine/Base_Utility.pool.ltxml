@@ -82,7 +82,7 @@ sub addClass {
       $node->setAttribute(class => $class); } }
   return; }
 
-DefConstructor('\@ADDCLASS Semiverbatim', sub {
+DefConstructor('\lx@add@cssclass Semiverbatim', sub {
     $_[0]->addClass($_[0]->getElement, ToString($_[1])); },
   sizer => 0);
 
@@ -129,11 +129,16 @@ sub SplitTokens {
           last if $cc == CC_MATH; } }
       else {
         push(@toks, $t); } } }
-  return (@items, [@toks]); }
+  return (@items, (@toks ? [@toks] : ())); }
 
 sub andSplit {
   my ($cs, $tokens) = @_;
   return map { ($cs, T_BEGIN, @$_, T_END) } SplitTokens($tokens, T_CS('\and')); }
+
+DefMacro('\lx@splitting{}{}{}', sub {
+    my ($gullet, $op, $delimiters, $tokens) = @_;
+    return map { ($op, T_BEGIN, @$_, T_END) }
+      ($delimiters ? SplitTokens($tokens, $delimiters->unlist) : ($tokens)); });
 
 sub orNull {
   return (grep { defined } @_) ? @_ : undef; }
@@ -158,9 +163,36 @@ sub JoinTokens {
 # See LaTeX.ltxml for usage.
 # Note: could be circumstances where you'd want modular frontmatter?
 # (ie. frontmatter for each sectional unit)
-AssignValue(frontmatter => {}, 'global');
 
+DefConstructor('\lx@personname{}', "<ltx:personname>#1</ltx:personname>",
+  beforeDigest => sub { Let('\thanks', '\person@thanks'); },
+  mode         => 'restricted_horizontal', enterHorizontal => 1);
+
+# Sanitize person names for (obvious) punctuation abuse at start+end
+Tag('ltx:personname', afterClose => sub {
+    my ($document, $node) = @_;
+    if (my $first = $node->firstChild) {
+      if ($first->nodeType == XML_TEXT_NODE) {
+        my $first_text = $first->data;
+        my $new_text   = $first_text;
+        $new_text =~ s/^[^\w)(}{\]\[]]+//;
+        if ($first_text ne $new_text) {
+          $first->setData($new_text); } } }
+    if (my $last = $node->lastChild) {
+      if ($last->nodeType == XML_TEXT_NODE) {
+        my $last_text = $last->data;
+        my $new_text  = $last_text;
+        $new_text =~ s/[^\w)(}{\]\[]+$//;
+        if ($last_text ne $new_text) {
+          $last->setData($new_text); } } }
+    return; });
+#======================================================================
+AssignValue(frontmatter => {}, 'global');
 DefConditionalI('\if@in@preamble', undef, sub { LookupValue('inPreamble'); });
+DefKeyVal('Frontmatter', 'role',    'Semiverbatim');
+DefKeyVal('Frontmatter', 'mark',    '');
+DefKeyVal('Frontmatter', 'markseq', '');
+DefKeyVal('Frontmatter', 'attach',  '');
 
 # Some frontmatter tags are replaceable by default, only one per document.
 our %ReplaceableFrontmatterTags = (
@@ -170,80 +202,343 @@ our %ReplaceableFrontmatterTags = (
   'ltx:date'     => 1,
   'ltx:abstract' => 1,
   'ltx:keywords' => 1);
+# frontmatter_raw contains the undigested commands to create frontmatter,
+# along with the tag & attributes that would be created.
+# Digestion is deferred until \maketitle, or something similar,
+# to avoid extra side-effects, particularly when entries
+# (eg. \title, \author) get redefined & replaced.
+sub queueFrontMatter {
+  my ($stomach, $tag, $attr, $command) = @_;
+  $tag = ToString($tag);
+  AssignValue('frontmatter_raw', [], 'global') unless LookupValue('frontmatter_raw');
+  dequeueFrontMatter($tag) if $ReplaceableFrontmatterTags{$tag};
+
+  # Convert KeyVals to a hash, but be concerned about multiple values!?!?
+  if ($attr && (ref $attr eq 'LaTeXML::Core::KeyVals')) {
+    my %attr = ($attr ? $attr->getHash : ());
+    map { $attr{$_} = ToString($attr->getValue($_)); } keys %attr;
+    $attr = {%attr}; }
+  $attr = {} unless $attr;
+  Debug("Saving frontmatter $tag [" . join(',', map { $_ . "=" . ToString($$attr{$_}); } sort keys %$attr) . "] " . ToString($command));
+  PushValue('frontmatter_raw', [$tag, $attr, $command]);
+  return; }
+
+# This removes previously stored (but deferred) frontmatter that is being overridden.
+sub dequeueFrontMatter {
+  my ($tag, %attr) = @_;
+  if (my $frontmatter = LookupValue('frontmatter_raw')) {
+    my @keep = ();
+    foreach my $entry (@$frontmatter) {
+      push(@keep, $entry)
+        if ($$entry[0] ne $tag) || grep { ToString($$entry[1]{$_} || '') ne $attr{$_}; } keys %attr; }
+    Debug("Removing " . ((scalar @$frontmatter) - (scalar @keep)) . " frontatter entries for $tag "
+        . join(',', map { $_ . "=" . ToString($attr{$_}); } sort keys %attr));
+    AssignValue('frontmatter_raw' => [@keep], 'global') if (scalar @$frontmatter) > (scalar @keep); }
+  return; }
+
+# \lx@clear@frontmatter{tag}[kv]
+# Remove all pending frontmatter element $tag, that have the attribute values given in kv
+DefPrimitive('\lx@clear@frontmatter {} OptionalKeyVals:Frontmatter', sub {
+    my ($stomach, $tag, $kv) = @_;
+    my %attr = ($kv ? $kv->getHash : ());
+    map { $attr{$_} = ToString($kv->getValue($_)); } keys %attr;
+    dequeueFrontMatter(ToString($tag), %attr);
+    return; });
+
+# Remove all creators with given role (default author)
+DefMacro('\lx@clear@creators []', '\lx@clear@frontmatter{ltx:creator}[#1]');
+
+# The various \lx@add@<frontmatter> commands
+#  (1) queue the command (appending @now) in the frontmatter_raw state variable
+#    to defer digestion (& possible replacement)
+#  (2) when the @now form is digested (see digestFrontMatter)
+#    will add an entry to the frontmatter hash state variable.
+#    That hash is keyed by the tag, with values contains a list of
+#      [tag, {attr}, @content]
+#    to create an element <tag> with the given attributes and content.
+#    Each content item is either a Box (List,Whatsit)
+#    or recursively an array [tag,{attr},@content].
+
+# Digest the content for a frontmatter item, disabling or masking certain commands
+# Note that we shouldn't be digesting any frontmatter until within document, so inPreamble unnec.
+# See cleanTrailingBreak for cleanup of misused \\.
+sub digestFrontmatterItem {
+  my ($stomach, $item) = @_;
+  $stomach->bgroup;
+  Let('\label', '\lx@set@contact@label');
+  my $digested = DigestText($item);
+  $stomach->egroup;
+  return $digested; }
+
+sub cleanTrailingBreak {
+  my ($document, $node) = @_;
+  while (my $last = $node->lastChild) {
+    my $tag = $document->getNodeQName($last);
+    last unless (($tag eq '#PCDATA') && ($last->toString =~ /^\s*$/s))
+      || ($tag eq 'ltx:break');
+    $node->removeChild($last); }
+  return; }
+Tag('ltx:personname', afterClose => \&cleanTrailingBreak);
+Tag('ltx:contact',    afterClose => \&cleanTrailingBreak);
+
 # Add a new frontmatter item that will be enclosed in <$tag %attr>...</$tag>
 # The content is the result of digesting $tokens.
-# \@add@frontmatter[keys]{tag}[attributes]{content}
+# \lx@add@frontmatter[keys]{tag}[attributes]{content}
 # keys can have
 #   replace (to replace the current entry, if any)
 #   ifnew   (only add if no previous entry)
-DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
+DefPrimitive('\lx@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
     my ($stomach, $keys, $tag, $attr, $tokens) = @_;
-    AssignValue('@at@begin@maketitle', [], 'global') unless LookupValue('@at@begin@maketitle');
-    PushValue('@at@begin@maketitle',
-      Invocation(T_CS('\@add@frontmatter@now'), $keys, $tag, $attr, $tokens)->unlist);
+    queueFrontMatter($stomach, $tag, $attr,
+      Invocation(T_CS('\lx@add@frontmatter@now'), $keys, $tag, $attr, $tokens));
     return; });
-DefPrimitive('\@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals {}', sub {
-    my ($stomach, $keys, $tag, $attr, $tokens) = @_;
-    # Digest this as if we're already in the document body!
-    my $frontmatter = LookupValue('frontmatter');
-    my $inpreamble  = LookupValue('inPreamble');
-    AssignValue(inPreamble => 0);
-    # Be careful since the contents may also want to add frontmatter
-    # (which should be inside or after this one!)
-    # So, we append this entry before digesting
+
+sub cleanFrontmatterMarks {
+  my ($marks, $prefix) = @_;
+  $marks  = ToString($marks);
+  $prefix = ToString($prefix) || '';
+  my @marks = ();
+  foreach my $mark (split(',', $marks)) {
+    $mark =~ s/^\s+//; $mark =~ s/\s+$//;
+    if ($mark =~ /^\\ref\{\s*([^\}]*)\s*\}$/) {
+      $mark = 'LABEL:' . $1; }
+    elsif ($prefix) {
+      $mark = $prefix . ':' . $mark; }
+    $mark =~ s/\s+/_/sg;
+    push(@marks, $mark); }
+  return @marks; }
+
+DefPrimitive('\lx@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals:Frontmatter {}', sub {
+    my ($stomach, $obsoletekeys, $tag, $kv, $content) = @_;
     $tag = ToString($tag);
-    my $replaceable = $ReplaceableFrontmatterTags{$tag} || ($keys && $keys->hasKey('replace'));
-    if ($replaceable && exists $$frontmatter{$tag}) {    # if replace and previous entries
-      $$frontmatter{$tag} = []; }                        # Remove previous entries
-    if ($keys && $keys->hasKey('ifnew') && exists $$frontmatter{$tag}) { # if ifnew and previous entries
-      return; }                                                          # Skip this one.
-    my $entry = [$tag, undef, 'to-be-filled-in'];
+    $kv  = $kv->beDigested($stomach) if $kv;
+    my $frontmatter = LookupValue('frontmatter');
+    my $role        = ($kv && ToString($kv->getValue('role')));
+    my $n           = 0;
+    # extract (possibly multiple!) marks
+    my @marks = cleanFrontmatterMarks(($kv && $kv->getValues('mark')) || '', '');
+    if ($role) {
+      $n = LookupMapping('num_' . $tag, $role); $n++;
+      AssignMapping('num_' . $tag, $role => $n);
+      # record sequence position as potential contact attachment mark
+      push(@marks, CleanLabel($n, $role)); }
+    my %attr = (($kv ? $kv->getHash : ()),
+      ($role ? (role => $role, _num => $n) : ()),
+      _marks => join(',', @marks));    # replace these...
+    my $entry = [$tag, {%attr}, 'place_keeper'];    # (in case embedded)
     push(@{ $$frontmatter{$tag} }, $entry);
-    if ($attr) {
-      $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
-    $$entry[2] = DigestText(Tokens($tokens));
-    AssignValue(inPreamble => $inpreamble);
+    Debug("ADD $tag: [" . join(',', map { $_ . '=' . ToString($attr{$_}); } sort keys %attr) . "] "
+        . ToString($content));
+    $$entry[2] = digestFrontmatterItem($stomach, $content);    # REPLACE only 'place_keeper'!!
+###    $$entry[2] = DigestText($content);
     return; },
   bounded => 1);
 
-# Append a piece of data to an existing frontmatter item that is contained in <$tag>
-# If $label is given, look for an item which has label=>$label,
-# otherwise, just append to the last item in $tag.
+# LaTeX classes typically have markup to define "creators" (authors, editors,etc)
+# and a variety of markup strategies to associate "contacts" (affiliation, email, etc)
+# with one or more creators. In the easy case, that markup is embedded within \author.
+# Otherwise, it appears separately and will be "attached" to the most recent creator,
+# or to one sharing a "mark" (like a footnote), or ...
+# Typically, we'll have to find the matching entries after digesting & tentatively XML.
+# The role keyward describes the kind of contact.
+# Several keywords support different attachment methods:
+#   mark : comma separated list of marks
+#   markseq=$prefix : n-th contact attaches to creator with mark = prefix+n
+#   attach=(all | new | <number> )
+#     all : attaches to all preceding creators
+#     new : like all, but only those not yet having this type of contact
+#     <number> : attaches to the <number>-th creator
+#   <default> : attach to preceding creator.
 
-# \@add@to@frontmatter{tag}[label]{content}
-DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
-    my ($stomach, $tag, $label, $tokens) = @_;
-    AssignValue('@at@begin@maketitle', [], 'global') unless LookupValue('@at@begin@maketitle');
-    PushValue('@at@begin@maketitle',
-      Invocation(T_CS('\@add@to@frontmatter@now'), $tag, $label, $tokens)->unlist);
+# \lx@add@to@frontmatter{parenttag}{tag}[options]{content}
+# adds a tag element, containing content, to an appropriate parenttag,
+# according to the attachment criterion in options keyvals.
+DefPrimitive('\lx@add@to@frontmatter {} {} OptionalKeyVals:Frontmatter {}', sub {
+    my ($stomach, $parenttag, $tag, $kv, $content) = @_;
+    queueFrontMatter($stomach, ToString($tag), $kv,
+      Invocation(T_CS('\lx@add@to@frontmatter@now'), $parenttag, $tag, $kv, $content));
     return; });
-DefPrimitive('\@add@to@frontmatter@now {} [] {}', sub {
-    my ($stomach, $tag, $label, $tokens) = @_;
-    $tag   = ToString($tag);
-    $label = ToString($label) if $label;
-    my $frontmatter = LookupValue('frontmatter');
 
-    my $inpreamble = LookupValue('inPreamble');
-    AssignValue(inPreamble => 0);
-    my $datum = DigestText(Tokens($tokens));
-    AssignValue(inPreamble => $inpreamble);
-    if ($label) {
-      my $entry;
-      foreach my $item (@{ $$frontmatter{$tag} || [] }) {
-        my ($itag, $iattr, @stuff) = @$item;
-        if ($label eq ($$iattr{label} || '')) {
-          push(@$item, $datum);
-          return; } } }
-    elsif (my $list = $$frontmatter{$tag}) {
-      push(@{ $$list[-1] }, $datum);
-      return; }
-    push(@{ $$frontmatter{$tag} }, [$tag, ($label ? { label => $label } : undef), $datum]);
-    return; },
-  beforeDigest => sub {
-    $_[0]->bgroup; },
-  afterDigest => sub {
-    $_[0]->egroup; });
+DefPrimitive('\lx@add@to@frontmatter@now {}{} OptionalKeyVals:Frontmatter {}', sub {
+    my ($stomach, $parenttag, $tag, $kv, $content) = @_;
+    $parenttag = ToString($parenttag);
+    $tag       = ToString($tag);
+    my $stag         = $tag; $stag =~ s/^ltx://;
+    my $preformatted = $tag eq 'preformatted';       # Obsolete API? $content is constructor!
+    my $frontmatter  = LookupValue('frontmatter');
+    my %options      = ($kv ? $kv->beDigested($stomach)->getHash : ());
+    my $role         = $options{role} = ToString($options{role});
+    my @marks        = cleanFrontmatterMarks($options{mark} || '', '');
 
+    if ($role) {
+      my $n = LookupMapping('num_' . $tag, $role); $n++;
+      AssignMapping('num_' . $tag, $role => $n);
+      push(@marks, CleanLabel($n, ToString($options{markseq}))) if $options{markseq};
+      if (!$options{name} || !scalar($options{name}->unlist)) {
+        my $cs = T_CS('\lx@' . join('@', $stag, $role, 'name'));
+        $options{name} = DigestText($cs) if LookupDefinition($cs); } }
+    my @allparents = @{ $$frontmatter{$parenttag} || [] };
+    my @parents    = grep { ($$_[1]{role} || '') ne 'pending'; } @allparents;
+    my $nparents   = scalar(@parents);
+    $options{_mark} = join(',', @marks);
+
+    # IF this item encountered WITHIN another frontmatter (ie. last contact, still unset)
+    # we inherit that frontmatter's marks (even override!)
+    if (my $last = $allparents[-1]) {
+      if ((($$last[1]{role} || '') eq 'pending') && (($$last[2] || '') eq 'place_keeper')) {
+        $options{_mark} = $$last[1]{_marks};
+        Debug("INHERIT MARKS $options{_mark} for role $role"); } }
+    Debug("ADD $tag: [" .
+        join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options)
+        . "] " . ToString($content) . " (with $nparents available)");
+    # Tentatively create new entry in frontmatter, in case digestion changes marks!
+    my $entry = [$parenttag, { role => 'pending', _marks => $options{_mark} }, 'place_keeper'];
+    push(@{ $$frontmatter{$parenttag} }, $entry);
+    my $xcontent = digestFrontmatterItem($stomach, $content);
+    $options{_mark} = $$entry[1]{_marks};                       # Reset if changed!
+    my $datum = ($preformatted ? $xcontent : [$tag, {%options}, $xcontent]);
+    if (!$preformatted && ($options{_mark} || !$nparents)) {    # deferred until we can compare marks
+      Debug("... deferring to mark=$options{_mark}");
+      $$entry[2] = $datum; }
+    else {
+      $$frontmatter{$parenttag}                                 # Remove unneeded entry.
+        = [grep { $_ ne $entry; } @{ $$frontmatter{$parenttag} }];
+      my ($nprev, $newonly) = (1, 0);
+      my $attach = ToString($options{attach});
+      if    ((!defined $attach) || ($attach eq '')) { }
+      elsif ($attach =~ /^\d+$/) {                              # Numeric? clamp to nparents
+        $nprev = (($attach <= 0) || ($attach > $nparents) ? $nparents : $attach); }
+      elsif ($attach eq 'all') { $nprev = $nparents; }
+      elsif ($attach eq 'new') { $nprev = $nparents; $newonly = 1; }
+      else { Info('unexpected', $tag, $stomach, "Frontmatter attach '$attach' unrecognized"); }
+      Debug("...adding to  $nprev previous" . ($newonly ? ' new' : ''));
+      while (my $parent = pop(@parents)) {
+        push(@$parent, $datum);
+        if ($role) {
+          $$parent[1]{"_has$role"} = 1;
+          last if $newonly && @parents && $parents[-1][1]{"_has$role"}; }
+        last if (--$nprev <= 0); } }
+    return; });
+
+sub show_frontmatter_entry {
+  my ($entry) = @_;
+  my ($tag, $attr, @content) = @$entry;
+  return "[$tag {" .
+    join(',', map { $_ . '=' . ToString($$attr{$_}); } sort keys %$attr) . "} "
+    . join('', map { ToString($_); } @content) . "]"; }
+
+# Find the entry for the ltx:creator/ltx:contact currently being digested.
+sub fetchPendingCreatorEntry {
+  my $frontmatter = LookupValue('frontmatter');
+  my @allcreators = @{ $$frontmatter{'ltx:creator'} || [] };
+  if (my $last = $allcreators[-1]) {
+###    if ((($$last[1]{role} || '') eq 'pending') && (($$last[2] || '') eq 'place_keeper')) {
+    if (($$last[2] || '') eq 'place_keeper') {
+      return $last; } }
+  return; }
+
+# These next two are primitives executing during digestion (BEFORE XML);
+# they add to or replace marks to be used when building the frontmatter plan.
+
+# \lx@add@creator@mark adds comma separated marks to the currently digesting creator;
+# Typically would  \let\inst to this, and used within creator's content
+# to identify contacts to include.
+# Can provide the prefix to distinguish different sets of marks
+DefPrimitive('\lx@add@creator@mark[]{}', sub {
+    my ($document, $prefix, $mark) = @_;
+    if (my $current = fetchPendingCreatorEntry()) {
+      my $marks = $$current[1]{_marks};
+      $mark = join(',', cleanFrontmatterMarks($mark, $prefix));
+      $$current[1]{_marks} = ($marks ? "$marks,$mark" : $mark);
+      Debug("MARKS add: $mark"); } });
+
+# \lx@set@contact@label sets (replaces) the _marks on the currently digesting creator
+# which could be a stub (role=pending) for a to-be-inserted contact.
+# Typically would \let\label to this so that a \ref within a creator
+# will get a contact with corresponding \label will be attached.
+DefPrimitive('\lx@set@contact@label Semiverbatim', sub {
+    my ($stomach, $label) = @_;
+    if (my $current = fetchPendingCreatorEntry()) {
+      $label = CleanLabel($label, 'LABEL');
+      $$current[1]{_marks} = $label;
+      Debug("MARKS set: $label"); } });
+
+#======================================================================
+# Some shorthands?
+
+DefMacro('\lx@add@title[]{}',
+  '\lx@clear@frontmatter{ltx:title}\lx@add@frontmatter{ltx:title}[#1]{#2}');
+DefMacro('\lx@add@toctitle[]{}',
+  '\lx@clear@frontmatter{ltx:toctitle}\lx@add@frontmatter{ltx:toctitle}[#1]{#2}');
+DefMacro('\lx@add@subtitle[]{}',
+  '\lx@clear@frontmatter{ltx:subtitle}\lx@add@frontmatter{ltx:subtitle}[#1]{#2}');
+
+# careful: the "name", #2, can contain much more than just the name!
+DefMacro('\lx@add@creator [] {}',
+  '\lx@add@frontmatter{ltx:creator}[role=author,#1]{\lx@personname{#2}}');
+DefMacro('\lx@add@author[]{}',
+  '\lx@add@frontmatter{ltx:creator}[role=author,#1]{\lx@personname{#2}}');
+DefMacro('\lx@add@editor[]{}',
+  '\lx@add@frontmatter{ltx:creator}[role=editor,#1]{\lx@personname{#2}}');
+DefMacro('\lx@add@translator[]{}',
+  '\lx@add@frontmatter{ltx:creator}[role=translator,#1]{\lx@personname{#2}}');
+
+DefMacro('\lx@add@date[]{}',
+  '\lx@add@frontmatter{ltx:date}[role=created,#1]{#2}');
+DefMacro('\lx@add@abstract[]{}',
+  '\lx@add@frontmatter{ltx:abstract}[#1]{#2}');
+DefMacro('\lx@add@keywords[]{}',
+  '\lx@add@frontmatter{ltx:keywords}[#1]{#2}');
+DefMacro('\lx@add@classification[]{}',
+  '\lx@add@frontmatter{ltx:classification}[#1]{#2}');
+# Other kinds of notes?
+
+# The following add various forms of contact information to a creator
+DefMacro('\lx@add@contact []{}',
+  '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[#1]{#2}');
+
+DefMacro('\lx@add@affiliation[]{}',
+  '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[role=affiliation,#1]{#2}');
+DefMacro('\lx@add@altaffiliation[]{}',
+  '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[role=altaffiliation,#1]{#2}');
+DefMacro('\lx@add@address[]{}',
+  '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[role=address,#1]{#2}');
+DefMacro('\lx@add@altaddress[]{}',
+  '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[role=altaddress,#1]{#2}');
+DefMacro('\lx@add@currentaddress[]{}',
+  '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[role=currentaddress,#1]{#2}');
+DefMacro('\lx@add@email [] Semiverbatim',
+  '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[role=email,#1]{#2}');
+DefMacro('\lx@add@url [] Semiverbatim',
+  '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[role=url,#1]{#2}');
+DefMacro('\lx@add@orcid [] Semiverbatim',
+  '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[role=orcid,#1]{#2}');
+
+# This corresponds to standard LaTeX,
+# The command replaces any previous authors/creators;
+# It defining several creators separated by \and;
+# and can use \\ to separate affiliation from each author.
+# NOTE: This is a mess! really should use role, so could apply to editors also
+# AND, matching \\ this way fails to catch \\[1em], so really should Let it
+DefMacro('\lx@add@authors{}',
+  '\lx@clear@creators[role=author]'
+    . '\lx@clear@frontmatter{ltx:contact}'
+    # Note: must keep affiliations (after \\) embedded, to simplify clear@author removal
+    . '\lx@splitting{\lx@author@and@affil}{\and,\And}{#1}');
+DefMacro('\lx@author@and@affil{}', '\lx@author@and@affil@#1\\\\\done');
+DefMacro('\lx@author@and@affil@ Until:\\\\ Until:\done',
+  '\ifx.#2.\lx@add@creator[role=author]{#1}'
+    . '\else\lx@add@creator[role=author]{#1'
+    . '\lx@add@to@frontmatter{ltx:creator}{ltx:contact}[role=affiliation]{#2}}\fi');
+
+DefMacro('\lx@contact@affiliation@name',    "Affiliation:~");
+DefMacro('\lx@contact@altaffiliation@name', "Alternate Affiliation:~");
+DefMacro('\lx@contact@address@name',        "Address:~");
+DefMacro('\lx@contact@email@name',          "Email:~");
+DefMacro('\lx@contact@url@name',            "URL:~");
+DefMacro('\lx@contact@orcid@name',          "OrcID:~");
+DefMacro('\lx@contact@correspondent@name',  "Corresponding author:~");
+#======================================================================
 # This is called by afterOpen (by default on <ltx:document>) to
 # output any frontmatter that was accumulated.
 
@@ -252,10 +547,36 @@ my @frontmatter_elements = (qw(ltx:title ltx:toctitle ltx:subtitle
     ltx:abstract ltx:keywords ltx:classification ltx:acknowledgements));
 my %frontmatter_elements = map { ($_ => 1) } @frontmatter_elements;
 
+# Digest FrontMatter (if not already?)
+sub digestFrontMatter {
+  my $stomach = $STATE->getStomach;
+  $stomach->bgroup;
+  if (my $commands = LookupValue('frontmatter_raw')) {
+    Let('\lx@add@frontmatter',    '\lx@add@frontmatter@now');
+    Let('\lx@add@to@frontmatter', '\lx@add@to@frontmatter@now');
+    foreach my $entry (@$commands) {
+      my ($tag, $attr, $command) = @$entry;
+      Debug("DIGESTING for $tag {" . join(',', map { $_ . '=' . ToString($$attr{$_}); } sort keys %$attr) . "} " . ToString($command));
+      $stomach->digest($command); }
+    AssignValue('frontmatter_raw', undef, 'global'); }
+  my $frontmatter = LookupValue('frontmatter');
+  my $digested    = {};
+  # Add punctuation to all ltx:creators, now that we know how many of each role.
+  if (my $list = $$frontmatter{'ltx:creator'}) {
+    foreach my $item (@$list) {
+      my ($tag, $attr, @stuff) = @$item;
+      if ($$attr{role} && (defined $$attr{_num}) && ($$attr{_num} > 1)) {
+        my $i = $$attr{_num};
+        my $n = LookupMapping('num_ltx:creator' => $$attr{role});
+        $$attr{before} = DigestText(($i >= $n ? T_CS('\lx@author@conj') : T_CS('\lx@author@sep'))); } } }
+  $stomach->egroup;
+  return; }
+
 # Insert FrontMatter into document, if not already added
 sub insertFrontMatter {
   my ($document) = @_;
   return if LookupValue('frontmatter_done');
+  digestFrontMatter();    # If needed
   my $frontmatter = LookupValue('frontmatter');
   my @set_keys    = $frontmatter ? (keys %$frontmatter) : ();
   # if doc ONLY has abstract as frontmatter, defer until abstract's document location
@@ -269,24 +590,73 @@ sub insertFrontMatter {
       # Dubious, but assures that frontmatter appears in text mode...
       local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'), '', T_SPACE);
       foreach my $item (@$list) {
-        my ($tag, $attr, @stuff) = @$item;
-        # add a dedicated class for frontmatter notes,
-        # in the case we want to style those uniformly.
-        if ($tag eq 'ltx:note') {
-          $attr ||= {};
-          $$attr{class} = ($$attr{class} ? $$attr{class} . ' ' : '') . 'ltx_note_frontmatter'; }
-        $document->openElement($tag, ($attr ? %$attr : ()),
-          (scalar(@stuff) && $document->canHaveAttribute($tag, 'font')
-            ? (font => $stuff[0]->getFont, _force_font => 'true') : ()));
-        map { $document->absorb($_) } @stuff;
-        my $completed_node = $document->closeElement($tag);
-        # At this time, the frontmatter element should really carry the actual literal values intended.
-        # Thus, if we see an empty element, something went wrong -- including our bindings are too verbose,
-        # as e.g. \preprint{} always generates a ltx:note element.
-        #
-        # To solve this in a single location: prune here!
-        if (($tag ne "ltx:rdf") && !scalar($completed_node->childNodes)) {
-          $document->removeNode($completed_node); } } } }
+        insertFrontMatter_rec($document, $item);
+  } } }
+  relocateContacts($document);
+  return; }
+
+sub insertFrontMatter_rec {
+  my ($document, $item) = @_;
+  my $type = ref $item;
+  if ($type eq 'ARRAY') {
+    my ($tag, $attr, @stuff) = @$item;
+    # add a dedicated class for frontmatter notes,
+    # in the case we want to style those uniformly.
+    if ($tag eq 'ltx:note') {
+      $$attr{class} = ($$attr{class} ? $$attr{class} . ' ' : '') . 'ltx_note_frontmatter'; }
+    Debug("INSERTING frontmatter $tag {"
+        . join(',', map { $_ . '=' . ToString($$attr{$_}); } sort keys %$attr) . "} "
+        . join(' ', map { ToString($_); } @stuff));
+    $document->openElement($tag, ($attr ? %$attr : ()),
+      (scalar(@stuff) && $document->canHaveAttribute($tag, 'font')
+        ? (font => $stuff[0]->getFont, _force_font => 'true') : ()));
+    map { insertFrontMatter_rec($document, $_); } @stuff;
+    my $completed_node = $document->closeElement($tag);
+    # At this time, the frontmatter element should really carry the actual literal values intended.
+    # Thus, if we see an empty element, something went wrong -- including our bindings are too verbose,
+    # as e.g. \preprint{} always generates a ltx:note element.
+    #
+    # To solve this in a single location: prune here!
+    if (($tag ne "ltx:rdf") && !scalar($completed_node->childNodes)) {
+      $document->removeNode($completed_node); } }
+  else {    # Otherwise, assume some sort of Box
+    $document->absorb($item); }
+  return; }
+
+# Find all dummy creators (role "pending") containing unattached contacts
+# and attempt to attach to the appropriate creator, based on the identifying marks.
+# NOTE: _marks vs _mark ???
+sub relocateContacts {
+  my ($document) = @_;
+  my (@creators, @pending);
+  foreach my $creator ($document->findnodes(".//ltx:creator")) {
+    if (($creator->getAttribute('role') || '') eq 'pending') {
+      push(@pending, $creator); }
+    else {
+      push(@creators, $creator); } }
+  if (@pending) {
+    my %marktable = ();    # Collect the creators that have attachment marks
+    foreach my $c (@creators) {
+      my @marks = split(',', $c->getAttribute('_marks') || '');
+      # Store person's name as possible mark; this could benefit from fuzzy matching?
+      if (my $person = $document->findnode('ltx:personname', $c)) {
+        push(@marks, CleanLabel($person->textContent, "fuzzy")); }
+      map { $marktable{$_} = ($marktable{$_} ? [@{ $marktable{$_} }, $c] : [$c]); } @marks; }
+    Debug("PENDING CONTACTS; Known marks:" . join(',', sort keys %marktable));
+    foreach my $pending (@pending) {
+      foreach my $contact (element_nodes($pending)) {
+        my $mark     = $contact->getAttribute('_mark') || '';
+        my $creators = $mark && $marktable{$mark};
+        Debug("TEST '$mark'");
+        if ($creators) {
+          foreach my $creator (@$creators) {
+            Debug("Moving contact for $mark: " . ToString($creator));
+            $document->appendClone($creator, $contact); } }
+        else {
+          Warn('unexpected', 'ltx:contact', $document,
+            "Orphaned contact frontmatter couldn't find author for mark=$mark",
+            "known marks=" . join(',', sort keys %marktable)); } }
+      $document->removeNode($pending); } }
   return; }
 
 # Add FrontMatter at document begin, unless deferred to a better position.
@@ -294,22 +664,17 @@ Tag('ltx:document', 'afterOpen:late' => sub {
     insertFrontMatter($_[0]) unless LookupValue('frontmatter_deferred'); });
 # Request Frontmatter to appear HERE (if not already done),
 # deferring it from document begin.
+# This should be where ALL the digestion of frontmatter happens
 DefConstructor('\lx@frontmatterhere', sub { insertFrontMatter($_[0]); },
   afterDigest => sub {
     my ($stomach) = @_;
-    my @boxes = ();
-    if (my $frontmatter_tks = LookupValue('@at@begin@maketitle')) {
-      push(@boxes, $stomach->digest(Tokens(@$frontmatter_tks)));
-      AssignValue('@at@begin@maketitle', undef, 'global'); }
+    my $frontmatter = LookupValue('frontmatter');
+    digestFrontMatter();
     AssignValue(frontmatter_deferred => 1, 'global');
-    return @boxes; });
+    return; });
 DefPrimitiveI('\lx@frontmatter@fallback', undef, sub {
     my ($stomach) = @_;
-    my @boxes = ();
-    if (my $frontmatter_tks = LookupValue('@at@begin@maketitle')) {
-      push(@boxes, $stomach->digest(Tokens(@$frontmatter_tks)));
-      AssignValue('@at@begin@maketitle', undef, 'global'); }
-    return @boxes; });
+    return; });    # ?
 
 # Maintain a list of classes that apply to the document root.
 # This might involve global style options, like leqno.
