@@ -3430,6 +3430,7 @@ DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
 sub beforeFloat {
   my ($type, %options) = @_;
   DefMacroI('\@captype', undef, $type);
+  Let('\\\\', '\lx@newline');
   AssignRegister('\hsize' => LookupDimension($options{double} ? '\textwidth' : '\columnwidth'));
   if (my $main = $options{preincrement}) {
     if (($type ne (LookupValue('LAST_FLOATTYPE') || ''))    # first of subtype?
