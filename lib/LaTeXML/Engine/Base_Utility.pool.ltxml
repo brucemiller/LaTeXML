@@ -194,24 +194,16 @@ DefKeyVal('Frontmatter', 'mark',    '');
 DefKeyVal('Frontmatter', 'markseq', '');
 DefKeyVal('Frontmatter', 'attach',  '');
 
-# Some frontmatter tags are replaceable by default, only one per document.
-our %ReplaceableFrontmatterTags = (
-  'ltx:title'    => 1,
-  'ltx:toctitle' => 1,
-  'ltx:subtitle' => 1,
-  'ltx:date'     => 1,
-  'ltx:abstract' => 1,
-  'ltx:keywords' => 1);
 # frontmatter_raw contains the undigested commands to create frontmatter,
 # along with the tag & attributes that would be created.
 # Digestion is deferred until \maketitle, or something similar,
 # to avoid extra side-effects, particularly when entries
 # (eg. \title, \author) get redefined & replaced.
+# Use dequeueFrontMatter or \lx@clear@frontmatter if there should be only 1 entry of $tag
 sub queueFrontMatter {
   my ($stomach, $tag, $attr, $command) = @_;
   $tag = ToString($tag);
   AssignValue('frontmatter_raw', [], 'global') unless LookupValue('frontmatter_raw');
-  dequeueFrontMatter($tag) if $ReplaceableFrontmatterTags{$tag};
 
   # Convert KeyVals to a hash, but be concerned about multiple values!?!?
   if ($attr && (ref $attr eq 'LaTeXML::Core::KeyVals')) {
@@ -224,6 +216,7 @@ sub queueFrontMatter {
   return; }
 
 # This removes previously stored (but deferred) frontmatter that is being overridden.
+# It matches the tag and any stored attributes in %attr
 sub dequeueFrontMatter {
   my ($tag, %attr) = @_;
   if (my $frontmatter = LookupValue('frontmatter_raw')) {
@@ -237,12 +230,11 @@ sub dequeueFrontMatter {
   return; }
 
 # \lx@clear@frontmatter{tag}[kv]
-# Remove all pending frontmatter element $tag, that have the attribute values given in kv
+# Remove all pending frontmatter element matching $tag, and role (if given) in keyvals
 DefPrimitive('\lx@clear@frontmatter {} OptionalKeyVals:Frontmatter', sub {
     my ($stomach, $tag, $kv) = @_;
-    my %attr = ($kv ? $kv->getHash : ());
-    map { $attr{$_} = ToString($kv->getValue($_)); } keys %attr;
-    dequeueFrontMatter(ToString($tag), %attr);
+    my $role = $kv && ToString($kv->getValue('role'));
+    dequeueFrontMatter(ToString($tag), ($role ? (role => $role) : ()));
     return; });
 
 # Remove all creators with given role (default author)
@@ -467,11 +459,14 @@ DefPrimitive('\lx@set@contact@label Semiverbatim', sub {
 # Some shorthands?
 
 DefMacro('\lx@add@title[]{}',
-  '\lx@clear@frontmatter{ltx:title}\lx@add@frontmatter{ltx:title}[#1]{#2}');
+  '\lx@clear@frontmatter{ltx:title}'
+    . '\lx@add@frontmatter{ltx:title}[#1]{#2}');
 DefMacro('\lx@add@toctitle[]{}',
-  '\lx@clear@frontmatter{ltx:toctitle}\lx@add@frontmatter{ltx:toctitle}[#1]{#2}');
+  '\lx@clear@frontmatter{ltx:toctitle}'
+    . '\lx@add@frontmatter{ltx:toctitle}[#1]{#2}');
 DefMacro('\lx@add@subtitle[]{}',
-  '\lx@clear@frontmatter{ltx:subtitle}\lx@add@frontmatter{ltx:subtitle}[#1]{#2}');
+  '\lx@clear@frontmatter{ltx:subtitle}'
+    . '\lx@add@frontmatter{ltx:subtitle}[#1]{#2}');
 
 # careful: the "name", #2, can contain much more than just the name!
 DefMacro('\lx@add@creator [] {}',
@@ -484,11 +479,14 @@ DefMacro('\lx@add@translator[]{}',
   '\lx@add@frontmatter{ltx:creator}[role=translator,#1]{\lx@personname{#2}}');
 
 DefMacro('\lx@add@date[]{}',
-  '\lx@add@frontmatter{ltx:date}[role=created,#1]{#2}');
+  '\lx@clear@frontmatter{ltx:date}[role=created,#1]'    # no duplicates w/same role
+    . '\lx@add@frontmatter{ltx:date}[role=created,#1]{#2}');
 DefMacro('\lx@add@abstract[]{}',
-  '\lx@add@frontmatter{ltx:abstract}[#1]{#2}');
+  '\lx@clear@frontmatter{ltx:abstract}'
+    . '\lx@add@frontmatter{ltx:abstract}[#1]{#2}');
 DefMacro('\lx@add@keywords[]{}',
-  '\lx@add@frontmatter{ltx:keywords}[#1]{#2}');
+  '\lx@clear@frontmatter{ltx:keywords}'
+    . '\lx@add@frontmatter{ltx:keywords}[#1]{#2}');
 DefMacro('\lx@add@classification[]{}',
   '\lx@add@frontmatter{ltx:classification}[#1]{#2}');
 # Other kinds of notes?
