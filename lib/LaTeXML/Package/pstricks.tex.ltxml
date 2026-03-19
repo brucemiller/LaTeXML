@@ -18,6 +18,10 @@ use warnings;
 # Load raw pstricks.tex so its internal registers (\pst@dima, etc.),
 # utility macros (\pstheader, \pst@number, etc.), and key-value handlers
 # are available for downstream raw packages.
-# The pstricks.sty.ltxml binding then overrides the user-facing commands.
 InputDefinitions('pstricks', type => 'tex', noltxml => 1);
+
+# We then provide nominal SVG support via pstricks_support,
+# for cases where pstricks.tex was used directly.
+RequirePackage('pstricks_support');
+
 1;
