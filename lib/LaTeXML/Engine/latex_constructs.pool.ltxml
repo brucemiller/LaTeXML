@@ -725,15 +725,15 @@ DefConstructorI('\tableofcontents', undef,
     push(@s, (qw(ltx:appendix ltx:index ltx:bibliography))) if @s;
     (select => join(' | ', @s),
       name => DigestText(T_CS('\contentsname'))); });
-# Ensure we add the TOC-relevant attributes to the relevant elements.
+# Ensure we add an xml:id to navtoc-relevant elements (abstract, acknowledgements).
+# NOTE: we do NOT set inlist="toc" here, as that would disturb \tableofcontents behavior.
+# The navigation TOC (context format) uses $normaltoctypes in CrossRef to include these.
 Tag('ltx:abstract', afterOpen => sub {
     my ($document, $node, $thing) = @_;
-    $document->setAttribute($node, inlist => 'toc');
     GenerateID($document, $node, $thing, 'abstract');
     return; });
 Tag('ltx:acknowledgements', autoClose => 1, afterOpen => sub {
     my ($document, $node, $thing) = @_;
-    $document->setAttribute($node, inlist => 'toc');
     GenerateID($document, $node, $thing, 'acknowledgements');
     return; });
 
@@ -4082,9 +4082,8 @@ DefConstructorI('\endthebibliography', undef, sub {
   locked => 1);
 Let('\saved@endthebibliography', '\endthebibliography');
 # auto close the bibliography and contained biblist.
-Tag('ltx:biblist', autoClose => 1);
-Tag('ltx:bibliography', autoClose => 1,
-  afterOpen => sub { $_[1]->setAttribute('inlist', 'toc'); });
+Tag('ltx:biblist',      autoClose => 1);
+Tag('ltx:bibliography', autoClose => 1);
 
 # Since SOME people seem to write bibliographies w/o \bibitem,
 # just blank lines between apparent entries,

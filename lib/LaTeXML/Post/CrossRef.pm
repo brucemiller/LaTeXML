@@ -200,7 +200,7 @@ sub getChildPages {
 # To make it more extensible, it really should be integrated into the database?
 # Eg. "sectional" things might mark their entries specially?
 my $normaltoctypes = { map { ($_ => 1) }    # CONSTANT
-    qw (ltx:document ltx:abstract ltx:part ltx:chapter
+    qw (ltx:abstract ltx:part ltx:chapter
     ltx:section ltx:subsection ltx:subsubsection
     ltx:paragraph ltx:subparagraph
     ltx:index ltx:bibliography ltx:glossary ltx:acknowledgements ltx:appendix) };
@@ -253,7 +253,7 @@ sub gentoc {
     my $type = $entry->getValue('type');
     my $role = $entry->getValue('role');
     if (($types ? ($type = $entry->getValue('type')) && $$types{$type} : 1)
-      && inlist_match($lists, $entry->getValue('inlist'))) {
+      && ($lists ? inlist_match($lists, $entry->getValue('inlist')) : 1)) {
       return $self->gentocentry($doc, $entry, $selfid, $show, @kids); }
     else {
       return @kids; } }
@@ -289,7 +289,9 @@ sub gentoc_context {
   my ($self, $doc, $id, $show, $lists, $types) = @_;
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     # Generate Downward TOC covering items WITHIN the current page.
-    my @navtoc = $self->gentoc($doc, $id, $show, $lists, $types, $entry->getValue('location') || '', $id);
+    # Use $normaltoctypes as the type filter and skip the inlist check (lists=>undef),
+    # so that navtoc candidates are determined purely in post-processing.
+    my @navtoc = $self->gentoc($doc, $id, $show, undef, $normaltoctypes, $entry->getValue('location') || '', $id);
     # Then enclose it upwards along with siblings & ancestors
     my $p_id;
     while (($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))) {
@@ -298,7 +300,7 @@ sub gentoc_context {
         ($_->getValue('id') eq $id
           ? @navtoc
           : $self->gentocentry($doc, $_, undef, $show)) }
-        grep { $$normaltoctypes{ $_->getValue('type') } }    # or should we use @inlist???
+        grep { $$normaltoctypes{ $_->getValue('type') } }
         map  { $$self{db}->lookup("ID:$_") }
         @{ $entry->getValue('children') || [] };
       if (($types ? $$types{ $entry->getValue('type') } : 1)
