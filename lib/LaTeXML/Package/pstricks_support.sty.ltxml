@@ -333,7 +333,7 @@ sub setGraphParams {
         AssignRegister('\psxunit', $value);
         AssignRegister('\psyunit', $value);
         AssignRegister('\psrunit', $value); }
-      elsif ($key =~ /[Cc]olor$/ && $strval !~ /^(?:true|false|)$/) {
+      elsif ($key =~ /color$/ && $strval !~ /^(?:true|false|)$/) {
         my $c = LookupColor($strval);
         AssignValue('\ps' . $key, $c ? $c->toHex : $strval); }
       else {
