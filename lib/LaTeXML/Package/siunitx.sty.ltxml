@@ -968,7 +968,7 @@ sub six_round {
       Error('operator', 'operator', undef, "unknown operator: $op"); } }
   else {
     my $precision = six_get('round-precision')->toString;
-    shift(@{ $$number{integer} }) while (scalar(@{ $$number{integer} }) && $$number{integer}[0]->equals(T_OTHER(0)));
+    shift(@{ $$number{integer} }) while ($$number{intger} && scalar(@{ $$number{integer} }) && $$number{integer}[0]->equals(T_OTHER(0)));
     if ($mode eq 'figures') {
       my $excess_zeros = 0;
       if (number_is_zero($$number{integer})) {
@@ -1259,7 +1259,7 @@ sub six_format_complexnumber {
     $i = I_wrap({ role => 'ID', meaning => 'imaginary-unit' }, Invocation(T_CS('\text'), $i));
     my $result = six_format_infix(T_CS('\lx@InvisibleTimes'), undef, undef,
       (six_getChoice('complex-root-position') eq 'before-number' ? ($i, $imag) : ($imag, $i)));
-    $flags{bracket} ||= $flags{in_sci_number} && six_getBool('bracket-ambiguous-numbers') && $arg1 && $arg2;
+    $flags{bracket} ||= $flags{in_sci_number} && six_getBool('bracket-ambiguous-numbers');
     if ($arg1 && keys %$arg1) {
       $result = six_format_infix(
         $sign,    # Hopefully has proper semantics?
@@ -1298,16 +1298,16 @@ sub six_format_scinumber {
     # there's no exponent, but we want space for one.  omitting the mathord causes extra space
     ${ $flags{pad_right_ref} } .= '222' . ('.' x six_get('table-figures-exponent')->ToString); # \mathord x10^{...}
     return I_wrap(undef, six_format_number($number, %flags)); }
-  if (!six_getBool('print-zero-exponent') && !ToString($$arg2{integer}) && !ToString($$arg2{fraction})) { #
-        # there is no arg2
-    ${ $flags{pad_right_ref} } .= '222' . ('.' x six_get('table-figures-exponent')->ToString) if $flags{in_table_number}; # x10^{...}
+  if (!six_getBool('print-zero-exponent') && !ToString($$arg2{integer}) && !ToString($$arg2{fraction})) {
+    # there is no arg2.  add padding for \times10^{...}
+    ${ $flags{pad_right_ref} } .= '222' . ('.' x six_get('table-figures-exponent')->ToString) if $flags{in_table_number};
     $result = six_format_number($arg1, %flags, in_sci_number => 1); }
   elsif (my $marker = six_get('output-exponent-marker')) {
 # the order of the conditionals is important here - $$arg1{integer} causes an $arg1 undef to become {} which is true
     if ((six_getBool('print-unity-mantissa') && $arg1)
       || ($$arg1{integer} && ToString($$arg1{integer}) ne '1')
       || $$arg1{fraction} || $$arg1{operator}) {
-      my $mantissa = six_format_number($arg1, %flags, in_sci_number => 1, bracket => 0);
+      my $mantissa = six_format_number($arg1, %flags, in_sci_number => 1); # , bracket => 0  todo upgrade do not need
       if ($flags{in_table_number} && six_getBool('table-align-exponent')) {
         push(@{$mantissa}, six_table_space(${ $flags{pad_right_ref} }));
         ${ $flags{pad_right_ref} } = ''; }
