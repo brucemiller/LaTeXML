@@ -6048,7 +6048,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
             </Math><break/></p>
         </para>
         <para xml:id="S2.SS1.SSS6.p2">
-          <p><Math mode="inline" tex="{\mathrm{(kg~of~pol)}}^{2}\text{\,}{\mathrm{(mol~of~cat)}}^{-1}\text{\,}{%&#10;\mathrm{h}}^{-1}" text="power@(kilogram-polymer, 2) * power@(mole-catalyst, - 1) * power@(hour, - 1)" xml:id="S2.SS1.SSS6.p2.m1">
+          <p><Math mode="inline" tex="{\mathrm{(kgofpol)}}^{2}\text{\,}{\mathrm{(molofcat)}}^{-1}\text{\,}{\mathrm{h%&#10;}}^{-1}" text="power@(kilogram-polymer, 2) * power@(mole-catalyst, - 1) * power@(hour, - 1)" xml:id="S2.SS1.SSS6.p2.m1">
               <XMath>
                 <XMApp>
                   <XMText meaning="times" role="MULOP" xml:id="S2.SS1.SSS6.p2.m1.4"> </XMText>
@@ -6058,12 +6058,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                       <XMRef idref="S2.SS1.SSS6.p2.m1.1.1"/>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">(</XMTok>
-                        <XMApp xml:id="S2.SS1.SSS6.p2.m1.1.1">
-                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                          <XMTok role="UNKNOWN" rpadding="3.3pt">kg</XMTok>
-                          <XMTok role="UNKNOWN" rpadding="3.3pt">of</XMTok>
-                          <XMTok role="UNKNOWN">pol</XMTok>
-                        </XMApp>
+                        <XMTok role="UNKNOWN" xml:id="S2.SS1.SSS6.p2.m1.1.1">kgofpol</XMTok>
                         <XMTok role="CLOSE" stretchy="false">)</XMTok>
                       </XMWrap>
                     </XMDual>
@@ -6075,12 +6070,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                       <XMRef idref="S2.SS1.SSS6.p2.m1.3.1"/>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">(</XMTok>
-                        <XMApp xml:id="S2.SS1.SSS6.p2.m1.3.1">
-                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                          <XMTok role="UNKNOWN" rpadding="3.3pt">mol</XMTok>
-                          <XMTok role="UNKNOWN" rpadding="3.3pt">of</XMTok>
-                          <XMTok role="UNKNOWN">cat</XMTok>
-                        </XMApp>
+                        <XMTok role="UNKNOWN" xml:id="S2.SS1.SSS6.p2.m1.3.1">molofcat</XMTok>
                         <XMTok role="CLOSE" stretchy="false">)</XMTok>
                       </XMWrap>
                     </XMDual>

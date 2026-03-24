@@ -3152,7 +3152,7 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 AssignValue('SIX_retain-explicit-decimal-marker' => Tokenize($VERSION_TWO ? 'true' : 'false'));
-AssignValue('SIX_qualifier-phrase' => Tokenize($VERSION_TWO ? '~of~' : '')); # todo upgrade remove ~
+AssignValue('SIX_qualifier-phrase'               => Tokenize($VERSION_TWO ? 'of'   : ''));
 
 sub six_load_compat1 {
   RawTeX(<<'EoTeX');
