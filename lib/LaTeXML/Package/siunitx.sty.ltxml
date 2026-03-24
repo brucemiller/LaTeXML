@@ -638,8 +638,8 @@ sub six_postprocess_aux {
     delete $$number{fraction}; }
   while ($$number{fraction} && @{ $$number{fraction} } < six_get('minimum-decimal-digits')->toString) {
     push(@{ $$number{fraction} }, T_OTHER('0')); }
- #  while ( $$number{integer} && @{$$number{integer}} < six_get('minimum-integer-digits')->toString) {
- #    unshift(@{$$number{integer}}, T_OTHER('0')); }  # todo upgrade
+  while ( $$number{integer} && @{$$number{integer}} < six_get('minimum-integer-digits')->toString) {
+    unshift(@{$$number{integer}}, T_OTHER('0')); }
   return $number; }
 
 # Given an uncertain number whose uncertainty is not separate (ie. it is relative)
