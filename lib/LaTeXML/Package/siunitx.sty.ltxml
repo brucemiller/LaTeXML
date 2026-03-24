@@ -1784,21 +1784,21 @@ sub six_format_angle {
   my $fdegrees = $degrees && six_format_number($degrees);
   if ($fdegrees && $fdegrees->unlist) {
     push(@punctuated, ($above && $$degrees{decimal} ? $fdegrees
-        : I_apply({}, $mulop, $fdegrees, T_CS('\SIUnitSymbolDegree')))); }
+        : I_apply({}, $mulop, $fdegrees, Expand(six_get('angle-symbol-degree'))))); }
   # Format minutes, if any
   if ($above && $minutes && $$minutes{decimal}) {
     $$minutes{decimal} = T_CS('\lx@arcminuteoverdot'); }
   my $fminutes = $minutes && six_format_number($minutes);
   if ($minutes && $fminutes->unlist) {
     push(@punctuated, ($above && $$minutes{decimal} ? $fminutes
-        : I_apply({}, $mulop, $fminutes, T_CS('\SIUnitSymbolArcminute')))); }
+        : I_apply({}, $mulop, $fminutes, Expand(six_get('angle-symbol-minute'))))); }
   # Format seconds, if any
   if ($above && $seconds && $$seconds{decimal}) {
     $$seconds{decimal} = T_CS('\lx@arcsecondoverdot'); }
   my $fseconds = $seconds && six_format_number($seconds);
   if ($seconds && $fseconds->unlist) {
     push(@punctuated, ($above && $$seconds{decimal} ? $fseconds
-        : I_apply({}, $mulop, $fseconds, T_CS('\SIUnitSymbolArcsecond')))); }
+        : I_apply({}, $mulop, $fseconds, Expand(six_get('angle-symbol-second'))))); }
   if (scalar(@punctuated) > 1) {
     @punctuated = (I_apply({}, $addop, @punctuated)); }
   if ($sign && ($sign->toString ne '+' || six_getBool('retain-explicit-plus'))) { # Finally, prepend the sign
@@ -1809,11 +1809,6 @@ sub six_format_angle {
     ($degrees ? six_number_string($degrees) . "\x{00B0}" : ''),
     ($minutes ? six_number_string($minutes) . "\x{2032}" : ''),
     ($seconds ? six_number_string($seconds) . "\x{2033}" : ''));
-# todo upgrade
-# this should go with the SIUnitSymbol above
-#    ($degrees ? six_number_string($degrees) . Expand(six_get('angle-symbol-degree'))->toString : ''),
-#    ($minutes ? six_number_string($minutes) . Expand(six_get('angle-symbol-minute'))->toString : ''),
-#    ($seconds ? six_number_string($seconds) . Expand(six_get('angle-symbol-second'))->toString : ''));
   my $result = six_wrap(I_dual({}, I_symbol({ role => 'NUMBER', meaning => $string }),
       I_wrap({}, @punctuated)));
   six_end_processing();
