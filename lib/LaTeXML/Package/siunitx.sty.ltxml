@@ -2726,7 +2726,7 @@ DefMacro('\lx@SI@column@parse XUntil:\lx@si@column@end', sub {
 # we pass references to pad_left / right so that we can update them and have that pass back up the recursion
       $result = $parsed
         ? six_format_number(six_postprocess($parsed), bracket => 0, pad_left_ref => \$pad_left, pad_right_ref => \$pad_right,
-        in_table_number => (0 && six_get('table-alignment-mode')->ToString ne 'none'))    # todo upgrade
+        in_table_number => (six_get('table-alignment-mode')->ToString ne 'none'))
         : (); }
     else {
       $result = Tokens(@tokens); }
