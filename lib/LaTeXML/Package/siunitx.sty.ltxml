@@ -638,8 +638,8 @@ sub six_postprocess_aux {
     delete $$number{fraction}; }
   while ($$number{fraction} && @{ $$number{fraction} } < six_get('minimum-decimal-digits')->toString) {
     push(@{ $$number{fraction} }, T_OTHER('0')); }
-  while ( $$number{integer} && @{$$number{integer}} < six_get('minimum-integer-digits')->toString) {
-    unshift(@{$$number{integer}}, T_OTHER('0')); }
+  while ($$number{integer} && @{ $$number{integer} } < six_get('minimum-integer-digits')->toString) {
+    unshift(@{ $$number{integer} }, T_OTHER('0')); }
   return $number; }
 
 # Given an uncertain number whose uncertainty is not separate (ie. it is relative)
@@ -1245,8 +1245,7 @@ sub six_format_complexnumber {
     $arg2 = six_parse_number(undef, Tokenize($parsedArg2));
     six_round($arg1);
     six_round($arg2); }
-  my $real = six_format_number($arg1, %flags, bracket => 0, in_sci_number => 1);    # todo upgrade
-   #my $real = six_format_number($arg1, %flags, bracket=>0, in_sci_number=>0);  # toggle off in_sci_number b/c it's already bracketed
+  my $real = six_format_number($arg1, %flags, bracket => 0, in_sci_number => 0); # toggle off in_sci_number b/c it's already bracketed
   return $real unless $arg2;
   if ($complexMode eq 'cartesian' || ($complexMode eq 'input' && !exists $$number{input_form})) { # Cartesian output
     if (six_getBool('print-complex-unity') && !defined $$arg2{integer} && !defined $$arg2{fraction}) {
@@ -1306,7 +1305,7 @@ sub six_format_scinumber {
     $result = six_format_number($arg1, %flags, in_sci_number => 1); }
   elsif (my $marker = six_get('output-exponent-marker')) {
 # the order of the conditionals is important here - $$arg1{integer} causes an $arg1 undef to become {} which is true
-    if (((1 || six_getBool('print-unity-mantissa')) && $arg1)    # todo upgrade
+    if ((six_getBool('print-unity-mantissa') && $arg1)
       || ($$arg1{integer} && ToString($$arg1{integer}) ne '1')
       || $$arg1{fraction} || $$arg1{operator}) {
       my $mantissa = six_format_number($arg1, %flags, in_sci_number => 1, bracket => 0);
@@ -1329,7 +1328,7 @@ sub six_format_scinumber {
         six_format_number($arg2, %flags, in_sci_number => 1, in_exponent => 1, bracket => 0)); } }
   else {
 # the order of the conditionals is important here - $$arg1{integer} causes an $arg1 undef to become {} which is true
-    if (((1 || six_getBool('print-unity-mantissa')) && $arg1)    # todo upgrade
+    if ((six_getBool('print-unity-mantissa') && $arg1)
       || ($$arg1{integer} && ToString($$arg1{integer}) ne '1')
       || $$arg1{fraction} || $$arg1{operator}) {
       my $mantissa = six_format_number($arg1, %flags, in_sci_number => 1, bracket => 0);

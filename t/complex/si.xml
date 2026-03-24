@@ -1145,16 +1145,12 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="1\text{\times}{10}^{4}" text="1E4" xml:id="S1.SS3.SSS8.p1.m2">
+            </Math> <break/><Math mode="inline" tex="{10}^{4}" text="1E4" xml:id="S1.SS3.SSS8.p1.m2">
               <XMath>
                 <XMApp meaning="1E4">
-                  <XMText meaning="times" role="MULOP" xml:id="S1.SS3.SSS8.p1.m2.2">×</XMText>
-                  <XMTok meaning="1" role="NUMBER" xml:id="S1.SS3.SSS8.p1.m2.1">1</XMTok>
-                  <XMApp xml:id="S1.SS3.SSS8.p1.m2.3">
-                    <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
-                    <XMTok meaning="10" role="NUMBER">10</XMTok>
-                    <XMTok fontsize="70%" meaning="4" role="NUMBER">4</XMTok>
-                  </XMApp>
+                  <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                  <XMTok meaning="10" role="NUMBER">10</XMTok>
+                  <XMTok fontsize="70%" meaning="4" role="NUMBER">4</XMTok>
                 </XMApp>
               </XMath>
             </Math> <break/><Math mode="inline" tex="444" text="444E0" xml:id="S1.SS3.SSS8.p1.m3">
