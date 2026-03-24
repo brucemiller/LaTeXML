@@ -339,7 +339,6 @@ DefPrimitiveI('\lx@six@initialize', undef, sub {
               $align = ($kv->getValue('table-number-alignment') || six_get('table-number-alignment') || '')->ToString; }
             elsif ($mode eq 'marker') {
               $align = 'char:' . six_get('output-decimal-marker')->ToString; } }
-          $align = 'left';    # todo upgrade
           $LaTeXML::BUILD_TEMPLATE->addColumn(
             before => Tokens(T_BEGIN,
               T_CS('\lx@si@column@prep'), ($kv ? (T_OTHER('['), $kv->revert(), T_OTHER(']')) : ()),
