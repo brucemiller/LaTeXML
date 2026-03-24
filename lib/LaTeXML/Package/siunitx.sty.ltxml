@@ -139,10 +139,13 @@ my %LOCALE = (
 # Would be nice if we could load the package (without errors!):
 # InputDefinitions('siunitx', type=>'sty', noltxml => 1);
 # in order to pick up all the unit definitions!
-# But siunitx runs into strange errors in a file I cannot locate:
-# the first error occurs at the last line of siunitx.sty,
-# and subsequent errors occur at subsequent (non-existent?) lines
-# see issue #2747
+# But siunitx runs into many errors, starting with:
+# Error:recursion:\q_recursion_stop Token T_CS[\q_recursion_stop] expands into itself!
+#    at siunitx.sty; line 6587 col 1 - line 6587 col 4
+#    defining as empty
+#    Next token is T_CS[\__siunitx_number_token_auxi:NN] ( == Core::Definition::Expandable[\__siunitx_number_token_auxi:NN {}{}])
+#    In Core::Definition::Expandable[\q_recur... latex; from line 1 col 1 to line 1 col 1
+#     <= Core::Gullet[@0x13361da10] <= Core::Stomach[@0x132025e10] <= Core::Gullet[@0x13361da10] <= ...
 
 RequirePackage('xcolor');
 RequirePackage('amstext');
@@ -626,7 +629,7 @@ sub six_postprocess_aux {
       $$number{integer} = Tokenize(0); }
     if (my $s = !$$number{sign} && six_get('explicit-sign')) {
       $$number{sign} = $s; } }
-  #six_round($number) if six_getBool('parse-numbers');  # todo upgrade
+  six_round($number) if six_getBool('parse-numbers');
   while ($$number{fraction} && @{ $$number{fraction} }
     && $$number{fraction}->[-1]->equals(T_OTHER('0')) && six_getBool('drop-zero-decimal')) {
     pop(@{ $$number{fraction} }); }
