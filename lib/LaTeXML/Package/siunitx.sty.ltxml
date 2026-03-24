@@ -2712,13 +2712,12 @@ DefMacro('\lx@SI@column@parse XUntil:\lx@si@column@end', sub {
     if ($doparse and @tokens) {
       my $tokens = [six_apply_mathligatures(@tokens)];
       my $parsed = six_match_number($tokens);
-      # todo upgrade
-      #      if ( @pre || six_get('table-space-text-pre') ) {
-      #        my $prewidth = Digest(six_get('table-space-text-pre')||'')->getWidth->[0];
-      #        @pre = (T_CS('\makebox'), ExplodeText('['.$prewidth.'sp][r]'), T_BEGIN, @pre, T_END); }
-      #      if ( @post || six_get('table-space-text-post') ) {
-      #        my $postwidth = Digest(six_get('table-space-text-post')||'')->getWidth->[0];
-      #        @post = (T_CS('\makebox'), ExplodeText('['.$postwidth.'sp][l]'), T_BEGIN, @post, T_END); }
+      if (@pre || six_get('table-space-text-pre')) {
+        my $prewidth = Digest(six_get('table-space-text-pre') || '')->getWidth->[0];
+        @pre = (T_CS('\makebox'), ExplodeText('[' . $prewidth . 'sp][r]'), T_BEGIN, @pre, T_END); }
+      if (@post || six_get('table-space-text-post')) {
+        my $postwidth = Digest(six_get('table-space-text-post') || '')->getWidth->[0];
+        @post = (T_CS('\makebox'), ExplodeText('[' . $postwidth . 'sp][l]'), T_BEGIN, @post, T_END); }
       if (@$tokens) {
         # how does siunitx tell that something isn't a number?
         #Error('unexpected', undef, undef, 'Unexpected tokens remain in table cell');
