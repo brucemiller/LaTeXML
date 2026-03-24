@@ -2174,7 +2174,7 @@ sub six_process_SI_units {
   my $numTerms     = six_get_num_terms($parsedNumber);
   my $prefixMode   = six_getChoice('prefix-mode');
   my $currPower    = six_get_sci_exp($parsedNumber);
-  my $productUnits = 'single';    # 'six_getChoice('product-units');  # todo upgrade
+  my $productUnits = six_getChoice('product-units');
   $productUnits =~ s/^brackets/bracket/;
   $numTerms = 1 unless ($productUnits =~ /power$/);
   my @parsedUnits = six_parse_units($defns);

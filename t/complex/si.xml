@@ -6615,7 +6615,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                   <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m2.3">m</XMTok>
                 </XMApp>
               </XMath>
-            </Math><break/><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}\mathrm{m}" text="2 * 3 * 4 * meter" xml:id="S2.SS2.SSS4.p1.m3">
+            </Math><break/><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}{\mathrm{m}}^{3}" text="2 * 3 * 4 * power@(meter, 3)" xml:id="S2.SS2.SSS4.p1.m3">
               <XMath>
                 <XMApp>
                   <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m3.2"> </XMText>
@@ -6625,10 +6625,14 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                     <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m3.1.m1.3">3</XMTok>
                     <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m3.1.m1.5">4</XMTok>
                   </XMApp>
-                  <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m3.3">m</XMTok>
+                  <XMApp xml:id="S2.SS2.SSS4.p1.m3.3">
+                    <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                    <XMTok class="ltx_unit" meaning="meter" role="ID">m</XMTok>
+                    <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+                  </XMApp>
                 </XMApp>
               </XMath>
-            </Math><break/><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}\mathrm{m}" text="2 * 3 * 4 * meter" xml:id="S2.SS2.SSS4.p1.m4">
+            </Math><break/><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}{\mathrm{m}}^{3}" text="2 * 3 * 4 * power@(meter, 3)" xml:id="S2.SS2.SSS4.p1.m4">
               <XMath>
                 <XMApp>
                   <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m4.2"> </XMText>
@@ -6638,7 +6642,11 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                     <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m4.1.m1.3">3</XMTok>
                     <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m4.1.m1.5">4</XMTok>
                   </XMApp>
-                  <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m4.3">m</XMTok>
+                  <XMApp xml:id="S2.SS2.SSS4.p1.m4.3">
+                    <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                    <XMTok class="ltx_unit" meaning="meter" role="ID">m</XMTok>
+                    <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+                  </XMApp>
                 </XMApp>
               </XMath>
             </Math><break/><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}\mathrm{m}" text="2 * 3 * 4 * meter" xml:id="S2.SS2.SSS4.p1.m5">
