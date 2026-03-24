@@ -2227,7 +2227,7 @@ sub six_format_SI {
   my $wrappedUnits = I_wrap({}, $processedUnits);
   my $times        = six_get_op({ role => 'MULOP', meaning => 'times' }, 'number-unit-product');
   if (ref($parsedNumber) eq 'HASH' && $$parsedNumber{operator}
-    && $$parsedNumber{operator} eq 'uncertain' && six_getChoice('separate-uncertainty-units') eq 'repeat' && 0) { # todo upgrade
+    && $$parsedNumber{operator} eq 'uncertain' && six_getChoice('separate-uncertainty-units') eq 'repeat') {
     my $main           = $$parsedNumber{arg1};
     my $fmain          = six_format_number($main);
     my @mainresult     = six_format_infix($times, undef, undef, $fmain, $wrappedUnits);
