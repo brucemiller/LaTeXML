@@ -2223,7 +2223,7 @@ sub six_process_SI_units {
 sub six_format_SI {
   my ($parsedNumber, $processedUnits, $defns) = @_;
   my $result;
-  my $productUnits = 'single';                      # six_getChoice('product-units');  # todo upgrade
+  my $productUnits = six_getChoice('product-units');
   my $wrappedUnits = I_wrap({}, $processedUnits);
   my $times        = six_get_op({ role => 'MULOP', meaning => 'times' }, 'number-unit-product');
   if (ref($parsedNumber) eq 'HASH' && $$parsedNumber{operator}

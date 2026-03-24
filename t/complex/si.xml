@@ -6589,42 +6589,64 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
         </tags>
         <title><tag close=" ">2.2.4</tag>product-units</title>
         <para xml:id="S2.SS2.SSS4.p1">
-          <p><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}\mathrm{m}" text="2 * 3 * 4 * meter" xml:id="S2.SS2.SSS4.p1.m1">
+          <p><Math mode="inline" tex="2\text{\,}\mathrm{m}\text{\times}3\text{\,}\mathrm{m}\text{\times}4\text{\,}%&#10;\mathrm{m}" text="2 * meter * 3 * meter * 4 * meter" xml:id="S2.SS2.SSS4.p1.m1">
               <XMath>
                 <XMApp>
-                  <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m1.2"> </XMText>
+                  <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m1.4">×</XMText>
                   <XMApp xml:id="S2.SS2.SSS4.p1.m1.1">
-                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m1.1.m1.4">×</XMText>
-                    <XMTok meaning="2" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m1.1.m1.1">2</XMTok>
-                    <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m1.1.m1.3">3</XMTok>
-                    <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m1.1.m1.5">4</XMTok>
+                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m1.1.2"> </XMText>
+                    <XMTok meaning="2" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m1.1.1">2</XMTok>
+                    <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m1.1.3">m</XMTok>
                   </XMApp>
-                  <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m1.3">m</XMTok>
+                  <XMApp xml:id="S2.SS2.SSS4.p1.m1.3">
+                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m1.3.2"> </XMText>
+                    <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m1.3.1">3</XMTok>
+                    <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m1.3.3">m</XMTok>
+                  </XMApp>
+                  <XMApp xml:id="S2.SS2.SSS4.p1.m1.5">
+                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m1.5.2"> </XMText>
+                    <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m1.5.1">4</XMTok>
+                    <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m1.5.3">m</XMTok>
+                  </XMApp>
                 </XMApp>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}\mathrm{m}" text="2 * 3 * 4 * meter" xml:id="S2.SS2.SSS4.p1.m2">
+            </Math> <break/><Math mode="inline" tex="$($2\text{\times}3\text{\times}4$)$\text{\,}\mathrm{m}" text="2 * 3 * 4 * meter" xml:id="S2.SS2.SSS4.p1.m2">
               <XMath>
                 <XMApp>
                   <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m2.2"> </XMText>
-                  <XMApp xml:id="S2.SS2.SSS4.p1.m2.1">
-                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m2.1.m1.4">×</XMText>
-                    <XMTok meaning="2" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m2.1.m1.1">2</XMTok>
-                    <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m2.1.m1.3">3</XMTok>
-                    <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m2.1.m1.5">4</XMTok>
-                  </XMApp>
+                  <XMDual xml:id="S2.SS2.SSS4.p1.m2.1">
+                    <XMRef idref="S2.SS2.SSS4.p1.m2.1.1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="S2.SS2.SSS4.p1.m2.1.1">
+                        <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m2.1.m1.m1.4">×</XMText>
+                        <XMTok meaning="2" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m2.1.m1.m1.1">2</XMTok>
+                        <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m2.1.m1.m1.3">3</XMTok>
+                        <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m2.1.m1.m1.5">4</XMTok>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
                   <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m2.3">m</XMTok>
                 </XMApp>
               </XMath>
-            </Math><break/><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}{\mathrm{m}}^{3}" text="2 * 3 * 4 * power@(meter, 3)" xml:id="S2.SS2.SSS4.p1.m3">
+            </Math><break/><Math mode="inline" tex="$($2\text{\times}3\text{\times}4$)$\text{\,}{\mathrm{m}}^{3}" text="2 * 3 * 4 * power@(meter, 3)" xml:id="S2.SS2.SSS4.p1.m3">
               <XMath>
                 <XMApp>
                   <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m3.2"> </XMText>
-                  <XMApp xml:id="S2.SS2.SSS4.p1.m3.1">
-                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m3.1.m1.4">×</XMText>
-                    <XMTok meaning="2" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m3.1.m1.1">2</XMTok>
-                    <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m3.1.m1.3">3</XMTok>
-                    <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m3.1.m1.5">4</XMTok>
-                  </XMApp>
+                  <XMDual xml:id="S2.SS2.SSS4.p1.m3.1">
+                    <XMRef idref="S2.SS2.SSS4.p1.m3.1.1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="S2.SS2.SSS4.p1.m3.1.1">
+                        <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m3.1.m1.m1.4">×</XMText>
+                        <XMTok meaning="2" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m3.1.m1.m1.1">2</XMTok>
+                        <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m3.1.m1.m1.3">3</XMTok>
+                        <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m3.1.m1.m1.5">4</XMTok>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
                   <XMApp xml:id="S2.SS2.SSS4.p1.m3.3">
                     <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
                     <XMTok class="ltx_unit" meaning="meter" role="ID">m</XMTok>
@@ -6649,17 +6671,25 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math><break/><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}\mathrm{m}" text="2 * 3 * 4 * meter" xml:id="S2.SS2.SSS4.p1.m5">
+            </Math><break/><Math mode="inline" tex="2\text{\,}\mathrm{m}\text{\times}3\text{\,}\mathrm{m}\text{\times}4\text{\,}%&#10;\mathrm{m}" text="2 * meter * 3 * meter * 4 * meter" xml:id="S2.SS2.SSS4.p1.m5">
               <XMath>
                 <XMApp>
-                  <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m5.2"> </XMText>
+                  <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m5.4">×</XMText>
                   <XMApp xml:id="S2.SS2.SSS4.p1.m5.1">
-                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m5.1.m1.4">×</XMText>
-                    <XMTok meaning="2" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m5.1.m1.1">2</XMTok>
-                    <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m5.1.m1.3">3</XMTok>
-                    <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m5.1.m1.5">4</XMTok>
+                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m5.1.2"> </XMText>
+                    <XMTok meaning="2" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m5.1.1">2</XMTok>
+                    <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m5.1.3">m</XMTok>
                   </XMApp>
-                  <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m5.3">m</XMTok>
+                  <XMApp xml:id="S2.SS2.SSS4.p1.m5.3">
+                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m5.3.2"> </XMText>
+                    <XMTok meaning="3" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m5.3.1">3</XMTok>
+                    <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m5.3.3">m</XMTok>
+                  </XMApp>
+                  <XMApp xml:id="S2.SS2.SSS4.p1.m5.5">
+                    <XMText meaning="times" role="MULOP" xml:id="S2.SS2.SSS4.p1.m5.5.2"> </XMText>
+                    <XMTok meaning="4" role="NUMBER" xml:id="S2.SS2.SSS4.p1.m5.5.1">4</XMTok>
+                    <XMTok class="ltx_unit" meaning="meter" role="ID" xml:id="S2.SS2.SSS4.p1.m5.5.3">m</XMTok>
+                  </XMApp>
                 </XMApp>
               </XMath>
             </Math><break/><Math mode="inline" tex="$2\text{\times}3\text{\times}4$\text{\,}\mathrm{m}" text="2 * 3 * 4 * meter" xml:id="S2.SS2.SSS4.p1.m6">
