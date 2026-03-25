@@ -562,7 +562,19 @@ sub six_match_number {
 
 sub six_postprocess {
   my ($number) = @_;
+  $number = six_ensure_scientific($number) if (six_getChoice('exponent-mode') ne 'input');
   return six_postprocess_aux($number); }
+
+sub six_ensure_scientific {
+  my ($number) = @_;
+  my $op = $$number{operator};
+  return $number if ($op && $op eq 'exponent');
+  if (!$op || $op eq 'complex' || $op eq 'uncertain') {
+    return { arg1 => $number, operator => 'exponent', arg2 => { integer => T_OTHER('0') } }; }
+  else {
+    $$number{arg1} = six_ensure_scientific($$number{arg1}) if ($$number{arg1});
+    $$number{arg2} = six_ensure_scientific($$number{arg2}) if ($$number{arg2}); }
+  return $number; }
 
 sub six_postprocess_aux {
   my ($number) = @_;
@@ -609,9 +621,11 @@ sub six_postprocess_aux {
               while ($parsedExp < 0) {
                 unshift(@fracTokens, (pop(@intTokens) || T_OTHER('0')));
                 $parsedExp++; } } }
-          $$number{arg1}->{integer}  = Tokens(@intTokens);
-          $$number{arg1}->{fraction} = Tokens(@fracTokens); }
-        $$number{arg2} = six_parse_number(undef, Tokenize($parsedExp)); }
+          $$number{arg1}{integer}  = Tokens(@intTokens);
+          $$number{arg1}{fraction} = Tokens(@fracTokens);
+          $$number{arg1}{decimal}  = undef if (!@fracTokens); }
+        $$number{arg2} = { integer => Tokenize(($parsedExp < 0 ? -1 : 1) * $parsedExp) };
+        $$number{arg2}{sign} = T_OTHER('-') if ($parsedExp < 0); }
       if (six_getBool('drop-exponent')) {
         if ($$number{arg2} && $$number{arg2}{integer}) {
           # mimic an siunitx warning

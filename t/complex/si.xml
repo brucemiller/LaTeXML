@@ -987,9 +987,13 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
               <XMath>
                 <XMTok meaning="0.01" role="NUMBER">0.01</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="0.00" text="0.00" xml:id="S1.SS3.SSS3.p1.m4">
+            </Math> <break/><Math mode="inline" tex="&lt;0.01" text="absent &lt; 0.01" xml:id="S1.SS3.SSS3.p1.m4">
               <XMath>
-                <XMTok meaning="0.00" role="NUMBER">0.00</XMTok>
+                <XMApp>
+                  <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                  <XMTok meaning="absent"/>
+                  <XMTok meaning="0.01" role="NUMBER">0.01</XMTok>
+                </XMApp>
               </XMath>
             </Math><break/></p>
         </para>
