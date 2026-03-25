@@ -556,9 +556,9 @@ sub six_match_number {
 
 #======================================================================
 # Post-processing numbers
-# round-half, round-minimum, round-mode, round-precision
+# round-half, round-minimum, round-mode, round-precision, scientific-notation, zero-decimal-to-integer
 # Options NOT YET HANDLED:
-# round-integer-to-decimal, scientific-notation, zero-decimal-to-integer
+# round-integer-to-decimal
 
 sub six_postprocess {
   my ($number) = @_;
@@ -771,7 +771,7 @@ sub six_parse_number {
     if ($$matched{sign} && $$matched{sign}->ToString eq '+' && !six_getBool('retain-explicit-plus')) {
       # make sure an explicit-sign doesn't get added later
       $$matched{sign} = T_CS('\lx@InvisiblePlus'); }
-    if ($$matched{sign} && $$matched{sign} eq '-' && is_explicit_zero($matched) && !six_getBool('retain-negative-zero')) {
+    if ($$matched{sign} && $$matched{sign}->ToString eq '-' && is_explicit_zero($matched) && !six_getBool('retain-negative-zero')) {
       $$matched{sign} = undef; }
     $result = six_postprocess($matched);
     if (scalar(@$tokens)) {
@@ -820,7 +820,7 @@ sub number_is_zero {
   unless (ref($number) eq 'ARRAY' || $number->isa('ARRAY')) {
     return 0; }
   foreach my $digit (@{$number}) {
-    unless ((ref($digit) eq 'SCALAR' && $digit == 0) || (ref($digit) eq 'Token' && $digit->equals(T_OTHER('0')))) {
+    unless ((ref($digit) eq 'SCALAR' && $digit == 0) || (ref($digit) eq 'LaTeXML::Core::Token' && $digit->ToString eq '0')) {
       return 0; } }
   return 1; }
 
@@ -1741,29 +1741,30 @@ DefMacro('\ang OptionalKeyVals:SIX {}', sub {
       $$degrees{fraction} = $$fraction{fraction};
       $minutes            = undef;
       $seconds            = undef; }
-    # Normalize integer/fraction part.
-    my $addd0 = !%$degrees               && six_getBool('fill-angle-degrees');
-    my $addm0 = !($minutes && %$minutes) && six_getBool('fill-angle-minutes')
-      && (!$degrees || !%$degrees || !$$degrees{fraction});
-    my $adds0 = !($seconds && %$seconds) && six_getBool('fill-angle-seconds')
-      && (!$degrees || !%$degrees || !$$degrees{fraction})
-      && (!$minutes || !%$minutes || !$$minutes{fraction});
-    $degrees = { integer => T_OTHER('0') } if $addd0;
-    $minutes = { integer => T_OTHER('0') } if $addm0;
-    $seconds = { integer => T_OTHER('0') } if $adds0;
     # Pull out the (overall) sign, assuming(!) the first one applies to all components.
     my $sign = ($degrees && $$degrees{sign}) || ($minutes && $$minutes{sign})
       || ($seconds && $$seconds{sign});
     $$degrees{sign} = undef if $degrees;
     $$minutes{sign} = undef if $minutes;
     $$seconds{sign} = undef if $seconds;
-    # remove explicit zeros
-    if (is_explicit_zero($degrees) && !six_getBool('fill-angle-degrees')) {
-      $degrees = undef; }
-    if (is_explicit_zero($minutes) && !six_getBool('fill-angle-minutes')) {
-      $minutes = undef; }
-    if (is_explicit_zero($seconds) && !six_getBool('fill-angle-seconds')) {
-      $seconds = undef; }
+    if (!($degrees && %$degrees) || is_explicit_zero($degrees)) {
+      if (six_getBool('fill-angle-degrees')) {
+        $degrees = { integer => T_OTHER('0') }; }
+      else {
+        $degrees = undef; } }
+    if (!($minutes && %$minutes && !is_explicit_zero($minutes))
+      && (!$degrees || !%$degrees || !$$degrees{fraction})) {
+      if (six_getBool('fill-angle-minutes')) {
+        $minutes = { integer => T_OTHER('0') }; }
+      else {
+        $minutes = undef; } }
+    if (!($seconds && %$seconds && !is_explicit_zero($seconds))
+      && (!$degrees || !%$degrees || !$$degrees{fraction})
+      && (!$minutes || !%$minutes || !$$minutes{fraction})) {
+      if (six_getBool('fill-angle-seconds')) {
+        $seconds = { integer => T_OTHER('0') }; }
+      else {
+        $seconds = undef; } }
     return six_format_angle($sign, $degrees, $minutes, $seconds); });
 
 sub six_format_angle {
