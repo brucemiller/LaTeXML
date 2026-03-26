@@ -157,8 +157,8 @@ DefMacro('\@personname',
 DefMacro('\@add@frontmatter',
   '\lx@DEPRECATE{\@add@frontmatter}{\lx@add@frontmatter}\lx@add@frontmatter');
 DefMacro('\@add@to@frontmatter {}[]{}',
-  '\lx@DEPRECATE{\@add@to@frontmatter}{\lx@add@to@frontmatter}'
-    . '\lx@add@to@frontmatter{#1}{preformatted}[#2]{#3}');
+  '\lx@DEPRECATE{\@add@to@frontmatter}{\lx@annotate@frontmatter}'
+    . '\lx@annotate@frontmatter{#1}{preformatted}[#2]{#3}');
 DefMacro('\@ADDCLASS',
   '\lx@DEPRECATE{\@ADDCLASS}{{\lx@add@cssclass}\lx@add@cssclass');
 
