@@ -55,8 +55,8 @@ DefMacro('\emails{}',
   '\lx@clear@frontmatter{ltx:contact}[role=email]'
     . '\lx@splitting{\lx@ijcai@email}{,}{#1}');
 DefMacro('\lx@ijcai@author{}',      '\lx@add@author{#1}');
-DefMacro('\lx@ijcai@affiliation{}', '\lx@add@affiliation[markseq=author]{#1}');
-DefMacro('\lx@ijcai@email{}',       '\lx@add@email[markseq=author]{#1}');
+DefMacro('\lx@ijcai@affiliation{}', '\lx@add@affiliation[labelseq=author]{#1}');
+DefMacro('\lx@ijcai@email{}',       '\lx@add@email[labelseq=author]{#1}');
 
 #**********************************************************************
 

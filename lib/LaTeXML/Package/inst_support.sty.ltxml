@@ -25,8 +25,8 @@ use LaTeXML::Package;
 # so this shouldn't be needed.
 
 # In inst style, the \author (used once for each author)
-# gets some "marks" which are used to connect to \affiliation
-# (also one per affiliation); the affailiation with the matching mark
+# gets some "labels" which are used to connect to \affiliation
+# (also one per affiliation); the affailiation with the matching label
 # is attached to the author.
 
 # \author[marks]{author}
@@ -35,8 +35,8 @@ DefMacro('\author{}',
     . '\lx@splitting{\lx@add@author}{\and\And,}{#1}');
 DefMacro('\institute{}',
   '\lx@clear@frontmatter{ltx:contact}[role=affiliation]'
-    . '\lx@splitting{\lx@add@contact[role=affiliation,markseq=affiliation]}{\and\And}{#1}');
-DefMacro('\inst{}', '\lx@add@creator@mark[affiliation]{#1}');
+    . '\lx@splitting{\lx@add@contact[role=affiliation,labelseq=affiliation]}{\and\And}{#1}');
+DefMacro('\inst{}', '\lx@request@frontmatter@annotation[affiliation]{#1}');
 
 Let('\at',      '\and');    # Actually this is different than \and, but...
 Let('\iand',    '\and');

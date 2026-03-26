@@ -112,7 +112,7 @@ DefMacro('\lx@aas@checkorchid@ Until:, Until:\done', sub {
 
 # \email[]{addr} applies to previous author
 # \correspondingauthor{name}
-DefMacro('\correspondingauthor{}', '\lx@add@contact[role=correspondent,mark={fuzzy:#1}]{#1}');
+DefMacro('\correspondingauthor{}', '\lx@add@contact[role=correspondent,label={fuzzy:#1}]{#1}');
 
 # Various contact information attaches to previous \author
 DefMacro('\affiliation{}',    '\lx@add@affiliation{#1}');
@@ -121,15 +121,15 @@ DefMacro('\affil',            '\affiliation');
 DefMacro('\authoraddr{}',     '\lx@add@address{#1}');
 DefMacro('\email{}',          '\lx@add@email{#1}');
 
-# \collaboration{n}{name} applies to previous n authors [can be 0 or all]
-# \nocollaboration{n} ???
-DefMacro('\collaboration{}{}', '\lx@add@contact[role=collaboration,attach={#1}]{#2}');
-DefMacro('\nocollaboration{}', '');
+# \collaboration{n}{name} applies to previous authors w/o collab; n is how many to SHOW
+# \nocollaboration{n} ditto, but says they are not in a collaboration gruup.
+DefMacro('\collaboration{}{}', '\lx@add@contact[role=collaboration,annotate=new]{#2}');
+DefMacro('\nocollaboration{}', '\lx@add@contact[role=collaboration,annotate=new]{}');
 
 # Older aas versions: put mark within \author, text will be attached
-DefMacro('\altaffilmark{}',    '\lx@add@creator@mark[altaffil]{#1}');
-DefMacro('\altaffilteext{}{}', '\lx@add@contact[role=altaffiliation,mark=altaffil#1]{#2}');
-DefMacro('\authoremail',       '\email');    # Obsolete form
+DefMacro('\altaffilmark{}',   '\lx@request@frontmatter@annotation[altaffil]{#1}');
+DefMacro('\altaffiltext{}{}', '\lx@add@contact[role=altaffiliation,label=altaffil#1]{#2}');
+DefMacro('\authoremail',      '\email');    # Obsolete form
 
 # Redefine to straight email address after document begin.
 ###AddToMacro(T_CS('\@startsection@hook'), TokenizeInternal('\let\email\@@email'));

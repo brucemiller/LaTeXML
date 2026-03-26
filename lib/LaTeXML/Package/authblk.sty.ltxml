@@ -46,16 +46,16 @@ NewCounter('@affil');
 #  \author[mark]{name} : REPEATED
 #  \affil[mark]{affil} : REPEATED, attaches to author with same mark
 DefMacro('\author[]{}', sub {
-    my ($gullet, $mark, $author) = @_;
-    if ($mark) {    # Use mark attachment
-      Invocation('\lx@add@creator[role=author,mark={#1}]{#2}', $mark, $author); }
+    my ($gullet, $label, $author) = @_;
+    if ($label) {    # Use label attachment
+      Invocation('\lx@add@creator[role=author,annotations={#1}]{#2}', $label, $author); }
     elsif (grep { $_->defined_as(T_CS('\and')) || $_->defined_as(T_CS('\And')); } $author->unlist) {
       Invocation(T_CS('\lx@add@authors'), $author); }
     else {
       Invocation(T_CS('\lx@add@creator'), undef, $author); } });
 
 DefMacro('\affil[]{}',
-  '\lx@add@contact[role=affiliation,attach={\ifx.#1.new\else 1\fi},mark={#1}]{#2}');
+  '\lx@add@contact[role=affiliation,annotate={\ifx.#1.new\else 1\fi},label={#1}]{#2}');
 
 # we shouldn't need these, but if someone is using them low-level
 # might as well provide them

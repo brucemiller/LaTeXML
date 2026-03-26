@@ -30,14 +30,14 @@ RequirePackage('graphicx');
 
 # \author[]{}
 # One \author per author followed by \affiliation
-# OR both are supplied an optional mark by which the affiliation is attached to author
-# optional arg is a mark identifying which affliation belongs
-DefMacro('\author[]{}',      '\lx@add@creator[role=author,mark={#1}]{#2}');
-DefMacro('\affiliation[]{}', '\lx@add@contact[role=affiliation,mark={#1}]{#2}');
+# OR both are supplied an optional label by which the affiliation is attached to author
+# optional arg is a label identifying which affliation belongs
+DefMacro('\author[]{}',      '\lx@add@creator[role=author,annotations={#1}]{#2}');
+DefMacro('\affiliation[]{}', '\lx@add@contact[role=affiliation,label={#1}]{#2}');
 # \note{} appears inside author?
 DefMacro('\note{}', '\lx@add@contact[role=note]{#1}');
 # The n-th \emailAdd is attached to the n-th author!
-DefMacro('\emailAdd Semiverbatim', '\lx@add@contact[role=email,markseq=author]{#1}');
+DefMacro('\emailAdd Semiverbatim', '\lx@add@contact[role=email,labelseq=author]{#1}');
 
 DefMacro('\keywordname', '\textbf{Keywords}');
 DefMacro('\keywords{}',  '\lx@add@keywords[name={\keywordname}]{#1}');

@@ -33,12 +33,12 @@ DefEnvironment('{frontmatter}', '#body');
 # It either should be followed by \affiliation,
 # or both should get matching marks
 DefMacro('\author[]{}',
-  '\lx@add@creator[role=author,mark={#1}]{#2}');
+  '\lx@add@creator[role=author,annotations={#1}]{#2}');
 
 DefMacro('\address[]{}',
-  '\lx@add@contact[mark={#1},role=address]{#2}');
+  '\lx@add@contact[label={#1},role=address]{#2}');
 DefMacro('\affiliation[]{}',
-  '\lx@add@contact[mark={#1},role=affiliation]{#2}');
+  '\lx@add@contact[label={#1},role=affiliation]{#2}');
 
 # Redefine to account for the label, which we ignore for now!
 DefConstructor('\thanks[]{}', "<ltx:note role='thanks'>#2</ltx:note>");
@@ -50,16 +50,16 @@ Let('\collaboration', '\collab');
 # These pairs add various contact information to authors.
 # The \<XXX>ref forms are used within the \author text to anchor the connection
 # the \<XXX>text forms supply the text (& and role) for the contact that will be attached.
-DefMacro('\thanksref{}',   '\lx@add@creator@mark{thanks:#1}');
-DefMacro('\corref{}',      '\lx@add@creator@mark{cor:#1}');
-DefMacro('\corauthref{}',  '\lx@add@creator@mark{corauth:#1}');
-DefMacro('\fnref{}',       '\lx@add@creator@mark{fn:#1}');
-DefMacro('\tnoteref{}',    '\lx@add@creator@mark{tnote:#1}');     # Possibly for title, not author?
-DefMacro('\thanks[]{}',    '\lx@add@contact[mark={thanks:#1},role=thanks]{#2}');
-DefMacro('\cortext[]{}',   '\lx@add@contact[mark={cor:#1},role=correspondent]{#2}');
-DefMacro('\corauth[]{}',   '\lx@add@contact[mark={corauth:#1},role=correspondent]{#2}');
-DefMacro('\fntext[]{}',    '\lx@add@contact[mark={fn:#1},role=note]{#2}');
-DefMacro('\tnotetext[]{}', '\lx@add@contact[mark={tnote:#1},role=note]{#2}');    # title note?
+DefMacro('\thanksref{}',  '\lx@request@frontmatter@annotation{thanks:#1}');
+DefMacro('\corref{}',     '\lx@request@frontmatter@annotation{cor:#1}');
+DefMacro('\corauthref{}', '\lx@request@frontmatter@annotation{corauth:#1}');
+DefMacro('\fnref{}',      '\lx@request@frontmatter@annotation{fn:#1}');
+DefMacro('\tnoteref{}', '\lx@request@frontmatter@annotation{tnote:#1}'); # Possibly for title, not author?
+DefMacro('\thanks[]{}',    '\lx@add@contact[label={thanks:#1},role=thanks]{#2}');
+DefMacro('\cortext[]{}',   '\lx@add@contact[label={cor:#1},role=correspondent]{#2}');
+DefMacro('\corauth[]{}',   '\lx@add@contact[label={corauth:#1},role=correspondent]{#2}');
+DefMacro('\fntext[]{}',    '\lx@add@contact[label={fn:#1},role=note]{#2}');
+DefMacro('\tnotetext[]{}', '\lx@add@contact[label={tnote:#1},role=note]{#2}');    # title note?
 
 DefMacro('\runauthor{}', Tokens());
 DefMacro('\runtitle{}',  Tokens());

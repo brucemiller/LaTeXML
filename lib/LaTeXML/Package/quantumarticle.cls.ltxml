@@ -25,24 +25,24 @@ RequirePackage('bbm');
 RequirePackage('xcolor');
 
 # Note: This seems similar to revtex4; should we just require revtex4_support ?
-# \author[mark]{name}   One \author per author
-# If mark given, the corresponding affiliation from \affil is attached
+# \author[labels]{name}   One \author per author
+# If label given, the corresponding affiliation from \affil is attached
 # otherwise, \author should be followed by \affiliation
-DefMacro('\author[]{}',    '\lx@add@creator[role=author,mark={#1}]{#2}');
-DefMacro('\affiliation{}', '\lx@add@contact[attach=new,role=affiliation]{#1}');
+DefMacro('\author[]{}',    '\lx@add@creator[role=author,annotations={#1}]{#2}');
+DefMacro('\affiliation{}', '\lx@add@contact[annotate=new,role=affiliation]{#1}');
 DefMacro('\affil[]{}',
-  '\lx@add@contact[role=affiliation,attach={\ifx.#1.new\else 1\fi},mark={#1}]{#2}');
+  '\lx@add@contact[role=affiliation,annotate={\ifx.#1.new\else 1\fi},label={#1}]{#2}');
 # \address provides address for previous \author
-DefMacro('\address{}', '\lx@add@contact[attach=new,role=address]{#1}');
+DefMacro('\address{}', '\lx@add@contact[annotate=new,role=address]{#1}');
 # These add contacts to most recent author
-# The optional arguments here are a sort of prefix to the footnote (NOT marks!)
+# The optional arguments here are a sort of prefix to the footnote (NOT label!)
 DefMacro('\email[] Semiverbatim',    '\lx@add@contact[role=email,name={#1}]{#2}');
 DefMacro('\homepage[] Semiverbatim', '\lx@add@contact[role=url,name={#1}]{#2}');
 DefMacro('\thanks[]{}',              '\lx@add@contact[role=thanks,name={#1}]{#2}');
 DefMacro('\orcid[]{}',               '\lx@add@contact[role=orcid,name={#1}]{#2}');
 
 DefMacro('\collaboration{}',    '\author{#1}');
-DefMacro('\altaffiliation[]{}', '\lx@add@contact[attach=new,role=affiliation,name={#1}]{#2}');
+DefMacro('\altaffiliation[]{}', '\lx@add@contact[annotate=new,role=affiliation,name={#1}]{#2}');
 # some elsearticle style commands?
 DefMacro('\ead[]{}', '\email{#1}');    # Strictly if #1=url, should be homepage.
 

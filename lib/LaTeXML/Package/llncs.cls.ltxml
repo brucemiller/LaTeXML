@@ -37,17 +37,17 @@ DefMacro('\emailname', 'E-mail');
 DefMacro('\mailname',  '\textit{Correspondence to}:');
 
 # Single \author, with multiple authors separated by \and
-# \inst{marks} can be used within each author to identify which affiliations apply
+# \inst{labels} can be used within each author to identify which affiliations apply
 DefMacro('\author{}',
   '\lx@clear@creators[role=author]'
     . '\lx@splitting{\lx@add@author}{\and\And,}{#1}');
 # Single  \institute, with multiple institutions serapated by \and
-# The n-th institution is attached to the author which has that n in its \inst marks.
+# The n-th institution is attached to the author which has that n in its \inst labels.
 DefMacro('\institute{}',
   '\lx@clear@frontmatter{ltx:contact}[role=affiliation]'
     . '\lx@splitting{\lx@llncs@affiliation}{\and}{#1}');
-DefMacro('\lx@llncs@affiliation{}', '\lx@add@affiliation[markseq={affiliation}]{#1}');
-DefMacro('\inst{}',                 '\lx@add@creator@mark[affiliation]{#1}');
+DefMacro('\lx@llncs@affiliation{}', '\lx@add@affiliation[labelseq={affiliation}]{#1}');
+DefMacro('\inst{}',                 '\lx@request@frontmatter@annotation[affiliation]{#1}');
 # \orcidID should be used within each author in \author
 DefMacro('\orcidID{}', '\lx@add@orcid{#1}');
 # \email, \url,\mail should be within an institute in \institute!!

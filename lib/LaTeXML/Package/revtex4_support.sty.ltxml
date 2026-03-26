@@ -40,24 +40,24 @@ DefMacro('\title[]{}',
     . '\ifx.#1.\else\lx@add@toctitle{#1}\fi'
     . '\lx@add@title{#2}');
 
-# \author[mark]{name}   One \author per author
-# If mark given, the corresponding affiliation from \affil is attached
+# \author[labels]{name}   One \author per author
+# If labels given, the corresponding affiliation from \affil is attached
 # otherwise, \author should be followed by \affiliation
-DefMacro('\author[]{}',    '\lx@add@author[mark={#1}]{#2}');
-DefMacro('\affiliation{}', '\lx@add@affiliation[attach=new]{#1}');
+DefMacro('\author[]{}',    '\lx@add@author[annotations={#1}]{#2}');
+DefMacro('\affiliation{}', '\lx@add@affiliation[annotate=new]{#1}');
 DefMacro('\affil[]{}',
-  '\lx@add@affiliation[attach={\ifx.#1.new\else 1\fi},mark={#1}]{#2}');
+  '\lx@add@affiliation[annotate={\ifx.#1.new\else 1\fi},label={#1}]{#2}');
 # \address provides an address to the previous \author
-DefMacro('\address{}', '\lx@add@address[attach=new]{#1}');
+DefMacro('\address{}', '\lx@add@address[annotate=new]{#1}');
 # These add contacts to most recent author
-# The optional arguments here are a sort of prefix to the footnote. (NOT marks)
+# The optional arguments here are a sort of prefix to the footnote. (NOT label)
 DefMacro('\email[] Semiverbatim',    '\lx@add@email[name={#1}]{#2}');
 DefMacro('\homepage[] Semiverbatim', '\lx@add@url[name={#1}]{#2}');
 DefMacro('\thanks[]{}',              '\lx@add@contact[role=thanks,name={#1}]{#2}');
 DefMacro('\orcid[]{}',               '\lx@add@orcid[name={#1}]{#2}');                 # ?
 
 DefMacro('\collaboration{}',    '\author{#1}');
-DefMacro('\altaffiliation[]{}', '\lx@add@contact[attach=new,role=affiliation,name={#1}]{#2}');
+DefMacro('\altaffiliation[]{}', '\lx@add@contact[annotate=new,role=affiliation,name={#1}]{#2}');
 
 DefMacro('\firstname', '');    # \let\firstname\@firstofone ??
 DefConstructor('\surname{}', "#1");

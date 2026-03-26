@@ -87,7 +87,7 @@ DefConstructor('\Description[]{}', '^^<ltx:note xml:id="#id" class="ltx_nodispla
 # Note that \affiliation can apply to all preceding authors without one
 DefMacro('\author{}',                '\lx@add@creator[role=author]{#1}');
 DefMacro('\editor{}',                '\lx@add@creator[role=editor]{#1}');
-DefMacro('\affiliation{}',           '\lx@add@contact[role=affiliation,attach=new]{#1}');
+DefMacro('\affiliation{}',           '\lx@add@contact[role=affiliation,annotate=new]{#1}');
 DefMacro('\additionalaffiliation{}', '\lx@add@contact[role=altaffiliation]{#1}');
 DefMacro('\email [] Semiverbatim',   '\lx@add@contact[role=email,name={email: }]{#2}');
 DefMacro('\orcid{}',                 '\lx@add@contact[role=orcid, name={OrcID: }]{#1}');
