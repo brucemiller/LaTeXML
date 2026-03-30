@@ -898,7 +898,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
               <XMath>
                 <XMTok meaning="14.230" role="NUMBER">14.230</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="0.123\,45(9.000)" text="uncertain@(0.12345, 0.00009)" xml:id="S1.SS3.SSS1.p1.m6">
+            </Math> <break/><Math mode="inline" tex="0.123\,45(9)" text="uncertain@(0.12345, 0.00009)" xml:id="S1.SS3.SSS1.p1.m6">
               <XMath>
                 <XMApp>
                   <XMTok meaning="uncertain" role="MULOP">⁢</XMTok>
@@ -907,7 +907,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                     <XMRef idref="S1.SS3.SSS1.p1.m6.2.1"/>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok meaning="9.000" role="NUMBER" xml:id="S1.SS3.SSS1.p1.m6.2.1">9.000</XMTok>
+                      <XMTok meaning="9" role="NUMBER" xml:id="S1.SS3.SSS1.p1.m6.2.1">9</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMDual>
@@ -921,7 +921,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
               <XMath>
                 <XMTok meaning="14.2" role="NUMBER">14.2</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="0.123\,45(9.00)" text="uncertain@(0.12345, 0.00009)" xml:id="S1.SS3.SSS1.p1.m9">
+            </Math> <break/><Math mode="inline" tex="0.123\,45(9)" text="uncertain@(0.12345, 0.00009)" xml:id="S1.SS3.SSS1.p1.m9">
               <XMath>
                 <XMApp>
                   <XMTok meaning="uncertain" role="MULOP">⁢</XMTok>
@@ -930,7 +930,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                     <XMRef idref="S1.SS3.SSS1.p1.m9.2.1"/>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok meaning="9.00" role="NUMBER" xml:id="S1.SS3.SSS1.p1.m9.2.1">9.00</XMTok>
+                      <XMTok meaning="9" role="NUMBER" xml:id="S1.SS3.SSS1.p1.m9.2.1">9</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMDual>
@@ -975,24 +975,24 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
         </tags>
         <title><tag close=" ">1.3.3</tag>round-minimum</title>
         <para xml:id="S1.SS3.SSS3.p1">
-          <p><Math mode="inline" tex="0.01" text="0.01" xml:id="S1.SS3.SSS3.p1.m1">
+          <p><Math mode="inline" tex="0.01" text=".01" xml:id="S1.SS3.SSS3.p1.m1">
               <XMath>
-                <XMTok meaning="0.01" role="NUMBER">0.01</XMTok>
+                <XMTok meaning=".01" role="NUMBER">0.01</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="0.00" text="0.00" xml:id="S1.SS3.SSS3.p1.m2">
+            </Math> <break/><Math mode="inline" tex="0.00" text=".00" xml:id="S1.SS3.SSS3.p1.m2">
               <XMath>
-                <XMTok meaning="0.00" role="NUMBER">0.00</XMTok>
+                <XMTok meaning=".00" role="NUMBER">0.00</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="0.01" text="0.01" xml:id="S1.SS3.SSS3.p1.m3">
+            </Math> <break/><Math mode="inline" tex="0.01" text=".01" xml:id="S1.SS3.SSS3.p1.m3">
               <XMath>
-                <XMTok meaning="0.01" role="NUMBER">0.01</XMTok>
+                <XMTok meaning=".01" role="NUMBER">0.01</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="&lt;0.01" text="absent &lt; 0.01" xml:id="S1.SS3.SSS3.p1.m4">
+            </Math> <break/><Math mode="inline" tex="&lt;0.01" text="absent &lt; .01" xml:id="S1.SS3.SSS3.p1.m4">
               <XMath>
                 <XMApp>
                   <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
                   <XMTok meaning="absent"/>
-                  <XMTok meaning="0.01" role="NUMBER">0.01</XMTok>
+                  <XMTok meaning=".01" role="NUMBER">0.01</XMTok>
                 </XMApp>
               </XMath>
             </Math><break/></p>
@@ -1006,21 +1006,21 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
         </tags>
         <title><tag close=" ">1.3.4</tag>round-half</title>
         <para xml:id="S1.SS3.SSS4.p1">
-          <p><Math mode="inline" tex="0.06" text="0.06" xml:id="S1.SS3.SSS4.p1.m1">
+          <p><Math mode="inline" tex="0.06" text=".06" xml:id="S1.SS3.SSS4.p1.m1">
               <XMath>
-                <XMTok meaning="0.06" role="NUMBER">0.06</XMTok>
+                <XMTok meaning=".06" role="NUMBER">0.06</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="0.05" text="0.05" xml:id="S1.SS3.SSS4.p1.m2">
+            </Math> <break/><Math mode="inline" tex="0.05" text=".05" xml:id="S1.SS3.SSS4.p1.m2">
               <XMath>
-                <XMTok meaning="0.05" role="NUMBER">0.05</XMTok>
+                <XMTok meaning=".05" role="NUMBER">0.05</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="0.06" text="0.06" xml:id="S1.SS3.SSS4.p1.m3">
+            </Math> <break/><Math mode="inline" tex="0.06" text=".06" xml:id="S1.SS3.SSS4.p1.m3">
               <XMath>
-                <XMTok meaning="0.06" role="NUMBER">0.06</XMTok>
+                <XMTok meaning=".06" role="NUMBER">0.06</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="0.04" text="0.04" xml:id="S1.SS3.SSS4.p1.m4">
+            </Math> <break/><Math mode="inline" tex="0.04" text=".04" xml:id="S1.SS3.SSS4.p1.m4">
               <XMath>
-                <XMTok meaning="0.04" role="NUMBER">0.04</XMTok>
+                <XMTok meaning=".04" role="NUMBER">0.04</XMTok>
               </XMath>
             </Math></p>
         </para>
@@ -1090,9 +1090,9 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
               <XMath>
                 <XMTok meaning="123" role="NUMBER">123</XMTok>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="123" text="0123" xml:id="S1.SS3.SSS6.p1.m5">
+            </Math> <break/><Math mode="inline" tex="0123" text="0123" xml:id="S1.SS3.SSS6.p1.m5">
               <XMath>
-                <XMTok meaning="0123" role="NUMBER">123</XMTok>
+                <XMTok meaning="0123" role="NUMBER">0123</XMTok>
               </XMath>
             </Math><break/></p>
         </para>
@@ -6010,7 +6010,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="{\mathrm{(kg\;pol)}}^{2}\text{\,}{\mathrm{(mol\;cat)}}^{-1}\text{\,}{\mathrm{h%&#10;}}^{-1}" text="power@(kilogram-polymer, 2) * power@(mole-catalyst, - 1) * power@(hour, - 1)" xml:id="S2.SS1.SSS6.p1.m4">
+            </Math> <break/><Math mode="inline" tex="{\mathrm{(kg\;\mathrm{pol})}}^{2}\text{\,}{\mathrm{(mol\;\mathrm{cat})}}^{-1}%&#10;\text{\,}{\mathrm{h}}^{-1}" text="power@(kilogram-polymer, 2) * power@(mole-catalyst, - 1) * power@(hour, - 1)" xml:id="S2.SS1.SSS6.p1.m4">
               <XMath>
                 <XMApp>
                   <XMText meaning="times" role="MULOP" xml:id="S2.SS1.SSS6.p1.m4.4"> </XMText>
@@ -6059,14 +6059,14 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="\mathrm{dBi}" text="decibel-isotropic" xml:id="S2.SS1.SSS6.p1.m5">
+            </Math> <break/><Math mode="inline" tex="\mathrm{dB}\mathrm{i}" text="decibel-isotropic" xml:id="S2.SS1.SSS6.p1.m5">
               <XMath>
                 <XMTok class="ltx_unit" meaning="decibel-isotropic" role="ID">dBi</XMTok>
               </XMath>
             </Math><break/></p>
         </para>
         <para xml:id="S2.SS1.SSS6.p2">
-          <p><Math mode="inline" tex="{\mathrm{(kgofpol)}}^{2}\text{\,}{\mathrm{(molofcat)}}^{-1}\text{\,}{\mathrm{h%&#10;}}^{-1}" text="power@(kilogram-polymer, 2) * power@(mole-catalyst, - 1) * power@(hour, - 1)" xml:id="S2.SS1.SSS6.p2.m1">
+          <p><Math mode="inline" tex="{\mathrm{(kgof\mathrm{pol})}}^{2}\text{\,}{\mathrm{(molof\mathrm{cat})}}^{-1}%&#10;\text{\,}{\mathrm{h}}^{-1}" text="power@(kilogram-polymer, 2) * power@(mole-catalyst, - 1) * power@(hour, - 1)" xml:id="S2.SS1.SSS6.p2.m1">
               <XMath>
                 <XMApp>
                   <XMText meaning="times" role="MULOP" xml:id="S2.SS1.SSS6.p2.m1.4"> </XMText>
@@ -6107,7 +6107,7 @@ Some text <break/><Math mode="inline" tex="4\text{\,}\mathrm{m}\text{\,}{\mathrm
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math> <break/><Math mode="inline" tex="{\mathrm{(kgbypol)}}^{2}\text{\,}{\mathrm{(molbycat)}}^{-1}\text{\,}{\mathrm{h%&#10;}}^{-1}" text="power@(kilogram-polymer, 2) * power@(mole-catalyst, - 1) * power@(hour, - 1)" xml:id="S2.SS1.SSS6.p2.m2">
+            </Math> <break/><Math mode="inline" tex="{\mathrm{(kgby\mathrm{pol})}}^{2}\text{\,}{\mathrm{(molby\mathrm{cat})}}^{-1}%&#10;\text{\,}{\mathrm{h}}^{-1}" text="power@(kilogram-polymer, 2) * power@(mole-catalyst, - 1) * power@(hour, - 1)" xml:id="S2.SS1.SSS6.p2.m2">
               <XMath>
                 <XMApp>
                   <XMText meaning="times" role="MULOP" xml:id="S2.SS1.SSS6.p2.m2.4"> </XMText>

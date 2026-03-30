@@ -493,8 +493,9 @@ sub six_match_uncertainnumber {
 sub six_match_complexnumber {
   my ($tokens, $is_table_formatter) = @_;
   my $number = six_match_uncertainnumber($tokens, $is_table_formatter);
-  if (my $i = six_match_keys($tokens, 'input-complex-roots')) {    # pure imaginary!
-    my $sign = $$number{sign}; $$number{sign} = undef;             # Make sign "infix"
+  if (my $i = six_match_keys($tokens, 'input-complex-roots')) {    # pure imaginary, make sign "infix"
+    my $sign = $$number{sign};
+    delete $$number{sign};
     $number = { operator => 'complex', symbol => $i, sign => $sign, arg2 => $number }; }
   # Check if followed by a sign, then expect imaginary part
   elsif (my $sign = six_match_sign($tokens)) {                     # Imaginary part
@@ -563,6 +564,7 @@ sub six_match_number {
 sub six_postprocess {
   my ($number) = @_;
   $number = six_ensure_scientific($number) if (six_getChoice('exponent-mode') ne 'input');
+  six_round($number) if six_getBool('parse-numbers');
   return six_postprocess_aux($number); }
 
 sub six_ensure_scientific {
@@ -623,7 +625,7 @@ sub six_postprocess_aux {
                 $parsedExp++; } } }
           $$number{arg1}{integer}  = Tokens(@intTokens);
           $$number{arg1}{fraction} = Tokens(@fracTokens);
-          $$number{arg1}{decimal}  = undef if (!@fracTokens); }
+          delete $$number{arg1}{decimal} if (!@fracTokens); }
         $$number{arg2} = { integer => Tokenize(($parsedExp < 0 ? -1 : 1) * $parsedExp) };
         $$number{arg2}{sign} = T_OTHER('-') if ($parsedExp < 0); }
       if (six_getBool('drop-exponent')) {
@@ -642,13 +644,15 @@ sub six_postprocess_aux {
       $$number{integer} = Tokenize(0); }
     if (my $s = !$$number{sign} && six_get('explicit-sign')) {
       $$number{sign} = $s; } }
-  six_round($number) if six_getBool('parse-numbers');
   while ($$number{fraction} && @{ $$number{fraction} }
     && $$number{fraction}->[-1]->equals(T_OTHER('0')) && six_getBool('drop-zero-decimal')) {
     pop(@{ $$number{fraction} }); }
   if ($$number{integer} && $$number{fraction} && @{ $$number{fraction} }
     && number_is_zero(@{ $$number{fraction} }) && six_getBool('zero-decimal-to-integer')) {
+    delete $$number{decimal};
     delete $$number{fraction}; }
+  $$number{integer}  ||= Tokens() if (six_get('minimum-integer-digits')->toString);
+  $$number{fraction} ||= Tokens() if (six_get('minimum-decimal-digits')->toString);
   while ($$number{fraction} && @{ $$number{fraction} } < six_get('minimum-decimal-digits')->toString) {
     push(@{ $$number{fraction} }, T_OTHER('0')); }
   while ($$number{integer} && @{ $$number{integer} } < six_get('minimum-integer-digits')->toString) {
@@ -780,13 +784,13 @@ sub six_parse_number {
       return; }
     my $matched = six_match_number($tokens);
     if ($$matched{integer} && $$matched{decimal} && !$$matched{fraction} && !six_getBool('retain-explicit-decimal-marker')) {
-      $$matched{decimal} = undef; }
+      delete $$matched{decimal}; }
     # todo upgrade
     if ($$matched{sign} && $$matched{sign}->ToString eq '+' && !six_getBool('retain-explicit-plus')) {
       # make sure an explicit-sign doesn't get added later
       $$matched{sign} = T_CS('\lx@InvisiblePlus'); }
     if ($$matched{sign} && $$matched{sign}->ToString eq '-' && is_explicit_zero($matched) && !six_getBool('retain-negative-zero')) {
-      $$matched{sign} = undef; }
+      delete $$matched{sign}; }
     $result = six_postprocess($matched);
     if (scalar(@$tokens)) {
       Error('unexpected', $$tokens[0], $gullet, 'Not matched in \num: ' . ToString(Tokens(@$tokens)) . "\n");
@@ -879,9 +883,8 @@ sub six_format_simplenumber {
   push @tokens, $sign if ($sign && $flags{in_exponent});
   if ($integer) {
     my @intTokens = $integer->unlist;
-    while (@intTokens && $intTokens[0]->equals(T_OTHER('0'))) {
+    while (@intTokens && $intTokens[0]->equals(T_OTHER('0')) && six_get('minimum-integer-digits')->ToString < @intTokens) {
       shift(@intTokens); }
-    # todo upgrade
     if (!@intTokens && six_getBool('print-zero-integer')) {
       unshift(@intTokens, T_OTHER('0')); }
     $integer = Tokens(@intTokens);
@@ -905,11 +908,18 @@ sub six_format_simplenumber {
         ${ $flags{pad_left_ref} } .= '2'; } } }    # mantissa +
   if ($integer) {
     push(@tokens, $integer); }
+  my $decimal = six_getBool('copy-decimal-marker')
+    ? $$number{decimal}
+    : (($fraction && @{$fraction}) || ($$number{decimal} && $VERSION_TWO) ? six_get('output-decimal-marker') : undef);
+  if ($decimal) {
+    push(@tokens, $decimal); }
+  my $using_symbol_for_zero;
   if ($fraction) {
     my @fracTokens = $fraction ? $fraction->unlist : ();
     if (number_is_zero($fraction)) {
       if (six_getBool('zero-decimal-as-symbol')) {
-        $fraction = six_get('zero-symbol'); }
+        $using_symbol_for_zero = 1;
+        $fraction              = six_get('zero-symbol'); }
       elsif (@fracTokens) {
         $fraction = Tokens(@fracTokens);
         $fraction = (($grouping eq 'all') || ($grouping eq 'true') || ($grouping eq 'decimal')
@@ -920,16 +930,14 @@ sub six_format_simplenumber {
       $fraction = (($grouping eq 'all') || ($grouping eq 'true') || ($grouping eq 'decimal')
         ? six_groupdigits($fraction, -1)
         : $fraction); } }
+  elsif (six_getBool('zero-decimal-as-symbol')) {
+    $using_symbol_for_zero = 1;
+    $fraction              = six_get('zero-symbol'); }
   if ($flags{in_table_number} && !$flags{in_uncertainty} && !$flags{in_exponent}) {
     my $digits_needed = six_get('table-figures-decimal')->toString;
     ${ $flags{pad_right_ref} } .= '.' if ($digits_needed && !$fraction && !$$number{decimal});
     $fraction = Tokens()              if ($digits_needed && !$fraction);
     ${ $flags{pad_right_ref} } .= '2' x ($digits_needed - @{$fraction}) if (@{$fraction} < $digits_needed); }
-  my $decimal = six_getBool('copy-decimal-marker')
-    ? $$number{decimal}
-    : (($fraction && @{$fraction}) || ($$number{decimal} && $VERSION_TWO) ? six_get('output-decimal-marker') : undef);
-  if ($decimal) {
-    push(@tokens, $decimal); }
   if ($fraction) {
     push(@tokens, $fraction); }
   #  if ( $flags{in_table_number} ) {
@@ -982,12 +990,12 @@ sub six_round {
       Error('operator', 'operator', undef, "unknown operator: $op"); } }
   else {
     my $precision = six_get('round-precision')->toString;
-    shift(@{ $$number{integer} }) while ($$number{intger} && scalar(@{ $$number{integer} }) && $$number{integer}[0]->equals(T_OTHER(0)));
+    shift(@{ $$number{integer} }) while ($$number{integer} && scalar(@{ $$number{integer} }) && $$number{integer}[0]->ToString eq '0');
     if ($mode eq 'figures') {
       my $excess_zeros = 0;
       if (number_is_zero($$number{integer})) {
         foreach my $digit (@{ $$number{fraction} }) {
-          if ($digit->equals(T_OTHER(0))) {
+          if ($digit->ToString eq '0') {
             $excess_zeros++; }
           else {
             last; } } }
@@ -1027,7 +1035,8 @@ sub six_round_simple_number {
     @dropped             = splice(@{ $$number{integer} }, $figures);
     push(@dropped, @{ $$number{fraction} }) if (scalar(@{ $$number{fraction} || [] }));
     $fraction_size = scalar(@{ $$number{fraction} || [] });
-    $$number{fraction} = undef; }
+    delete $$number{decimal};
+    delete $$number{fraction}; }
   else {
     @dropped       = splice(@{ $$number{fraction} }, $figures - scalar(@{ $$number{integer} || [] }));
     $fraction_size = scalar(@{ $$number{fraction} }); }
@@ -1063,7 +1072,7 @@ sub six_round_simple_number {
       delete $$number{$_} foreach (qw(sign integer decimal fraction));
       $$number{operator} = 'comparator'; }
     elsif (six_getBool('round-zero-positive')) {
-      $$number{sign} = undef; }
+      delete $$number{sign}; }
     elsif ($$number{sign} && ToString($$number{sign}) eq '-') {
       $$number{rounded_negative} = 1; } }
   return ($is_uncertainty ? $fraction_size : 0) + $stolen_from_integer; }
@@ -1082,7 +1091,7 @@ sub round_last_digit_up {
   if (scalar(@{ $$number{fraction} })) {
     $$number{fraction} = Tokens($$number{fraction}); }
   else {
-    $$number{fraction} = undef; }
+    delete $$number{fraction}; }
   $i = $#{ $$number{integer} };
   while (0 <= $i) {
     my $digit = ($$number{integer}[$i]->toString + 1) % 10;
@@ -1185,9 +1194,9 @@ sub six_format_uncertainnumber {
     my @wrap_args      = ({}, ($flags{bracket} ? six_get('open-bracket') : ()), I_arg(1));
     foreach my $i (0 .. $#{$seps}) {
       my $sign = $$seps[$i]{sign};
-      $$seps[$i]{sign} = undef;
+      delete $$seps[$i]{sign};
       push(@wrap_args, (six_get('uncertainty-separator') || ()), ($sign || ()), I_arg(2 + $i));
-      if (1 < scalar(@descriptors) && $i < scalar(@descriptors)) {
+      if (1 < scalar(@descriptors) && $i < scalar(@descriptors) && 1 < scalar(@{$seps})) {
         push(@wrap_args, six_get('uncertainty-descriptor-separator')) if ($descriptorMode =~ /separator$/);
         my $text = $descriptors[$i];
         $text = "($text)"  if ($descriptorMode =~ /^bracket/);
@@ -1210,7 +1219,7 @@ sub six_format_uncertainnumber {
       push(@wrap_args, (six_get('uncertainty-separator') || ()), I_arg(2 + $i));
       my $sep = $$seps[$i];
       my $rel = $$rels[$i];
-      $$sep{sign} = undef;    # AFTER computing relative!!!
+      delete $$sep{sign};    # AFTER computing relative!!!
       my $uncert = $uncertainty_mode eq 'compact'
         || ($uncertainty_mode eq 'compact-marker'
         && (number_is_zero($$sep{integer}) || number_is_zero($$sep{fraction}))) ? $rel : $sep;
@@ -1238,6 +1247,7 @@ sub six_format_complexnumber {
       $parsedArg2 %= 360;
       $parsedArg2 = deg2rad($parsedArg2); }
     ($parsedArg1, $parsedArg2) = $parsedArg2 == pi ? (-$parsedArg1, 0) : cylindrical_to_cartesian($parsedArg1, $parsedArg2);
+    # or within epsilon of pi?
     $arg1 = $parsedArg1 ? six_parse_number(undef, Tokenize($parsedArg1)) : undef;
     $arg2 = $parsedArg2 ? six_parse_number(undef, Tokenize($parsedArg2)) : undef;
     six_round($arg1);
@@ -1248,7 +1258,7 @@ sub six_format_complexnumber {
   elsif ((!exists $$number{input_form}) && $complexMode eq 'polar') {
     my $parsedArg1 = six_UnTeX($arg1) || 0;
     my $parsedArg2 = six_UnTeX($arg2) || 0;
-    if ($parsedArg1 == 0 && $parsedArg2 == 0 && $$number{operator} eq 'complex' && $$number{symbol}->equals(Tokens(T_LETTER('i')))) {
+    if ($parsedArg1 == 0 && $parsedArg2 == 0 && $$number{operator} eq 'complex' && $$number{symbol}->ToString eq 'i') {
       $parsedArg2 = 1;    # seems to be a one off case
       $$number{sign} ||= T_OTHER('+'); }
     ($parsedArg1, $parsedArg2) = cartesian_to_cylindrical($parsedArg1, $parsedArg2);
@@ -1264,11 +1274,11 @@ sub six_format_complexnumber {
     if (six_getBool('print-complex-unity') && !defined $$arg2{integer} && !defined $$arg2{fraction}) {
       $$arg2{integer} = T_OTHER(1); }
     if (!six_getBool('print-complex-unity') && $$arg2{integer} && number_is_zero($$arg2{fraction})
-      && ($$arg2{integer}->equals(T_OTHER('1')) || $$arg2{integer}->equals(Tokens(T_OTHER('1'))))) {
+      && ($$arg2{integer}->ToString eq '1')) {
       $arg2 = undef; }
     my $sign = $$arg2{sign} || ($arg1 && T_OTHER('+'));
     delete $$arg2{sign} if $$arg2{sign};
-    my $imag = six_format_number($arg2, %flags, bracket => 0, in_sci_number => 0); # toggle off in_sci_number b/c it's already bracketed
+    my $imag = %$arg2 ? six_format_number($arg2, %flags, bracket => 0, in_sci_number => 0) : (); # toggle off in_sci_number b/c it's already bracketed
     my $i = (six_getBool('copy-complex-root') ? $$number{symbol} : six_get('output-complex-root'));
     $i = I_wrap({ role => 'ID', meaning => 'imaginary-unit' }, Invocation(T_CS('\text'), $i));
     my $result = six_format_infix(T_CS('\lx@InvisibleTimes'), undef, undef,
@@ -1441,8 +1451,8 @@ sub six_format_number {
   if ($sign) {
     delete $$number{sign};
     if (ToString($sign) eq '-') {
-      if ($op || !number_is_zero($$number{integer}) || !number_is_zero($$number{fraction})
-        || $$number{rounded_negative} || ($flags{in_sci_number} && !$flags{in_exponent})) {
+      if ($op || !number_is_zero($$number{integer}) || !number_is_zero($$number{fraction}) || $$number{rounded_negative}
+        || six_getBool('retain-negative-zero') || ($flags{in_sci_number} && !$flags{in_exponent})) {
         my $c = six_get('negative-color');
         if ($c && $op ne 'complex' && !$flags{in_complex_number}) {
           push(@tokens, T_BEGIN, T_CS('\color'), T_BEGIN, $c->unlist, T_END);
@@ -1464,7 +1474,7 @@ sub six_format_number {
       push(@tokens, T_OTHER('+')); }
     elsif ($flags{in_table_number} && six_getBool('table-sign-exponent')) {
       ${ $flags{pad_right_ref} } .= '.'; } }
-  else {
+  elsif (!$flags{in_sci_number}) {
     if (six_getBool('print-mantissa-implicit-plus') && !$flags{mantissa_implicit_plus_present}) {
       $flags{mantissa_implicit_plus_present} = 1;
       push(@tokens, T_OTHER('+')); }
@@ -1717,8 +1727,12 @@ sub six_get_number_with_sci_exp {
     while ($new_exp < $old_exp) {
       $old_exp--;
       push(@intTokens, (shift(@fracTokens) || T_OTHER('0'))); }
-    $$number{integer}  = @intTokens  ? Tokens(@intTokens)  : undef;
-    $$number{fraction} = @fracTokens ? Tokens(@fracTokens) : undef; }
+    $$number{integer} = @intTokens ? Tokens(@intTokens) : undef;
+    if (@fracTokens) {
+      $$number{fraction} = Tokens(@fracTokens); }
+    else {
+      delete $$number{decimal};
+      delete $$number{fraction}; } }
   return $number; }
 
 # These are in serious need of tweaking!
@@ -1740,15 +1754,15 @@ DefMacro('\ang OptionalKeyVals:SIX {}', sub {
     if (six_getChoice('angle-mode') eq 'arc' && $$degrees{fraction}) {
       my $oldFraction = UnTeX($$degrees{fraction});
       my $angle       = $oldFraction * 60 / (10**scalar(@{ $$degrees{fraction} }));
-      $minutes            = six_parse_number(undef, Tokenize($angle));
-      $$degrees{decimal}  = undef;
-      $$degrees{fraction} = undef;
+      $minutes = six_parse_number(undef, Tokenize($angle));
+      delete $$degrees{decimal};
+      delete $$degrees{fraction};
       if ($$minutes{fraction}) {
-        $oldFraction        = UnTeX($$minutes{fraction});
-        $angle              = $oldFraction * 60 / (10**scalar(@{ $$minutes{fraction} }));
-        $seconds            = six_parse_number(undef, Tokenize($angle));
-        $$minutes{decimal}  = undef;
-        $$minutes{fraction} = undef; } }
+        $oldFraction = UnTeX($$minutes{fraction});
+        $angle       = $oldFraction * 60 / (10**scalar(@{ $$minutes{fraction} }));
+        $seconds     = six_parse_number(undef, Tokenize($angle));
+        delete $$minutes{decimal};
+        delete $$minutes{fraction}; } }
     if (six_getChoice('angle-mode') eq 'decimal' && ($minutes || $seconds)) {
       my $fraction = six_parse_number(undef, Tokenize((UnTeX($$minutes{integer}) + UnTeX($$seconds{integer}) / 60) / 60));
       $$degrees{decimal}  = $$fraction{decimal};
@@ -1758,9 +1772,9 @@ DefMacro('\ang OptionalKeyVals:SIX {}', sub {
     # Pull out the (overall) sign, assuming(!) the first one applies to all components.
     my $sign = ($degrees && $$degrees{sign}) || ($minutes && $$minutes{sign})
       || ($seconds && $$seconds{sign});
-    $$degrees{sign} = undef if $degrees;
-    $$minutes{sign} = undef if $minutes;
-    $$seconds{sign} = undef if $seconds;
+    delete $$degrees{sign} if $degrees;
+    delete $$minutes{sign} if $minutes;
+    delete $$seconds{sign} if $seconds;
     if (!($degrees && %$degrees) || is_explicit_zero($degrees)) {
       if (six_getBool('fill-angle-degrees')) {
         $degrees = { integer => T_OTHER('0') }; }
@@ -1901,6 +1915,9 @@ sub six_convertUnits {
       ($arg,  @tokens) = six_peel_group(@tokens);
       my $newdefn = { %{ LookupMapping('siunitx_macros', ToString($name)) } };
       if (my $argkey = $$newdefn{arg}) {
+        #my $qmode = six_getChoice('qualifier-mode') if ($argkey eq 'qualifier');
+        #$qmode = 'combine' if $qmode eq 'text';
+        #$$newdefn{qmode} = $qmode;
         $$newdefn{$argkey} = $arg; }
       push(@defns, $newdefn); }
     elsif ($tokens[0]->equals(T_SPACE)) {
@@ -1961,25 +1978,49 @@ sub six_format_1unit {
   my $meaning = ($prefix ? $$unit{prefix}{name} : '') . ($u ? $$unit{unit}{name} : '') . ($q ? '-' . $$unit{qualifier}{name} : '');
   if ($$unit{per}) {   # NOTE: Probably deal with this more semantically (ie "per" for accessibility)?
     $power = Tokens(T_OTHER('-'), $power || T_OTHER('1')); }
+  #  my $bracket_qualifier = $power;
   if ($q) {            # Format the qualifier, if any
-    my $qmode = six_getChoice('qualifier-mode');
-    if ($qmode eq 'subscript') {
-      $q = Tokens(T_SUB, T_BEGIN, T_CS('\mathrm'), T_BEGIN, $q, T_END, T_END); }
-    elsif ($qmode =~ /^brackets?$/) {
-      $q = Tokens(six_get('open-bracket'), T_CS('\mathrm'), T_BEGIN, $q, T_END, six_get('close-bracket')); }
-    elsif (($qmode eq 'phrase') || ($qmode eq 'space') || ($qmode eq 'text')) {
-      my $sep = $qmode eq 'phrase' ? six_get('qualifier-phrase') : ($qmode eq 'space' ? T_CS('\;') : Tokens());
-      $u = Tokens(($power ? six_get('open-bracket') : ()),
-        ($prefix ? $prefix : ()),
-        $u, $sep, $q,
-        ($power ? six_get('close-bracket') : ()));
-      $q = $prefix = undef;
-    }
-    elsif ($qmode eq 'text') {
-      $q = Tokens(T_CS('\mathrm'), T_BEGIN, $q, T_END) } }
-  #  $meaning ||= ($prefix ? $$unit{prefix}{name} : '') . ($u ? $$unit{unit}{name} : '')
-  #        . ($q ? '-' . $$unit{qualifier}{name} : '');
-  # Apparently best to treat $prefix & $u as a single symbol? AND probably the qualifier?
+    my $qmode = six_get('qualifier-mode')->toString;
+    $qmode =~ s/s$//;
+    $qmode = 'combine' if $qmode eq 'text';
+    #$bracket_qualifier &&= ($qmode eq 'phrase') || ($qmode eq 'space') || ($qmode eq 'combine');
+    $q = Invocation(T_CS('\lx@six@of@' . $qmode),
+      $$unit{qualifier}{arg} ? $$unit{qualifier}{ $$unit{qualifier}{arg} } : $q,
+      $qmode eq 'phrase'     ? six_get('qualifier-phrase')                 : ());
+    if ($power && (($qmode eq 'phrase') || ($qmode eq 'space') || ($qmode eq 'combine'))) {
+      $u = Tokens(six_get('open-bracket'), ($prefix || ()), $u, $q, six_get('close-bracket'));
+      $meaning ||= ($prefix ? $$unit{prefix}{name} : '') . ($u ? $$unit{unit}{name} : '')
+        . ($q ? '-' . $$unit{qualifier}{name} : '');
+      $q = $prefix = undef; } }
+#    if ($$unit{qualifier}{arg}) {
+#      $bracket_qualifier &&= ($$unit{qualifier}{qmode} eq 'phrase') || ($$unit{qualifier}{qmode} eq 'space') || ($$unit{qualifier}{qmode} eq 'combine');
+#      $q = Invocation(T_CS($$unit{qualifier}{implementation}->ToString . '@' . $$unit{qualifier}{qmode}), $$unit{qualifier}{ $$unit{qualifier}{arg} }); }
+#    else {
+#      # we have to determine qmode before ending the group
+#      $bracket_qualifier &&= ($qmode eq 'phrase') || ($qmode eq 'space') || ($qmode eq 'combine');
+#      $q = Invocation(T_CS('\lx@six@of@'.$qmode), $q); } }
+#  if ( $bracket_qualifier ) {
+#    $u = Tokens(six_get('open-bracket'), ($prefix||()), $u, $q, six_get('close-bracket'));
+#    $meaning ||= ($prefix ? $$unit{prefix}{name} : '') . ($u ? $$unit{unit}{name} : '')
+#          . ($q ? '-' . $$unit{qualifier}{name} : '');
+#    $q = $prefix = undef; }
+#    my $qmode = six_getChoice('qualifier-mode');
+#    if ($qmode eq 'subscript') {
+#      $q = Tokens(T_SUB, T_BEGIN, T_CS('\mathrm'), T_BEGIN, $q, T_END, T_END); }
+#    elsif ($qmode =~ /^brackets?$/) {
+#      $q = Tokens(six_get('open-bracket'), T_CS('\mathrm'), T_BEGIN, $q, T_END, six_get('close-bracket')); }
+#    elsif (($qmode eq 'phrase') || ($qmode eq 'space') || ($qmode eq 'text')) {
+#      my $sep = $qmode eq 'phrase' ? six_get('qualifier-phrase') : ($qmode eq 'space' ? T_CS('\;') : Tokens());
+#      $u = Tokens(($power ? six_get('open-bracket') : ()),
+#        ($prefix ? $prefix : ()),
+#        $u, $sep, $q,
+#        ($power ? six_get('close-bracket') : ()));
+#      $q = $prefix = undef; }
+#    elsif ($qmode eq 'text') {
+#      $q = Tokens(T_CS('\mathrm'), T_BEGIN, $q, T_END) } }
+#  $meaning ||= ($prefix ? $$unit{prefix}{name} : '') . ($u ? $$unit{unit}{name} : '')
+#        . ($q ? '-' . $$unit{qualifier}{name} : '');
+# Apparently best to treat $prefix & $u as a single symbol? AND probably the qualifier?
   my $result = Tokens(
     T_CS('\lx@unit'),
     T_BEGIN,
@@ -2045,7 +2086,7 @@ sub six_format_units {
     $permode = $mathstyle eq 'display' ? 'fraction' : 'symbol'; }
   my $result    = Tokens();
   my $currPower = 0;
-  if ($prefixMode eq 'extract-exponent' || !six_getBool('prefixes-as-symbols')) {
+  if (!six_getBool('prefixes-as-symbols')) {    # $prefixMode eq 'extract-exponent' ||
     my $base;
     foreach my $unit (@units) {
       my $unitMult = ToString($$unit{prepower}{power} || $$unit{postpower}{power} || 1) * ($$unit{per} ? -1 : +1);
@@ -2075,7 +2116,7 @@ sub six_format_units {
       # re-ordered, otherwise each per as-is.
       $result = six_format_unitproduct(0, @numer, @denom); }
     else {                                              # Otherwise, remove per markers from denom.
-      map { $$_{per} = undef; } @denom;                 # MODIFY the denominator units!
+      map { delete $$_{per}; } @denom;                  # MODIFY the denominator units!
       if ($permode eq 'fraction') {
         $result = Tokens(six_get('fraction-command'),
           T_BEGIN, six_format_unitproduct(0, @numer), T_END,
@@ -2091,8 +2132,8 @@ sub six_format_units {
         $result = six_format_infix(
           six_get_op({ role => 'MULOP', meaning => 'divide' }, 'per-symbol'),
           undef, undef,
-          six_format_unitproduct(0,        @numer),
-          six_format_unitproduct($bracket, @denom)); }
+          six_format_unitproduct(0, @numer),
+          (@denom ? six_format_unitproduct($bracket, @denom) : ())); }
       else {
         Error('unexpected', $permode, undef, "Unknown siunitx per-mode $permode"); } } }
   if ($currPower) {
@@ -2133,6 +2174,8 @@ sub six_process_units {
   if (my $defns = six_convertUnits($expr)) {
     return six_format_units(six_parse_units($defns)); }
   else {
+    if (six_getBool('forbid-literal-units') && six_getBool('parse-units')) {
+      Error('unexpected', undef, undef, 'Literal units disabled'); }
     return six_parse_literalunits($expr); } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2168,6 +2211,8 @@ DefMacro('\SI OptionalKeyVals:SIX {}{}', sub {
       $formattedUnits = six_format_units(@parsedUnits);
       $result         = six_format_SI($parsedNumber, $formattedUnits, $defns); }
     else {
+      if (six_getBool('forbid-literal-units') && six_getBool('parse-units')) {
+        Error('unexpected', undef, undef, 'Literal units disabled'); }
       $formattedUnits = six_parse_literalunits($expr);
       $result         = six_format_SI($parsedNumber, $formattedUnits); }
     six_end_processing();
@@ -2218,7 +2263,7 @@ sub six_process_SI_units {
       my $p = ToString($$unit{prepower}{power} || $$unit{postpower}{power} || 1) * ($$unit{per} ? -1 : +1);
       if (my $pre = $$unit{prefix}) {
         $currPower += $p * ToString($$pre{power}); }
-      $$unit{prefix} = undef;
+      delete $$unit{prefix};
       if (($$unit{unit}{name} || '') eq 'gram' && six_getBool('extract-mass-in-kilograms')) { # Special case: keep kilograms!
         $$unit{prefix} = LookupMapping('siunitx_macros', 'kilo');
         $currPower -= 3 * $p; } }
@@ -2334,7 +2379,7 @@ sub six_adjust_unit_prefix {
     $adjustment /= $prePostPower * ($$unit{per} ? -1 : 1);
     $$unit{prefix} = six_get_prefix_from_power($adjustment); }
   else {
-    $$unit{prefix} = undef; }
+    delete $$unit{prefix}; }
   return; }
 
 # \SIlist[options]{number;number;...}{units}
@@ -2351,6 +2396,8 @@ DefMacro('\SIlist OptionalKeyVals:SIX {}{}', sub {
     if ($defns = six_convertUnits($expr)) {
       $funits = six_format_units(six_parse_units($defns)); }
     else {
+      if (six_getBool('forbid-literal-units') && six_getBool('parse-units')) {
+        Error('unexpected', undef, undef, 'Literal units disabled'); }
       $funits = six_parse_literalunits($expr); }
 
     if ($mode eq 'repeat') {                             # make product of units with each number
@@ -2410,6 +2457,8 @@ DefMacro('\SIrange OptionalKeyVals:SIX {}{}{}', sub {
     if ($defns = six_convertUnits($expr)) {
       $funits = six_format_units(six_parse_units($defns)); }
     else {
+      if (six_getBool('forbid-literal-units') && six_getBool('parse-units')) {
+        Error('unexpected', undef, undef, 'Literal units disabled'); }
       $funits = six_parse_literalunits($expr); }
 
     if ($mode eq 'repeat') {                         # repeat the units on each number
@@ -2556,7 +2605,10 @@ DefMacro('\DeclareSIPower DefToken DefToken {}', sub {
 AssignMapping('siunitx_macros',
   tothe => { name => 'tothe', cs => T_CS('\tothe'), implementation => T_CS('\lx@six@tothe'),
     keyvals => undef, type => 'postpower', arg => 'power', presentation => T_SUPER });
-DefMacro('\lx@six@tothe{}', '\lx@six@unitobject@arg{tothe}{#1}');
+#DefMacro('\lx@six@tothe{}', '\lx@six@unitobject@arg{tothe}{#1}');
+DefMacro('\lx@six@tothe{}', sub {
+    my ($gullet, $arg) = @_;
+    return Invocation(T_CS('\lx@six@unitobject@arg'), 'tothe', $arg); });
 
 AssignMapping('siunitx_macros',
   raiseto => { name => 'raiseto', cs => T_CS('\raiseto'), implementation => T_CS('\lx@six@raiseto'),
@@ -2579,22 +2631,35 @@ DefPrimitive('\DeclareSIQualifier OptionalKeyVals:SIX SkipSpaces DefToken {}', s
 # Special builtin: \of{}
 AssignMapping('siunitx_macros',
   of => { name => 'of', cs => T_CS('\of'), implementation => T_CS('\lx@six@of'),
-    keyvals => undef, type => 'qualifier', arg => 'qualifier', presentation => Tokens() });
+    keyvals => undef, type => 'qualifier', arg => 'qualifier', presentation => T_CS('\lx@six@of@aux') });
+# todo delete comments
+# presentation should be T_CS('\lx@six@of@aux')
+# presentation => Tokens()
+# and \lx@six@of should become \lx@six@unitobject@arg{of}.  But then it doesn't get the next argument
+DefMacro('\lx@six@of{}', '\lx@six@unitobject@arg{of}{#1}');
+#DefMacro('\lx@six@of{}', '\lx@six@of@aux {#1}');
 
-# TODO latexml Warning: "MathParser failed to match rule 'Anything'" for subscript, bracket, phrase
-# TODO latexmlpost "Info:ignored:spacing No place to set spacing to 0.5 (default 0) between ..."
-DefMacro('\lx@six@of', sub {
+# todo delete this?
+DefMacro('\lx@six@of@aux {}', sub {
+    my ($gullet, $arg) = @_;
+    # this is usually too late - the group for the \si or \SI has closed
     my $qmode = six_get('qualifier-mode')->toString;
     $qmode =~ s/s$//;
-    T_CS('\lx@six@of@' . $qmode); });
-DefMacro('\lx@six@of@subscript{}', '\sb{\mathrm{#1}}');
+    return Invocation(T_CS('\lx@six@of@' . $qmode), $arg); });
+DefMacro('\lx@six@of@subscript{}', sub {
+    my ($gullet, $arg) = @_;
+    return Tokens(T_SUB, T_BEGIN, T_CS('\mathrm'), T_BEGIN, $arg, T_END, T_END);
+    #return Tokens(six_get('text-subscript-command'), T_BEGIN, $arg, T_END);
+    # switch to this once #2781 fixed
+});
 DefMacro('\lx@six@of@bracket{}', sub {
     my ($gullet, $arg) = @_;
-    Tokens(six_get('open-bracket'), T_CS('\mathrm'), T_BEGIN, $arg, T_END, six_get('close-bracket')); });
-DefMacro('\lx@six@of@combine', '\mathrm');
-DefMacro('\lx@six@of@phrase', sub {
-    Tokens(six_get('qualifier-phrase'), T_CS('\mathrm')); });
-DefMacro('\lx@six@of@space', '\;');
+    Tokens(six_get('open-bracket'), Invocation(T_CS('\mathrm'), $arg), six_get('close-bracket')); });
+DefMacro('\lx@six@of@combine{}', '\mathrm{#1}');
+DefMacro('\lx@six@of@phrase{}{}', sub {
+    my ($gullet, $qual, $phrase) = @_;
+    Tokens($phrase, Invocation(T_CS('\mathrm'), $qual)); });
+DefMacro('\lx@six@of@space{}', '\;\mathrm{#1}');
 
 # \NewDocumentCommand \DeclareSIUnit { O {} m m } {
 #   \__siunitx_declare_unit:Nnn #2 {#3} {#1} }
@@ -2739,7 +2804,7 @@ DefMacro('\lx@SI@column@parse XUntil:\lx@si@column@end', sub {
 # we pass references to pad_left / right so that we can update them and have that pass back up the recursion
       $result = $parsed
         ? six_format_number(six_postprocess($parsed), bracket => 0, pad_left_ref => \$pad_left, pad_right_ref => \$pad_right,
-        in_table_number => (six_get('table-alignment-mode')->ToString ne 'none'))
+        in_table_number => (six_getChoice('table-alignment-mode') ne 'none'))
         : (); }
     else {
       $result = Tokens(@tokens); }
@@ -2761,7 +2826,7 @@ DefMacro('\lx@SI@column@parse XUntil:\lx@si@column@end', sub {
     # get this before closing the group in end_postprocessing
     # but it's not used, because alignment is set when the column is initially parsed
     # todo upgrade delete?
-    #my $align = six_get('table-'.(@tokens?'number':'text').'-alignment')->ToString;
+    #my $align = six_getChoice('table-'.(@tokens?'number':'text').'-alignment');
     six_end_processing();
     push(@post, T_SPACE, T_CS('\lx@column@trimright')) if ($save_trimright);
     if (@tokens) {
@@ -2803,6 +2868,8 @@ DefMacro('\lx@si@column@parse XUntil:\lx@si@column@end', sub {
     if (my $defns = six_convertUnits(Tokens(@tokens))) {
       $result = six_format_units(six_parse_units($defns)); }
     else {
+      if (six_getBool('forbid-literal-units') && six_getBool('parse-units')) {
+        Error('unexpected', undef, undef, 'Literal units disabled'); }
 ##      Info('unexpected', 'whatever', undef,
 ##           "Don't yet know how to parse non-macro unit expressions");
       $result = Tokens(@tokens); }
