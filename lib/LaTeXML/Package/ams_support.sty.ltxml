@@ -111,20 +111,20 @@ DefMacro('\keywordsname',  'Key words and phrases');
 
 # Various frontmatter creator contact information; attaches to previous \author
 DefMacro('\contrib[]{}', '\lx@add@creator[role=contributor, name={#1}]{#2}');
-DefMacro('\commby{}',    '\lx@add@creator[role=communicator,name={\@commby}]{#1}');
+DefMacro('\commby{}',    '\lx@add@creator[role=communicator,name={\@commby~}]{#1}');
 DefMacro('\address[]{}', '\lx@add@address[name={#1}]{#2}');
 DefMacro('\curraddr[]{}', '\lx@add@contact[role=current_address,name={\curraddrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
-DefMacro('\email[]{}',      '\lx@add@email[name={\emailaddrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
-DefMacro('\urladdr[]{}',    '\lx@add@url[name={\urladdrname\ifx.#1.\else{, #1}\fi:\ }]{#2}');
+DefMacro('\email[]{}',      '\lx@add@email[name={\emailaddrname\ifx.#1.\else{, #1}~\fi:\ }]{#2}');
+DefMacro('\urladdr[]{}',    '\lx@add@url[name={\urladdrname\ifx.#1.\else{, #1}~\fi:\ }]{#2}');
 DefMacro('\dedicatory{}',   '\lx@add@contact[role=dedicatory]{#1}');
 DefMacro('\dateposted{}',   '\lx@add@date[role=posted]{#1}');
-DefMacro('\translator[]{}', '\lx@add@translator[name={\trnaslname}]{#2}');
-DefMacro('\keywords{}',     '\lx@add@keywords[name={\keywordsname}]{#1}');
+DefMacro('\translator[]{}', '\lx@add@translator[name={\translname~}]{#2}');
+DefMacro('\keywords{}',     '\lx@add@keywords[name={\keywordsname:~}]{#1}');
 
 # \thanks{} ( == ack, not latex's \thanks, not in author)
 # make a throwaway optional argument available for OmniBus use
 DefMacro('\thanks[]{}',
-  '\lx@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#2}');
+  '\lx@add@pubnote[role=thanks,name={\@ifundefined{thanksname}{}{\thanksname}}]{#2}');
 
 # Non-standard but makes it easier to create bindings for variations on AMS classes;
 # just redefine this macro
@@ -134,10 +134,9 @@ DefMacroI('\subjclassname', undef, '\textup{\@subjclassyear} Mathematics Subject
 DefMacro('\subjclass[Default:\@subjclassyear]{}',
   '\ifx.#1.\else\xdef\@subjclassyear{#1}\fi'
     . '\lx@add@classification[scheme={#1 Mathematics Subject Classification},'
-    . 'name={\subjclassname}]{#2}');
+    . 'name={\subjclassname:~}]{#2}');
 
-DefMacro('\copyrightinfo{}{}',
-  '\lx@add@frontmatter{ltx:note}[role=copyright]{\copyright #1: #2}');
+DefMacro('\copyrightinfo{}{}', '\lx@add@copyright{#1, #2}');
 
 DefMacro('\pagespan{}{}', '');                                          # ?
 DefMacro('\PII{}',        '\lx@add@classification[scheme=PII]{#1}');
@@ -151,7 +150,7 @@ DefMacroI('\volinfo',       undef, Tokens());
 DefMacro('\issueinfo{}{}{}{}',
   '\def\currentvolume{#1}\def\currentissue{#2}\def\currentmonth{#3}\def\currentyear{#4}'
     . '\def\volinfo{Volume \currentvolume, Number \number0\currentissue, \currentmonth\ \currentyear}'
-    . '\lx@add@frontmatter{ltx:note}[role=volume-info]{\volinfo}');
+    . '\lx@add@pubnote[role=volume]{\volinfo}');
 
 # abstract otherwise defined in LaTeX.pool
 DefMacroI('\abstractname', undef, '\textsc{Abstract}');

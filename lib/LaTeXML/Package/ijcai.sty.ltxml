@@ -29,7 +29,7 @@ RequirePackage('natbib');
 Let('\AND',      '\and');
 Let('\And',      '\and');
 Let('\leftcite', '\cite');
-DefMacro('\pubnote{}', '\lx@add@frontmatter{ltx:note}[role=pubnote]{#1}');
+DefMacro('\pubnote{}', '\lx@add@pubnote[role=note]{#1}');
 
 # These are used as separators within \author, so... no real way to guess their arguments
 DefMacro('\affiliations', Tokens());

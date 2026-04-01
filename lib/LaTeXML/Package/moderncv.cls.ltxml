@@ -25,7 +25,6 @@ RequirePackage('hyperref');
 RequireResource('ltx-cv.css');
 
 RawTeX('\lx@add@frontmatter{ltx:creator}[role=cv]{}');
-DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\address{}{}', '\lx@add@address{#1\newline #2}');
 
 DefMacro('\addressfont',   Tokens());

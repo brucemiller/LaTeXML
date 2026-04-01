@@ -52,22 +52,23 @@ RequirePackage('balance');
 
 #======================================================================
 # Various bits of frontmatter
-DefMacro('\copyrightyear{}',       '\lx@add@frontmatter{ltx:date}[role=copyright]{#1}');
-DefMacro('\setcopyright{}',        '\lx@add@frontmatter{ltx:note}[role=copyright]{#1}');
+DefMacro('\copyrightyear{}', '\lx@add@copyrightyear{#1}');
+# This should be keyvals!
+DefMacro('\setcopyright{}',        '\lx@add@copyright{#1}');
 DefMacro('\received[]{}',          '\lx@add@date[role=received]{#2}');
-DefMacro('\acmJournal{}',          '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\acmSubmissionID{}',     '\lx@add@frontmatter{ltx:note}[role=submissionid]{#1}');
-DefMacro('\acmConference[]{}{}{}', '\lx@add@frontmatter{ltx:note}[role=conference]{#2; #3; #4}');
-DefMacro('\acmBooktitle{}',        '\lx@add@frontmatter{ltx:note}[role=booktitle]{#1}');
-DefMacro('\acmArticle{}',          '\lx@add@frontmatter{ltx:note}[role=article]{#1}');
-DefMacro('\acmArticleSeq{}',       '\lx@add@frontmatter{ltx:note}[role=articleseq]{#1}');
-DefMacro('\acmDOI{}',              '\lx@add@frontmatter{ltx:note}[role=doi]{#1}');
-DefMacro('\acmISBN{}',             '\lx@add@frontmatter{ltx:note}[role=isbn]{#1}');
-DefMacro('\acmMonth{}',            '\lx@add@frontmatter{ltx:note}[role=publicationmonth]{#1}');
-DefMacro('\acmNumber{}',           '\lx@add@frontmatter{ltx:note}[role=journalnumber]{#1}');
-DefMacro('\acmPrice{}',            '\lx@add@frontmatter{ltx:note}[role=price]{#1}');
-DefMacro('\acmVolume{}',           '\lx@add@frontmatter{ltx:note}[role=journalvolume]{#1}');
-DefMacro('\acmYear{}',             '\lx@add@frontmatter{ltx:note}[role=journalyear]{#1}');
+DefMacro('\acmJournal{}',          '\lx@add@pubnote[role=journal]{#1}');
+DefMacro('\acmSubmissionID{}',     '\lx@add@pubnote[role=submissionid]{#1}');
+DefMacro('\acmConference[]{}{}{}', '\lx@add@pubnote[role=conference]{#2; #3; #4}');
+DefMacro('\acmBooktitle{}',        '\lx@add@pubnote[role=booktitle]{#1}');
+DefMacro('\acmArticle{}',          '\lx@add@pubnote[role=article]{#1}');
+DefMacro('\acmArticleSeq{}',       '\lx@add@pubnote[role=articleseq]{#1}');
+DefMacro('\acmDOI{}',              '\lx@add@pubnote[role=doi]{#1}');
+DefMacro('\acmISBN{}',             '\lx@add@pubnote[role=isbn]{#1}');
+DefMacro('\acmMonth{}',            '\lx@add@pubnote[role=publicationmonth]{#1}');
+DefMacro('\acmNumber{}',           '\lx@add@pubnote[role=number]{#1}');
+DefMacro('\acmPrice{}',            '\lx@add@pubnote[role=price,name={Price:~}]{#1}');
+DefMacro('\acmVolume{}',           '\lx@add@pubnote[role=volume]{#1}');
+DefMacro('\acmYear{}',             '\lx@add@date[role=published]{#1}');
 DefMacro('\subtitle{}',            '\lx@add@subtitle{#1}');
 DefMacro('\keywords{}',            '\lx@add@keywords{#1}');
 DefMacro('\terms{}',               '\lx@add@keywords{#1}');
@@ -110,9 +111,12 @@ DefMacro('\state{}',         '\lx@acm@addresspart{state}{#1}');
 DefMacro('\postcode{}',      '\lx@acm@addresspart{postcode}{#1}');
 DefMacro('\country{}',       '\lx@acm@addresspart{country}{#1}');
 
-DefMacro('\titlenote{}',    '\lx@add@frontmatter{ltx:note}[role=note]{#1}');
-DefMacro('\subtitlenote{}', '\lx@add@frontmatter{ltx:note}[role=note]{#1}');
+DefMacro('\titlenote{}',    '\lx@add@pubnote[role=note]{#1}');
+DefMacro('\subtitlenote{}', '\lx@add@pubnote[role=note]{#1}');
 DefMacro('\authornote{}',   '\lx@add@contact[role=note]{#1}');
+
+DefMacro('\abstract',    '\lx@begin@abstract');
+DefMacro('\endabstract', '\lx@end@abstract');
 
 # Ignorable stuff ?
 DefMacro('\shortauthors{}',                  '');
@@ -144,7 +148,7 @@ DefEnvironment('{printonly}',    '');
 DefEnvironment('{screenonly}',   '#body');
 DefEnvironment('{anonsuppress}', '');
 
-DefMacro('\ccsdesc[]{}', '\lx@add@frontmatter{ltx:note}[role=ccs]{#2}');
+DefMacro('\ccsdesc[]{}', '\lx@add@pubnote[role=ccs,name={CCS:~}]{#2}');
 # Could embed this as XML in some namespace, or....
 # For now, just skip it.
 # DefEnvironment('{CCSXML}','#body');

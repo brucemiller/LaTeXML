@@ -55,9 +55,9 @@ Let('\mailto', '\ead');
 
 DefMacro('\eads {}', '#1');
 
-DefMacro('\pacno{}', '\lx@add@classification[scheme=pacs]{#1}');
-DefMacro('\pacs{}',  '\lx@add@classification[scheme=pacs]{#1}');
-DefMacro('\ams{}',   '\lx@add@classification[scheme=ams]{#1}');
+DefMacro('\pacno{}', '\lx@add@classification[scheme=pacs,name={PACS:~}]{#1}');
+DefMacro('\pacs{}',  '\lx@add@classification[scheme=pacs,name={PACS:~}]{#1}');
+DefMacro('\ams{}',   '\lx@add@classification[scheme=ams,name={AMS Classification:~}]{#1}');
 
 our @journals = ('Institute of Physics Publishing',
   'J. Phys.\ A: Math.\ Gen.\ ',
@@ -95,7 +95,7 @@ our @journals = ('Institute of Physics Publishing',
   'New. J. Phys.\ ');
 DefMacro('\journal',    'Institute of Physics Publishing');
 DefMacro('\submitted',  '\submitto{\journal}');
-DefMacro('\submitto{}', '\def\journal{#1}\lx@add@frontmatter{ltx:note}[role=submitted]{#1}');
+DefMacro('\submitto{}', '\def\journal{#1}\lx@add@pubnote[role=journal]{#1}');
 DefPrimitive('\jl{}', sub {
     if (my $j = $journals[ToString($_[1])]) {
       DefMacroI('\journal', undef, Tokenize($j)); } });

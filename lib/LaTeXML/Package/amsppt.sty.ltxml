@@ -61,9 +61,9 @@ DefMacro('\curraddr Until:\endcurraddr', '\lx@add@currentaddress{#1}');
 DefMacro('\email Until:\endemail',       '\lx@add@email{#1}');
 DefMacro('\urladdr Until:\endurladdr',   '\lx@add@url{#1}');
 
-DefMacro('\thanks Until:\endthanks',         '\lx@add@frontmatter{ltx:note}[role=support]{#1}');
+DefMacro('\thanks Until:\endthanks',         '\lx@add@pubnote[role=thanks]{#1}');
 DefMacro('\date Until:\enddate',             '\lx@add@date{#1}');
-DefMacro('\dedicatory Until:\enddedicatory', '\lx@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
+DefMacro('\dedicatory Until:\enddedicatory', '\lx@add@pubnote[role=dedication]{#1}');
 DefMacro('\translator Until:\endtranslator', '\lx@add@translator{#1}');
 DefMacro('\keywords Until:\endkeywords',     '\lx@add@keywords{#1}');
 DefMacro('\subjclass Until:\endsubjclass',   '\lx@add@classification{#1}');

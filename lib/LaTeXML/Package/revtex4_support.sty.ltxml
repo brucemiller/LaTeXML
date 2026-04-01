@@ -65,9 +65,9 @@ DefConstructor('\surname{}', "#1");
 # 4.4
 DefMacro('\abstractname', 'Abstract');
 
-DefMacro('\pacs{}',     '\lx@add@classification[scheme=pacs]{#1}');
+DefMacro('\pacs{}',     '\lx@add@classification[scheme=pacs,name={PACS:~}]{#1}');
 DefMacro('\keywords{}', '\lx@add@keywords{#1}');
-DefMacro('\preprint{}', '\lx@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\preprint{}', '\lx@add@pubnote[role=preprint]{#1}');
 
 # Extra stuff
 DefMacro('\blankaffiliation', '');

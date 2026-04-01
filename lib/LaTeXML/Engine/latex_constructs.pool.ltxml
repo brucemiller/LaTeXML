@@ -1113,8 +1113,7 @@ AtEndDocument(T_CS('\lx@frontmatter@fallback'));
 
 DefMacro('\@thanks', '\@empty');
 # make a throwaway optional argument available for OmniBus use
-DefMacro('\thanks[]{}', '\def\@thanks{#2}\lx@make@thanks{#2}');
-DefConstructor('\lx@make@thanks{}', "<ltx:note role='thanks'>#1</ltx:note>");
+DefMacro('\thanks[]{}', '\def\@thanks{#2}\lx@add@pubnote{#2}');
 
 # Abstract SHOULD have been so simple, but seems to be a magnet for abuse.
 # For one thing, we'd like to just write

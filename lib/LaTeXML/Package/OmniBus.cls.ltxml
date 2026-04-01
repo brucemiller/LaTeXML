@@ -83,18 +83,9 @@ DefMacro('\emailname', 'E-mail');
 DefMacro('\speaker{}', '\lx@add@creator[role=speaker]{#1}');
 
 # like from aas
-# How to handle these?
-# DefMacro('\altaffilmark{}', sub {
-#     my ($gullet, $marks) = @_;
-#     map { (T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END) } SplitTokens($marks, T_OTHER(',')); });
-# DefConstructor('\@altaffilmark{}',
-#   "?#1(<ltx:note role='affiliationmark' mark='#1'/> )()");
-# Let('\affilnum', '\@altaffilmark');
+DefMacro('\altaffilmark{}',   '\lx@request@frontmatter@annotation[altaffil]{#1}');
+DefMacro('\altaffiltext{}{}', '\lx@add@contact[role=altaffiliation,label=altaffil#1]{#2}');
 
-DefConstructor('\altaffiltext{}{}',
-  "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)()");
-
-DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\address[]{}', '\lx@add@address{#2}');
 Let('\affaddr', '\address');
 DefMacro('\affil{}',       '\lx@add@affiliation{#1}}');
@@ -159,7 +150,7 @@ DefMacro('\classification{}', '\lx@add@classification{#1}');
 DefMacro('\pacs{}', '\lx@add@classification}[scheme=pacs]{#1}', locked => 1);
 # \doi{doi} might be frontmatter, or just a \url-like thing.  So, let's guess!
 DefMacro('\doi{}',
-  '\if@in@preamble{\lx@add@frontmatter{ltx:classification}[scheme=doi]{#1}'
+  '\if@in@preamble{\lx@add@pubnote[role=doi]{#1}'
     . '\else\lx@doi{#1}\fi');
 DefConstructor('\lx@doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>');
 
@@ -239,19 +230,19 @@ DefMacro('\received{}',         '\lx@add@date[role=received]{#1}');
 DefMacro('\revised{}',          '\lx@add@date[role=revised]{#1}');
 DefMacro('\accepted{}',         '\lx@add@date[role=accepted]{#1}');
 DefMacro('\pubyear{}',          '\lx@add@date[role=publication]{#1}');
-DefMacro('\copyrightyear{}',    '\lx@add@date[role=copyright]{#1}');
+DefMacro('\copyrightyear{}',    '\lx@add@copyrightyear{#1}');
 DefMacro('\communicated{}',     '\lx@add@date[role=communicated]{#1}');
-DefMacro('\preprint{}',         '\lx@add@frontmatter{ltx:note}[role=preprint]{#1}');
-DefMacro('\dedicated{}',        '\lx@add@frontmatter{ltx:note}[role=dedicated]{#1}');
-DefMacro('\presented{}',        '\lx@add@frontmatter{ltx:date}[role=presented]{#1}');
-DefMacro('\articletype{}',      '\lx@add@frontmatter{ltx:note}[role=articletype]{#1}');
-DefMacro('\issue{}',            '\lx@add@frontmatter{ltx:note}[role=issue]{#1}');
-DefMacro('\journal{}',          '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\jname{}',            '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\volume{}',           '\lx@add@frontmatter{ltx:note}[role=volume]{#1}');
-DefMacro('\titlenote{}',        '\lx@add@frontmatter{ltx:note}[role=titlenote]{#1}');
-DefMacro('\terms{}',            '\lx@add@frontmatter{ltx:note}[role=terms]{#1}');
-DefMacro('\conferenceinfo{}{}', '\lx@add@frontmatter{ltx:note}[role=conference]{#1 #2}');
+DefMacro('\preprint{}',         '\lx@add@pubnote[role=preprint]{#1}');
+DefMacro('\dedicated{}',        '\lx@add@pubnote[role=dedication]{#1}');
+DefMacro('\presented{}',        '\lx@add@pubdate[role=presented]{#1}');
+DefMacro('\articletype{}',      '\lx@add@pubnote[role=type]{#1}');
+DefMacro('\issue{}',            '\lx@add@pubnote[role=issue]{#1}');
+DefMacro('\journal{}',          '\lx@add@pubnote[role=journal]{#1}');
+DefMacro('\jname{}',            '\lx@add@pubnote[role=journal]{#1}');
+DefMacro('\volume{}',           '\lx@add@pubnote[role=volume]{#1}');
+DefMacro('\titlenote{}',        '\lx@add@pubnote[role=note]{#1}');
+DefMacro('\terms{}',            '\lx@add@keywords{#1}');
+DefMacro('\conferenceinfo{}{}', '\lx@add@pubnote[role=conference]{#1 #2}');
 
 # what useful behavior can we add here? e.g. see arxiv:math/0601658
 DefMacro('\thanksref{}', Tokens());

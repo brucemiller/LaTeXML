@@ -59,7 +59,7 @@ DefMacro('\edit{}{}',      '');
 DefMacro('\ccc{}', '');            # Ignorable?
 #\cpright{type}{year}   Should be recorded somehow?
 # type is AAS, ASP, PD, none
-DefMacro('\cpright{}{}', '\lx@add@frontmatter{ltx:note}[role=copyright]{\copyright #2: #1}');
+DefMacro('\cpright{}{}', '\lx@add@copyright{#2: #1}');
 
 # Editorial additions?
 DefMacro('\journal{}',    '');
@@ -74,7 +74,7 @@ DefMacro('\SGML{}',       '');
 #======================================================================
 # 2.1.4 Short Comment
 
-DefMacro('\slugcomment{}', '\lx@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
+DefMacro('\slugcomment{}', '\lx@add@pubnote[role=note]{#1}');
 
 #======================================================================
 # 2.1.5 Running Heads
@@ -97,14 +97,14 @@ DefMacro('\righthead{}', '');    # Obsolete form
 
 DefMacro('\allauthors', '');    # Presumably should collect all authors?
 
-# \author[orchid,KV]{name}  Use once per author
-# Note optional arg starts with orchid ID,
+# \author[orcid,KV]{name}  Use once per author
+# Note optional arg starts with orcid ID,
 # followed by keyval (gname,sname,suffix for parts of author's name)
 DefMacro('\author[]{}',
-  '\lx@add@author{#2\lx@aas@checkorchid{#1}}');
-DefMacro('\lx@aas@checkorchid{}', '\lx@aas@checkorchid@#1,\done');
+  '\lx@add@author{#2\lx@aas@checkorcid{#1}}');
+DefMacro('\lx@aas@checkorcid{}', '\lx@aas@checkorcid@#1,\done');
 # In later aas, $junk make be keywords? (gname,sname,suffix,...?)
-DefMacro('\lx@aas@checkorchid@ Until:, Until:\done', sub {
+DefMacro('\lx@aas@checkorcid@ Until:, Until:\done', sub {
     my ($gullet, $possibleid, $junk) = @_;
     if (ToString($possibleid) =~ /^\s*\d\d\d\d-\d\d\d\d-\d\d\d\d-\d\d\d\d\s*$/) {
       return Invocation('\lx@add@orcid{#1}', $possibleid); }
@@ -136,15 +136,16 @@ DefMacro('\authoremail',      '\email');    # Obsolete form
 
 DefPrimitive('\and', undef);
 
-DefMacro('\software{}',      '\lx@add@frontmatter{ltx:note}[role=software]{#1}');
-DefMacro('\submitjournal{}', '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\software{}',      '\lx@add@pubnote[role=software]{#1}');
+DefMacro('\submitjournal{}', '\lx@add@pubnote[role=journal]{#1}');
 # Alas \doi is not frontmatter.
 DefConstructor('\doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>',
   enterHorizontal => 1);
 
 #======================================================================
 # 2.4 Abstract
-# normal LaTeX
+DefMacro('\abstract',    '\lx@begin@abstract');
+DefMacro('\endabstract', '\lx@end@abstract');
 
 #======================================================================
 # 2.5 Keywords
@@ -240,7 +241,7 @@ Let('\acknowledgments', '\acknowledgements');
 # \facility{facilityID}
 DefConstructor('\facility{}', "<ltx:text class='ltx_ast_facility'>#1</ltx:text>",
   enterHorizontal => 1);
-DefMacro('\facilities{}', '\lx@add@frontmatter{ltx:note}[role=facilities]{#1}');
+DefMacro('\facilities{}', '\lx@add@pubnote}[role=thanks,name={Facilities:~}]{#1}');
 
 #======================================================================
 # 2.11 Appendices

@@ -76,17 +76,17 @@ DefMacro('\received{}',     '\lx@add@date[role=received]{#1}');
 DefMacro('\revised{}',      '\lx@add@date[role=revised]{#1}');
 DefMacro('\accepted{}',     '\lx@add@date[role=accepted]{#1}');
 DefMacro('\communicated{}', '\lx@add@date[role=communicated]{#1}');
-DefMacro('\dedicated{}',    '\lx@add@frontmatter{ltx:note}[role=dedicated]{#1}');
+DefMacro('\dedicated{}',    '\lx@add@pubnote[role=dedication]{#1}');
 DefMacro('\presented{}',    '\lx@add@date[role=presented]{#1}');
-DefMacro('\articletype{}',  '\lx@add@frontmatter{ltx:note}[role=articletype]{#1}');
-DefMacro('\issue{}',        '\lx@add@frontmatter{ltx:note}[role=issue]{#1}');
-DefMacro('\journal{}',      '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\volume{}',       '\lx@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\articletype{}',  '\lx@add@pubnote[role=type]{#1}');
+DefMacro('\issue{}',        '\lx@add@pubnote[role=issue]{#1}');
+DefMacro('\journal{}',      '\lx@add@pubnote[role=journal]{#1}');
+DefMacro('\volume{}',       '\lx@add@pubnote[role=volume]{#1}');
 DefMacro('\pubyear{}',      '\lx@add@date[role=publication]{#1}');
 
 DefMacro('\FullCopyrightText', Tokens());
-DefMacro('\copyear{}',         '\lx@add@date}[role=copyright]{#1}');
-DefMacro('\copyrightholder{}', '\lx@add@frontmatter{ltx:note}[role=copyrightholder]{#1}');
+DefMacro('\copyear{}',         '\lx@add@copyrightyear{#1}');
+DefMacro('\copyrightholder{}', '\lx@add@copyrightholder{#1}');
 Let('\copyrightyear', '\copyear');
 
 DefMacro('\RUNART',    Tokens());
@@ -150,10 +150,10 @@ DefMacro('\JEL',        '\@keyword@cut\@JEL');
 DefMacro('\UK',         '\@keyword@cut\@UK');
 
 DefMacro('\@keyword XUntil:\@keyword@cut', '\lx@add@keywords{#1}');
-DefMacro('\@PACS    XUntil:\@keyword@cut', '\lx@add@classification[scheme=PACS]{#1}');
-DefMacro('\@MSC {} XUntil:\@keyword@cut',  '\lx@add@classification[scheme={#1 MSC}]{#2}');
-DefMacro('\@JEL     XUntil:\@keyword@cut', '\lx@add@classification[scheme=JEL]{#1}');
-DefMacro('\@UK      XUntil:\@keyword@cut', '\lx@add@classification[scheme=UK]{#1}');
+DefMacro('\@PACS    XUntil:\@keyword@cut', '\lx@add@classification[scheme=PACS,name={PACS:~}]{#1}');
+DefMacro('\@MSC {} XUntil:\@keyword@cut', '\lx@add@classification[scheme={#1 MSC},name={MSC:~}]{#2}');
+DefMacro('\@JEL     XUntil:\@keyword@cut', '\lx@add@classification[scheme=JEL,name={JEL:~}]{#1}');
+DefMacro('\@UK      XUntil:\@keyword@cut', '\lx@add@classification[scheme=UK,name={UK:~}]{#1}');
 DefConstructor('\@keyword@cut', '');
 
 #======================================================================

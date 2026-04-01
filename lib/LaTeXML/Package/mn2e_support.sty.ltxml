@@ -30,12 +30,12 @@ DefMacro('\title[]{}',
     . '\ifx.#1.\else\lx@add@toctitle{#1}\fi'
     . '\lx@add@title{#2}');
 DefMacro('\author[]{}',   '\def\@author{#2}\lx@add@authors{#2}', locked => 1);
-DefMacro('\newauthor',    Tokens());                                               # ????
-DefMacro('\journal{}',    '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\volume{}',     '\lx@add@frontmatter{ltx:note}[role=volume]{#1}');
-DefMacro('\pubyear{}',    '\lx@add@frontmatter{ltx:note}[role=pubyear]{#1}');
-DefMacro('\microfiche{}', '\lx@add@frontmatter{ltx:note}[role=microfiche]{#1}');
-DefMacro('\pagerange{}',  '\lx@add@frontmatter{ltx:note}[role=pagerange]{#1}');
+DefMacro('\newauthor',    Tokens());                                 # ????
+DefMacro('\journal{}',    '\lx@add@pubnote[role=journal]{#1}');
+DefMacro('\volume{}',     '\lx@add@pubnote[role=volume]{#1}');
+DefMacro('\pubyear{}',    '\lx@add@pubnote[role=pubyear]{#1}');
+DefMacro('\microfiche{}', '\lx@add@pubnote[role=microfiche]{#1}');
+DefMacro('\pagerange{}',  '\lx@add@pubnote[role=pages]{#1}');
 
 # Editorial comments (?)
 DefConstructor('\BSLquery{}', "<ltx:note role='query'>#1</ltx:note>");
@@ -44,13 +44,10 @@ DefConstructor('\tquery{}',   "<ltx:note role='query'>#1</ltx:note>");
 DefEnvironment('{query}', "<ltx:note role='query'>#body</ltx:note>");
 DefConstructor('\authorquery{}{}', "<ltx:note role='query'>#1: #2</ltx:note>");
 
-DefEnvironment('{keywords}', '',
-  afterDigest => sub {
-    my $frontmatter = LookupValue('frontmatter');
-    push(@{ $$frontmatter{'ltx:classification'} },
-      ['ltx:classification', { scheme => 'keywords' }, @LaTeXML::LIST]);
-    return; });
 DefMacro('\nokeywords', Tokens());
+# Keywords is an environment!
+DefMacro('\keywords',    '\lx@begin@keywords');
+DefMacro('\endkeywords', '\lx@end@keywords');
 
 #======================================================================
 DefMacro('\eqsecnum',

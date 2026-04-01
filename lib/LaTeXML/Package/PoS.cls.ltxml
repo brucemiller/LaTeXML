@@ -29,7 +29,7 @@ RequirePackage('graphicx');
 DefMacro('\ShortTitle{}',     '\lx@add@toctitle{#1}');
 DefMacro('\PoScopydate{}',    '\lx@add@date[role=accepted]{#1}');
 DefMacro('\PACSname',         '\textbf{PACS}');
-DefMacro('\PACS{}',           '\lx@add@classification[scheme=pacs,name={\PACSname}]{#1}');
+DefMacro('\PACS{}',           '\lx@add@classification[scheme=pacs,name={\PACSname:~}]{#1}');
 DefMacro('\FullConference{}', '');    # Where to put this?
 
 DefMacro('\Jmath', 'J');

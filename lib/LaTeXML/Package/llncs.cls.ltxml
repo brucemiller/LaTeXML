@@ -51,11 +51,11 @@ DefMacro('\inst{}',                 '\lx@request@frontmatter@annotation[affiliat
 # \orcidID should be used within each author in \author
 DefMacro('\orcidID{}', '\lx@add@orcid{#1}');
 # \email, \url,\mail should be within an institute in \institute!!
-DefMacro('\email Semiverbatim', '\lx@add@email[name=\emailname]{#1}');
+DefMacro('\email Semiverbatim', '\lx@add@email[name={\emailname~}]{#1}');
 DefMacro('\url Semiverbatim',   '\lx@add@url{#1}');
-DefMacro('\mail {}',            '\lx@add@address[name=\mailname]{#1}');
+DefMacro('\mail {}',            '\lx@add@address[name={\mailname~}]{#1}');
 DefMacro('\keywordname',        '\textbf{Keywords}');
-DefMacro('\keywords{}',         '\lx@add@keywords[name={\keywordname}]{#1}');
+DefMacro('\keywords{}',         '\lx@add@keywords[name={\keywordname:~}]{#1}');
 
 DefMacro('\ackname', 'Acknowledgements');
 DefConstructor('\acknowledgements', "<ltx:acknowledgements name='#name'>",

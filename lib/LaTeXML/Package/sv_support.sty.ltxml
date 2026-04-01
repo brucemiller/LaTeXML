@@ -61,20 +61,20 @@ DefMacro('\thanks[]{}',              '\lx@add@contact[role=thanks,name={#1}]{#2}
 DefMacro('\orcid[]{}',               '\lx@add@contact[role=orcid,name={#1}]{#2}');    # ?
 
 DefMacro('\keywordname',   '\textbf{Keywords}');
-DefMacro('\keywords{}',    '\lx@add@keywords[name={\keywordname}]{#1}');
+DefMacro('\keywords{}',    '\lx@add@keywords[name={\keywordname:~}]{#1}');
 DefMacro('\subclassname',  '\textbf{Mathematics Subject Classification (2000)}');
-DefMacro('\subclass{}',    '\lx@add@classification[scheme=MSC,name={\subclassname}]{#1}');
+DefMacro('\subclass{}',    '\lx@add@classification[scheme=MSC,name={\subclassname: }]{#1}');
 DefMacro('\CRclassname',   '\textbf{CR Subject Classification}');
-DefMacro('\CRclass{}',     '\lx@add@classification[scheme=CR,name={\CRclassname}]{#1}');
+DefMacro('\CRclass{}',     '\lx@add@classification[scheme=CR,name={\CRclassname: }]{#1}');
 DefMacro('\ESMname',       '\textbf{Electronic Supplementary Material}');
-DefMacro('\ESM{}',         '\lx@add@frontmatter{ltx:note}[role=supplemental,name={\ESMname}]{#1}');
+DefMacro('\ESM{}',         '\lx@add@pubnote[role=supplemental,name={\ESMname: }]{#1}');
 DefMacro('\PACSname',      '\textbf{PACS}');
-DefMacro('\PACS{}',        '\lx@add@classification[scheme=pacs,name={\PACSname}]{#1}');
-DefMacro('\headnote{}',    '\lx@add@frontmatter{ltx:note}{#1}');
-DefMacro('\dedication{}',  '\lx@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
-DefMacro('\offprints{}',   '\lx@add@frontmatter{ltx:note}[role=offprints]{#1}');
-DefMacro('\journalname{}', '\lx@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\papertype{}',   '\lx@add@frontmatter{ltx:classification}[scheme=papertype]{#1}');
+DefMacro('\PACS{}',        '\lx@add@classification[scheme=pacs,name={\PACSname: }]{#1}');
+DefMacro('\headnote{}',    '\lx@add@pubnote[role=node]{#1}');
+DefMacro('\dedication{}',  '\lx@add@pubnote[role=dedication]{#1}');
+DefMacro('\offprints{}',   '\lx@add@pubnote[role=preprint]{#1}');
+DefMacro('\journalname{}', '\lx@add@pubnote[role=journal]{#1}');
+DefMacro('\papertype{}',   '\lx@add@pubnote[role=type]{#1}');
 
 Let('\journalopt', '\@empty');
 

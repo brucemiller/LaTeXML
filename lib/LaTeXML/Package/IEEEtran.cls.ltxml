@@ -144,11 +144,8 @@ DefMacro('\IEEEmembership{}',   '');                          # nothing for now.
 DefMacro('\IEEEauthorblockN{}', '#1');                        # author
 DefMacro('\IEEEauthorblockA{}', '\lx@add@affiliation{#1}');
 
-DefMacro(T_CS('\begin{IEEEkeywords}'), '\@IEEEkeywords');
-DefMacro(T_CS('\end{IEEEkeywords}'),   '\@endIEEEkeywords');
-Let('\@endIEEEkeywords', '\relax');                           # stub
-DefMacro('\@IEEEkeywords XUntil:\@endIEEEkeywords',
-  '\lx@add@keywords[name={\IEEEkeywordsname}]{#1}');
+DefMacro('\IEEEkeywords',              '\lx@begin@keywords[name={\IEEEkeywordsname:~}]');
+DefMacro('\endIEEEkeywords',           '\lx@end@keywords');
 DefMacro('\IEEEraisesectionheading{}', '#1');
 DefMacro('\IEEEPARstart{}{}',          '#1#2');               # Eventually, dropcap?
 
@@ -157,7 +154,7 @@ DefMacro('\IEEEcompsocthanksitem[]',    '');
 DefMacro('\IEEEauthorrefmark',          '');
 DefMacro('\IEEEtriggeratref{}',         '');
 
-DefMacro('\IEEEpubid{}',     '\lx@add@frontmatter{ltx:note}[role=publicationid]{pubid: #1}');
+DefMacro('\IEEEpubid{}',     '\lx@add@pubnote[role=pubid]{pubid: #1}');
 DefMacro('\IEEEpubidadjcol', '');
 
 RawTeX(<<'EoTeX');
