@@ -190,6 +190,7 @@ Tag('ltx:personname', afterClose => sub {
 AssignValue(frontmatter => {}, 'global');
 DefConditionalI('\if@in@preamble', undef, sub { LookupValue('inPreamble'); });
 DefKeyVal('Frontmatter', 'role',        'Semiverbatim');
+DefKeyVal('Frontmatter', 'class',       'Semiverbatim');
 DefKeyVal('Frontmatter', 'annotations', '');
 DefKeyVal('Frontmatter', 'label',       '');
 DefKeyVal('Frontmatter', 'labelseq',    '');
@@ -301,26 +302,42 @@ sub cleanFrontmatterLabels {
     push(@labels, $label); }
   return @labels; }
 
+# Look for \lx@<tag>@<role>@name or \lx@<tag>@name
+sub getFrontmatterName {
+  my ($name, $tag, $role) = @_;
+  my $stag = ToString($tag); $stag =~ s/^ltx://;
+  my $cs;
+  if ($name && scalar($name->unlist)) {
+    return $name; }
+  elsif ($role && ($cs = T_CS(join('@', '\lx', $stag, $role, 'name')))
+    && LookupDefinition($cs)) {
+    return DigestText($cs); }
+  elsif (($cs = T_CS(join('@', '\lx', $stag, 'name'))) && LookupDefinition($cs)) {
+    return DigestText($cs); }
+  return; }
+
 DefPrimitive('\lx@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals:Frontmatter {}', sub {
     my ($stomach, $obsoletekeys, $tag, $kv, $content) = @_;
     $tag = ToString($tag);
-    $kv  = $kv->beDigested($stomach) if $kv;
     my $frontmatter = LookupValue('frontmatter');
-    my $role        = ($kv && ToString($kv->getValue('role')));
-    my $n           = 0;
+    my %options     = ($kv ? $kv->beDigested($stomach)->getHash : ());
+##    my $role    = $options{role} = ToString($options{role});
+    my $role = ($kv && ToString($kv->getValue('role')));    # Careful! Multiple values
+    my $n    = 0;
     # extract (possibly multiple!) labels
-    my @labels = cleanFrontmatterLabels(($kv && $kv->getValues('annotations')) || '', '');
+    my @labels = cleanFrontmatterLabels(($options{annotations}) || '', '');
     if ($role) {
       $n = LookupMapping('num_' . $tag, $role); $n++;
       AssignMapping('num_' . $tag, $role => $n);
+      $options{role} = $role;
+      $options{_num} = $n;
       # record sequence position as potential attachment label
       push(@labels, CleanLabel($n, $role)); }
-    my %attr = (($kv ? $kv->getHash : ()),
-      ($role ? (role => $role, _num => $n) : ()),
-      _annotations => join(',', @labels));    # replace these...
-    my $entry = [$tag, {%attr}, 'place_keeper'];    # (in case embedded)
+    $options{name}         = getFrontmatterName($options{name}, $tag, $role);
+    $options{_annotations} = join(',', @labels);
+    my $entry = [$tag, {%options}, 'place_keeper'];    # (in case embedded)
     push(@{ $$frontmatter{$tag} }, $entry);
-    Debug("ADD $tag: [" . join(',', map { $_ . '=' . ToString($attr{$_}); } sort keys %attr) . "] "
+    Debug("ADD $tag: [" . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "] "
         . ToString($content));
     $$entry[2] = digestFrontmatterItem($stomach, $content);    # REPLACE only 'place_keeper'!!
 ###    $$entry[2] = DigestText($content);
@@ -357,7 +374,6 @@ DefPrimitive('\lx@annotate@frontmatter@now {}{} OptionalKeyVals:Frontmatter {}',
     my ($stomach, $parenttag, $tag, $kv, $content) = @_;
     $parenttag = ToString($parenttag);
     $tag       = ToString($tag);
-    my $stag         = $tag; $stag =~ s/^ltx://;
     my $preformatted = $tag eq 'preformatted';       # Obsolete API? $content is constructor!
     my $frontmatter  = LookupValue('frontmatter');
     my %options      = ($kv ? $kv->beDigested($stomach)->getHash : ());
@@ -367,10 +383,8 @@ DefPrimitive('\lx@annotate@frontmatter@now {}{} OptionalKeyVals:Frontmatter {}',
     if ($role) {
       my $n = LookupMapping('num_' . $tag, $role); $n++;
       AssignMapping('num_' . $tag, $role => $n);
-      push(@labels, CleanLabel($n, ToString($options{labelseq}))) if $options{labelseq};
-      if (!$options{name} || !scalar($options{name}->unlist)) {
-        my $cs = T_CS('\lx@' . join('@', $stag, $role, 'name'));
-        $options{name} = DigestText($cs) if LookupDefinition($cs); } }
+      push(@labels, CleanLabel($n, ToString($options{labelseq}))) if $options{labelseq}; }
+    $options{name} = getFrontmatterName($options{name}, $tag, $role);
     my @allparents = @{ $$frontmatter{$parenttag} || [] };
     my @parents    = grep { ($$_[1]{role} || '') ne 'pending'; } @allparents;
     my $nparents   = scalar(@parents);
@@ -486,6 +500,18 @@ DefMacro('\lx@add@translator[]{}',
 DefMacro('\lx@add@date[]{}',
   '\lx@clear@frontmatter{ltx:date}[role=created,#1]'    # no duplicates w/same role
     . '\lx@add@frontmatter{ltx:date}[role=created,#1]{#2}');
+DefMacro('\lx@copyright@holder', '');
+DefMacro('\lx@copyright@date',   '');
+DefMacro('\lx@add@copyright{}',
+  '\lx@add@date[role=copyright]{#1}');
+# Next two are for when copyright holder & year are given by 2 separate macros
+DefMacro('\lx@add@copyrightholder{}',
+  '\gdef\lx@copyright@holder{#1}'
+    . '\lx@add@copyright{\lx@copyright@holder\ \lx@copyright@date}');
+DefMacro('\lx@add@copyrightyear{}',
+  '\gdef\lx@copyright@date{#1}'
+    . '\lx@add@copyright{\ifx.\lx@copyright@holder.\else\lx@copyright@holder, \fi\lx@copyright@date}');
+
 DefMacro('\lx@add@abstract[]{}',
   '\lx@clear@frontmatter{ltx:abstract}'
     . '\lx@add@frontmatter{ltx:abstract}[#1]{#2}');
@@ -494,6 +520,18 @@ DefMacro('\lx@add@keywords[]{}',
     . '\lx@add@frontmatter{ltx:keywords}[#1]{#2}');
 DefMacro('\lx@add@classification[]{}',
   '\lx@add@frontmatter{ltx:classification}[#1]{#2}');
+# To handle the above as environments
+DefMacro('\lx@begin@abstract[] XUntil:\lx@end@abstract', '\lx@add@abstract[#1]{#2}');
+##Let('\lx@end@abstract', '\relax');
+DefPrimitive('\lx@end@abstract', sub { (); });    # Like \let \relax, but \relax not def yet!
+DefMacro('\lx@begin@keywords[] XUntil:\lx@end@keywords', '\lx@add@keywords[#1]{#2}');
+##Let('\lx@end@keywords', '\relax');
+DefPrimitive('\lx@end@keywords', sub { (); });
+
+# Add random notes about the document itself
+DefMacro('\lx@add@pubnote[]{}',
+  '\lx@add@frontmatter{ltx:pubnote}[#1]{#2}');
+
 # Other kinds of notes?
 
 # The following add various forms of contact information to a creator
@@ -533,6 +571,31 @@ DefMacro('\lx@author@and@affil@ Until:\\\\ Until:\done',
   '\ifx.#2.\lx@add@creator[role=author]{#1}'
     . '\else\lx@add@creator[role=author]{#1'
     . '\lx@annotate@frontmatter{ltx:creator}{ltx:contact}[role=affiliation]{#2}}\fi');
+
+DefMacro('\lx@date@received@name',  'Received~');
+DefMacro('\lx@date@revised@name',   'Revised~');
+DefMacro('\lx@date@accepted@name',  'Accepted~');
+DefMacro('\lx@date@draft@name',     'Drafted~');
+DefMacro('\lx@date@posted@name',    'Posted~');
+DefMacro('\lx@date@copyright@name', UTF(0xA9) . ' ');
+
+DefMacro('\lx@pubnote@type@name',       'Publication type:~');
+DefMacro('\lx@pubnote@note@name',       'Note:~');
+DefMacro('\lx@pubnote@pubid@name',      'PubID:~');
+DefMacro('\lx@pubnote@doi@name',        'DOI:~');
+DefMacro('\lx@pubnote@isbn@name',       'ISBN:~');
+DefMacro('\lx@pubnote@arxiv@name',      'arXiv:~');
+DefMacro('\lx@pubnote@preprint@name',   'Preprint:~');
+DefMacro('\lx@pubnote@journal@name',    'Journal:~');
+DefMacro('\lx@pubnote@conference@name', 'Conference:~');
+DefMacro('\lx@pubnote@issue@name',      'Issue:~');
+DefMacro('\lx@pubnote@volume@name',     'Volume:~');
+DefMacro('\lx@pubnote@dedication@name', 'Dedication:~');
+DefMacro('\lx@pubnote@thanks@name',     'Thanks:~');
+
+DefMacro('\lx@abstract@name',       'Abstract');
+DefMacro('\lx@keywords@name',       'Keywords:~');
+DefMacro('\lx@classification@name', 'Classification:~');
 
 DefMacro('\lx@contact@affiliation@name',    "Affiliation:~");
 DefMacro('\lx@contact@altaffiliation@name', "Alternate Affiliation:~");
@@ -603,10 +666,6 @@ sub insertFrontMatter_rec {
   my $type = ref $item;
   if ($type eq 'ARRAY') {
     my ($tag, $attr, @stuff) = @$item;
-    # add a dedicated class for frontmatter notes,
-    # in the case we want to style those uniformly.
-    if ($tag eq 'ltx:note') {
-      $$attr{class} = ($$attr{class} ? $$attr{class} . ' ' : '') . 'ltx_note_frontmatter'; }
     Debug("INSERTING frontmatter $tag {"
         . join(',', map { $_ . '=' . ToString($$attr{$_}); } sort keys %$attr) . "} "
         . join(' ', map { ToString($_); } @stuff));
