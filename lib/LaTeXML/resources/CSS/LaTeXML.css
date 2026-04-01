@@ -73,12 +73,17 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 .ltx_authors_1line .ltx_author_before,
 .ltx_authors_1line .ltx_author_after { display:inline;}
 .ltx_authors_1line .ltx_author_notes { display:inline-block; }
-.ltx_authors_1line .ltx_author_notes:before { content:"*"; color:blue;}
-.ltx_authors_1line .ltx_author_notes .ltx_author_notes_content { display:none; }
+.ltx_authors_1line .ltx_author_notes:before {
+    content:"*"; color:blue;
+    font-size:80%; vertical-align:super; }
+.ltx_authors_1line .ltx_author_notes .ltx_author_notes_content {
+    visibility:hidden; opacity:0; transition: opacity 0.3s;
+    position:absolute; z-index:10; }
 .ltx_authors_1line .ltx_author_notes:hover .ltx_author_notes_content {
-    display:block; position:absolute; z-index:10;
+    visibility:visible; opacity:1;
     background:white; text-align:left;
-    border: 1px solid black; border-radius: 0 5px 5px 5px; box-shadow: 5px 5px 10px gray; }
+    border: 1px solid black; border-radius: 0 5px 5px 5px; box-shadow: 5px 5px 10px gray;
+    padding:0.3rem; font-size:1rem; }
 .ltx_authors_1line .ltx_author_notes:hover .ltx_author_notes_content .ltx_contact {
     display:block; }
 
@@ -90,6 +95,31 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 .ltx_authors_multiline .ltx_author_notes .ltx_contact {
     display:block; }
 
+.ltx_author_notes:before {
+    content:"*"; color:blue;
+    font-size:80%; vertical-align:super; }
+.ltx_pubnotes:before {
+    content:"\002020"; color:blue;
+    font-size:80%; vertical-align:super; }
+.ltx_author_notes,
+.ltx_pubnotes        { display:inline-block; }
+.ltx_author_notes .ltx_author_notes_content,
+.ltx_pubnotes .ltx_pubnotes_content {
+    visibility:hidden; opacity:0; transition: opacity 0.3s;
+    position:absolute; z-index:10; }
+.ltx_author_notes:hover .ltx_author_notes_content,
+.ltx_pubnotes:hover .ltx_pubnotes_content {
+    visibility:visible; opacity:1;
+    background:white; text-align:left;
+    border: 1px solid black; border-radius: 0 5px 5px 5px; box-shadow: 5px 5px 10px gray;
+    padding:0.3rem; font-size:1rem; }
+.ltx_author_notes:hover .ltx_author_notes_content .ltx_contact,
+.ltx_pubnotes:hover .ltx_pubnotes_content .ltx_pubnote{
+    display:block; }
+
+.ltx_note_name,
+.ltx_contact_name {
+    font-style:italic; }
 /*======================================================================
   Para level */
 .ltx_float {

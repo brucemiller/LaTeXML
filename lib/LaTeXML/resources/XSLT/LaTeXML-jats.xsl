@@ -207,8 +207,6 @@
     </address>
   </xsl:template>
 
-  <xsl:template match="ltx:note[@role='affiliationtext']"/>
-
   <xsl:template match="ltx:personname">
     <name>
       <surname>
@@ -689,14 +687,14 @@
   <!-- ======================================================================
        Mid-level text -->
 
-  <xsl:template match="ltx:note[@role='thanks']">
+  <xsl:template match="ltx:contact[@role='thanks']">
     <p>
       <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
       <xsl:apply-templates/>
     </p>
   </xsl:template>
 
-  <xsl:template match="ltx:p/ltx:note[@role='thanks']">
+  <xsl:template match="ltx:p/ltx:contact[@role='thanks']">
     <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
     <xsl:apply-templates/>
   </xsl:template>
