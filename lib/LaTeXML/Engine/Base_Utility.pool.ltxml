@@ -658,7 +658,7 @@ sub insertFrontMatter {
       foreach my $item (@$list) {
         insertFrontMatter_rec($document, $item);
   } } }
-  relocateContacts($document);
+  relocateAnnotations($document);
   return; }
 
 sub insertFrontMatter_rec {
@@ -685,38 +685,38 @@ sub insertFrontMatter_rec {
     $document->absorb($item); }
   return; }
 
-# Find all dummy creators (role "pending") containing unattached contacts
-# and attempt to attach to the appropriate creator, based on the identifying labels.
-sub relocateContacts {
+# Add a annotation target based on the name for fuzzy matching of annotations.
+Tag('ltx:creator', afterClose => sub {
+    my ($document, $creator) = @_;
+    if (my $person = $document->findnode('ltx:personname', $creator)) {
+      my $label  = CleanLabel($person->textContent, "fuzzy");
+      my $labels = $creator->getAttribute('_annotations');
+      $creator->setAttribute(_annotations => ($labels ? "$labels,$label" : $label)); }
+    return; });
+
+# Find all dummy frontmatter entries (role "pending") containing unattached annotations
+# and attempt to attach to the appropriate frontmatter, based on the identifying labels.
+sub relocateAnnotations {
   my ($document) = @_;
-  my (@creators, @pending);
-  foreach my $creator ($document->findnodes(".//ltx:creator")) {
-    if (($creator->getAttribute('role') || '') eq 'pending') {
-      push(@pending, $creator); }
-    else {
-      push(@creators, $creator); } }
-  if (@pending) {
-    my %labeltable = ();    # Collect the creators that have attachment labels
-    foreach my $c (@creators) {
-      my @labels = split(',', $c->getAttribute('_annotations') || '');
-      # Store person's name as possible label; this could benefit from fuzzy matching?
-      if (my $person = $document->findnode('ltx:personname', $c)) {
-        push(@labels, CleanLabel($person->textContent, "fuzzy")); }
-      map { $labeltable{$_} = ($labeltable{$_} ? [@{ $labeltable{$_} }, $c] : [$c]); } @labels; }
-    Debug("PENDING CONTACTS; Known labels:" . join(',', sort keys %labeltable));
+  # Find dummy frontmatter elements containing not-yet-attached annotations
+  if (my @pending = $document->findnodes(".//*[\@role='pending']")) {
+    my %labeltable = ();    # Collect the frontmatter that have attachment labels
+    foreach my $target ($document->findnodes(".//*[\@_annotations]")) {
+      next if ($target->getAttribute('role') || '') eq 'pending';
+      foreach my $label (split(',', $target->getAttribute('_annotations'))) {
+        $labeltable{$label} = [] unless $labeltable{$label};
+        push(@{ $labeltable{$label} }, $target); } }
     foreach my $pending (@pending) {
-      foreach my $contact (element_nodes($pending)) {
-        my $label    = $contact->getAttribute('_label') || '';
-        my $creators = $label && $labeltable{$label};
-        Debug("TEST '$label'");
-        if ($creators) {
-          foreach my $creator (@$creators) {
-            Debug("Moving contact for $label: " . ToString($creator));
-            $document->appendClone($creator, $contact); } }
-        else {
-          Warn('unexpected', 'ltx:contact', $document,
-            "Orphaned contact frontmatter couldn't find author for label=$label",
-            "known labels=" . join(',', sort keys %labeltable)); } }
+      foreach my $note (element_nodes($pending)) {
+        if (my $label = $note->getAttribute('_label')) {
+          if (my $targets = $labeltable{$label}) {
+            foreach my $target (@$targets) {
+              Debug("Moving annotation for $label: " . ToString($target));
+              $document->appendClone($target, $note); } }
+          else {
+            Warn('unexpected', 'annotation', $document,
+              "Orphaned frontmatter annotation couldn't find target for label=$label",
+              "known labels=" . join(',', sort keys %labeltable)); } } }
       $document->removeNode($pending); } }
   return; }
 
@@ -733,9 +733,26 @@ DefConstructor('\lx@frontmatterhere', sub { insertFrontMatter($_[0]); },
     digestFrontMatter();
     AssignValue(frontmatter_deferred => 1, 'global');
     return; });
-DefPrimitiveI('\lx@frontmatter@fallback', undef, sub {
+
+# Same, but put it at the beginning of document, but after any ltx:resources
+DefConstructor('\lx@frontmatter@fallback', sub {
+    my ($document) = @_;
+    my $savenode   = $document->getNode;
+    my $point      = $document->findnode('ltx:document/ltx:resource[last()]');
+    $point = $point->nextSibling if $point;
+    my $wrapper = ($point
+      ? $document->insertElementBefore($point, 'ltx:_Capture_')
+      : $document->openElementAt($document->documentElement, 'ltx:_Capture_'));
+    $document->setNode($wrapper);
+    insertFrontMatter($document);
+    $document->unwrapNodes($wrapper);
+    $document->setNode($savenode); },
+  afterDigest => sub {
     my ($stomach) = @_;
-    return; });    # ?
+    my $frontmatter = LookupValue('frontmatter');
+    digestFrontMatter();
+    AssignValue(frontmatter_deferred => 1, 'global');
+    return; });
 
 # Maintain a list of classes that apply to the document root.
 # This might involve global style options, like leqno.
