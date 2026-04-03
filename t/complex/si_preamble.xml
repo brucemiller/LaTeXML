@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="siunitx" options="
+list-input-separator=:, product-input-separator=*, table-column-type=T "?>
+<?latexml package="booktabs"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>Package Control Options</title>
+    <subsection inlist="toc" xml:id="S4.SS14">
+      <tags>
+        <tag>4.14</tag>
+        <tag role="refnum">4.14</tag>
+        <tag role="typerefnum">§4.14</tag>
+      </tags>
+      <title><tag close=" ">4.14</tag>Preamble-only options</title>
+      <subsubsection inlist="toc" xml:id="S4.SS14.SSS1">
+        <tags>
+          <tag>4.14.1</tag>
+          <tag role="refnum">4.14.1</tag>
+          <tag role="typerefnum">§4.14.1</tag>
+        </tags>
+        <title><tag close=" ">4.14.1</tag>list-input-separator, product-input-separator</title>
+        <para xml:id="S4.SS14.SSS1.p1">
+          <p><Math mode="inline" tex="103045" text="list@(10, 30, 45)" xml:id="S4.SS14.SSS1.p1.m1">
+              <XMath>
+                <XMDual>
+                  <XMApp>
+                    <XMTok meaning="list"/>
+                    <XMRef idref="S4.SS14.SSS1.p1.m1.1"/>
+                    <XMRef idref="S4.SS14.SSS1.p1.m1.2"/>
+                    <XMRef idref="S4.SS14.SSS1.p1.m1.3"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok meaning="10" role="NUMBER" xml:id="S4.SS14.SSS1.p1.m1.1">10</XMTok>
+                    <XMText role="PUNCT">, </XMText>
+                    <XMTok meaning="30" role="NUMBER" xml:id="S4.SS14.SSS1.p1.m1.2">30</XMTok>
+                    <XMText role="PUNCT"> and </XMText>
+                    <XMTok meaning="45" role="NUMBER" xml:id="S4.SS14.SSS1.p1.m1.3">45</XMTok>
+                  </XMWrap>
+                </XMDual>
+              </XMath>
+            </Math></p>
+        </para>
+        <para xml:id="S4.SS14.SSS1.p2">
+          <p><Math mode="inline" tex="4\text{\times}5\text{\times}6" text="4 * 5 * 6" xml:id="S4.SS14.SSS1.p2.m1">
+              <XMath>
+                <XMApp>
+                  <XMText meaning="times" role="MULOP" xml:id="S4.SS14.SSS1.p2.m1.2">×</XMText>
+                  <XMApp xml:id="S4.SS14.SSS1.p2.m1.1">
+                    <XMText meaning="times" role="MULOP" xml:id="S4.SS14.SSS1.p2.m1.1.2">×</XMText>
+                    <XMTok meaning="4" role="NUMBER" xml:id="S4.SS14.SSS1.p2.m1.1.1">4</XMTok>
+                    <XMTok meaning="5" role="NUMBER" xml:id="S4.SS14.SSS1.p2.m1.1.3">5</XMTok>
+                  </XMApp>
+                  <XMTok meaning="6" role="NUMBER" xml:id="S4.SS14.SSS1.p2.m1.3">6</XMTok>
+                </XMApp>
+              </XMath>
+            </Math></p>
+        </para>
+      </subsubsection>
+      <subsubsection inlist="toc" xml:id="S4.SS14.SSS2">
+        <tags>
+          <tag>4.14.2</tag>
+          <tag role="refnum">4.14.2</tag>
+          <tag role="typerefnum">§4.14.2</tag>
+        </tags>
+        <title><tag close=" ">4.14.2</tag>table-column-type</title>
+        <table inlist="lot" labels="LABEL:tab:S:align" placement="h" xml:id="S4.T1">
+          <tags>
+            <tag>Table 1</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">Table 1</tag>
+          </tags>
+          <toccaption><tag close=" ">1</tag>Aligning the <text font="typewriter">T</text> (née <text font="typewriter">S</text>) column.</toccaption>
+          <caption><tag close=": ">Table 1</tag>Aligning the <text font="typewriter">T</text> (née <text font="typewriter">S</text>) column.</caption>
+          <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
+            <thead>
+              <tr>
+                <td align="char:." border="tt" thead="column">Some Values</td>
+                <td align="center" border="tt" thead="column">Some Values</td>
+                <td align="left" border="tt" thead="column">Some Values</td>
+                <td align="right" border="tt" class="ltx_nopad_r" thead="column">Some Values</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="char:." border="t"><text width="6.1pt"/><Math mode="inline" tex="2.3456" text="2.3456" xml:id="S4.T1.m1">
+                    <XMath>
+                      <XMTok meaning="2.3456" role="NUMBER">2.3456</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center" border="t"><text width="6.1pt"/><Math mode="inline" tex="2.3456" text="2.3456" xml:id="S4.T1.m2">
+                    <XMath>
+                      <XMTok meaning="2.3456" role="NUMBER">2.3456</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left" border="t"><text width="6.1pt"/><Math mode="inline" tex="2.3456" text="2.3456" xml:id="S4.T1.m3">
+                    <XMath>
+                      <XMTok meaning="2.3456" role="NUMBER">2.3456</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="right" border="t" class="ltx_nopad_r"><text width="6.1pt"/><Math mode="inline" tex="2.3456" text="2.3456" xml:id="S4.T1.m4">
+                    <XMath>
+                      <XMTok meaning="2.3456" role="NUMBER">2.3456</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+              <tr>
+                <td align="char:."><Math mode="inline" tex="34.2345" text="34.2345" xml:id="S4.T1.m5">
+                    <XMath>
+                      <XMTok meaning="34.2345" role="NUMBER">34.2345</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="34.2345" text="34.2345" xml:id="S4.T1.m6">
+                    <XMath>
+                      <XMTok meaning="34.2345" role="NUMBER">34.2345</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="34.2345" text="34.2345" xml:id="S4.T1.m7">
+                    <XMath>
+                      <XMTok meaning="34.2345" role="NUMBER">34.2345</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="right" class="ltx_nopad_r"><Math mode="inline" tex="34.2345" text="34.2345" xml:id="S4.T1.m8">
+                    <XMath>
+                      <XMTok meaning="34.2345" role="NUMBER">34.2345</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+              <tr>
+                <td align="char:."><Math mode="inline" tex="56.7835" text="56.7835" xml:id="S4.T1.m9">
+                    <XMath>
+                      <XMTok meaning="56.7835" role="NUMBER">56.7835</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="56.7835" text="56.7835" xml:id="S4.T1.m10">
+                    <XMath>
+                      <XMTok meaning="56.7835" role="NUMBER">56.7835</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="56.7835" text="56.7835" xml:id="S4.T1.m11">
+                    <XMath>
+                      <XMTok meaning="56.7835" role="NUMBER">56.7835</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="right" class="ltx_nopad_r"><Math mode="inline" tex="56.7835" text="56.7835" xml:id="S4.T1.m12">
+                    <XMath>
+                      <XMTok meaning="56.7835" role="NUMBER">56.7835</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+              <tr>
+                <td align="char:." border="bb"><Math mode="inline" tex="90.473" text="90.473" xml:id="S4.T1.m13">
+                    <XMath>
+                      <XMTok meaning="90.473" role="NUMBER">90.473</XMTok>
+                    </XMath>
+                  </Math><text width="6.1pt"/></td>
+                <td align="center" border="bb"><Math mode="inline" tex="90.473" text="90.473" xml:id="S4.T1.m14">
+                    <XMath>
+                      <XMTok meaning="90.473" role="NUMBER">90.473</XMTok>
+                    </XMath>
+                  </Math><text width="6.1pt"/></td>
+                <td align="left" border="bb"><Math mode="inline" tex="90.473" text="90.473" xml:id="S4.T1.m15">
+                    <XMath>
+                      <XMTok meaning="90.473" role="NUMBER">90.473</XMTok>
+                    </XMath>
+                  </Math><text width="6.1pt"/></td>
+                <td align="right" border="bb" class="ltx_nopad_r"><Math mode="inline" tex="90.473" text="90.473" xml:id="S4.T1.m16">
+                    <XMath>
+                      <XMTok meaning="90.473" role="NUMBER">90.473</XMTok>
+                    </XMath>
+                  </Math><text width="6.1pt"/></td>
+              </tr>
+            </tbody>
+          </tabular>
+        </table>
+      </subsubsection>
+    </subsection>
+  </section>
+  <section inlist="toc" xml:id="S8">
+    <tags>
+      <tag>8</tag>
+      <tag role="refnum">8</tag>
+      <tag role="typerefnum">§8</tag>
+    </tags>
+    <title><tag close=" ">8</tag>Localisation</title>
+    <para xml:id="S8.p1">
+      <p><Math mode="inline" tex="1020" text="range@(10, 20)" xml:id="S8.p1.m1">
+          <XMath>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="range"/>
+                <XMRef idref="S8.p1.m1.1"/>
+                <XMRef idref="S8.p1.m1.2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok meaning="10" role="NUMBER" xml:id="S8.p1.m1.1">10</XMTok>
+                <XMText role="PUNCT"> to </XMText>
+                <XMTok meaning="20" role="NUMBER" xml:id="S8.p1.m1.2">20</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMath>
+        </Math></p>
+    </para>
+  </section>
+</document>
