@@ -195,12 +195,10 @@ Pretty nonsensical stuff?
 \complexnum{+3ie4}
 
 \subsection{The unit macros}
-
-Table \ref{tab:si_base_units}
 \newcommand{\showunit}[1]{#1 & \texttt{\Backslash#1} & \unit{\csname#1\endcsname}}
-\begin{table}
-\caption{SI base units}\label{tab:si_base_units}
-\centering
+
+The SI base units:
+\begin{center}
 \begin{tabular}{lll}\toprule
 Unit & Macro & Symbol \\\midrule
 \showunit{ampere}\\
@@ -211,12 +209,10 @@ Unit & Macro & Symbol \\\midrule
 \showunit{mole}\\
 \showunit{second}\\\bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-Table \ref{tab:coherent_derived}
-\begin{table}
-\caption{Coherent derived units}\label{tab:coherent_derived}
-\centering
+The coherent derived units:
+\begin{center}
 \begin{tabular}{@{}llc llc@{}}\toprule
 Unit & Macro & Symb &
 Unit & Macro & Symb \\\cmidrule(r){1-3}\cmidrule(l){4-6}
@@ -232,12 +228,10 @@ Unit & Macro & Symb \\\cmidrule(r){1-3}\cmidrule(l){4-6}
 \showunit{lumen}         & \showunit{watt} \\
 \showunit{lux}           & \showunit{weber} \\\bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-Table \ref{tab:non_si_units}
-\begin{table}
-\caption{Non-SI units}\label{tab:non_si_units}
-\centering
+The non-SI units:
+\begin{center}
 \begin{tabular}{lll}\toprule
 Unit & Macro & Symbol \\\midrule
 \showunit{astronomicalunit}\\
@@ -257,10 +251,7 @@ Unit & Macro & Symbol \\\midrule
 \showunit{neper}\\
 \showunit{tonne}\\\bottomrule
 \end{tabular}
-\end{table}
-
-%Deprecated in siunitx v3, but make sure we still have them:
-%\unit{\clight}, \unit{\electronmass}, \unit{\bohr}, \unit{\hartree}
+\end{center}
 
 %\ExplSyntaxOn
 % this accesses siunitx internals, and may therefore break
@@ -292,10 +283,8 @@ Unit & Macro & Symbol \\\midrule
 %\__ltxml_prefix_from_text:n { kibi }
 %\ExplSyntaxOff
 
-Table \ref{tab:si_prefixes}
-\begin{table}
-\caption{SI prefixes}\label{tab:si_prefixes}
-\centering
+SI prefixes:
+\begin{center}
 \begin{tabular}{@{}llcl llcl@{}}\toprule
 Prefix & Cmd & Symb & Power &
 Prefix & Cmd & Symb & Power \\\cmidrule(r){1-4}\cmidrule(l){5-8}
@@ -312,7 +301,7 @@ Prefix & Cmd & Symb & Power \\\cmidrule(r){1-4}\cmidrule(l){5-8}
 \showprefix{centi}  & \showprefix{ronna}\\
 \showprefix{deci}   & \showprefix{quetta}\\\bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \unit{\square\becquerel} \\
 \unit{\joule\squared\per\lumen} \\
@@ -343,7 +332,7 @@ Prefix & Cmd & Symb & Power \\\cmidrule(r){1-4}\cmidrule(l){5-8}
 \ExplSyntaxOff
 
 Table 5 %\ref{tab:abbrevs}
-% we have trouble referring to a longtable?
+% we have trouble referring to a longtable.  see #2785
 
 %\begin{table}
 %\centering
@@ -378,18 +367,16 @@ Unit & Abbreviation & Symbol \\\midrule\endhead
 \bottomrule
 \end{longtable}
 
-Table \ref{tab:binpref}
-\begin{table}
-\caption{Binary prefixes}\label{tab:binpref}
+Binary prefixes:
 \newcounter{tablerow}
+\begin{center}
 % the documentation numbers are hardcoded in
-% /usr/local/texlive/2024/texmf-dist/source/latex/siunitx/siunitx.tex
+% /usr/local/texlive/YYYY/texmf-dist/source/latex/siunitx/siunitx.tex
 % the powers are not stored in siunitx.  see siunitx-binary.dtx
 \newcommand{\showBinaryPrefix}[1]{%
   \stepcounter{tablerow}%
   #1 & \texttt{\Backslash#1} & \unit{\csname #1\endcsname\noop} & \arabic{tablerow}0
 }
-\centering
 \begin{tabular}{cccc}\toprule
 Prefix & Command & Symbol & Power \\\midrule
 \showBinaryPrefix{kibi} \\
@@ -401,10 +388,7 @@ Prefix & Command & Symbol & Power \\\midrule
 \showBinaryPrefix{zebi} \\
 \showBinaryPrefix{yobi} \\\bottomrule
 \end{tabular}
-\end{table}
-
-\clearpage
-% a whole lot of floating tables just finished
+\end{center}
 
 \subsection{Creating new macros}
 
@@ -463,11 +447,8 @@ Prefix & Command & Symbol & Power \\\midrule
 
 \subsection{Tabular material}
 
-Table \ref{tab:S:standard}
-\begin{table}
-\caption{Standard behaviour of the \texttt{S} column type.}
-\label{tab:S:standard}
-\centering
+Standard behaviour of the \texttt{S} column type
+\begin{center}
 \begin{tabular}{S}
 \toprule
 {Some Values} \\
@@ -481,13 +462,10 @@ Table \ref{tab:S:standard}
 e4 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-Table \ref{tab:S:extras}
-\begin{table}
-\caption{Detection of surrounding material in an \texttt{S} column.}
-\label{tab:S:extras}
-\centering
+Detection of surrounding material in an \texttt{S} column
+\begin{center}
 \begin{tabular}{S[color=orange]}
 \toprule
 {Some Values} \\
@@ -497,13 +475,10 @@ Table \ref{tab:S:extras}
 44.268 \textsuperscript{\emph{a}} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-Table \ref{tab:S:ends}
-\begin{table}
-\caption{Text before and after numbers.%
-\label{tab:S:ends}}
-\centering
+Text before and after numbers
+\begin{center}
 \sisetup{table-format = {now }2.4{\textsuperscript{\emph{a}}}}
 \begin{tabular}{@{}S@{}}
 \toprule
@@ -517,13 +492,10 @@ Table \ref{tab:S:ends}
 {now~} 90.473 \\  % todo incorrect
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-Table \ref{tab:tablenum}
-\begin{table}
-\caption{Controlling complex alignment with the tablenum macro.}
-\label{tab:tablenum}
-\centering
+Controlling complex alignment with the tablenum macro
+\begin{center}
 \begin{tabular}{lr}
 \toprule
 Heading & Heading \\
@@ -546,7 +518,7 @@ Heading & Heading \\
 & ddd \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \section{Package control options}
 
@@ -740,7 +712,6 @@ fixed-exponent = 2,
 % todo tex has (0.000 500+1.000i)x10^3 (see siunitx#813)
 
 \subsubsection{exponent-thresholds}
-\stepcounter{table}
 This is unique to version 3.
 
 \subsubsection{drop-exponent, drop-uncertainty}
@@ -1566,11 +1537,9 @@ also\\
 \subsection{Tabular Material}
 
 \subsubsection{table-alignment-mode}
-Table \ref{tab:S:parse}
-\begin{table}
-\centering
-\caption{Parsing without aligning in an \texttt{S} column.%
-\label{tab:S:parse}}
+
+Parsing without aligning in an \texttt{S} column
+\begin{center}
 \begin{tabular}
 {@{}S
 S[table-alignment-mode = none]
@@ -1585,14 +1554,12 @@ S[table-alignment-mode = none]
 4.5e3 & 4.5e3 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{table-number-alignment}
-Table \ref{tab:S:align}
-\begin{table}
-\caption{Aligning the \texttt{S} column.}
-\label{tab:S:align}
-\centering
+
+Aligning the \texttt{S} column
+\begin{center}
 \sisetup{table-format = 2.4, table-alignment-mode = format}
 \begin{tabular}{@{}
 S[table-alignment-mode = marker]
@@ -1609,13 +1576,12 @@ S[table-number-alignment = right]
 90.473 & 90.473 & 90.473 & 90.473\\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{table-format}
-Table \ref{tab:S:format}
-\begin{table}
-\caption{Reserving space in \texttt{S} columns.%
-\label{tab:S:format}}
+
+Reserving space in \texttt{S} columns
+\begin{center}
 \sisetup{
 table-alignment-mode = format,
 table-number-alignment = center,
@@ -1642,16 +1608,15 @@ S[table-format = 2.2e1]
 3,76 & 3,76 & 3,76(2) & 3.76(2) & +-3.76 & e6 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{table-model-setup}
 
 \subsubsection{table-align-[comparator\textbar exponent\textbar uncertainty]}
-Table \ref{tab:align:exp}
-\begin{table}
-\centering
-\caption{The \texttt{table-align-exponent} option%
-\label{tab:align:exp}}\sisetup{table-format = 1.3e2}
+
+The \texttt{table-align-exponent} option
+\begin{center}
+\sisetup{table-format = 1.3e2}
 \begin{tabular}{@{}SS[table-align-exponent = false]@{}}
 \toprule
 {Header} & {Header} \\
@@ -1660,13 +1625,10 @@ Table \ref{tab:align:exp}
 1.234e56 & 1.234e56 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-Table \ref{tab:align:uncert}
-\begin{table}
-\centering
-\caption{The \texttt{table-align-uncertainty} option.%
-\label{tab:align:uncert}}
+The \texttt{table-align-uncertainty} option
+\begin{center}
 \sisetup{
 uncertainty-mode = separate,
 table-format = 1.3(1),
@@ -1679,13 +1641,10 @@ table-format = 1.3(1),
 1.234(5) & 1.234(5) \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-Table \ref{tab:align:comp}
-\begin{table}
-\centering
-\caption{The \texttt{table-align-comparator} option.%
-\label{tab:align:comp}}
+The \texttt{table-align-comparator} option
+\begin{center}
 \sisetup{table-format = >2.2}
 \begin{tabular}{@{}SS[table-align-comparator = false]@{}}
 \toprule
@@ -1695,17 +1654,14 @@ Table \ref{tab:align:comp}
 < 12.34 & < 12.34 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-Table \ref{tab:S:comparators}
-\begin{table}
-\caption{Reserving space for comparators in \texttt{S} columns.}
-\label{tab:S:comparators}
+Reserving space for comparators in \texttt{S} columns
+\begin{center}
 \sisetup{
 table-number-alignment = center,
 table-format=<<2.2e2,
 }
-\centering
 \begin{tabular}{
 S
 S%[table-comparator = true]
@@ -1719,14 +1675,12 @@ S[table-align-comparator=false]}
 3,76  & \gg e6     & \gg e6 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{table-align-text-[before\textbar after]} 
-Table \ref{tab:S:notes}
-\begin{table}
-\centering
-\caption{Closing notes up to text.%
-\label{tab:S:notes}}
+
+Closing notes up to text
+\begin{center}
 \newrobustcmd\NoteMark[1]{%
 \textsuperscript{\emph{#1}}%
 }
@@ -1761,14 +1715,12 @@ S[table-align-text-after = false]
 88 \NoteMark{d} & 88 \NoteMark{d} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{table-auto-round}
-Table \ref{tab:S:auto}
-\begin{table}
-\centering
-\caption{The \texttt{table-auto-round} option.}
-\label{tab:S:auto}
+
+The \texttt{table-auto-round} option
+\begin{center}
 \sisetup{table-format = 1.3}
 \begin{tabular}{@{}SS[table-auto-round]@{}}
 \toprule
@@ -1778,18 +1730,16 @@ Table \ref{tab:S:auto}
 1.2345 & 1.2345 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{parse-numbers}
-Table \ref{tab:S:nonparsed}
-\begin{table}
-\caption{Aligning without parsing.}
-\label{tab:S:nonparsed}
+
+Aligning without parsing
+\begin{center}
 \sisetup{
 parse-numbers = false,
 table-format = 3.3
 }
-\centering
 \begin{tabular}{@{}
 S
 S[table-number-alignment = center]
@@ -1809,14 +1759,12 @@ S[table-number-alignment = left]
 \sqrt{2} & \sqrt{2} & \sqrt{2} & \sqrt{2} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{drop-exponent}
-Table \ref{tab:exp:omit}
-\begin{table}
-\caption{The \texttt{drop-exponent} option.%
-\label{tab:exp:omit}}
-\centering
+
+The \texttt{drop-exponent} option
+\begin{center}
 \begin{tabular}{@{}
 S[table-format = 1.1e1]
 S[
@@ -1834,14 +1782,12 @@ table-format = 2.1,
 1.0e4 & 1.0e4 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{table-column-width, table-fixed-width}
-Table \ref{tab:width:fixed}
-\begin{table}
-\caption{Fixed-width columns.%
-\label{tab:width:fixed}}
-\centering
+
+Fixed-width columns
+\begin{center}
 \begin{tabular}
 {@{}
 S
@@ -1855,14 +1801,11 @@ S[table-column-width = 2cm]
 45.6 & 45.6 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-Table \ref{tab:width:special}
-\begin{table}
+Right-aligning under a heading
+\begin{center}
 \newlength\mylength
-\centering
-\caption{Right-aligning under a heading.%
-\label{tab:width:special}}
 \settowidth{\mylength}{Long header}
 \sisetup{
 table-alignment-mode = none ,
@@ -1878,15 +1821,13 @@ table-number-alignment = right
 1234 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{table-text-alignment, table-alignment}
-Table \ref{tab:S:text}
-\begin{table}
-\caption{Aligning text in \texttt{S} columns.}
-\label{tab:S:text}
+
+Aligning text in \texttt{S} columns
+\begin{center}
 \sisetup{table-format = 4.4}
-\centering
 \begin{tabular}{
 S
 S[table-text-alignment = left]
@@ -1903,7 +1844,7 @@ S[table-text-alignment = right]
 3,7462 & 3,7462 & 3,7462 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 \subsubsection{table-alignment}
 
@@ -1962,10 +1903,8 @@ S[table-alignment-mode = none]
 
 \subsection{Expanding content in tables}
 
-Table \ref{tab:xmpl:macro}
-\begin{table}\centering
-\caption{Values as macros in \texttt{S} columns.%
-\label{tab:xmpl:macro}}
+Values as macros in \texttt{S} columns
+\begin{center}
 \newcommand*\myvaluea{1234}
 \newcommand\myvalueb{1234}
 \DeclareRobustCommand*\myvaluec{1234}
@@ -1983,13 +1922,11 @@ Table \ref{tab:xmpl:macro}
 {\myvaluea\ 8.8 \myvaluea} \\ % Neither expanded
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
 % \usepackage{xfp}
-%Table \ref{tab:xmpl:calc}
-%\begin{table}
-%\caption{Calculated values.%
-%\label{tab:xmpl:calc}}
+%Calculated values
+%\begin{center}
 %\newcommand{\valuea}{66.7012}
 %\newcommand{\valueb}{66.0212}
 %\newcommand{\valuec}{64.9026}
@@ -2007,7 +1944,7 @@ Table \ref{tab:xmpl:macro}
 %\valuec & \fpeval{\valuec * 2} \\
 %\bottomrule
 %\end{tabular}
-%\end{table}
+%\end{center}
 
 \setcounter{subsection}{10}
 
