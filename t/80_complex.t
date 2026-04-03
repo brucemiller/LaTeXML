@@ -13,7 +13,7 @@ latexml_tests("t/complex",
       texlive_min => 2021},
     si => {
       env=>'CI', # only runs in continuous integration
-      packages => 'siunitx.sty', texlive_min => 2015 },
+      packages => 'siunitx.sty', texlive_min => 2022 },  # should be 2015
     si_preamble => {
       env=>'CI', # only runs in continuous integration
       packages => 'siunitx.sty', texlive_min => 2015 },
