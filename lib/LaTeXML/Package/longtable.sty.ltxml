@@ -46,6 +46,9 @@ DefConstructor('\@@longtable [] Undigested DigestedBody',
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     $whatsit->setProperties(%{ LookupValue('LONGTABLE_PROPERTIES') || {} });
+    # Apply the stored \label to the table element.
+    if (my $label = LookupValue('LONGTABLE_LABEL')) {
+      $whatsit->setProperty(label => $label); }
     # Insert caption and toccaption, if any were encountered.
     if (my $captions = LookupValue('LONGTABLE_HEAD_CAPTIONS') || LookupValue('LONGTABLE_CAPTIONS')) {
       my ($toccaption, $caption) = @$captions;
