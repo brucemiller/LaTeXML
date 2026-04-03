@@ -22,7 +22,7 @@ use Data::Dumper;
 # siunitx version 3 was released in May 2021.  I'm not sure which is in GitHub's TeXLive 2021
 my $FMT_YEAR = Expand(T_CS('\fmtversion'))->toString;
 $FMT_YEAR =~ s/\D.*//;
-my $VERSION_TWO = 1;    # ( $FMT_YEAR < 2021 );  # or 2022?
+my $VERSION_TWO = ( $FMT_YEAR < 2021 );  # or 2022?
 # or it was loaded with [=v2] or [=2021-04-09], once issue #2719 is fixed
 # differences are tested in v2 and v3 files
 
