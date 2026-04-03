@@ -159,6 +159,7 @@ foreach my $key (qw(
   free-standing-units overwrite-functions
   bracket-numbers  detect-family detect-italic detect-mode
   detect-shape  detect-weight  multi-part-units parse-numbers
+  group-four-digits
   copy-complex-root copy-decimal-marker
   bracket-numbers
   separate-uncertainty
@@ -228,8 +229,8 @@ sub six_get_op {
 sub six_setup {
   my ($kv) = @_;
   my @keyVals;
-  # because %META_SETTING (and table-format) can change other settings (see siunitx#841),
-  # we can't use the usual $kv->getKeyVals because the hash is randomly ordered
+# because %META_SETTING (and table-format and group-four-digits) can change other settings (see siunitx#841),
+# we can't use the usual $kv->getKeyVals because the hash is randomly ordered
   my @orderedKV = $kv->getPairs;
   while (@orderedKV) {
     my $key = shift(@orderedKV);
@@ -249,6 +250,9 @@ sub six_setup {
     elsif ($key eq 'table-format') {
       six_setup_table_format($value); }
     else {
+      if ($key eq 'group-four-digits' && $value->ToString eq 'true') {
+        $key   = 'digit-group-size';
+        $value = T_OTHER(4); }
       AssignValue('SIX_' . $key => $value); }
     if ($META_SETTING{$key}) {
       foreach my $subkey (@{ $META_SETTING{$key} }) {
@@ -647,8 +651,8 @@ sub six_postprocess_aux {
   while ($$number{fraction} && @{ $$number{fraction} }
     && $$number{fraction}->[-1]->equals(T_OTHER('0')) && six_getBool('drop-zero-decimal')) {
     pop(@{ $$number{fraction} }); }
-  if ($$number{integer} && $$number{fraction} && @{ $$number{fraction} }
-    && number_is_zero(@{ $$number{fraction} }) && six_getBool('zero-decimal-to-integer')) {
+  if ($$number{integer} && $$number{fraction} && number_is_zero(@{ $$number{fraction} })
+    && (six_getBool('zero-decimal-to-integer') || six_getBool('drop-zero-decimal'))) {
     delete $$number{decimal};
     delete $$number{fraction}; }
   $$number{integer}  ||= Tokens() if (six_get('minimum-integer-digits')->toString);
