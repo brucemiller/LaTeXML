@@ -4,6 +4,11 @@
 \DeclareSIQualifier\catalyst{cat}
 \usepackage{amsmath}
 \usepackage{booktabs}
+
+\newbox\slashbox
+\setbox\slashbox\hbox{\verb|\|}
+\def\Backslash{\copy\slashbox}
+
 \begin{document}
 
 % This file has two purposes:
@@ -14,6 +19,22 @@
 % version two of the siunitx documentation.
 
 \num{\pi}\\
+
+\setcounter{section}{4}
+\setcounter{subsection}{3}
+\subsection{The unit macros}
+\newcommand{\showunit}[1]{#1 & \texttt{\Backslash#1} & \si{\csname#1\endcsname}}
+Non-SI units whose values in SI units must be obtained experimentally
+(that are deprecated in siunitx v3, but make sure we still have them):
+\begin{center}
+\begin{tabular}{lll}\toprule
+Unit & Macro & Symbol \\\midrule
+\showunit{clight}\\
+\showunit{electronmass}\\
+\showunit{bohr}\\
+\showunit{hartree}\\\bottomrule
+\end{tabular}
+\end{center}
 
 \setcounter{section}{5}
 \setcounter{subsection}{4}
