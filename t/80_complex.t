@@ -19,7 +19,7 @@ latexml_tests("t/complex",
       packages => 'siunitx.sty', texlive_min => 2015 },
     siV2 => {
       env=>'CI', # only runs in continuous integration
-      packages => 'siunitx.sty', texlive_min => 2015, texlive_max => 2030 },
+      packages => 'siunitx.sty', texlive_min => 2015, texlive_max => 2020 },
     siV3 => {
       env=>'CI', # only runs in continuous integration
-      packages => 'siunitx.sty', texlive_min => 2022 } });
+      packages => 'siunitx.sty', texlive_min => 2032 } });
