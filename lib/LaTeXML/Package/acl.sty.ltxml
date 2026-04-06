@@ -43,14 +43,14 @@ ProcessOptions();
 # Dependencies
 RequirePackage('natbib');
 RequirePackage('geometry');
-RequirePackage('caption');
 RequirePackage('inst_support');
 
 #======================================================================
 # Frontmatter
 
-Let('\AND', '\and');
-Let('\And', '\and');
+Let('\AND',    '\and');
+Let('\And',    '\and');
+Let('\Thanks', '\thanks');
 
 # Within person names, $^{marks}$ becomes a pure annotation request,
 # consistent with \inst{marks} from inst_support — no visible output.
@@ -58,15 +58,18 @@ Let('\And', '\and');
 DefMacro('\acl@inst@super{}',
   '\lx@request@frontmatter@annotation[affiliation]{#1}');
 
-# Custom person name wrapper: locally lets ^ → annotation request
+# ACL-specific person name wrapper: locally lets ^ → annotation request.
+# Scoped to ACL only — does NOT override the global \lx@personname.
 DefConstructor('\acl@personname{}', "<ltx:personname>#1</ltx:personname>",
   beforeDigest => sub {
     Let('\thanks', '\person@thanks');
     Let(T_SUPER,   T_CS('\acl@inst@super')); },
   mode => 'restricted_horizontal', enterHorizontal => 1);
 
-# Override \lx@add@author to use our custom person name wrapper
-DefMacro('\lx@add@author[]{}',
+# ACL-specific author macro using the custom person name wrapper.
+# Does NOT override the global \lx@add@author — only used within ACL's
+# Pattern B splitting to avoid affecting other packages.
+DefMacro('\acl@add@author[]{}',
   '\lx@add@frontmatter{ltx:creator}[role=author,#1]{\acl@personname{#2}}');
 
 # Smart \author dispatch
@@ -87,17 +90,16 @@ DefMacro('\acl@marked@authors{}',
     . '\lx@clear@frontmatter{ltx:contact}'
     . '\acl@authors@section#1\\\\\done');
 DefMacro('\acl@authors@section Until:\\\\ Until:\done',
-  '\lx@splitting{\lx@add@author}{\quad}{#1}'
+  '\lx@splitting{\acl@add@author}{\quad}{#1}'
     . '\acl@rest#2\done');
 
 # Process remaining \\-separated sections: classify as institution or email
-# Use \lx@splitting on \\\\ for the remainder, each chunk gets classified
 DefMacro('\acl@rest Until:\done',
   '\lx@splitting{\acl@classify}{\\\\}{#1}');
 
 # Classify a single \\-separated section:
 #   \texttt → correspondence email (document-level pubnote, not per-author)
-#   starts with $^N$ → institution line (split on \quad, extract mark as label)
+#   starts with $^<digit> → institution line (split on \quad, extract mark as label)
 #   otherwise → more author names (split on \quad)
 DefMacro('\acl@classify{}', sub {
     my ($gullet, $chunk) = @_;
@@ -106,7 +108,7 @@ DefMacro('\acl@classify{}', sub {
     return () unless $text;
     if ($text =~ /\\texttt\b/) {
       return Invocation('\lx@add@pubnote[role=email]{#1}', $chunk); }
-    elsif ($text =~ /(?:^|[{}])\s*\$\s*\^/) {
+    elsif ($text =~ /(?:^|[{}])\s*\$\s*\^\s*\{?\s*\d/) {
       # Institution line: entries like $^1$Univ A \quad $^2$Univ B
       return (T_CS('\lx@splitting'), T_BEGIN, T_CS('\acl@add@inst'), T_END,
         T_BEGIN, T_CS('\quad'),  T_END,
@@ -123,7 +125,7 @@ DefMacro('\acl@classify{}', sub {
         $end-- while $end > 0 && ${ $toks[$end] }[1] == CC_SPACE;
         if ($end > 0 && ${ $toks[$end] }[1] == CC_END) {
           @toks = @toks[1 .. $end - 1]; } }
-      return map { (T_CS('\lx@add@author'), T_BEGIN, @$_, T_END) }
+      return map { (T_CS('\acl@add@author'), T_BEGIN, @$_, T_END) }
         SplitTokens(Tokens(@toks), T_CS('\quad')); } });
 
 # Add institution: extract the mark number from $^{N}$ prefix as label,
@@ -134,22 +136,26 @@ DefMacro('\acl@add@inst{}', sub {
     my $label = '';
     if ($text =~ /\$\s*\^\s*\{?\s*(\d+)\s*\}?\s*\$/) {
       $label = "affiliation:$1"; }
-    # Strip the $^{N}$ mark prefix from the content tokens
-    # Pattern: $[CC_MATH] ^[CC_SUPER] {[CC_BEGIN] ...digits... }[CC_END] $[CC_MATH]
-    my @toks       = $chunk->unlist;
-    my @cleaned    = ();
-    my $math_count = 0;                # need to skip past two CC_MATH tokens (opening and closing $)
-    my $skip_mark  = 1;
-    while (my $t = shift @toks) {
-      if ($skip_mark) {
-        $math_count++ if ${$t}[1] == CC_MATH;
-        if ($math_count >= 2) { $skip_mark = 0; }
-        next; }
-      push(@cleaned, $t); }
+    my @toks    = $chunk->unlist;
+    my @cleaned = ();
+    if ($label) {
+      # Strip the $^{N}$ mark prefix from the content tokens
+      # Pattern: $[CC_MATH] ^[CC_SUPER] {?[CC_BEGIN] ...digits... }?[CC_END] $[CC_MATH]
+      my $math_count = 0;
+      my $skip_mark  = 1;
+      while (my $t = shift @toks) {
+        if ($skip_mark) {
+          $math_count++ if ${$t}[1] == CC_MATH;
+          if ($math_count >= 2) { $skip_mark = 0; }
+          next; }
+        push(@cleaned, $t); } }
+    else {
+      @cleaned = @toks; }
     return Invocation('\lx@add@affiliation[label={#1}]{#2}',
       TokenizeInternal($label), Tokens(@cleaned)); });
 
-Let('\Thanks', '\thanks');
+# Common ACL commands
+DefMacro('\email Semiverbatim', '\lx@add@email{#1}');
 
 #======================================================================
 # Citations
@@ -173,7 +179,7 @@ DefMacroI('\acknowledgmentname', undef, 'Acknowledgments');
 # Layout no-ops
 DefMacro('\aclfinalcopy',                     '');
 DefMacro('\outauthor{}',                      '#1');
-DefMacro('\confidentialreviewcopy{}{}{}',     '');
+DefMacro('\confidentialreviewcopy',           '');
 DefMacro('\patchAmsMathEnvironmentForLineno', '');
 
 #======================================================================
