@@ -164,6 +164,8 @@ sub JoinTokens {
 # Note: could be circumstances where you'd want modular frontmatter?
 # (ie. frontmatter for each sectional unit)
 
+DebuggableFeature('frontmatter');
+
 DefConstructor('\lx@personname{}', "<ltx:personname>#1</ltx:personname>",
   beforeDigest => sub { Let('\thanks', '\person@thanks'); },
   mode         => 'restricted_horizontal', enterHorizontal => 1);
@@ -196,6 +198,16 @@ DefKeyVal('Frontmatter', 'label',       '');
 DefKeyVal('Frontmatter', 'labelseq',    '');
 DefKeyVal('Frontmatter', 'annotate',    '');
 
+sub showFrontmatter {
+  my ($entry) = @_;
+  if ($entry) {
+    my ($tag, $attr, @content) = @$entry;
+    return "$tag "
+      . " [" . join(',', map { $_ . "=" . ToString($$attr{$_}); } sort keys %$attr) . "]"
+      . " " . join('', map { (ref $_ eq 'ARRAY' ? showFrontmatter($_) : ToString($_)); }
+        @content); }
+  return ""; }
+
 # frontmatter_raw contains the undigested commands to create frontmatter,
 # along with the tag & attributes that would be created.
 # Digestion is deferred until \maketitle, or something similar,
@@ -212,9 +224,9 @@ sub queueFrontMatter {
     my %attr = ($attr ? $attr->getHash : ());
     map { $attr{$_} = ToString($attr->getValue($_)); } keys %attr;
     $attr = {%attr}; }
-  $attr = {} unless $attr;
-  Debug("Saving frontmatter $tag [" . join(',', map { $_ . "=" . ToString($$attr{$_}); } sort keys %$attr) . "] " . ToString($command));
-  PushValue('frontmatter_raw', [$tag, $attr, $command]);
+  my $entry = [$tag, $attr || {}, $command];
+  Debug("FRONT Queuing " . showFrontmatter($entry)) if $LaTeXML::DEBUG{frontmatter};
+  PushValue('frontmatter_raw', $entry);
   return; }
 
 # This removes previously stored (but deferred) frontmatter that is being overridden.
@@ -224,10 +236,11 @@ sub dequeueFrontMatter {
   if (my $frontmatter = LookupValue('frontmatter_raw')) {
     my @keep = ();
     foreach my $entry (@$frontmatter) {
-      push(@keep, $entry)
-        if ($$entry[0] ne $tag) || grep { ToString($$entry[1]{$_} || '') ne $attr{$_}; } keys %attr; }
-    Debug("Removing " . ((scalar @$frontmatter) - (scalar @keep)) . " frontatter entries for $tag "
-        . join(',', map { $_ . "=" . ToString($attr{$_}); } sort keys %attr));
+      if (($$entry[0] ne $tag) || grep { ToString($$entry[1]{$_} || '') ne $attr{$_}; } keys %attr) {
+        push(@keep, $entry); }
+      else {
+        Debug("FRONT DEQueuing " . showFrontmatter($entry))
+          if $LaTeXML::DEBUG{frontmatter}; } }
     AssignValue('frontmatter_raw' => [@keep], 'global') if (scalar @$frontmatter) > (scalar @keep); }
   return; }
 
@@ -337,8 +350,8 @@ DefPrimitive('\lx@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals:Frontma
     $options{_annotations} = join(',', @labels);
     my $entry = [$tag, {%options}, 'place_keeper'];    # (in case embedded)
     push(@{ $$frontmatter{$tag} }, $entry);
-    Debug("ADD $tag: [" . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "] "
-        . ToString($content));
+    Debug("FRONT Add " . showFrontmatter($entry)
+        . "\n   for: " . ToString($content)) if $LaTeXML::DEBUG{frontmatter};
     $$entry[2] = digestFrontmatterItem($stomach, $content);    # REPLACE only 'place_keeper'!!
 ###    $$entry[2] = DigestText($content);
     return; },
@@ -394,19 +407,18 @@ DefPrimitive('\lx@annotate@frontmatter@now {}{} OptionalKeyVals:Frontmatter {}',
     # we inherit that frontmatter's labels (even override!)
     if (my $last = $allparents[-1]) {
       if ((($$last[1]{role} || '') eq 'pending') && (($$last[2] || '') eq 'place_keeper')) {
-        $options{_label} = $$last[1]{_annotations};
-        Debug("INHERIT LABELS $options{_label} for role $role"); } }
-    Debug("ADD $tag: [" .
-        join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options)
-        . "] " . ToString($content) . " (with $nparents available)");
+        $options{_label} = $$last[1]{_annotations}; } }
     # Tentatively create new entry in frontmatter, in case digestion changes labels!
     my $entry = [$parenttag, { role => 'pending', _annotations => $options{_label} }, 'place_keeper'];
+    Debug("FRONT Add stub " . showFrontmatter($entry)
+        . "\n  for annotation " . showFrontmatter([$tag, {%options}, $content]))
+      if $LaTeXML::DEBUG{frontmatter};
     push(@{ $$frontmatter{$parenttag} }, $entry);
     my $xcontent = digestFrontmatterItem($stomach, $content);
     $options{_label} = $$entry[1]{_annotations};                 # Reset if changed!
     my $datum = ($preformatted ? $xcontent : [$tag, {%options}, $xcontent]);
     if (!$preformatted && ($options{_label} || !$nparents)) {    # deferred until we can compare labels
-      Debug("... deferring to label=$options{_label}");
+      Debug("... deferring to label=$options{_label}") if $LaTeXML::DEBUG{frontmatter};
       $$entry[2] = $datum; }
     else {
       $$frontmatter{$parenttag}                                  # Remove unneeded entry.
@@ -418,7 +430,7 @@ DefPrimitive('\lx@annotate@frontmatter@now {}{} OptionalKeyVals:Frontmatter {}',
       elsif ($annotate eq 'all')   { $nprev = $nparents; }
       elsif ($annotate eq 'new')   { $nprev = $nparents; $newonly = 1; }
       else  { Info('unexpected', $tag, $stomach, "Frontmatter annotate '$annotate' unrecognized"); }
-      Debug("...adding to  $nprev previous" . ($newonly ? ' new' : ''));
+      Debug("...adding to  $nprev previous" . ($newonly ? ' new' : '')) if $LaTeXML::DEBUG{frontmatter};
 
       while (my $parent = pop(@parents)) {
         last if ($nprev-- <= 0);
@@ -460,7 +472,7 @@ DefPrimitive('\lx@request@frontmatter@annotation[]{}', sub {
       my $labels = $$current[1]{_annotations};
       $label = join(',', cleanFrontmatterLabels($label, $prefix));
       $$current[1]{_annotations} = ($labels ? "$labels,$label" : $label);
-      Debug("ANNOTATIONS add: $label"); } });
+      Debug("FRONT add annotation label $label") if $LaTeXML::DEBUG{frontmatter}; } });
 
 # \lx@set@frontmatter@label Internal to digesting annotation contents.
 # it sets (replaces) the _annotation labels on the currently being digesting
@@ -472,7 +484,7 @@ DefPrimitive('\lx@set@frontmatter@label Semiverbatim', sub {
     if (my $current = fetchPendingEntry()) {
       $label = CleanLabel($label, 'LABEL');
       $$current[1]{_annotations} = $label;
-      Debug("LABELS set: $label"); } });
+      Debug("FRONT set label $label") if $LaTeXML::DEBUG{frontmatter}; } });
 
 #======================================================================
 # Some shorthands?
@@ -622,7 +634,7 @@ sub digestFrontMatter {
     Let('\lx@annotate@frontmatter', '\lx@annotate@frontmatter@now');
     foreach my $entry (@$commands) {
       my ($tag, $attr, $command) = @$entry;
-      Debug("DIGESTING for $tag {" . join(',', map { $_ . '=' . ToString($$attr{$_}); } sort keys %$attr) . "} " . ToString($command));
+      Debug("FRONT Digesting " . showFrontmatter($entry)) if $LaTeXML::DEBUG{frontmatter};
       $stomach->digest($command); }
     AssignValue('frontmatter_raw', undef, 'global'); }
   my $frontmatter = LookupValue('frontmatter');
@@ -666,9 +678,7 @@ sub insertFrontMatter_rec {
   my $type = ref $item;
   if ($type eq 'ARRAY') {
     my ($tag, $attr, @stuff) = @$item;
-    Debug("INSERTING frontmatter $tag {"
-        . join(',', map { $_ . '=' . ToString($$attr{$_}); } sort keys %$attr) . "} "
-        . join(' ', map { ToString($_); } @stuff));
+    Debug("FRONT Inserting " . showFrontmatter($item)) if $LaTeXML::DEBUG{frontmatter};
     $document->openElement($tag, ($attr ? %$attr : ()),
       (scalar(@stuff) && $document->canHaveAttribute($tag, 'font')
         ? (font => $stuff[0]->getFont, _force_font => 'true') : ()));
@@ -711,7 +721,8 @@ sub relocateAnnotations {
         if (my $label = $note->getAttribute('_label')) {
           if (my $targets = $labeltable{$label}) {
             foreach my $target (@$targets) {
-              Debug("Moving annotation for $label: " . ToString($target));
+              Debug("FRONT Moving annotation for $label: " . ToString($target))
+                if $LaTeXML::DEBUG{frontmatter};
               $document->appendClone($target, $note); } }
           else {
             Warn('unexpected', 'annotation', $document,
