@@ -97,12 +97,19 @@ sub setAlignOrClass {
     $document->addClass($node, $class); }
   return; }
 
+DefConstructor('\lx@set@attribute Semiverbatim {}', sub {
+    $_[0]->setAttribute($_[0]->getElement, ToString($_[1]), ToString($_[2])); },
+  sizer => 0);
+
 #======================================================================
 # A random collection of Tokens utility functions.
 # [probably should be exported from Tokens.pm ?]
 # [maybe need to do some reorganization?]
+
 # Since this is used for textual tokens, typically to split author lists,
 # we don't split within braces or math
+# Each of @delims is a Token, OR Tokens to match a sequence.
+# Returns a list of Tokens for the sub-sequences.
 sub SplitTokens {
   my ($tokens, @delims) = @_;
   my @items = ();
@@ -111,8 +118,34 @@ sub SplitTokens {
     my @tokens = $tokens->unlist;
     my $t;
     while ($t = shift(@tokens)) {
-      if (grep { Equals($t, $_) } @delims) {
-        push(@items, [@toks]); @toks = (); }
+      my $matched = 0;
+      foreach my $delim (@delims) {
+        my $type = (ref $delim) || '';
+        if ($type eq 'LaTeXML::Core::Token') {
+          if (Equals($t, $delim)) {
+            $matched = 1;
+            last; } }
+        elsif ($type eq 'LaTeXML::Core::Tokens') {
+          my @tomatch = $delim->unlist;
+          my @peeked  = ($t);
+          while ($t && @tomatch) {
+            my $m = $tomatch[0];
+            if (Equals($t, $m)
+              || (Equals($m, T_SPACE) && Equals($t, T_CS('\ ')))) {    # HACK space!
+              shift(@tomatch);
+              push(@peeked, $t = shift(@tokens)) if @tomatch; }
+            else {
+              last; } }
+          if (@tomatch) {    # failed to match all
+            $t = shift(@peeked); unshift(@tokens, @peeked); }    # Put back
+          else {
+            $matched = 1;
+            last; } }
+        else {
+          Warn("unexpected", "delimiter", undef,
+            "SplitTokens delimiter not Token or Tokens: $t"); } }
+      if ($matched) {
+        push(@items, Tokens(@toks)); @toks = (); }
       elsif ($t->defined_as(T_BEGIN)) {
         push(@toks, $t);
         my $level = 1;
@@ -129,7 +162,8 @@ sub SplitTokens {
           last if $cc == CC_MATH; } }
       else {
         push(@toks, $t); } } }
-  return (@items, (@toks ? [@toks] : ())); }
+  push(@items, Tokens(@toks)) if @toks;
+  return @items; }
 
 sub andSplit {
   my ($cs, $tokens) = @_;
@@ -152,6 +186,17 @@ sub JoinTokens {
     push(@result, $conjunction, $thing); }
   return Tokens(@result); }
 
+# Find the position of a Token from @delims within the Tokens $tokens
+# 1 based, so 0==undef== token not present.
+sub positionOf {
+  my ($tokens, @delims) = @_;
+  if ($tokens) {
+    my @tokens = $tokens->unlist;
+    my $i      = 0;
+    while (my $t = shift(@tokens)) {
+      $i++;
+      return $i if grep { Equals($t, $_); } @delims; } }
+  return; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # General support for Front Matter.
 # Not (yet) used by TeX (finish plain?)
@@ -193,8 +238,10 @@ AssignValue(frontmatter => {}, 'global');
 DefConditionalI('\if@in@preamble', undef, sub { LookupValue('inPreamble'); });
 DefKeyVal('Frontmatter', 'role',        'Semiverbatim');
 DefKeyVal('Frontmatter', 'class',       'Semiverbatim');
+DefKeyVal('Frontmatter', 'graphic',     'Semiverbatim');
 DefKeyVal('Frontmatter', 'annotations', '');
 DefKeyVal('Frontmatter', 'label',       '');
+DefKeyVal('Frontmatter', 'labelref',    'Semiverbatim');
 DefKeyVal('Frontmatter', 'labelseq',    '');
 DefKeyVal('Frontmatter', 'annotate',    '');
 
@@ -270,9 +317,11 @@ DefMacro('\lx@clear@creators []', '\lx@clear@frontmatter{ltx:creator}[#1]');
 # Note that we shouldn't be digesting any frontmatter until within document, so inPreamble unnec.
 # See cleanTrailingBreak for cleanup of misused \\.
 sub digestFrontmatterItem {
-  my ($stomach, $item) = @_;
+  my ($stomach, $tag, $item) = @_;
   $stomach->bgroup;
-  Let('\label', '\lx@set@frontmatter@label');
+  Let('\label',    '\lx@set@frontmatter@label');
+  Let('\footnote', ($tag eq 'ltx:creator' ? '\lx@add@note'   : '\lx@add@pubnote'));
+  Let('\thanks',   ($tag eq 'ltx:creator' ? '\lx@add@thanks' : '\lx@add@pubnote@thanks'));
   my $digested = DigestText($item);
   $stomach->egroup;
   return $digested; }
@@ -352,7 +401,7 @@ DefPrimitive('\lx@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals:Frontma
     push(@{ $$frontmatter{$tag} }, $entry);
     Debug("FRONT Add " . showFrontmatter($entry)
         . "\n   for: " . ToString($content)) if $LaTeXML::DEBUG{frontmatter};
-    $$entry[2] = digestFrontmatterItem($stomach, $content);    # REPLACE only 'place_keeper'!!
+    $$entry[2] = digestFrontmatterItem($stomach, $tag, $content);    # REPLACE only 'place_keeper'!!
 ###    $$entry[2] = DigestText($content);
     return; },
   bounded => 1);
@@ -414,7 +463,7 @@ DefPrimitive('\lx@annotate@frontmatter@now {}{} OptionalKeyVals:Frontmatter {}',
         . "\n  for annotation " . showFrontmatter([$tag, {%options}, $content]))
       if $LaTeXML::DEBUG{frontmatter};
     push(@{ $$frontmatter{$parenttag} }, $entry);
-    my $xcontent = digestFrontmatterItem($stomach, $content);
+    my $xcontent = digestFrontmatterItem($stomach, $tag, $content);
     $options{_label} = $$entry[1]{_annotations};                 # Reset if changed!
     my $datum = ($preformatted ? $xcontent : [$tag, {%options}, $xcontent]);
     if (!$preformatted && ($options{_label} || !$nparents)) {    # deferred until we can compare labels
@@ -470,7 +519,7 @@ DefPrimitive('\lx@request@frontmatter@annotation[]{}', sub {
     my ($document, $prefix, $label) = @_;
     if (my $current = fetchPendingEntry()) {
       my $labels = $$current[1]{_annotations};
-      $label = join(',', cleanFrontmatterLabels($label, $prefix));
+      $label = join(',', cleanFrontmatterLabels($label, $prefix || 'LABEL'));
       $$current[1]{_annotations} = ($labels ? "$labels,$label" : $label);
       Debug("FRONT add annotation label $label") if $LaTeXML::DEBUG{frontmatter}; } });
 
@@ -543,6 +592,8 @@ DefPrimitive('\lx@end@keywords', sub { (); });
 # Add random notes about the document itself
 DefMacro('\lx@add@pubnote[]{}',
   '\lx@add@frontmatter{ltx:pubnote}[#1]{#2}');
+DefMacro('\lx@add@pubnote@thanks[]{}',
+  '\lx@add@frontmatter{ltx:pubnote}[role=thanks,#1]{#2}');
 
 # Other kinds of notes?
 
@@ -566,23 +617,79 @@ DefMacro('\lx@add@url [] Semiverbatim',
   '\lx@annotate@frontmatter{ltx:creator}{ltx:contact}[role=url,#1]{#2}');
 DefMacro('\lx@add@orcid [] Semiverbatim',
   '\lx@annotate@frontmatter{ltx:creator}{ltx:contact}[role=orcid,#1]{#2}');
+DefMacro('\lx@add@thanks [] Semiverbatim',
+  '\lx@annotate@frontmatter{ltx:creator}{ltx:contact}[role=thanks,#1]{#2}');
+DefMacro('\lx@add@note [] Semiverbatim',
+  '\lx@annotate@frontmatter{ltx:creator}{ltx:contact}[role=note,#1]{#2}');
 
 # This corresponds to standard LaTeX,
 # The command replaces any previous authors/creators;
 # It defining several creators separated by \and;
 # and can use \\ to separate affiliation from each author.
+# BUT ALSO, this markup is commonly abused by putting authors & affiliations in
+# seemingly random orders, but adding superscript markers to connect them.
+# Assumption: superscript near END is used for authors; near FRONT for affiliation.
 # NOTE: This is a mess! really should use role, so could apply to editors also
 # AND, matching \\ this way fails to catch \\[1em], so really should Let it
-DefMacro('\lx@add@authors{}',
-  '\lx@clear@creators[role=author]'
-    . '\lx@clear@frontmatter{ltx:contact}'
-    # Note: must keep affiliations (after \\) embedded, to simplify clear@author removal
-    . '\lx@splitting{\lx@author@and@affil}{\and,\And}{#1}');
-DefMacro('\lx@author@and@affil{}', '\lx@author@and@affil@#1\\\\\done');
-DefMacro('\lx@author@and@affil@ Until:\\\\ Until:\done',
-  '\ifx.#2.\lx@add@creator[role=author]{#1}'
-    . '\else\lx@add@creator[role=author]{#1'
-    . '\lx@annotate@frontmatter{ltx:creator}{ltx:contact}[role=affiliation]{#2}}\fi');
+
+# Things to split authors
+# This is " and " without the spaces stripped.
+my $literaland   = Tokens(T_SPACE, TokenizeInternal('and'), T_SPACE);
+my @authorsplits = (T_CS('\and'), T_CS('\And'), T_CS('\AND'), T_OTHER(','),
+  $literaland, T_CS('\quad'), T_CS('\qquad'));
+# Things to split author & affilliation mix; NO comma in affiliations!!!
+my @authoraffilsplits = (T_CS('\and'), T_CS('\And'), T_CS('\AND'),
+  $literaland, T_CS('\quad'), T_CS('\qquad'), T_CS("\\\\"),);
+my @authorsup_markers = (T_SUPER, T_CS('\textsuperscript'));
+
+DefMacro('\lx@add@authors{}', sub {
+    my ($gullet, $stuff, $if, $else) = @_;
+    my @tokens = $stuff->unlist;
+    my @calls  = ();
+    dequeueFrontMatter('ltx:creator', role => 'author');
+    if (positionOf($stuff, @authorsup_markers)) {
+      my @lines   = SplitTokens($stuff, @authoraffilsplits);
+      my @entries = ();
+      foreach my $line (@lines) {
+        my $p = positionOf($line, @authorsup_markers);
+        if (!$p) {    # No marker?
+          if (@entries) {    # continues previous entry;
+            $entries[-1][1] = Tokens($entries[-1][1], $line); }    # Append
+          else {
+            push(@entries, ['author', $line]); } }                 # safest to assume author?
+        elsif ($p < 8) {                                           # Close to front? assume affiliation
+          push(@entries, ['affiliation', $line]); }
+        else {    # Presumably author; but split again on "," JIK
+          foreach my $author (SplitTokens($line, T_OTHER(','))) {
+            push(@entries, ['author', $author]); } } }
+      foreach my $entry (@entries) {
+        my ($type, $line) = @$entry;
+        if ($type eq 'author') {
+          push(@calls, Invocation(T_CS('\lx@add@author'), undef,
+              Invocation(T_CS('\lx@author@withsup'), $line))); }
+        else {
+          push(@calls, Invocation(T_CS('\lx@add@affiliation'), undef,
+              Invocation(T_CS('\lx@affiliation@withsup'), $line))); } } }
+    else {
+      foreach my $block (SplitTokens($stuff, @authorsplits)) {
+        my ($author, @lines) = SplitTokens($block, T_CS("\\\\"));
+        push(@calls, Invocation(T_CS('\lx@add@author'), undef,
+            Tokens($author,
+              map { Invocation(T_CS('\lx@add@affiliation'), undef, $_); } @lines))); } }
+    return @calls; });
+
+DefMacro('\lx@author@withsup{}',
+  '\bgroup'
+    . '\let^\lx@request@frontmatter@annotation'
+    . '\let\textsuperscript\lx@request@frontmatter@annotation'
+    . '#1'
+    . '\egroup');
+DefMacro('\lx@affiliation@withsup{}',
+  '\bgroup'
+    . '\let^\lx@set@frontmatter@label'
+    . '\let\textsuperscript\lx@set@frontmatter@label'
+    . '#1'
+    . '\egroup');
 
 DefMacro('\lx@date@received@name',  'Received~');
 DefMacro('\lx@date@revised@name',   'Revised~');
@@ -615,6 +722,8 @@ DefMacro('\lx@contact@address@name',        "Address:~");
 DefMacro('\lx@contact@email@name',          "Email:~");
 DefMacro('\lx@contact@url@name',            "URL:~");
 DefMacro('\lx@contact@orcid@name',          "OrcID:~");
+DefMacro('\lx@contact@note@name',           "Note:~");
+DefMacro('\lx@contact@thanks@name',         "Thanks:~");
 DefMacro('\lx@contact@correspondent@name',  "Corresponding author:~");
 #======================================================================
 # This is called by afterOpen (by default on <ltx:document>) to
@@ -689,8 +798,9 @@ sub insertFrontMatter_rec {
     # as e.g. \preprint{} always generates a ltx:note element.
     #
     # To solve this in a single location: prune here!
-    if (($tag ne "ltx:rdf") && !scalar($completed_node->childNodes)) {
-      $document->removeNode($completed_node); } }
+#####    if (($tag ne "ltx:rdf") && !scalar($completed_node->childNodes)) {
+#####      $document->removeNode($completed_node); }
+  }
   else {    # Otherwise, assume some sort of Box
     $document->absorb($item); }
   return; }
