@@ -292,10 +292,10 @@ DefMacro('\@icentercr[]', '\vskip #1\ignorespaces');
 #    text
 #   \end{document}
 
-DefMacro('\AtBeginDocument{}', sub {
-    PushValue('@at@begin@document', $_[1]->unlist); });
-DefMacro('\AtEndDocument{}', sub {
-    PushValue('@at@end@document', $_[1]->unlist); });
+DefMacro('\AtBeginDocument[]{}', sub {
+    PushValue('@at@begin@document', $_[2]->unlist); });
+DefMacro('\AtEndDocument[]{}', sub {
+    PushValue('@at@end@document', $_[2]->unlist); });
 
 # Like  "<ltx:document xml:id='#id'>#body</ltx:document>",
 # But more complicated due to id, at begin/end document and so forth.
@@ -326,6 +326,12 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     if (my $ops = LookupValue('@document@preamble@afterend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
     $_[1]->setFont(LookupValue('font'));    # Start w/ whatever font was last selected.
+        # Match LaTeX's \begin{document}: set \columnwidth, \hsize, and \linewidth
+        # to \textwidth so that paragraph sizing sees the correct page width.
+    my $tw = LookupRegister('\textwidth');
+    AssignRegister('\columnwidth', $tw);
+    AssignRegister('\hsize',       $tw);
+    AssignRegister('\linewidth',   $tw);
     $stomach->leaveHorizontal_internal;
     return @boxes; });
 
@@ -1731,11 +1737,11 @@ DefConstructor('\trivlist@item@ OptionalUndigested',
   properties => sub { ($_[1] ? (tag => Digest(Expand($_[1]))) : ()); });
 DefMacro('\@trivlist', '\relax', locked => 1);
 
-DefRegister('\topsep'             => Glue(0));
-DefRegister('\partopsep'          => Glue(0));
-DefRegister('\lx@default@itemsep' => Glue(0));
-DefRegister('\itemsep'            => Glue(0));
-DefRegister('\parsep'             => Glue(0));
+DefRegister('\topsep'             => Glue('8pt plus 2pt minus 4pt'));
+DefRegister('\partopsep'          => Glue('2pt plus 1pt minus 1pt'));
+DefRegister('\lx@default@itemsep' => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\itemsep'            => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\parsep'             => Glue('4pt plus 2pt minus 1pt'));
 DefRegister('\@topsep'            => Glue(0));
 DefRegister('\@topsepadd'         => Glue(0));
 DefRegister('\@outerparskip'      => Glue(0));

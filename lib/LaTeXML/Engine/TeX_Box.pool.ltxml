@@ -19,6 +19,11 @@ DebuggableFeature('svg',         "Debug SVG generation");
 DebuggableFeature('svg_verbose', "Debug SVG generation, verbosely");
 $LaTeXML::DEBUG{svg} = 1 if $$LaTeXML::DEBUG{svg_verbose};
 
+# \hsize is a TeX engine primitive (available from INITEX, before any format).
+# Define it here so that List's horizontal-mode width lookup can find it.
+# The full set of paragraph registers is in TeX_Paragraph.pool.ltxml.
+DefRegister('\hsize' => Dimension('6.5in'));
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Box Family of primitive control sequences
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
