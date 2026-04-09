@@ -126,7 +126,7 @@ DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
   enterHorizontal => 1,
-  reversion => '\qed');
+  reversion       => '\qed');
 Let('\mathqed',    '\qed');
 Let('\textsquare', '\qed');
 Let('\qedsymbol',  '\qed');
@@ -158,7 +158,9 @@ DefConstructor('\@proof OptionalUndigested',
     my $title = Digest(Tokens(T_BEGIN, T_CS('\the'), T_CS('\thm@headfont'),
         ($_[1] ? $_[1]->unlist : (T_CS('\proofname'))),
         T_OTHER('.'), T_END));
-    my $titlefont = [$title->unlist]->[1]->getFont;
+    my $titlefont;
+    foreach my $b ($title->unlist) {
+      last if $titlefont = (ref $b && !$b->getProperty('isEmpty') && $b->getFont); }
     (title => $title,
       titlefont  => $titlefont,
       class      => undef,

@@ -265,7 +265,7 @@ DefConstructor('\lx@newline OptionalMatch:* [Glue]', sub {
       elsif ($document->canContain($context, 'ltx:break')) {
         $document->insertElement('ltx:break'); } } },
   reversion  => Tokens(T_CS("\\\\"), T_CR),
-  properties => { isBreak => 1 });
+  properties => { isBreak => 1, height => Dimension(0) });
 Let('\\\\', '\lx@newline');
 
 DefConstructor('\newline',
@@ -1369,6 +1369,7 @@ sub beginItemize {
   my $level     = LookupValue($counter . 'level') || 0;           # level for lists of specific type
   $level++ unless $options{nolevel};
   AssignRegister('\itemsep' => LookupDimension('\lx@default@itemsep'));
+  AssignRegister('\parskip' => LookupDimension('\parsep'));
   AssignValue('itemization_level' => $listlevel);
   AssignValue($counter . 'level'  => $level);
   AssignValue(itemization_items   => 0);
@@ -1513,7 +1514,9 @@ DefConstructorI('\preitem@par', undef, sub {
     if (!$props{inPreamble} && !$document->getNodeQName($document->getElement(), 'ltx:itemize')) {
       $document->maybeCloseElement('ltx:p');
       $document->maybeCloseElement('ltx:para'); } },
-  alias => '\par');
+  afterDigest => sub { $_[0]->leaveHorizontal_internal; return; },
+  properties  => sub { (alignmentSkippable => 1, height => LookupDimension('\parsep')) },
+  alias       => '\par');
 
 # id, but NO refnum (et.al) attributes on itemize \item ...
 # unless the optional tag argument was given!
@@ -1729,7 +1732,7 @@ DefConstructor('\trivlist',
   properties => sub { beginItemize('trivlist'); });
 DefConstructor('\endtrivlist', sub {
     $_[0]->maybeCloseElement('ltx:itemize'); },
-  beforeDigest => sub { Digest('\par'); });
+  beforeDigest => sub { $_[0]->getGullet->unread(T_CS('\preitem@par')); return; });
 DefMacro('\trivlist@item', '\preitem@par\trivlist@item@');
 DefConstructor('\trivlist@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
@@ -4697,7 +4700,19 @@ DefPrimitive('\hspace  OptionalMatch:* {Dimension}', sub {
       width => $length, isSpace => 1); });
 
 DefMacro('\vspace OptionalMatch:* {}', '\vskip #2\relax');
-DefPrimitive('\addvspace {}',  undef);
+# \addvspace adds vertical space in vertical mode. In TeX it merges with
+# preceding space (using the max). Inside minipages/vboxes, the first
+# \addvspace is absorbed by the enclosing box's spacing.
+DefPrimitive('\addvspace {}', sub {
+    my ($stomach, $length) = @_;
+    # Skip at the start of a minipage/vbox — TeX absorbs the first list topsep
+    # because the enclosing box already accounts for it in its height calculation.
+    return if LookupValue('if@minipage');
+    # Otherwise emit as \vskip for measurable vertical spacing.
+    my $skip = $length->ptValue;
+    return if !$skip || $skip <= 0;
+    Digest(Tokens(T_CS('\vskip'), $length->revert, T_CS('\relax')));
+    return; });
 DefPrimitive('\addpenalty {}', undef);
 DefPrimitiveI('\@endparenv');
 

@@ -41,6 +41,12 @@ DefPrimitive(T_BEGIN, sub {
     my $ismath = $STATE->lookupValue('IN_MATH');
     my $mode   = $STATE->lookupValue('MODE');
     my @body   = $stomach->digestNextBody();
+    # In TeX, brace groups don't change modes — a paragraph started inside {...}
+    # continues after }. The 'inplace' MODE assignment from enterHorizontal
+    # correctly persists across egroup (matching TeX's nest vs save stack separation).
+    # Update the List mode to reflect any paragraph that was started within.
+    if (($mode =~ /vertical$/) && ($STATE->lookupValue('MODE') eq 'horizontal')) {
+      $mode = 'horizontal'; }
     List($open, @body, mode => $mode); });
 
 #######DefPrimitive('}', sub {

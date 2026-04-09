@@ -99,7 +99,10 @@ DefPrimitive('\normalcolor', sub {
     Box(undef, undef, undef, T_CS('\normalcolor')); });
 
 #\textcolor{name}{text} or \textcolor[model]{spec}{text}
-DefMacro('\textcolor[]{}{}', '{\ifx.#1.\color{#2}\else\color[#1]{#2}\fi#3}');
+# \leavevmode ensures horizontal mode, matching real LaTeX behavior.
+# Without it, text inside \textcolor in vertical mode (e.g. tcolorbox minipage)
+# would be digested as vertical boxes, inflating height estimates.
+DefMacro('\textcolor[]{}{}', '\leavevmode{\ifx.#1.\color{#2}\else\color[#1]{#2}\fi#3}');
 
 #\colorbox{name}{text} or \colorbox[model]{spec}{text}
 DefMacro('\colorbox[]{}{}', '\hbox{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi#3}');
@@ -108,7 +111,7 @@ DefMacro('\colorbox[]{}{}', '\hbox{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}
 DefConstructor('\fcolorbox[]{}{} Undigested',
   "<ltx:text framed='rectangle' framecolor='#framecolor'"
     . " _noautoclose='1'>#text</ltx:text>",
-  mode => 'internal_vertical',
+  mode        => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;
