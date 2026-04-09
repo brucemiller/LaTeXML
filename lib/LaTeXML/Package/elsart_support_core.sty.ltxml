@@ -37,8 +37,32 @@ DefMacro('\author[]{}',
 
 DefMacro('\address[]{}',
   '\lx@add@contact[label={#1},role=address]{#2}');
+# \affiliation[label]{text-OR-keyvals} !!
 DefMacro('\affiliation[]{}',
-  '\lx@add@contact[label={#1},role=affiliation]{#2}');
+  '\lx@add@contact[label={#1},role=affiliation]{\lx@els@parse@affiliation{#2}{#2}}');
+
+my %els_affil_keys = map { $_ => 1; } (qw(
+    o or organization
+    a ad addressline
+    c ci city
+    p pc postcode
+    s st state
+    country));
+# Detect if affiliation is just text, or keyvals; if latter, format into text.
+DefMacro('\lx@els@parse@affiliation {} RequiredKeyVals', sub {
+    my ($gullet, $raw, $data) = @_;
+    my @pairs = $data->getPairs;
+    # Note: keys is ALREADY ToString
+    if ((scalar(@pairs) <= 2) && !$pairs[1]) {    # 1 key, novalue:: No Keyvals at all!
+      return $raw; }
+    else {
+      my @affil = ();
+      while (@pairs) {
+        my ($key, $value) = (shift(@pairs), shift(@pairs));
+        if ($els_affil_keys{$key}) {
+          push(@affil, T_OTHER(','), T_SPACE) if @affil;
+          push(@affil, $value); } }
+      return Tokens(@affil); } });
 
 # Redefine to account for the label, which we ignore for now!
 DefConstructor('\thanks[]{}', "<ltx:note role='thanks'>#2</ltx:note>");
