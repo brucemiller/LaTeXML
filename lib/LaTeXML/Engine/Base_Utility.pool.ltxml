@@ -489,13 +489,6 @@ DefPrimitive('\lx@annotate@frontmatter@now {}{} OptionalKeyVals:Frontmatter {}',
           last if $newonly && @parents && $parents[-1][1]{"_has$role"}; } } }
     return; });
 
-sub show_frontmatter_entry {
-  my ($entry) = @_;
-  my ($tag, $attr, @content) = @$entry;
-  return "[$tag {" .
-    join(',', map { $_ . '=' . ToString($$attr{$_}); } sort keys %$attr) . "} "
-    . join('', map { ToString($_); } @content) . "]"; }
-
 # Find the frontmatter entry currently being digested.
 # HOPEFULLY, there's only one pending entry ?????????
 sub fetchPendingEntry {
