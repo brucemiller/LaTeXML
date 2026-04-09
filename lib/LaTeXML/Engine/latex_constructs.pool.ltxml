@@ -5676,7 +5676,25 @@ DefMacro('\@font@warning{}',
 DefMacroI('\check@mathfonts', undef, Tokens());
 DefMacro('\fontsize{}{}', Tokens());
 # https://tex.stackexchange.com/questions/112492/setfontsize-vs-fontsize#112501
-DefMacro('\@setfontsize{}{}{}', '\let\@currsize#1');
+# \@setfontsize{cmd}{fontsize}{baselineskip}: update \baselineskip to match the
+# new font size, as real TeX does via \set@fontsize → \selectfont → \size@update.
+# This enables accurate box sizing through the baselineskip captured in repackHorizontal.
+DefPrimitive('\@setfontsize{}{}{}', sub {
+    my ($stomach, $cmd, $fontsize, $baselineskip) = @_;
+    Let(T_CS('\@currsize'), $cmd);
+    # Parse baselineskip: may be a number (in pt) or a dimension
+    my $bs_str = ToString($baselineskip);
+    $bs_str .= 'pt' unless $bs_str =~ /[a-z]/;    # default unit is pt
+    my $bs = Dimension($bs_str);
+    if ($bs) {
+      my $bs_sp = $bs->valueOf;
+      if ($bs_sp && $bs_sp > 0) {
+        # Apply \baselinestretch / \setstretch factor
+        my $stretch = LookupValue('SETSTRETCH_FACTOR') || 1;
+        $bs_sp = int($bs_sp * $stretch) if $stretch != 1;
+        AssignRegister('\baselineskip', Dimension($bs_sp . 'sp')); } }
+    return; },
+  locked => 1);
 
 #======================================================================
 DefMacroI('\loggingoutput', undef, Tokens());

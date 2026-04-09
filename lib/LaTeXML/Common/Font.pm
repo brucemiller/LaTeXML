@@ -617,11 +617,16 @@ sub getNominalSize {
   my $u    = $size * $UNITY;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
-# Nominal baseline size for a given font size
-# This really should be tracked within the TeX
+# Nominal baseline size for a given font size (from LaTeX's size*.clo files).
+# Used to compute line-height when \baselineskip isn't explicitly tracked.
 my %baseline_map = (
-  5  => 6,    6  => 7,  7    => 8,  8  => 9.5, 9  => 10, 10 => 12,
-  11 => 13.6, 12 => 14, 14.4 => 18, 17 => 22,  20 => 25, 25 => 30);
+  5     => 6,    6  => 7,  7     => 8,  8  => 9.5, 9 => 11, 10 => 12,
+  11    => 13.6, 12 => 14, 14.4  => 18, 17 => 22,
+  17.28 => 22,   20 => 25, 20.74 => 25, 25 => 30, 29.8 => 30);
+
+sub baseline_for_fontsize {
+  my ($size) = @_;
+  return $baseline_map{$size} || $baseline_map{ int($size) } || $size * 1.2; }
 
 # Here's where I avoid trying to emulate Knuth's line-breaking...
 # Mostly for List & Whatsit: compute the size of a List of boxes.

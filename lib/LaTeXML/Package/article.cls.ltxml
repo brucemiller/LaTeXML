@@ -105,16 +105,47 @@ DefMacro('\appendix', '\@appendix');
 DefPrimitive('\@appendix', sub { startAppendices('section'); });
 
 #======================================================================
-DefPrimitiveI('\tiny',         undef, undef, font => { size => 5 });
-DefPrimitiveI('\scriptsize',   undef, undef, font => { size => 7 });
-DefPrimitiveI('\footnotesize', undef, undef, font => { size => 8 });
-DefPrimitiveI('\small',        undef, undef, font => { size => 9 });
-DefPrimitiveI('\normalsize',   undef, undef, font => { size => 10 });
-DefPrimitiveI('\large',        undef, undef, font => { size => 12 });
-DefPrimitiveI('\Large',        undef, undef, font => { size => 14.4 });
-DefPrimitiveI('\LARGE',        undef, undef, font => { size => 17.28 });
-DefPrimitiveI('\huge',         undef, undef, font => { size => 20.74 });
-DefPrimitiveI('\Huge',         undef, undef, font => { size => 29.8 });
+DefPrimitiveI('\tiny',       undef, undef, font => { size => 5 });
+DefPrimitiveI('\scriptsize', undef, undef, font => { size => 7 });
+# Match display skip values from size10.clo's font size commands.
+# Use afterDigest to set display skips when the font size command is processed,
+# preserving the original DefPrimitiveI behavior for tex serialization.
+my %_displayskips = (
+  8 => ['6pt plus 2pt minus 4pt', '6pt plus 2pt minus 4pt',
+    '0pt plus 1pt', '3pt plus 1pt minus 2pt'],
+  9 => ['8.5pt plus 3pt minus 4pt', '8.5pt plus 3pt minus 4pt',
+    '0pt plus 2pt', '4pt plus 2pt minus 2pt'],
+  10 => ['10pt plus 2pt minus 5pt', '10pt plus 2pt minus 5pt',
+    '0pt plus 3pt', '6pt plus 3pt minus 3pt'],
+);
+
+sub _set_displayskips {
+  my ($stomach, $whatsit) = @_;
+  my $size = LookupValue('font')->getSize || 10;
+  if (my $skips = $_displayskips{$size}) {
+    AssignRegister('\abovedisplayskip',      Glue($$skips[0]));
+    AssignRegister('\belowdisplayskip',      Glue($$skips[1]));
+    AssignRegister('\abovedisplayshortskip', Glue($$skips[2]));
+    AssignRegister('\belowdisplayshortskip', Glue($$skips[3])); }
+  return; }
+DefPrimitiveI('\footnotesize', undef, undef, font => { size => 8 },
+  afterDigest => \&_set_displayskips);
+DefPrimitiveI('\small', undef, undef, font => { size => 9 },
+  afterDigest => \&_set_displayskips);
+DefPrimitiveI('\normalsize', undef, undef, font => { size => 10 },
+  afterDigest => \&_set_displayskips);
+# Set display skip defaults for 10pt (the default font size for article).
+# In LaTeX, \normalsize in size10.clo sets these; here we set them at load time
+# since \normalsize may not be explicitly called in the document.
+AssignRegister('\abovedisplayskip',      Glue('10pt plus 2pt minus 5pt'));
+AssignRegister('\belowdisplayskip',      Glue('10pt plus 2pt minus 5pt'));
+AssignRegister('\abovedisplayshortskip', Glue('0pt plus 3pt'));
+AssignRegister('\belowdisplayshortskip', Glue('6pt plus 3pt minus 3pt'));
+DefPrimitiveI('\large', undef, undef, font => { size => 12 });
+DefPrimitiveI('\Large', undef, undef, font => { size => 14.4 });
+DefPrimitiveI('\LARGE', undef, undef, font => { size => 17.28 });
+DefPrimitiveI('\huge',  undef, undef, font => { size => 20.74 });
+DefPrimitiveI('\Huge',  undef, undef, font => { size => 29.8 });
 
 #**********************************************************************
 1;
