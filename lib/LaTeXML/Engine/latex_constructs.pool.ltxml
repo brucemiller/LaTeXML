@@ -316,6 +316,11 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     Let('\@nodocument', '\relax', 'global');
     AssignRegister('\everypar', Tokens(), 'global');
+    # Match LaTeX's \begin{document} (ltx2e: \columnwidth\textwidth, \hsize\columnwidth)
+    my $tw = LookupRegister('\textwidth');
+    AssignRegister('\columnwidth' => $tw);
+    AssignRegister('\hsize'       => $tw);
+    AssignRegister('\linewidth'   => $tw);
     my @boxes = ();
 
     if (my $ops = LookupValue('@document@preamble@atend')) {
@@ -326,12 +331,6 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     if (my $ops = LookupValue('@document@preamble@afterend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
     $_[1]->setFont(LookupValue('font'));    # Start w/ whatever font was last selected.
-        # Match LaTeX's \begin{document}: set \columnwidth, \hsize, and \linewidth
-        # to \textwidth so that paragraph sizing sees the correct page width.
-    my $tw = LookupRegister('\textwidth');
-    AssignRegister('\columnwidth', $tw);
-    AssignRegister('\hsize',       $tw);
-    AssignRegister('\linewidth',   $tw);
     $stomach->leaveHorizontal_internal;
     return @boxes; });
 
@@ -3430,7 +3429,16 @@ Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
 DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>",
-  sizer => 0, mode => 'restricted_horizontal',
+  sizer => sub {
+    my ($whatsit) = @_;
+    my $props = $whatsit->getPropertiesRef;
+    my ($w, $h, $d) = $$props{font}->computeBoxesSize($whatsit->getArg(1),
+      width => LaTeXML::Package::LookupRegister('\hsize'));
+    # Add one baseline skip to account for "Table N:" tag prefix and spacing
+    my $baseline = Dimension('12pt');
+    $h = $h->add($baseline);
+    return ($w, $h, $d); },
+  mode => 'vertical',
 );
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
   sizer => 0, mode => 'restricted_horizontal',
@@ -4818,7 +4826,7 @@ Let('\lx@parboxnewline', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring inner-pos, for now, though.
 DefMacro('\parbox[] [] [] {Dimension}{}',
-'\lx@hidden@bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\lx@hidden@egroup');
+'\lx@hidden@bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize\linewidth\hsize\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\lx@hidden@egroup');
 
 DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
@@ -4827,12 +4835,38 @@ DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxConte
       vattach => $props{vattach},
       class   => 'ltx_parbox');
     return; },
-  alias      => '\parbox',
-  sizer      => '#5',
+  alias => '\parbox',
+  sizer => sub {
+    my ($whatsit) = @_;
+    my $props = $whatsit->getPropertiesRef;
+    # Compute content size from body (arg #5)
+    my ($w, $h, $d) = $$props{font}->computeBoxesSize(
+      $whatsit->getArg(5),
+      vattach => ($$props{vattach} || 'baseline'),
+      width   => $$props{width});
+    # If an explicit height was requested (arg #2), use the max of requested
+    # and content total height. In TeX the box is set to the requested height
+    # and content overflows; here we ensure the container is never smaller than
+    # the content (important for SVG foreignObject sizing).
+    my $requested = $$props{requested_height};
+    if ($requested) {
+      my $content_total = $h->add($d);
+      my $total         = ($requested->valueOf > $content_total->valueOf) ? $requested : $content_total;
+      my $vattach       = $$props{vattach} || 'baseline';
+      if ($vattach eq 'top') {
+        # vtop: height = first line height (h), depth = total - h
+        $d = $total->subtract($h); }
+      elsif ($vattach eq 'middle') {
+        my $half = Dimension($total->valueOf / 2);
+        $h = $half;
+        $d = $half; }
+      else {    # bottom/baseline: height = total - d, depth = last depth (d)
+        $h = $total->subtract($d); } }
+    return ($w, $h, $d); },
   properties => sub {
     (width => $_[4],
-      vattach => translateAttachment($_[1]),
-      height  => $_[2]); },
+      vattach          => translateAttachment($_[1]),
+      requested_height => $_[2]); },
   mode         => 'internal_vertical',
   robust       => 1,
   beforeDigest => sub {
@@ -4860,6 +4894,7 @@ DefEnvironment('{minipage}[] OptionalUndigested [] {Dimension}', sub {
     AssignRegister('\hsize'       => $width);
     AssignRegister('\textwidth'   => $width);
     AssignRegister('\columnwidth' => $width);
+    AssignRegister('\linewidth'   => $width);
     $whatsit->setProperties(width => $width, vattach => $vattach);
     Let('\\\\', '\lx@newline'); },
   afterDigestBody => sub {
@@ -5690,7 +5725,6 @@ DefMacro('\@font@warning{}',
 
 DefMacroI('\check@mathfonts', undef, Tokens());
 DefMacro('\fontsize{}{}', Tokens());
-# https://tex.stackexchange.com/questions/112492/setfontsize-vs-fontsize#112501
 # \@setfontsize{cmd}{fontsize}{baselineskip}: update \baselineskip to match the
 # new font size, as real TeX does via \set@fontsize → \selectfont → \size@update.
 # This enables accurate box sizing through the baselineskip captured in repackHorizontal.
