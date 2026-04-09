@@ -959,6 +959,7 @@ DefMath('\lx@math@underline{}', UTF(0xAF),
   name          => 'underline',   alias             => '\underline');
 DefConstructor('\lx@text@underline{}',
   "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>",
+  sizer           => '#1', mode => 'restricted_horizontal',
   enterHorizontal => 1);
 DefMath('\lx@math@overrightarrow{}', "\x{2192}",
   operator_role => 'OVERACCENT',     operator_stretchy => 'true',

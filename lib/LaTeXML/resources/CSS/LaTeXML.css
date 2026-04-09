@@ -460,9 +460,9 @@ foreignObject {
 .ltx_foreignobject_container:has( > .ltx_foreignobject_content > :not(:only-child)) {
     width:calc(1.1 * var(--ltx-fo-width));
 }
-/* line height 0 just for this layer, to keep the line-box compact */
 .ltx_foreignobject_content {
     display:block;
+    line-height:var(--ltx-fo-line-height, 1.2);
 }
 /* Stuff appearing in svg:foreignObject */
 .ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
