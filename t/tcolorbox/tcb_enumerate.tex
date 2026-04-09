@@ -1,0 +1,26 @@
+% Tests: tcolorbox with enumerate list in a figure
+\documentclass{article}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\begin{document}
+
+\begin{figure}[tbp]
+  \centering
+  \begin{minipage}{0.98\columnwidth}
+  \begin{tcolorbox}[colback=gray!4,colframe=black!30,boxrule=0.4pt,sharp corners]
+  \footnotesize
+The current kernel runs the 256$\times$256 loop fully sequentially ($\sim$65{,}543 cycles), so there is still headroom. To slash the latency you should:
+\begin{enumerate}\itemsep2pt
+  \item Hoist \texttt{B[i]} load out of the inner j-loop so you only read B once per row.
+  \item Pipeline the inner loop with II=1 (\#pragma HLS pipeline II=1).
+  \item Vectorize by a factor of 4 on a 128-bit data path: pack 4 values into one AXI transfer, unroll the inner loop by 4, and operate on 4 elements/cycle to get a 4$\times$ speedup.
+  \item (Optional) Separate memory-load, compute and write into three functions and apply \#pragma HLS dataflow to overlap A/B reads, compute, and C writes.
+\end{enumerate}
+With these changes you can reduce the cycles from $\sim$65{,}536 to $\sim$16{,}384 (plus a small pipeline fill/drain), cutting your latency by 4$\times$.
+  \end{tcolorbox}
+  \end{minipage}
+  \caption{Feedback produced by the \texttt{judge} agent highlighting optimization opportunities.}
+  \label{fig:ex-judge1}
+\end{figure}
+
+\end{document}

@@ -1,0 +1,11 @@
+# -*- CPERL -*-
+#**********************************************************************
+# Test cases for LaTeXML - tcolorbox and related box sizing
+#**********************************************************************
+use LaTeXML::Util::Test;
+
+latexml_tests("t/tcolorbox",
+	requires=>{
+		'*' => {
+      env => 'CI',
+		  packages => 'tikz.sty'}});

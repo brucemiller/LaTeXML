@@ -1,0 +1,22 @@
+\documentclass{article}
+\usepackage{tcolorbox}
+\usepackage{amsmath}
+\begin{document}
+
+\begin{tcolorbox}[title=Box 1: Mathematical model of diverse misinformation]
+We wish to explore the potential impacts of our results on the spread of diverse misinformation on social networks. We consider that multiple independent streams of misinformation spread simultaneously.
+
+We account for the above using three stylized patterns for the network structure. First, we divide the network into two demographic classes of equal size, simply labeled 1 and 2.
+
+According to the above, we can write the fraction of nodes $p^1_{k,\ell}$ which are of demographic class 1 with $k$ contacts of class 1 and $\ell$ contacts of class 2:
+\begin{equation}
+    p^1_{k,\ell} \propto \frac{1}{2}(k+\ell)^{-\alpha}\left[\frac{1}{2}\binom{k+\ell}{k}Q^k(1-Q)^\ell + \frac{1}{2}\binom{k+\ell}{k}(1/2)^{k+\ell}\right]
+\end{equation}
+
+The fraction of individuals of a certain type $(i,k,\ell)$ that are duped, $D^i_{k,\ell}$, can be followed in time:
+\begin{equation}
+    \frac{d}{dt} D^i_{k,\ell} = \lambda_i\left(p^i_{k,\ell}-D^i_{k,\ell}\right)\left(k\theta_{i,1}+\ell\theta_{i,2}\right)-\gamma D^i_{k,\ell}\left(k\phi_{i,1}+\ell\phi_{i,2}\right)
+\end{equation}
+\end{tcolorbox}
+
+\end{document}

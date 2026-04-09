@@ -1,0 +1,24 @@
+% Extracted from arXiv:2409.00729 (issue #3765)
+% Tests: tcolorbox with Verbatim content
+\documentclass{article}
+\usepackage{tcolorbox}
+\usepackage{fancyvrb}
+\newenvironment{prompt}
+  {\VerbatimEnvironment
+   \begin{tcolorbox}[colback=white, colframe=black, boxrule=0.5mm, sharp corners]
+   \begin{Verbatim}}
+  {\end{Verbatim}
+   \end{tcolorbox}}
+\begin{document}
+
+\begin{prompt}
+Context: "The Transformers: Infiltration is a six-issue comic book
+mini-series, published by IDW Publishing, based on the Transformers.
+The series was previewed with a #0 in October, 2005, formally
+launched with #1 in January 2006 and ended with #6 in July.
+Written by long-time Transformers writer Simon Furman, it is a new
+origin for the Generation 1 Transformers."
+Query: "What are transformers?"
+\end{prompt}
+
+\end{document}

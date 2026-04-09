@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Display Math</title>
+    <para xml:id="S1.p1">
+      <p>Begin first paragraph,</p>
+      <equation xml:id="S1.Ex1">
+        <Math mode="display" tex="a+b," text="a + b" xml:id="S1.Ex1.m1">
+          <XMath>
+            <XMDual>
+              <XMRef idref="S1.Ex1.m1.1"/>
+              <XMWrap>
+                <XMApp xml:id="S1.Ex1.m1.1">
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                </XMApp>
+                <XMTok role="PUNCT">,</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMath>
+        </Math>
+      </equation>
+      <p>continuing paragraph.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Single line paragraph.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <equation xml:id="S1.Ex2">
+        <Math mode="display" tex="a+b." text="a + b" xml:id="S1.Ex2.m1">
+          <XMath>
+            <XMDual>
+              <XMRef idref="S1.Ex2.m1.1"/>
+              <XMWrap>
+                <XMApp xml:id="S1.Ex2.m1.1">
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                </XMApp>
+                <XMTok role="PERIOD">.</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Another single line paragraph.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Itemizations</title>
+    <para xml:id="S2.p1">
+      <p>Begin first paragraph,</p>
+      <itemize xml:id="S2.I1">
+        <item xml:id="S2.I1.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S2.I1.i1.p1">
+            <p>A</p>
+          </para>
+        </item>
+        <item xml:id="S2.I1.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S2.I1.i2.p1">
+            <p>B</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+    <para xml:id="S2.p2">
+      <p>continuing paragraph.</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>Single line paragraph.</p>
+    </para>
+    <para xml:id="S2.p4">
+      <itemize xml:id="S2.I2">
+        <item xml:id="S2.I2.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S2.I2.i1.p1">
+            <p>A</p>
+          </para>
+        </item>
+        <item xml:id="S2.I2.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S2.I2.i2.p1">
+            <p>B</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+    <para xml:id="S2.p5">
+      <p>Another single line paragraph.</p>
+    </para>
+    <para xml:id="S2.p6">
+      <p>Multiple Para within item</p>
+      <itemize xml:id="S2.I3">
+        <item xml:id="S2.I3.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S2.I3.i1.p1">
+            <p>A</p>
+          </para>
+          <para xml:id="S2.I3.i1.p2">
+            <p>B</p>
+          </para>
+        </item>
+        <item xml:id="S2.I3.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S2.I3.i2.p1">
+            <p>C</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+  </section>
+</document>

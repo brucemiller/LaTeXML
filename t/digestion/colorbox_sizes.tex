@@ -1,0 +1,78 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\newbox\tmp
+\long\def\showsize#1#2{%
+  \setbox\tmp=\vbox{#2}%
+  #1: W=\the\wd\tmp, H=\the\ht\tmp, D=\the\dp\tmp\par}
+
+\begin{document}
+
+% pdflatex reference: W=345.0pt, H=6.94444pt, D=0.0pt
+\showsize{word}{Word}
+
+% pdflatex reference: W=345.0pt, H=6.94444pt, D=1.94444pt
+\showsize{sentence}{A much longer sentence is composed of many words.}
+
+% pdflatex reference: W=345.0pt, H=10.04163pt, D=2.39725pt
+\showsize{vmath}{$\sqrt{x}^2$}
+
+% pdflatex reference: W=345.0pt, H=25.18056pt, D=20.18056pt
+\showsize{minipage-pars}{%
+\begin{minipage}{\textwidth}
+\textcolor{brown}{\textbf{User:}}
+
+I have 3 pencils, 2 pens, and 4 erasers. How many things do I have?
+
+\textcolor{brown}{\textbf{GPT-3:}}
+
+You have 9 things. \textcolor{brown}{\textbf{[correct]}}
+\end{minipage}}
+
+% pdflatex reference: W=345.0pt, H=15.91666pt, D=10.91666pt
+\showsize{minipage-enum}{%
+\begin{minipage}{\textwidth}
+\begin{enumerate}
+  \item First item
+  \item Second item
+\end{enumerate}
+\end{minipage}}
+
+% pdflatex reference: W=345.0pt, H=40.80774pt, D=0.0pt
+% From tcolorbox-height/ test suite: titled box with simple content
+\showsize{tcb-titled}{%
+\begin{tcolorbox}[colback=white,colframe=black,title=Test,nobeforeafter]
+Hello world.
+\end{tcolorbox}}
+
+% pdflatex reference: W=345.0pt, H=26.86128pt, D=0.0pt
+% From tcolorbox-height/ test suite: untitled box
+\showsize{tcb-notitle}{%
+\begin{tcolorbox}[colback=white,colframe=black,nobeforeafter]
+Hello world.
+\end{tcolorbox}}
+
+% pdflatex reference: W=345.0pt, H=54.75218pt, D=0.0pt
+% From tcolorbox-height/ test suite: two paragraphs inside tcolorbox
+\showsize{tcb-2par}{%
+\begin{tcolorbox}[colback=white,colframe=black,title=Test,nobeforeafter]
+First paragraph.
+
+Second paragraph.
+\end{tcolorbox}}
+
+% pdflatex reference: W=345.0pt, H=124.69662pt, D=0.0pt
+% From tcolorbox-height/ test suite: enumerate inside tcolorbox
+% Tests that item text is sized as horizontal lines, not vertical letter columns
+\showsize{tcb-enum}{%
+\begin{tcolorbox}[colback=blue!5,colframe=blue!40!black,title=Steps,nobeforeafter]
+\begin{enumerate}
+  \item Select a point from the domain.
+  \item Reflect it across $y=x$ to form the point.
+  \item Solve algebraically for the inverse.
+  \item Substitute the $x$-value of the point.
+  \item The correct root matches the $y$-value.
+\end{enumerate}
+\end{tcolorbox}}
+
+\end{document}

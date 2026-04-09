@@ -1,0 +1,27 @@
+% Extracted from arXiv:2405.17935 (issue #2644)
+% Tests: titled tcolorbox with \small, \setstretch, \color, \emph, and \\
+% Exercises: inline whatsit flattening for word-level line breaking,
+% \setstretch baseline scaling, and bold/italic font width metrics.
+\documentclass{article}
+\usepackage{tcolorbox}
+\usepackage{xcolor}
+\usepackage{setspace}
+\begin{document}
+
+\begin{tcolorbox}[title=An Example for Tool Calling with GPT-4]
+\small
+\setstretch{1.2}
+\textbf{Instruction Prompt:} You are currently in the tool calling stage. You are given selected tools that can be potentially used to solve the sub-question. Your goal is to extract the required parameters needed to call the tool from the sub-question based on the tool descriptions. Output in the following format: \{parameter name: parameter, $\cdots$, parameter name: parameter\}\\
+\textbf{Sub-question 1:} \emph{What is the current price of gold per ounce in USD?} \\
+\textbf{Selected Tools:} \emph{Tool Name: \{Metals Prices Rates API\}.
+Tool description: \{The latest API endpoint will return real-time exchange rate data updated every 60 seconds.\}
+Required params:\{
+[{name: symbols, type: STRING, description: Enter a list of comma-separated currency codes or metal codes to limit output codes.}, {name: base, type: STRING, description: Enter the three-letter currency code or metal code of your preferred base currency.}]
+\}}\\
+\textbf{Output:} \color{red}{\emph{\{symbols: ``XAU'', base: ``USD''\}\\}}
+\color{black}\textbf{Sub-question 2:} {$\cdots$} \\
+\color{black}{\quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad $\vdots$} \\
+\color{black}\textbf{Output:} {$\cdots$}
+\end{tcolorbox}
+
+\end{document}

@@ -1,0 +1,13 @@
+\documentclass{article}
+\usepackage{tikz}
+\begin{document}
+
+% Test: parbox with explicit height inside tikz node.
+% The foreignObject height should be max(content, requested),
+% not inflated by the height property shadowing the sizer.
+\begin{tikzpicture}
+\node[draw, fill=yellow!20, rounded corners] at (0,0)
+{\parbox[t][2cm][l]{10cm}{Hello world. This is a test of parbox with explicit height.}};
+\end{tikzpicture}
+
+\end{document}

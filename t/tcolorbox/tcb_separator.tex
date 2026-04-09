@@ -1,0 +1,45 @@
+% Extracted from arXiv:2410.05229 (issue #3148)
+% Tests: tcolorbox with title, tcbline separator, height key, highlight
+\documentclass{article}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{most}
+\usepackage{xcolor}
+\usepackage{soul}
+\definecolor{magenta30}{HTML}{ffafd2}
+\definecolor{magenta60}{HTML}{d02670}
+\definecolor{yellow20}{HTML}{fddc69}
+\newcommand{\highlight}[2]{\sethlcolor{#1}\hl{#2}}
+\begin{document}
+
+\begin{figure}[t]
+\begin{tcolorbox}[title=GSM-NoOp, separator sign={\tcbline}, separator sign dash={3pt}{3pt}]
+Oliver picks 44 kiwis on Friday. Then he picks 58 kiwis on Saturday. On Sunday, he picks double the number of kiwis he did on Friday, \highlight{magenta30}{but five of them were a bit smaller than average}. How many kiwis does Oliver have?
+
+\tcbline
+\highlight{yellow20}{o1-mini}: Oliver picks kiwis over three days as follows:
+
+- Friday: 44 kiwis\\
+- Saturday: 58 kiwis\\
+- Sunday: Double the number he picked on Friday, which is \( 2 \times 44 = 88 \) kiwis\\
+\textcolor{magenta60}{However, on Sunday, 5 of these kiwis were smaller than average. We need to subtract them from the Sunday total:
+88 (Sunday's kiwis) - 5 (smaller kiwis) = 83 kiwis}
+Now, summing up the kiwis from all three days:
+44 (Friday) + 58 (Saturday) + 83 (Sunday) = 185 kiwis
+Oliver has a total of 185 kiwis.
+\tcbline
+\highlight{yellow20}{Llama3-8B}: Let's break it down step by step:
+
+Oliver picks 44 kiwis on Friday.
+He picks 58 kiwis on Saturday.
+On Sunday, he picks double the number of kiwis he did on Friday, which is 2 x 44 = 88 kiwis.\\
+\textcolor{magenta60}{Five of the kiwis picked on Sunday are a bit smaller than average, so we subtract 5 from the total number of kiwis picked on Sunday: 88 - 5 = 83 kiwis.}
+Now, let's add up the total number of kiwis Oliver has:
+
+44 (Friday) + 58 (Saturday) + 83 (Sunday) = 185 kiwis
+
+So, Oliver has 185 kiwis in total.
+\end{tcolorbox}
+\caption{An example from the GSM-NoOp dataset.}
+\end{figure}
+
+\end{document}
