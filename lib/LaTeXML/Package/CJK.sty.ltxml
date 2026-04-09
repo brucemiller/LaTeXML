@@ -1,0 +1,32 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  CJK                                                                | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |=====================================================================| #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+# CJK environment: transparent wrapper that passes body through.
+# Uses internal_vertical mode so that paragraph breaks inside CJK blocks
+# are processed correctly for line-wrapping and height estimation.
+# Without the mode, the body inherits horizontal mode from surrounding text,
+# causing all CJK content to be treated as a single unwrapped line.
+DefEnvironment("{CJK}{}{}", "#body",
+  beforeDigest => sub { $_[0]->leaveHorizontal; },
+  mode         => 'internal_vertical');
+DefEnvironment("{CJK*}{}{}", "#body",
+  beforeDigest => sub { $_[0]->leaveHorizontal; },
+  mode         => 'internal_vertical');
+
+DefMacro('\CJKfamily{}', '#1');
+
+#**********************************************************************
+
+1;
