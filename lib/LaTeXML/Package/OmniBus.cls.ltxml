@@ -77,7 +77,7 @@ DefMacro('\alignauthor',    Tokens());
 
 DefMacro('\email{}',     '\lx@add@email{#1}');
 DefMacro('\emailaddr{}', '\lx@add@email{#1}');
-DefMacro('\ead{}[]',     '\lx@add@email{#2}}');
+DefMacro('\ead{}[]',     '\lx@add@email{#2}');
 
 DefMacro('\emailname', 'E-mail');
 DefMacro('\speaker{}', '\lx@add@creator[role=speaker]{#1}');
@@ -88,7 +88,7 @@ DefMacro('\altaffiltext{}{}', '\lx@add@contact[role=altaffiliation,label=altaffi
 
 DefMacro('\address[]{}', '\lx@add@address{#2}');
 Let('\affaddr', '\address');
-DefMacro('\affil{}',       '\lx@add@affiliation{#1}}');
+DefMacro('\affil{}',       '\lx@add@affiliation{#1}');
 DefMacro('\affiliation{}', '\lx@add@affiliation{#1}');
 DefRegister('\affilskip' => Dimension(0));
 
@@ -147,7 +147,7 @@ DefMacroI('\maybe@end@keywords', undef, '\endkeywords\let\maybe@end@keywords\rel
 Let(T_CS('\addto@keywords@list'), T_CS('\keyword'));
 
 DefMacro('\classification{}', '\lx@add@classification{#1}');
-DefMacro('\pacs{}', '\lx@add@classification}[scheme=pacs]{#1}', locked => 1);
+DefMacro('\pacs{}', '\lx@add@classification[scheme=pacs]{#1}', locked => 1);
 # \doi{doi} might be frontmatter, or just a \url-like thing.  So, let's guess!
 DefMacro('\doi{}',
   '\if@in@preamble{\lx@add@pubnote[role=doi]{#1}'
@@ -225,7 +225,7 @@ Let('\endacknowledgements',   '\endacknowledgments');
 Let('\theacknowledgments',    '\acknowledgments');
 Let('\endtheacknowledgments', '\endacknowledgments');
 
-DefMacro('\editors{}',          '\lx@add@editors{#1}');
+DefMacro('\editors{}',          '\lx@add@editor{#1}');
 DefMacro('\received{}',         '\lx@add@date[role=received]{#1}');
 DefMacro('\revised{}',          '\lx@add@date[role=revised]{#1}');
 DefMacro('\accepted{}',         '\lx@add@date[role=accepted]{#1}');
@@ -234,7 +234,7 @@ DefMacro('\copyrightyear{}',    '\lx@add@copyrightyear{#1}');
 DefMacro('\communicated{}',     '\lx@add@date[role=communicated]{#1}');
 DefMacro('\preprint{}',         '\lx@add@pubnote[role=preprint]{#1}');
 DefMacro('\dedicated{}',        '\lx@add@pubnote[role=dedication]{#1}');
-DefMacro('\presented{}',        '\lx@add@pubdate[role=presented]{#1}');
+DefMacro('\presented{}',        '\lx@add@date[role=presented]{#1}');
 DefMacro('\articletype{}',      '\lx@add@pubnote[role=type]{#1}');
 DefMacro('\issue{}',            '\lx@add@pubnote[role=issue]{#1}');
 DefMacro('\journal{}',          '\lx@add@pubnote[role=journal]{#1}');

@@ -241,7 +241,7 @@ Let('\acknowledgments', '\acknowledgements');
 # \facility{facilityID}
 DefConstructor('\facility{}', "<ltx:text class='ltx_ast_facility'>#1</ltx:text>",
   enterHorizontal => 1);
-DefMacro('\facilities{}', '\lx@add@pubnote}[role=thanks,name={Facilities:~}]{#1}');
+DefMacro('\facilities{}', '\lx@add@pubnote[role=thanks,name={Facilities:~}]{#1}');
 
 #======================================================================
 # 2.11 Appendices

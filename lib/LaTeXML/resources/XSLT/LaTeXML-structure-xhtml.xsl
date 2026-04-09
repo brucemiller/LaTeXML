@@ -477,7 +477,6 @@
     </xsl:element>
   </xsl:template>
 
-  <!-- perhaps this calls for a new element? -->
   <xsl:template match="ltx:pubnote"/>
   <xsl:template match="ltx:pubnote" mode="intitle">
     <xsl:param name="context"/>
