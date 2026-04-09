@@ -4,5 +4,6 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
-latexml_tests("t/digestion");
+latexml_tests("t/digestion",
+  requires => { colorbox_sizes => { packages => 'tcolorbox.sty' } });
 
