@@ -435,15 +435,9 @@
       </xsl:apply-templates>
       <!-- collect all pubnotes into a footnote-like block -->
       <xsl:if test="parent::*/ltx:pubnote">
-        <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:attribute name="class">ltx_pubnotes</xsl:attribute>
-          <xsl:element name="span" namespace="{$html_ns}">
-            <xsl:attribute name="class">ltx_pubnotes_content</xsl:attribute>
-            <xsl:apply-templates select="parent::*/ltx:pubnote" mode="intitle">
-              <xsl:with-param name="context" select="$innercontext"/>
-            </xsl:apply-templates>
-          </xsl:element>
-        </xsl:element>
+      <xsl:call-template name="pubnotes">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:call-template>
       </xsl:if>
     </xsl:element>
     <!-- include parent's subtitle, author & date (if any)-->
@@ -468,6 +462,19 @@
     <xsl:apply-templates select="parent::*" mode="auto-toc">
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
+  </xsl:template>
+
+  <xsl:template name="pubnotes">
+    <xsl:param name="context"/>
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_pubnotes</xsl:attribute>
+      <xsl:element name="span" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_pubnotes_content</xsl:attribute>
+        <xsl:apply-templates select="parent::*/ltx:pubnote" mode="intitle">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+      </xsl:element>
+    </xsl:element>
   </xsl:template>
 
   <!-- perhaps this calls for a new element? -->
@@ -607,15 +614,9 @@
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
       <xsl:if test="ltx:contact">
-        <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:attribute name="class">ltx_author_notes</xsl:attribute>
-          <xsl:element name="span" namespace="{$html_ns}">
-            <xsl:attribute name="class">ltx_author_notes_content</xsl:attribute>
-            <xsl:apply-templates select="ltx:contact">
-              <xsl:with-param name="context" select="$innercontext"/>
-            </xsl:apply-templates>
-          </xsl:element>
-        </xsl:element>
+        <xsl:call-template name="author_notes">
+          <xsl:with-param name="context" select="$innercontext"/>
+        </xsl:call-template>
       </xsl:if>
       <xsl:apply-templates select="." mode="end">
         <xsl:with-param name="context" select="$innercontext"/>
@@ -628,6 +629,19 @@
         <xsl:value-of select="@after"/>
       </xsl:element>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="author_notes">
+    <xsl:param name="context"/>
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_author_notes</xsl:attribute>
+      <xsl:element name="span" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_author_notes_content</xsl:attribute>
+        <xsl:apply-templates select="ltx:contact">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+      </xsl:element>
+    </xsl:element>
   </xsl:template>
 
   <xsl:preserve-space elements="ltx:personname"/>
