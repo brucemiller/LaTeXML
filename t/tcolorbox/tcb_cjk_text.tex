@@ -1,0 +1,46 @@
+% Extracted from arXiv:2405.14767 (issue #2947)
+% Tests: tcolorbox with CJK text, multiple paragraphs and \\ line breaks
+\documentclass{article}
+\usepackage{tcolorbox}
+\usepackage{xcolor}
+\usepackage{CJKutf8}
+\definecolor{newsColor}{RGB}{0,100,0}
+\definecolor{financeColor}{RGB}{0,0,180}
+\definecolor{stockPriceColor}{RGB}{180,0,0}
+\begin{document}
+
+\begin{tcolorbox}[
+  colback=white,
+  boxrule=0.5pt,
+  arc=4pt,
+  left=6pt,
+  right=6pt,
+  top=6pt,
+  bottom=6pt
+]
+\small
+\begin{CJK}{UTF8}{gbsn}
+\textbf{Forecaster for Kweichow Moutai on 2024-01-28}
+
+\textbf{[积极发展]:}\\
+1. 贵州茅台的购买率持续上涨，表明市场对茅台的需求持续增长。\textcolor{newsColor}{(News)}\\
+2. 公司的新闻发布，如"美茅台美世界"2024全球品牌文化活动，表明公司继续追求国际化发展。\textcolor{newsColor}{(News)}\\
+3. 茅台的营业总收入同比增长率达到了19.80\%，表明公司的经营状况良好。\textcolor{financeColor}{(Basic Financials)}\\
+4. 茅台的流动比率和速动比率都相对较高，表明公司的资金流动性较好。\textcolor{financeColor}{(Basic Financials)}
+\end{CJK}
+
+\begin{CJK}{UTF8}{gbsn}
+\textbf{[潜在担忧]:}\\
+1. 茅台的资产负债率达到了17.98\%，显示公司的负债压力较大。\textcolor{financeColor}{(Basic Financials)}\\
+2. 公司未来可能面临的市场竞争压力可能会增加。\textcolor{newsColor}{(News)}\\
+3. 茅台的购买率上涨，可能会导致市场价格的偏高。\textcolor{stockPriceColor}{(Stock Price)}
+\end{CJK}
+
+\begin{CJK}{UTF8}{gbsn}
+\textbf{[预测和分析]:}\\
+预测涨跌幅: 上涨0-1\% \\
+总结分析：虽然贵州茅台的资产负债率较高，但公司的经营状况良好，营业总收入同比增长率达到了19.80\%，显示公司在市场的需求和竞争中具有稳定的盈利能力。考虑到茅台的购买率持续上涨，表明市场对茅台的需求持续增长，可能会对公司的股价产生积极影响。因此，预计茅台的股价在下一周将上涨0-1\%。
+\end{CJK}
+\end{tcolorbox}
+
+\end{document}

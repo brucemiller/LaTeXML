@@ -1,0 +1,11 @@
+% Extracted from arXiv:2308.02594
+% Tests: simple untitled tcolorbox with plain text paragraph
+\documentclass{article}
+\usepackage{tcolorbox}
+\begin{document}
+
+\begin{tcolorbox}
+\textbf{Answer to RQ3:} The performance of safety monitoring is sensitive to the prediction threshold $\theta$. Higher prediction thresholds reduce false positives but lead to a delayed prediction of safety violations and higher false negatives, whereas lower thresholds lead to earlier predictions and lower false negatives but at the cost of increased false positives. Therefore, selecting an optimal threshold is crucial to balance timely and accurate predictions, enhancing the system's effectiveness in predicting safety violations. Such selection is specific to the deployment environment of the DRL agent but a threshold value around $\theta=50\%$ is likely to be balanced.
+\end{tcolorbox}
+
+\end{document}

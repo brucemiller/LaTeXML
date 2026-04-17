@@ -19,6 +19,11 @@ DebuggableFeature('svg',         "Debug SVG generation");
 DebuggableFeature('svg_verbose', "Debug SVG generation, verbosely");
 $LaTeXML::DEBUG{svg} = 1 if $$LaTeXML::DEBUG{svg_verbose};
 
+# \hsize is a TeX engine primitive (available from INITEX, before any format).
+# Define it here so that List's horizontal-mode width lookup can find it.
+# The full set of paragraph registers is in TeX_Paragraph.pool.ltxml.
+DefRegister('\hsize' => Dimension('6.5in'));
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Box Family of primitive control sequences
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -36,6 +41,12 @@ DefPrimitive(T_BEGIN, sub {
     my $ismath = $STATE->lookupValue('IN_MATH');
     my $mode   = $STATE->lookupValue('MODE');
     my @body   = $stomach->digestNextBody();
+    # In TeX, brace groups don't change modes — a paragraph started inside {...}
+    # continues after }. The 'inplace' MODE assignment from enterHorizontal
+    # correctly persists across egroup (matching TeX's nest vs save stack separation).
+    # Update the List mode to reflect any paragraph that was started within.
+    if (($mode =~ /vertical$/) && ($STATE->lookupValue('MODE') eq 'horizontal')) {
+      $mode = 'horizontal'; }
     List($open, @body, mode => $mode); });
 
 #######DefPrimitive('}', sub {
@@ -327,6 +338,16 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
     if (my $w = GetKeyVal($spec, 'to')) {
+      # Clamp to available width when only slightly wider than \hsize (within
+      # 2*\tabcolsep), accounting for cell padding in tabulars.  Don't clamp
+      # when the box is intentionally much wider (e.g. wide multicolumn cells).
+      my $hsize = LookupRegister('\hsize');
+      if ($hsize && $hsize->valueOf > 0 && $w->valueOf > $hsize->valueOf) {
+        my $tabcolsep = LookupRegister('\tabcolsep');
+        my $margin    = $tabcolsep->multiply(2)->valueOf;
+        if ($w->valueOf - $hsize->valueOf <= $margin) {
+          my $avail = $hsize->subtract($tabcolsep->multiply(2));
+          $w = ($avail->valueOf > 0) ? $avail : $hsize; } }
       $whatsit->setWidth($w); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setWidth($box->getWidth->add($s)); }
@@ -375,16 +396,53 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
           . " => H=" . $H->pxValue . " @ y=" . $y->pxValue
           . " for Whatsit=" . ToString($whatsit)) if $LaTeXML::DEBUG{svg_verbose};
       # Size of FO is width and total height (+ depth)
-      $node->setAttribute(width  => $W->pxValue) unless $node->hasAttribute('width');
-      $node->setAttribute(height => $H->pxValue) unless $node->hasAttribute('height');
+      # Always set width/height from computed size (overriding any em-based values
+      # that may have been set by insertBlock, which use wrong units for SVG).
+      $node->setAttribute(width  => $W->pxValue);
+      $node->setAttribute(height => $H->pxValue);
       # Set top of FO height above current, as if baseline will line up w/outside
       $node->setAttribute(transform => 'matrix(1 0 0 -1 ' . $x->pxValue . ' ' . $y->pxValue . ')');
       $node->setAttribute(overflow  => 'visible');
-      # Store expected size for experimentation Temporary?
+      # Store expected size as CSS custom properties, using px to match SVG coordinates.
+      # SVG uses DPI=100 (1pt = 100/72.27 px) while CSS em uses 1em = font-size.
+      # Set font-size in px so that em-based widths in CSS content resolve correctly
+      # relative to the SVG coordinate system (browser default 16px != LaTeXML's 10pt).
+      my $fontsize_pt  = $f ? ($f->getSize || 10) : 10;
+      my $fontsize_dim = Dimension($fontsize_pt . 'pt');
+      my $fontsize_px  = $fontsize_dim->pxValue;
+      # Convert pt-based width attributes in descendants to em, so they scale
+      # with the foreignObject font-size and match SVG coordinates.
+      # Also find the content element's em-based width (set by insertBlock) for
+      # --ltx-fo-width, and convert captions to paragraphs.
+      my $content_width_em;
+      foreach my $desc ($node->getElementsByTagName('*')) {
+        my $wa = $desc->getAttribute('width');
+        if ($wa && $wa =~ /^([\d.]+)pt$/) {
+          $desc->setAttribute('width', sprintf("%.2f", $1 / $fontsize_pt) . 'em'); }
+        elsif (!$content_width_em && $wa && $wa =~ /^[\d.]+em$/) {
+          $content_width_em = $wa; }
+        my $tag = $document->getNodeQName($desc) || '';
+        if ($tag eq 'ltx:caption') {
+          $document->renameNode($desc, 'ltx:p'); }
+        elsif ($tag eq 'ltx:toccaption') {
+          $document->removeNode($desc); } }
+      # Set CSS custom properties. Use content element's em width (from insertBlock)
+      # for --ltx-fo-width so it matches the minipage/parbox CSS width exactly.
+      my $fo_width = $content_width_em || ($w->emValue(undef, $f) . 'em');
+      # Compute effective line-height ratio for the content.  Use the content
+      # font's baseline (from baseline_map) and apply any \setstretch factor.
+      # We can't read \baselineskip from $STATE here because the afterClose
+      # hook runs in the outer scope, not the content's scope.
+      my $content_bs = LaTeXML::Common::Font::baseline_for_fontsize($fontsize_pt);
+      my $stretch    = $STATE->lookupValue('SETSTRETCH_FACTOR');
+      $content_bs *= $stretch if $stretch && $stretch > 0 && $stretch != 1;
+      my $line_height = sprintf("%.2f", $content_bs / $fontsize_pt);
       $document->setAttribute($node,
-        style => '--ltx-fo-width:' . $w->emValue(undef, $f) . 'em;'
-          . '--ltx-fo-height:' . $h->emValue(undef, $f) . 'em;'
-          . '--ltx-fo-depth:' . $d->emValue(undef, $f) . 'em;');
+        style => 'font-size:' . $fontsize_px . 'px;'
+          . '--ltx-fo-width:' . $fo_width . ';'
+          . '--ltx-fo-height:' . $h->pxValue . 'px;'
+          . '--ltx-fo-depth:' . $d->pxValue . 'px;'
+          . ($line_height ne '1.20' ? '--ltx-fo-line-height:' . $line_height . ';' : ''));
     } });
 
 sub isVAttached {
@@ -418,7 +476,12 @@ sub insertBlock {
     $context     = $document->openElement('ltx:XMText');
     $context_tag = $document->getNodeQName($context); }
   if (my $w = $is_svg && $blockattr{width}) {
-    $blockattr{width} = $w->emValue(undef, $contents->getFont) . "em" if ref $w; }
+    # Convert to em using the document base font-size (matching the foreignObject's
+    # font-size setting), not the content's local font-size. CSS em resolves relative
+    # to the element's own font-size, which inherits from the foreignObject.
+    if (ref $w) {
+      my $basefontsize = LookupValue('DOCUMENT_BASE_FONTSIZE') || 10;
+      $blockattr{width} = sprintf("%.2f", $w->ptValue / $basefontsize) . "em"; } }
   my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
   my $container = $document->openElement('ltx:_CaptureBlock_', %blockattr);
   $document->absorb($contents);

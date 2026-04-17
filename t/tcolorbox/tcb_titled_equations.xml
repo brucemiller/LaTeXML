@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="tcolorbox"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:svg="http://www.w3.org/2000/svg">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para class="ltx_noindent" xml:id="p1">
+    <picture height="435.14" tex="\hbox to345pt{\vbox to314.47pt{\pgfpicture\makeatletter\hbox{\thinspace\lower 0%&#10;.0pt\hbox to0.0pt{\pgfsys@beginscope\pgfsys@invoke{ }\definecolor{%&#10;pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@rgb@stroke{0}{0}{0}\pgfsys@invoke{ }%&#10;\pgfsys@color@rgb@fill{0}{0}{0}\pgfsys@invoke{ }\pgfsys@setlinewidth{\the%&#10;\pgflinewidth}\pgfsys@invoke{ }\nullfont\hbox to0.0pt{\pgfsys@beginscope%&#10;\pgfsys@invoke{ }{}{}{}{}\pgfsys@beginscope\pgfsys@invoke{ }{}{}{}{}{}{}{}{}%&#10;\definecolor[named]{pgffillcolor}{rgb}{0.25,0.25,0.25}\pgfsys@color@gray@fill{%&#10;0.25}\pgfsys@invoke{ }\pgfsys@fill@opacity{1.0}\pgfsys@invoke{ }{{}{}{{}}}{{}{%&#10;}{{}}}{}{}{{}{}{{}}}{{}{}{{}}}{}{}{{}{}{{}}}{{}{}{{}}}{}{}{{}{}{{}}}{{}{}{{}}}%&#10;{}{}\pgfsys@moveto{0.0pt}{4.26788pt}\pgfsys@lineto{0.0pt}{310.2065pt}%&#10;\pgfsys@curveto{0.0pt}{312.56361pt}{1.91077pt}{314.47438pt}{4.26788pt}{314.474%&#10;38pt}\pgfsys@lineto{340.73212pt}{314.47438pt}\pgfsys@curveto{343.08923pt}{314.%&#10;47438pt}{345.0pt}{312.56361pt}{345.0pt}{310.2065pt}\pgfsys@lineto{345.0pt}{4.2%&#10;6788pt}\pgfsys@curveto{345.0pt}{1.91077pt}{343.08923pt}{0.0pt}{340.73212pt}{0.%&#10;0pt}\pgfsys@lineto{4.26788pt}{0.0pt}\pgfsys@curveto{1.91077pt}{0.0pt}{0.0pt}{1%&#10;.91077pt}{0.0pt}{4.26788pt}\pgfsys@closepath\pgfsys@fill\pgfsys@invoke{ }%&#10;\pgfsys@invoke{ }\pgfsys@endscope\pgfsys@beginscope\pgfsys@invoke{ }{}{}{}{}{}%&#10;{}{}{}\definecolor[named]{pgffillcolor}{rgb}{0.95,0.95,0.95}%&#10;\pgfsys@color@gray@fill{0.95}\pgfsys@invoke{ }\pgfsys@fill@opacity{1.0}%&#10;\pgfsys@invoke{ }{{}{}{{}}}{{}{}{{}}}{}{}{{}{}{{}}}{{}{}{{}}}{}{}%&#10;\pgfsys@moveto{1.42262pt}{4.26788pt}\pgfsys@lineto{1.42262pt}{298.99417pt}%&#10;\pgfsys@lineto{343.57738pt}{298.99417pt}\pgfsys@lineto{343.57738pt}{4.26788pt}%&#10;\pgfsys@curveto{343.57738pt}{2.69647pt}{342.30353pt}{1.42262pt}{340.73212pt}{1%&#10;.42262pt}\pgfsys@lineto{4.26788pt}{1.42262pt}\pgfsys@curveto{2.69647pt}{1.4226%&#10;2pt}{1.42262pt}{2.69647pt}{1.42262pt}{4.26788pt}\pgfsys@closepath\pgfsys@fill%&#10;\pgfsys@invoke{ }\pgfsys@invoke{ }\pgfsys@endscope\pgfsys@beginscope%&#10;\pgfsys@invoke{ }\pgfsys@fill@opacity{1.0}\pgfsys@invoke{ }{{{}}{{}}{{}}{{}}{{%&#10;}}{{}}{{}}\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@transformcm{1.0}{0.0}{0.0%&#10;}{1.0}{15.64897pt}{303.26205pt}\pgfsys@invoke{ }\hbox{{\color[rgb]{1,1,1}%&#10;\definecolor[named]{pgfstrokecolor}{rgb}{1,1,1}\pgfsys@color@gray@stroke{1}%&#10;\pgfsys@color@gray@fill{1}\hbox{\minipage[b]{313.70206pt}\color[rgb]{1,1,1}%&#10;\definecolor[named]{pgfstrokecolor}{rgb}{1,1,1}\pgfsys@color@gray@stroke{1}%&#10;\pgfsys@color@gray@fill{1}\ignorespaces\ignorespaces Box 1: Mathematical model%&#10; of diverse misinformation\endminipage}}}\pgfsys@invoke{ }\pgfsys@endscope}%&#10;\pgfsys@invoke{ }\pgfsys@endscope\pgfsys@beginscope\pgfsys@invoke{ }%&#10;\pgfsys@fill@opacity{1.0}\pgfsys@invoke{ }{{{}}{{}}{{}}{{}}{{}}{{}}{{}}%&#10;\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@transformcm{1.0}{0.0}{0.0}{1.0}{15.%&#10;64897pt}{9.95842pt}\pgfsys@invoke{ }\hbox{{\color[rgb]{0,0,0}\definecolor[%&#10;named]{pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@gray@stroke{0}%&#10;\pgfsys@color@gray@fill{0}\hbox{\minipage[b]{313.70206pt}\color[rgb]{0,0,0}%&#10;\definecolor[named]{pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@gray@stroke{0}%&#10;\pgfsys@color@gray@fill{0}\ignorespaces\ignorespaces We wish to explore the %&#10;potential impacts of our results on the spread of diverse misinformation on %&#10;social networks. We consider that multiple independent streams of %&#10;misinformation spread simultaneously.&#10;\par We account for the above using three stylized patterns for the network %&#10;structure. First, we divide the network into two demographic classes of equal %&#10;size, simply labeled 1 and 2.&#10;\par According to the above, we can write the fraction of nodes $p^{1}_{k,\ell%&#10;}$ which are of demographic class 1 with $k$ contacts of class 1 and $\ell$ %&#10;contacts of class 2:&#10;\begin{equation}p^{1}_{k,\ell}\propto\frac{1}{2}(k+\ell)^{-\alpha}\left[\frac{%&#10;1}{2}\binom{k+\ell}{k}Q^{k}(1-Q)^{\ell}+\frac{1}{2}\binom{k+\ell}{k}(1/2)^{k+%&#10;\ell}\right]\end{equation}\par The fraction of individuals of a certain type $%&#10;(i,k,\ell)$ that are duped, $D^{i}_{k,\ell}$, can be followed in time:&#10;\begin{equation}\frac{d}{dt}D^{i}_{k,\ell}=\lambda_{i}\left(p^{i}_{k,\ell}-D^{%&#10;i}_{k,\ell}\right)\left(k\theta_{i,1}+\ell\theta_{i,2}\right)-\gamma D^{i}_{k,%&#10;\ell}\left(k\phi_{i,1}+\ell\phi_{i,2}\right)\end{equation}\endminipage}}}%&#10;\pgfsys@invoke{ }\pgfsys@endscope}\pgfsys@invoke{ }\pgfsys@endscope&#10;\pgfsys@invoke{ }\pgfsys@endscope{}{}{}\hss}\pgfsys@discardpath\pgfsys@invoke{%&#10; }\pgfsys@endscope\hss}}\endpgfpicture}}" width="477.38" xml:id="p1.pic1">
+      <svg:svg height="435.14" overflow="visible" version="1.1" viewBox="0 0 477.38 435.14" width="477.38">
+        <svg:g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,435.14) matrix(1 0 0 -1 0 0)">
+          <svg:g fill="#404040" fill-opacity="1.0">
+            <svg:path d="M 0 5.91 L 0 429.23 C 0 432.49 2.64 435.14 5.91 435.14 L 471.47 435.14 C 474.73 435.14 477.38 432.49 477.38 429.23 L 477.38 5.91 C 477.38 2.64 474.73 0 471.47 0 L 5.91 0 C 2.64 0 0 2.64 0 5.91 Z" style="stroke:none"/>
+          </svg:g>
+          <svg:g fill="#F2F2F2" fill-opacity="1.0">
+            <svg:path d="M 1.97 5.91 L 1.97 413.72 L 475.41 413.72 L 475.41 5.91 C 475.41 3.73 473.65 1.97 471.47 1.97 L 5.91 1.97 C 3.73 1.97 1.97 3.73 1.97 5.91 Z" style="stroke:none"/>
+          </svg:g>
+          <svg:g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 419.62)">
+            <svg:foreignObject color="#FFFFFF" height="9.61" overflow="visible" style="font-size:13.84px;--ltx-fo-width:31.37em;--ltx-fo-height:9.61px;--ltx-fo-depth:0px;" transform="matrix(1 0 0 -1 0 9.61)" width="434.07"><inline-block class="ltx_minipage" vattach="bottom" width="31.37em">
+                <p>Box 1: Mathematical model of diverse misinformation</p>
+              </inline-block></svg:foreignObject>
+          </svg:g>
+          <svg:g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)">
+            <svg:foreignObject color="#000000" height="388.13" overflow="visible" style="font-size:13.84px;--ltx-fo-width:31.37em;--ltx-fo-height:388.13px;--ltx-fo-depth:0px;" transform="matrix(1 0 0 -1 0 388.13)" width="434.07"><inline-block class="ltx_minipage" vattach="bottom" width="31.37em">
+                <p>We wish to explore the potential impacts of our results on the spread of diverse misinformation on social networks. We consider that multiple independent streams of misinformation spread simultaneously.</p>
+                <p>We account for the above using three stylized patterns for the network structure. First, we divide the network into two demographic classes of equal size, simply labeled 1 and 2.</p>
+                <p>According to the above, we can write the fraction of nodes <Math mode="inline" tex="p^{1}_{k,\ell}" text="(p ^ 1) _ (list@(k, ell))" xml:id="p1.pic1.m1">
+                    <XMath>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMApp>
+                          <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                          <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                          <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                        </XMApp>
+                        <XMDual>
+                          <XMApp>
+                            <XMTok meaning="list"/>
+                            <XMRef idref="p1.pic1.m1.1"/>
+                            <XMRef idref="p1.pic1.m1.2"/>
+                          </XMApp>
+                          <XMWrap>
+                            <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p1.pic1.m1.1">k</XMTok>
+                            <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                            <XMTok fontsize="70%" name="ell" role="UNKNOWN" xml:id="p1.pic1.m1.2">ℓ</XMTok>
+                          </XMWrap>
+                        </XMDual>
+                      </XMApp>
+                    </XMath>
+                  </Math> which are of demographic class 1 with <Math mode="inline" tex="k" text="k" xml:id="p1.pic1.m2">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">k</XMTok>
+                    </XMath>
+                  </Math> contacts of class 1 and <Math mode="inline" tex="\ell" text="ell" xml:id="p1.pic1.m3">
+                    <XMath>
+                      <XMTok name="ell" role="UNKNOWN">ℓ</XMTok>
+                    </XMath>
+                  </Math> contacts of class 2:</p>
+                <equation xml:id="S0.E1">
+                  <tags>
+                    <tag>(1)</tag>
+                    <tag role="refnum">1</tag>
+                  </tags>
+                  <Math mode="display" tex="p^{1}_{k,\ell}\propto\frac{1}{2}(k+\ell)^{-\alpha}\left[\frac{1}{2}\binom{k+%&#10;\ell}{k}Q^{k}(1-Q)^{\ell}+\frac{1}{2}\binom{k+\ell}{k}(1/2)^{k+\ell}\right]" text="(p ^ 1) _ (list@(k, ell)) proportional-to (1 / 2) * (k + ell) ^ (- alpha) * delimited-[]@((1 / 2) * binomial@(k + ell, k) * Q ^ k * (1 - Q) ^ ell + (1 / 2) * binomial@(k + ell, k) * (1 / 2) ^ (k + ell))" xml:id="S0.E1.m1">
+                    <XMath>
+                      <XMApp>
+                        <XMTok meaning="proportional-to" name="propto" role="RELOP">∝</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                          <XMApp>
+                            <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                            <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                            <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                          </XMApp>
+                          <XMDual>
+                            <XMApp>
+                              <XMTok meaning="list"/>
+                              <XMRef idref="S0.E1.m1.5"/>
+                              <XMRef idref="S0.E1.m1.6"/>
+                            </XMApp>
+                            <XMWrap>
+                              <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S0.E1.m1.5">k</XMTok>
+                              <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                              <XMTok fontsize="70%" name="ell" role="UNKNOWN" xml:id="S0.E1.m1.6">ℓ</XMTok>
+                            </XMWrap>
+                          </XMDual>
+                        </XMApp>
+                        <XMApp>
+                          <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                          <XMApp>
+                            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+                            <XMTok meaning="1" role="NUMBER">1</XMTok>
+                            <XMTok meaning="2" role="NUMBER">2</XMTok>
+                          </XMApp>
+                          <XMApp>
+                            <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                            <XMDual>
+                              <XMRef idref="S0.E1.m1.9"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                <XMApp xml:id="S0.E1.m1.9">
+                                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                  <XMTok font="italic" role="UNKNOWN">k</XMTok>
+                                  <XMTok name="ell" role="UNKNOWN">ℓ</XMTok>
+                                </XMApp>
+                                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
+                            <XMApp>
+                              <XMTok fontsize="70%" meaning="minus" role="ADDOP">-</XMTok>
+                              <XMTok font="italic" fontsize="70%" name="alpha" role="UNKNOWN">α</XMTok>
+                            </XMApp>
+                          </XMApp>
+                          <XMDual>
+                            <XMApp>
+                              <XMTok meaning="delimited-[]"/>
+                              <XMRef idref="S0.E1.m1.10"/>
+                            </XMApp>
+                            <XMWrap>
+                              <XMTok role="OPEN" stretchy="true">[</XMTok>
+                              <XMApp xml:id="S0.E1.m1.10">
+                                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                <XMApp>
+                                  <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                                  <XMApp>
+                                    <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+                                    <XMTok meaning="1" role="NUMBER">1</XMTok>
+                                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                                  </XMApp>
+                                  <XMDual>
+                                    <XMApp>
+                                      <XMTok meaning="binomial" name="binom" role="UNKNOWN"/>
+                                      <XMRef idref="S0.E1.m1.1"/>
+                                      <XMRef idref="S0.E1.m1.2"/>
+                                    </XMApp>
+                                    <XMWrap>
+                                      <XMTok role="OPEN" stretchy="true">(</XMTok>
+                                      <XMApp xml:id="S0.E1.m1.7">
+                                        <XMTok mathstyle="display" role="FRACOP" thickness="0pt"/>
+                                        <XMApp xml:id="S0.E1.m1.1">
+                                          <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                          <XMTok font="italic" role="UNKNOWN">k</XMTok>
+                                          <XMTok name="ell" role="UNKNOWN">ℓ</XMTok>
+                                        </XMApp>
+                                        <XMTok font="italic" role="UNKNOWN" xml:id="S0.E1.m1.2">k</XMTok>
+                                      </XMApp>
+                                      <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                                    </XMWrap>
+                                  </XMDual>
+                                  <XMApp>
+                                    <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                                    <XMTok font="italic" role="UNKNOWN">Q</XMTok>
+                                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">k</XMTok>
+                                  </XMApp>
+                                  <XMApp>
+                                    <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                                    <XMDual>
+                                      <XMRef idref="S0.E1.m1.10.1"/>
+                                      <XMWrap>
+                                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                        <XMApp xml:id="S0.E1.m1.10.1">
+                                          <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                                          <XMTok meaning="1" role="NUMBER">1</XMTok>
+                                          <XMTok font="italic" role="UNKNOWN">Q</XMTok>
+                                        </XMApp>
+                                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                      </XMWrap>
+                                    </XMDual>
+                                    <XMTok fontsize="70%" name="ell" role="UNKNOWN">ℓ</XMTok>
+                                  </XMApp>
+                                </XMApp>
+                                <XMApp>
+                                  <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                                  <XMApp>
+                                    <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+                                    <XMTok meaning="1" role="NUMBER">1</XMTok>
+                                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                                  </XMApp>
+                                  <XMDual>
+                                    <XMApp>
+                                      <XMTok meaning="binomial" name="binom" role="UNKNOWN"/>
+                                      <XMRef idref="S0.E1.m1.3"/>
+                                      <XMRef idref="S0.E1.m1.4"/>
+                                    </XMApp>
+                                    <XMWrap>
+                                      <XMTok role="OPEN" stretchy="true">(</XMTok>
+                                      <XMApp xml:id="S0.E1.m1.8">
+                                        <XMTok mathstyle="display" role="FRACOP" thickness="0pt"/>
+                                        <XMApp xml:id="S0.E1.m1.3">
+                                          <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                          <XMTok font="italic" role="UNKNOWN">k</XMTok>
+                                          <XMTok name="ell" role="UNKNOWN">ℓ</XMTok>
+                                        </XMApp>
+                                        <XMTok font="italic" role="UNKNOWN" xml:id="S0.E1.m1.4">k</XMTok>
+                                      </XMApp>
+                                      <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                                    </XMWrap>
+                                  </XMDual>
+                                  <XMApp>
+                                    <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                                    <XMDual>
+                                      <XMRef idref="S0.E1.m1.10.2"/>
+                                      <XMWrap>
+                                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                        <XMApp xml:id="S0.E1.m1.10.2">
+                                          <XMTok meaning="divide" role="MULOP">/</XMTok>
+                                          <XMTok meaning="1" role="NUMBER">1</XMTok>
+                                          <XMTok meaning="2" role="NUMBER">2</XMTok>
+                                        </XMApp>
+                                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                      </XMWrap>
+                                    </XMDual>
+                                    <XMApp>
+                                      <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">k</XMTok>
+                                      <XMTok fontsize="70%" name="ell" role="UNKNOWN">ℓ</XMTok>
+                                    </XMApp>
+                                  </XMApp>
+                                </XMApp>
+                              </XMApp>
+                              <XMTok role="CLOSE" stretchy="true">]</XMTok>
+                            </XMWrap>
+                          </XMDual>
+                        </XMApp>
+                      </XMApp>
+                    </XMath>
+                  </Math>
+                </equation>
+                <p>The fraction of individuals of a certain type <Math mode="inline" tex="(i,k,\ell)" text="vector@(i, k, ell)" xml:id="p1.pic1.m4">
+                    <XMath>
+                      <XMDual>
+                        <XMApp>
+                          <XMTok meaning="vector"/>
+                          <XMRef idref="p1.pic1.m4.1"/>
+                          <XMRef idref="p1.pic1.m4.2"/>
+                          <XMRef idref="p1.pic1.m4.3"/>
+                        </XMApp>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="p1.pic1.m4.1">i</XMTok>
+                          <XMTok role="PUNCT">,</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="p1.pic1.m4.2">k</XMTok>
+                          <XMTok role="PUNCT">,</XMTok>
+                          <XMTok name="ell" role="UNKNOWN" xml:id="p1.pic1.m4.3">ℓ</XMTok>
+                          <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
+                    </XMath>
+                  </Math> that are duped, <Math mode="inline" tex="D^{i}_{k,\ell}" text="(D ^ i) _ (list@(k, ell))" xml:id="p1.pic1.m5">
+                    <XMath>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMApp>
+                          <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                          <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                        </XMApp>
+                        <XMDual>
+                          <XMApp>
+                            <XMTok meaning="list"/>
+                            <XMRef idref="p1.pic1.m5.1"/>
+                            <XMRef idref="p1.pic1.m5.2"/>
+                          </XMApp>
+                          <XMWrap>
+                            <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p1.pic1.m5.1">k</XMTok>
+                            <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                            <XMTok fontsize="70%" name="ell" role="UNKNOWN" xml:id="p1.pic1.m5.2">ℓ</XMTok>
+                          </XMWrap>
+                        </XMDual>
+                      </XMApp>
+                    </XMath>
+                  </Math>, can be followed in time:</p>
+                <equation xml:id="S0.E2">
+                  <tags>
+                    <tag>(2)</tag>
+                    <tag role="refnum">2</tag>
+                  </tags>
+                  <Math mode="display" tex="\frac{d}{dt}D^{i}_{k,\ell}=\lambda_{i}\left(p^{i}_{k,\ell}-D^{i}_{k,\ell}%&#10;\right)\left(k\theta_{i,1}+\ell\theta_{i,2}\right)-\gamma D^{i}_{k,\ell}\left(%&#10;k\phi_{i,1}+\ell\phi_{i,2}\right)" text="(d / (d * t)) * (D ^ i) _ (list@(k, ell)) = lambda _ i * ((p ^ i) _ (list@(k, ell)) - (D ^ i) _ (list@(k, ell))) * (k * theta _ (list@(i, 1)) + ell * theta _ (list@(i, 2))) - gamma * (D ^ i) _ (list@(k, ell)) * (k * phi _ (list@(i, 1)) + ell * phi _ (list@(i, 2)))" xml:id="S0.E2.m1">
+                    <XMath>
+                      <XMApp>
+                        <XMTok meaning="equals" role="RELOP">=</XMTok>
+                        <XMApp>
+                          <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                          <XMApp>
+                            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+                            <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                            <XMApp>
+                              <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                              <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                              <XMTok font="italic" role="UNKNOWN">t</XMTok>
+                            </XMApp>
+                          </XMApp>
+                          <XMApp>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                            <XMApp>
+                              <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                              <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                              <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                            </XMApp>
+                            <XMDual>
+                              <XMApp>
+                                <XMTok meaning="list"/>
+                                <XMRef idref="S0.E2.m1.1"/>
+                                <XMRef idref="S0.E2.m1.2"/>
+                              </XMApp>
+                              <XMWrap>
+                                <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S0.E2.m1.1">k</XMTok>
+                                <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                <XMTok fontsize="70%" name="ell" role="UNKNOWN" xml:id="S0.E2.m1.2">ℓ</XMTok>
+                              </XMWrap>
+                            </XMDual>
+                          </XMApp>
+                        </XMApp>
+                        <XMApp>
+                          <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                          <XMApp>
+                            <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                            <XMApp>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                              <XMTok font="italic" name="lambda" role="UNKNOWN">λ</XMTok>
+                              <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                            </XMApp>
+                            <XMDual>
+                              <XMRef idref="S0.E2.m1.17"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="true">(</XMTok>
+                                <XMApp xml:id="S0.E2.m1.17">
+                                  <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                                  <XMApp>
+                                    <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                    <XMApp>
+                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                                      <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                                    </XMApp>
+                                    <XMDual>
+                                      <XMApp>
+                                        <XMTok meaning="list"/>
+                                        <XMRef idref="S0.E2.m1.3"/>
+                                        <XMRef idref="S0.E2.m1.4"/>
+                                      </XMApp>
+                                      <XMWrap>
+                                        <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S0.E2.m1.3">k</XMTok>
+                                        <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                        <XMTok fontsize="70%" name="ell" role="UNKNOWN" xml:id="S0.E2.m1.4">ℓ</XMTok>
+                                      </XMWrap>
+                                    </XMDual>
+                                  </XMApp>
+                                  <XMApp>
+                                    <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                    <XMApp>
+                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                                      <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                                    </XMApp>
+                                    <XMDual>
+                                      <XMApp>
+                                        <XMTok meaning="list"/>
+                                        <XMRef idref="S0.E2.m1.5"/>
+                                        <XMRef idref="S0.E2.m1.6"/>
+                                      </XMApp>
+                                      <XMWrap>
+                                        <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S0.E2.m1.5">k</XMTok>
+                                        <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                        <XMTok fontsize="70%" name="ell" role="UNKNOWN" xml:id="S0.E2.m1.6">ℓ</XMTok>
+                                      </XMWrap>
+                                    </XMDual>
+                                  </XMApp>
+                                </XMApp>
+                                <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
+                            <XMDual>
+                              <XMRef idref="S0.E2.m1.18"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="true">(</XMTok>
+                                <XMApp xml:id="S0.E2.m1.18">
+                                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                  <XMApp>
+                                    <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                                    <XMTok font="italic" role="UNKNOWN">k</XMTok>
+                                    <XMApp>
+                                      <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                      <XMTok font="italic" name="theta" role="UNKNOWN">θ</XMTok>
+                                      <XMDual>
+                                        <XMApp>
+                                          <XMTok meaning="list"/>
+                                          <XMRef idref="S0.E2.m1.7"/>
+                                          <XMRef idref="S0.E2.m1.8"/>
+                                        </XMApp>
+                                        <XMWrap>
+                                          <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S0.E2.m1.7">i</XMTok>
+                                          <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                          <XMTok fontsize="70%" meaning="1" role="NUMBER" xml:id="S0.E2.m1.8">1</XMTok>
+                                        </XMWrap>
+                                      </XMDual>
+                                    </XMApp>
+                                  </XMApp>
+                                  <XMApp>
+                                    <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                                    <XMTok name="ell" role="UNKNOWN">ℓ</XMTok>
+                                    <XMApp>
+                                      <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                      <XMTok font="italic" name="theta" role="UNKNOWN">θ</XMTok>
+                                      <XMDual>
+                                        <XMApp>
+                                          <XMTok meaning="list"/>
+                                          <XMRef idref="S0.E2.m1.9"/>
+                                          <XMRef idref="S0.E2.m1.10"/>
+                                        </XMApp>
+                                        <XMWrap>
+                                          <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S0.E2.m1.9">i</XMTok>
+                                          <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                          <XMTok fontsize="70%" meaning="2" role="NUMBER" xml:id="S0.E2.m1.10">2</XMTok>
+                                        </XMWrap>
+                                      </XMDual>
+                                    </XMApp>
+                                  </XMApp>
+                                </XMApp>
+                                <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
+                          </XMApp>
+                          <XMApp>
+                            <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                            <XMTok font="italic" name="gamma" role="UNKNOWN">γ</XMTok>
+                            <XMApp>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                              <XMApp>
+                                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                                <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                                <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                              </XMApp>
+                              <XMDual>
+                                <XMApp>
+                                  <XMTok meaning="list"/>
+                                  <XMRef idref="S0.E2.m1.11"/>
+                                  <XMRef idref="S0.E2.m1.12"/>
+                                </XMApp>
+                                <XMWrap>
+                                  <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S0.E2.m1.11">k</XMTok>
+                                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                  <XMTok fontsize="70%" name="ell" role="UNKNOWN" xml:id="S0.E2.m1.12">ℓ</XMTok>
+                                </XMWrap>
+                              </XMDual>
+                            </XMApp>
+                            <XMDual>
+                              <XMRef idref="S0.E2.m1.19"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="true">(</XMTok>
+                                <XMApp xml:id="S0.E2.m1.19">
+                                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                  <XMApp>
+                                    <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                                    <XMTok font="italic" role="UNKNOWN">k</XMTok>
+                                    <XMApp>
+                                      <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                      <XMTok font="italic" name="phi" role="UNKNOWN">ϕ</XMTok>
+                                      <XMDual>
+                                        <XMApp>
+                                          <XMTok meaning="list"/>
+                                          <XMRef idref="S0.E2.m1.13"/>
+                                          <XMRef idref="S0.E2.m1.14"/>
+                                        </XMApp>
+                                        <XMWrap>
+                                          <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S0.E2.m1.13">i</XMTok>
+                                          <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                          <XMTok fontsize="70%" meaning="1" role="NUMBER" xml:id="S0.E2.m1.14">1</XMTok>
+                                        </XMWrap>
+                                      </XMDual>
+                                    </XMApp>
+                                  </XMApp>
+                                  <XMApp>
+                                    <XMTok color="#000000" meaning="times" role="MULOP">⁢</XMTok>
+                                    <XMTok name="ell" role="UNKNOWN">ℓ</XMTok>
+                                    <XMApp>
+                                      <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                      <XMTok font="italic" name="phi" role="UNKNOWN">ϕ</XMTok>
+                                      <XMDual>
+                                        <XMApp>
+                                          <XMTok meaning="list"/>
+                                          <XMRef idref="S0.E2.m1.15"/>
+                                          <XMRef idref="S0.E2.m1.16"/>
+                                        </XMApp>
+                                        <XMWrap>
+                                          <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S0.E2.m1.15">i</XMTok>
+                                          <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                                          <XMTok fontsize="70%" meaning="2" role="NUMBER" xml:id="S0.E2.m1.16">2</XMTok>
+                                        </XMWrap>
+                                      </XMDual>
+                                    </XMApp>
+                                  </XMApp>
+                                </XMApp>
+                                <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
+                          </XMApp>
+                        </XMApp>
+                      </XMApp>
+                    </XMath>
+                  </Math>
+                </equation>
+              </inline-block></svg:foreignObject>
+          </svg:g>
+        </svg:g>
+      </svg:svg>
+    </picture>
+  </para>
+</document>

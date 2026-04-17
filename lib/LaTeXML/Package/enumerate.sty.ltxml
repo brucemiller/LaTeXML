@@ -19,7 +19,7 @@ use LaTeXML::Package;
 DefEnvironment('{enumerate} OptionalUndigested',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
   properties       => sub { beginItemize('enumerate', 'enum'); },
-  beforeDigestEnd  => sub { Digest('\par'); },
+  afterDigestBody  => sub { $_[0]->getGullet->unread(T_CS('\par')); return; },
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); });
 
 1;

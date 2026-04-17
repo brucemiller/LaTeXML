@@ -452,7 +452,16 @@ sub repackHorizontal {
     # if ONLY horizontal mode spaces, we can prune them; it just makes an empty ltx:p
     $keep = 1 if ($mode ne 'horizontal') || !$item->getProperty('isSpace');
     unshift(@para, pop(@LaTeXML::LIST)); }
-  push(@LaTeXML::LIST, List(@para, mode => 'horizontal')) if $keep;
+  if ($keep) {
+    my $list = List(@para, mode => 'horizontal');
+    # Capture \baselineskip at paragraph-end time, mirroring TeX's behavior:
+    # the paragraph builder uses the \baselineskip current when \par fires.
+    my $bs_reg = $STATE->lookupDefinition(T_CS('\baselineskip'));
+    if ($bs_reg) {
+      my $bs = $bs_reg->valueOf;
+      $bs = $bs->valueOf if ref $bs;    # Register -> Dimension -> sp
+      $list->setProperty('baselineskip' => $bs) if $bs && $bs > 0; }
+    push(@LaTeXML::LIST, $list); }
   return; }
 
 # Resume vertical mode, internal form: reset mode, and repacks recently

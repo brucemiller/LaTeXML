@@ -1,0 +1,26 @@
+% Extracted from arXiv:2408.06518 (issue #5911)
+% Tests: tcolorbox inside \resizebox with aspect-ratio preservation
+\documentclass{article}
+\usepackage{tcolorbox}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\definecolor{bblue}{RGB}{0,0,180}
+\definecolor{pcolor}{RGB}{180,0,0}
+\definecolor{gcolor}{RGB}{0,130,0}
+\begin{document}
+
+\begin{figure}[ht!]
+    \centering
+    \resizebox{0.9\linewidth}{!}{
+    \tcbset{colback=blue!8!white, colframe=bblue!75!black,
+    fonttitle=\bfseries, title=Semantic leakage in story generation, width=\linewidth+0.1cm, halign title=center }
+
+    \begin{tcolorbox}
+    Prompt: \textcolor{pcolor}{\textit{Tell me a short story about a child named \underline{Coral}.}} \\
+    Model: \textcolor{gcolor}{\textit{Sure, here is a short story about a child named Coral: In the bustling \underline{coastal} town of \underline{Seaview}, and the \underline{waves} danced upon the \underline{shore}, Coral spent most of her days exploring the wonders of the \underline{seaside}. She grabbed her \underline{seashell}-collecting basket and marched down to the \underline{beach}. Along the way, she encountered friendly \underline{crabs}, playful \underline{dolphins}, telling stories of the \underline{ocean's} many secrets.}}
+    \end{tcolorbox}
+    }
+    \caption{Example of story generation, exhibiting semantic leakage.}
+\end{figure}
+
+\end{document}

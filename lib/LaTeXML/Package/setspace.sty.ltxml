@@ -21,12 +21,38 @@ DefMacroI('\singlespacing',  undef, '');
 DefMacroI('\onehalfspacing', undef, '');
 DefMacroI('\doublespacing',  undef, '');
 
-DefEnvironment("{singlespace}",  "#body");
-DefEnvironment("{onehalfspace}", "#body");
-DefEnvironment("{doublespace}",  "#body");
-DefEnvironment("{spacing}{}",    "#body");
+DefEnvironment("{singlespace}", "#body",
+  beforeDigest => sub { $_[0]->leaveHorizontal; },
+  mode         => 'internal_vertical');
+DefEnvironment("{onehalfspace}", "#body",
+  beforeDigest => sub { $_[0]->leaveHorizontal; },
+  mode         => 'internal_vertical');
+DefEnvironment("{doublespace}", "#body",
+  beforeDigest => sub { $_[0]->leaveHorizontal; },
+  mode         => 'internal_vertical');
+DefEnvironment("{spacing}{}", "#body",
+  beforeDigest => sub { $_[0]->leaveHorizontal; },
+  mode         => 'internal_vertical');
 
-DefMacroI('\setstretch',            '{}',  '');
+# \setstretch stores the stretch factor and updates \baselineskip.
+# In real TeX, \setstretch sets \baselinestretch and calls \selectfont,
+# which recomputes \baselineskip = nominal_baselineskip * \baselinestretch.
+DefPrimitive('\setstretch{}', sub {
+    my ($stomach, $factor) = @_;
+    my $f = ToString($factor);
+    if ($f && $f =~ /^[\d.]+$/ && $f > 0) {
+      my $prev = LookupValue('SETSTRETCH_FACTOR') || 1;
+      AssignValue('SETSTRETCH_FACTOR' => $f, 'global');
+      # Scale \baselineskip: undo any previous stretch, apply new one.
+      if ($prev > 0) {
+        my $bs_reg = $STATE->lookupDefinition(T_CS('\baselineskip'));
+        if ($bs_reg) {
+          my $bs = $bs_reg->valueOf;
+          $bs = $bs->valueOf if ref $bs;
+          if ($bs && $bs > 0) {
+            my $new_bs = int($bs * $f / $prev);
+            AssignRegister('\baselineskip', Dimension($new_bs . 'sp')); } } } }
+    return; });
 DefMacroI('\SetSinglespace',        '{}',  '');
 DefMacroI('\setdisplayskipstretch', '{}',  '');
 DefMacroI('\restore@spacing',       undef, '');

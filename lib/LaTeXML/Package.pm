@@ -440,7 +440,18 @@ sub ReadParameters {
 # Merge the current font with the style specifications
 sub MergeFont {
   my (@kv) = @_;
+  my %kv = @kv;
   AssignValue(font => LookupValue('font')->merge(@kv), 'local');
+  # When font size changes to an absolute value (numeric >= 3pt, distinguishing from
+  # relative multipliers like 1/1.2), update \baselineskip to match.
+  # This mirrors TeX's \@setfontsize → \selectfont → \size@update chain.
+  if (defined $kv{size} && $kv{size} =~ /^[\d.]+$/ && $kv{size} >= 3) {
+    my $bs_pt   = LaTeXML::Common::Font::baseline_for_fontsize($kv{size});
+    my $bs_sp   = int($bs_pt * 65536);                                       # pt to sp
+    my $stretch = LookupValue('SETSTRETCH_FACTOR');
+    $bs_sp = int($bs_sp * $stretch) if $stretch && $stretch != 1;
+    my $bs_reg = $STATE->lookupDefinition(T_CS('\baselineskip'));
+    AssignRegister('\baselineskip', Dimension($bs_sp . 'sp')) if $bs_reg; }
   return; }
 
 # Dumb place for this, but where else...
@@ -1902,10 +1913,10 @@ sub DefEnvironmentI {
         sub { $_[0]->bgroup; },
         sub { my $b = LookupValue('@environment@' . $name . '@atbegin');
           ($b ? Digest(@$b) : ()); },
-        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; })  : ()),
-        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; })  : ()),
+        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
+        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
         # if mode switch, do now (after @atbegin) WITHOUT pushing stack, since already done
-        ($mode                     ? (sub { $_[0]->beginMode($mode, 1); }) : ()),
+        ($mode ? (sub { $_[0]->beginMode($mode, 1); }) : ()),
         sub { AssignValue(current_environment => $name);
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),

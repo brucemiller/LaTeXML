@@ -23,6 +23,71 @@ DefMacro('\tcb@init@breakable', '\tcb@init@unbreakable', locked => 1);
 RequirePackage('expl3');
 RequirePackage('xparse');
 
+# \tcb@use@autoparskip should be set by pgfkeys' autoparskip/.code handler,
+# but that handler fails silently under LaTeXML. The \AtBeginDocument hook in
+# tcolorbox.sty then calls \tcb@use@autoparskip which is undefined.
+# Fix: define it as a no-op BEFORE loading tcolorbox (so the \AtBeginDocument
+# hook registered by tcolorbox.sty finds it), then apply noparskip via our own hook.
+DefPrimitiveI('\tcb@use@autoparskip', undef, undef, scope => 'global');
+
 InputDefinitions('tcolorbox', type => 'sty', noltxml => 1);
+
+# Single-pass equal height group: override \tcb@ch@equalheight AND \tcb@ch@fixed
+# to check the running group max.  The problem is that when both
+# "equal height group=X" and "height=Y" are set, the height key's operation
+# (\tcb@ch@fixed) replaces \tcb@ch@equalheight via \tcb@@ch@@operation.
+# Fix: make \tcb@ch@fixed also register with the equal height group (if set)
+# and use the max of the specified height and the group running max.
+RawTeX(<<'EoTeX');
+\def\tcb@ch@equalheight{%
+  \tcbdimto\tcb@ehg@currentheight{\tcb@natheight-\tcb@space}%
+  \tcb@ehgadd{\tcb@ehg@currentheight}%
+  \ifcsdef{tcb@ehg@current@\tcb@ehgid}{%
+    \letcs{\tcb@height}{tcb@ehg@current@\tcb@ehgid}%
+    \ifdim\tcb@height<\tcb@ehg@currentheight\relax%
+      \let\tcb@height\tcb@ehg@currentheight%
+    \fi%
+  }{%
+    \let\tcb@height\tcb@ehg@currentheight%
+  }%
+  \ifcsdef{tcb@ehg@height@\tcb@ehgid}{%
+    \ifdim\csuse{tcb@ehg@height@\tcb@ehgid}>\tcb@height\relax%
+      \letcs{\tcb@height}{tcb@ehg@height@\tcb@ehgid}%
+    \fi%
+  }{}%
+  \tcbdimto\tcbheightspace{\tcb@height-\tcb@natheight}%
+  \iftcb@lowerspace\tcb@ch@fixed@both\else\tcb@ch@fixed@upper\fi%
+}
+% Wrap \tcb@ch@fixed to also register with the equal height group.
+% Must call the original first so that \tcb@height is set from \kvtcb@height@fixed,
+% then register with the equal height group and use the group max.
+\let\tcb@ch@fixed@orig=\tcb@ch@fixed
+\def\tcb@ch@fixed{%
+  \tcb@ch@fixed@orig%
+  % After the original sets \tcb@height, register with equal height group if set
+  \ifcsdef{tcb@ehgid}{%
+    \tcbdimto\tcb@ehg@currentheight{\tcb@height}%
+    \tcb@ehgadd{\tcb@ehg@currentheight}%
+    \ifcsdef{tcb@ehg@current@\tcb@ehgid}{%
+      \ifdim\csuse{tcb@ehg@current@\tcb@ehgid}>\tcb@height\relax%
+        \letcs{\tcb@height}{tcb@ehg@current@\tcb@ehgid}%
+        \tcbdimto\tcbheightspace{\tcb@height-\tcb@natheight}%
+        \iftcb@lowerspace\tcb@ch@fixed@both\else\tcb@ch@fixed@upper\fi%
+      \fi%
+    }{}%
+  }{}%
+}
+EoTeX
+
+AtBeginDocument(TokenizeInternal('\tcbset{noparskip}'));
+
+# \tcbline draws decorative separator lines using pgf. In TeX these are
+# zero-height drawing commands with \par\nointerlineskip wrappers, but in
+# LaTeXML the pgf SVG elements have large dimensions that inflate content height.
+# Override \tcbline to produce a simple horizontal rule with dashed styling.
+DefConstructor('\tcbline OptionalMatch:*',
+  "<ltx:text cssstyle='display:block;border-top:1px dashed currentColor;"
+    . "margin:0.6em 0;width:100%'/>",
+  sizer => sub { (Dimension(0), Dimension('0.4pt'), Dimension(0)); });
 
 1;

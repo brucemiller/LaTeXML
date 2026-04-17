@@ -38,7 +38,7 @@ sub Box {
     $properties{height} = Dimension(0) unless defined $properties{height};
     $properties{depth}  = Dimension(0) unless defined $properties{depth}; }
   my $state = $STATE;
-  my $mode = $properties{mode} || $state->lookupValue('MODE') || 'restricted_horizontal';
+  my $mode  = $properties{mode} || $state->lookupValue('MODE') || 'restricted_horizontal';
   if ($state->lookupValue('IN_MATH')) {
     my $attr      = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
     my $usestring = ($attr && $$attr{replace}) || $string;
@@ -47,7 +47,7 @@ sub Box {
       mode => $mode, ($attr ? %$attr : ()), %properties); }
   else {
     return LaTeXML::Core::Box->new($string, $font, $locator, $tokens,
-                                   mode => $mode, %properties); } }
+      mode => $mode, %properties); } }
 
 #======================================================================
 # Box Object
@@ -113,10 +113,10 @@ my %mode_abbrev = (
 
 sub _stringify {
   my ($self) = @_;
-  my $type = ref $self;
-  my $mode = $$self{properties}{mode};
+  my $type   = ref $self;
+  my $mode   = $$self{properties}{mode};
   $type =~ s/^LaTeXML::Core:://;
-  $type .= '!'. ($mode_abbrev{$mode} || $mode) if $mode;
+  $type .= '!' . ($mode_abbrev{$mode} || $mode) if $mode;
   return $type; }
 
 sub stringify {
@@ -231,10 +231,8 @@ sub getSize {
   my ($self, %options) = @_;
   my $props = $self->getPropertiesRef;
   no warnings 'recursion';
-  $self->computeSizeStore(%options)
-    unless (defined $$props{cwidth})
-    && (defined $$props{cheight})
-    && (defined $$props{cdepth});
+  my $_skip = (defined $$props{cwidth}) && (defined $$props{cheight}) && (defined $$props{cdepth});
+  $self->computeSizeStore(%options) unless $_skip;
   Debug("SIZE of $self"
       . "\n preassigned: " . _showsize($$props{width},  $$props{height},  $$props{depth})
       . "\n calculated : " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})

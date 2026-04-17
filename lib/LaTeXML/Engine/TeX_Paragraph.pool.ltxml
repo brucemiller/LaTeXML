@@ -56,8 +56,8 @@ DefConstructorI('\indent', undef, sub {
       $document->openElement("ltx:para", ($noindent ? () : (class => "ltx_indent"))); }
     # Otherwise ignore.
     return; },
-    properties => { isSpace => 1},
-    enterHorizontal => 1);
+  properties      => { isSpace => 1 },
+  enterHorizontal => 1);
 DefConstructorI('\noindent', undef, sub {
     my ($document) = @_;
     my $node = $document->getElement;
@@ -69,8 +69,8 @@ DefConstructorI('\noindent', undef, sub {
       $document->openElement("ltx:para", class => "ltx_noindent"); }
     # Otherwise ignore.
     return; },
-    properties => { isSpace => 1},
-    enterHorizontal => 1);
+  properties      => { isSpace => 1 },
+  enterHorizontal => 1);
 
 sub alignLine {
   my ($document, $line, $alignment) = @_;
@@ -107,23 +107,23 @@ DefConstructorI('\lx@normal@par', undef, sub {
       $document->maybeCloseElement('ltx:para') unless $props{internal_par}; } },
   beforeDigest => sub {
     my ($stomach) = @_;
-    my $mode  = $STATE->lookupValue('MODE');
-    my $bound = $STATE->lookupValue('BOUND_MODE');
+    my $mode      = $STATE->lookupValue('MODE');
+    my $bound     = $STATE->lookupValue('BOUND_MODE');
     # combine any digested horizontal material into a horizontal List
     if (($mode eq 'horizontal') && ($bound =~ /vertical$/)) {
-      Debug("MODE leave $mode, resume $bound, for ".Stringify($LaTeXML::CURRENT_TOKEN))
-          if $LaTeXML::DEBUG{modes};
+      Debug("MODE leave $mode, resume $bound, for " . Stringify($LaTeXML::CURRENT_TOKEN))
+        if $LaTeXML::DEBUG{modes};
       $stomach->repackHorizontal;
       $STATE->assignValue(MODE => $bound, 'inplace'); }
-    $STATE->assignValue(parshape => undef); # These are cleared by \par!
+    $STATE->assignValue(parshape           => undef);    # These are cleared by \par!
     $STATE->assignValue(interlinepenalties => undef);
-  return; },
+    return; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(mode=>$STATE->lookupValue('MODE'));
+    $whatsit->setProperty(mode => $STATE->lookupValue('MODE'));
     # When invoked by $stomach->leaveHorizontal: no reversion, don't close ltx:para
-    $whatsit->setProperties(internal_par => 1, reversion=>Tokens())
-        if $LaTeXML::INTERNAL_PAR;
+    $whatsit->setProperties(internal_par => 1, reversion => Tokens())
+      if $LaTeXML::INTERNAL_PAR;
     if (LookupValue('inPreamble')) {
       $whatsit->setProperty(inPreamble => 1); }
     else {
@@ -141,8 +141,10 @@ DefConstructorI('\lx@normal@par', undef, sub {
         Digest(Tokens(@$vadj)); }
       else {
         return; } } },
-  properties => { alignmentSkippable => 1 },
-  alias      => '\par');
+  properties => sub {
+    (alignmentSkippable => 1,
+      height => LookupDimension('\parskip') || Dimension(0)) },
+  alias => '\par');
 
 Let('\par', '\lx@normal@par');
 
@@ -205,9 +207,9 @@ Tag('ltx:p', autoClose => 1, autoOpen => 1, afterClose => \&trimNodeWhitespace);
 DefRegister('\parshape', Number(0),
   getter => sub {
     my $shape = LookupValue('parshape');
-    return $shape && Number(scalar(@$shape)/2) || Number(0); },
+    return $shape && Number(scalar(@$shape) / 2) || Number(0); },
   setter => sub {
-    my ($n) = @_;               # As if assigned to $n !!!
+    my ($n) = @_;                                 # As if assigned to $n !!!
     my $gullet = $STATE->getStomach->getGullet;
     $n = $n->valueOf; $n = 0 if $n < 0;
     my @parshape = ();
@@ -244,11 +246,11 @@ DefRegister('\parshape', Number(0),
 # \tolerance              pi is the acceptable \badness of lines after hyphenation.
 # \pretolerance           pi is the acceptable \badness of lines in a paragraph before hyphenation is attempted.
 
-DefRegister('\spacefactor'          => Number(0));
-DefRegister('\prevgraf'             => Number(0));
-DefRegister('\emergencystretch'     => Dimension(0));
-DefRegister('\hangindent'           => Dimension(0));
-DefRegister('\hsize'                => Dimension('6.5in'));
+DefRegister('\spacefactor'      => Number(1000));
+DefRegister('\prevgraf'         => Number(0));
+DefRegister('\emergencystretch' => Dimension(0));
+DefRegister('\hangindent'       => Dimension(0));
+# \hsize is defined early in TeX_Box.pool.ltxml (TeX engine primitive)
 DefRegister('\lineskip'             => Glue('1pt'));
 DefRegister('\lineskiplimit'        => Dimension(0));
 DefRegister('\parindent'            => Dimension('20pt'));
@@ -262,7 +264,7 @@ DefRegister('\xspaceskip'           => Glue(0));
 DefRegister('\adjdemerits'          => Number(10000));
 DefRegister('\doublehyphendemerits' => Number(10000));
 DefRegister('\finalhyphendemerits'  => Number(5000));
-DefRegister('\hangafter'            => Number(0));
+DefRegister('\hangafter'            => Number(1));
 DefRegister('\looseness'            => Number(0));
 DefRegister('\tolerance'            => Number(200));
 DefRegister('\pretolerance'         => Number(100));

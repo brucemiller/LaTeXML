@@ -34,7 +34,8 @@ RequirePackage('graphicx');
 # for things that aren't implemented
 sub beamerTODO {
   my ($feature) = @_;
-  Warn('todo', $feature, "beamer feature $feature is not yet supported; binding requires more development"); }
+  Warn('todo', $feature, "beamer feature $feature is not yet supported; binding requires more development");
+  return; }
 
 #**********************************************************************
 # Custom Beamer Arguments
@@ -50,10 +51,10 @@ sub readBeamerAngled {
   my ($gullet) = @_;
   my $tok = $gullet->readXToken;
   if (ref $tok && ToString($tok) eq '<') {
-    $gullet->readUntil(T_OTHER('>')); }
+    return $gullet->readUntil(T_OTHER('>')); }
   else {
     $gullet->unread($tok) if ref $tok;
-    undef; } }
+    return; } }
 
 # 'BeamerSquared' is roughly equivalent to .
 # However it ignores square bracketed arguments that do not start with a literal '<'.
@@ -82,12 +83,14 @@ sub readBeamerSquared {
   return $value; }
 
 sub revertBeamerSquared {
-  return () unless defined($_[0]);
-  (T_OTHER('['), T_OTHER('<'), $_[0]->revert, T_OTHER('>'), T_OTHER(']')); }
+  return defined($_[0]) ?
+    (T_OTHER('['), T_OTHER('<'), $_[0]->revert, T_OTHER('>'), T_OTHER(']')) :
+    (); }
 
 sub revertBeamerAngled {
-  return () unless defined($_[0]);
-  (T_OTHER('<'), $_[0]->revert, T_OTHER('>')); }
+  return defined($_[0]) ?
+    (T_OTHER('<'), $_[0]->revert, T_OTHER('>')) :
+    (); }
 
 # The LiteralBalanced parameter type is like the built-in 'Balanced' type, except that it must start with a '{'.
 # It is optional by default.
@@ -98,7 +101,7 @@ sub readLiteralBalanced {
   my ($gullet) = @_;
   my $tok = $gullet->readXToken;
   $gullet->unread($tok);
-  return undef unless (ref $tok && ToString($tok) eq '{');
+  return unless (ref $tok && ToString($tok) eq '{');
   return $gullet->readArg; }
 
 #**********************************************************************
@@ -227,7 +230,7 @@ sub processBeamerSpec {
       push(@frames, [from => $start, to => $end]); }
     push(@actions, [action => $action, frames => [@frames]]); }
   # return the accumulated actions and the new beamer pauses!
-  ([@actions], $beamerPauses); }
+  return ([@actions], $beamerPauses); }
 
 # matchesModeSpec checks if $spec matches the current mode $mode and returns 1 or 0.
 # When $mode fails to parse, returns undef.
@@ -236,7 +239,7 @@ sub matchesModeSpec {
   # process the specification into a list of modes!
   $spec =~ s/\s//g;
   my $haystacks = $BEAMER_SPECIFICATION->mode_spec($spec);
-  return undef unless defined($haystacks);
+  return unless defined($haystacks);
   # iterate over the list of modes, and check if at least one of them matches
   foreach my $haystack (@{$haystacks}) {
     return 1 if matchesMode($haystack, $mode); }
@@ -245,15 +248,15 @@ sub matchesModeSpec {
 # process a single frame number, which might be undef, relative, or absolute.
 sub processFrameNo {
   my ($frameNo, $beamerPauses) = @_;
-  return undef, $beamerPauses unless defined($frameNo);    # no point defined
+  return (undef, $beamerPauses) unless defined($frameNo);    # no point defined
   my %data = @$frameNo;
   return $data{'value'}, $beamerPauses if $data{'kind'} eq 'absolute';
   my %values = @{ $data{'value'} };
   my ($modifier, $offset) = ($values{'modifier'}, $values{'offset'});
-  if ($modifier eq '.') {                                  # use, but don't increment
+  if ($modifier eq '.') {                                    # use, but don't increment
     $offset = 0 unless defined($offset);
     return $beamerPauses + $offset, $beamerPauses; }
-  else {                                                   # use and increment
+  else {                                                     # use and increment
     $offset = 1 unless defined($offset);
     my $oldBeamerPauses = $beamerPauses;
     $beamerPauses = $beamerPauses + $offset;
@@ -283,7 +286,7 @@ sub getSlideActions {
     push(@actions, [(
           'action' => $action{'action'},
           'spec'   => join(',', @spec),)]); }
-  [@actions]; }
+  return [@actions]; }
 
 # getTemporalSlide checks where a slide number temporally occurs.
 # Returns 0 if it is any of the actions, -1 if it occurs before, and 1 if it occurs afterwards.
@@ -297,8 +300,7 @@ sub getTemporalSlide {
       $where = getTemporalSlide_helper($no, @{$framedata});
       return 0 if ($where == 0);
       $all_after = 0 if ($where == -1); } }
-  return 1 if $all_after;
-  -1; }
+  return $all_after ? 1 : -1; }
 
 # helper function for getTemporalSlide, that checks a single frame.
 sub getTemporalSlide_helper {
@@ -307,7 +309,7 @@ sub getTemporalSlide_helper {
   return -1 if defined($from) && $no < $from;
   my $to = $frame{'to'};
   return 1 if defined($to) && $no > $to;
-  0; }
+  return 0; }
 
 # getMaxSlideNumber returns the maximal slide number that occurs in $actions.
 # Optionally takes an accumulator with an existing maximal value, for chaining calls.
@@ -338,8 +340,8 @@ sub getNextSlide {
   while ($temporal == -1) {
     $no++;
     $temporal = getTemporalSlide($actions, $no); }
-  return undef if ($temporal == 1);    # we don't have another slide!
-  $no; }
+  return if ($temporal == 1);     # we don't have another slide!
+  return $no; }
 
 #**********************************************************************
 # Digesting Beamer Specifications
@@ -368,42 +370,42 @@ sub digestBeamerSpec {
   my $theSlide = CounterValue('beamer@slideinframe')->valueOf;
   AssignValue('beamer@anotherslide' => $theSlide < $theMaxSlide, 'global') unless ($theSlide == 0);
   # return the parsed actions!
-  $actions; }
+  return $actions; }
 
 # digestOverlaySpec digests an overlay specification.
 # It returns where the current slide is located temporally to the overlay.
 # See getTemporalSlide for return values.
 sub digestOverlaySpec {
   my ($spec) = @_;
-  return undef unless defined($spec);
+  return unless defined($spec);
   $spec = ToString(Expand($spec));   # TODO: Should this be done ealier? Perhaps in the argument type?
                                      # get the action
   my $action = digestBeamerSpec($spec, 0);
   unless (defined($action)) {
     Warn('unexpected', '<overlay>', $spec, 'Missing overlay specification, treated as matching');
     return 0; }
-  return undef unless defined($action);
+  return unless defined($action);
   # check if we need to do anything
   my $theSlide = CounterValue('beamer@slideinframe')->valueOf;
 # for debugging!
 # Info('expected', 'overlay', $spec, "spec = <$spec> slide = $theSlide value = " . getTemporalSlide($action, $theSlide));
-  getTemporalSlide($action, $theSlide); }
+  return getTemporalSlide($action, $theSlide); }
 
 # digestActionSpec digests an overlay specification.
 # It returns the processed actions.
 # See getSlideActions for return values.
 sub digestActionSpec {
   my ($spec) = @_;
-  return undef unless defined($spec);
+  return unless defined($spec);
   $spec = ToString(Expand($spec));   # TODO: Should this be done ealier? Perhaps in the argument type?
                                      # get the action
   my $action = digestBeamerSpec($spec, 1);
   unless (defined($action)) {
     Warn('unexpected', '<overlay>', $spec, 'Missing overlay specification, treated as matching');
     return 0; }
-  return undef unless defined($action);
+  return unless defined($action);
   # check if we need to do anything
-  getSlideActions($action); }
+  return getSlideActions($action); }
 
 #**********************************************************************
 # beamerbasemodes.sty
@@ -439,7 +441,7 @@ sub matchesMode {
 # like matchesMode, but uses the currentMode as $needle.
 sub matchesCurrentMode {
   my ($haystack) = @_;
-  matchesMode(ToString($haystack), getCurrentMode()); }
+  return matchesMode(ToString($haystack), getCurrentMode()); }
 
 # The '\mode' command exists in three variants:
 # \mode*                   => \beamer@modeoutsideframe
@@ -889,7 +891,7 @@ sub readFrameBody {
     return 0 unless defined($unused); }
   AssignValue('beamer@frame@body@fragile' => $fragile);
   AssignValue('beamer@frame@body'         => $body);
-  1; }
+  return 1; }
 
 # responsible for replaying a frame to the user.
 DefMacro('\beamer@frame@replay', sub {
@@ -971,12 +973,14 @@ Tag('ltx:slide', afterClose => sub {
 sub prepareFrameTitles {
   my ($title, $subtitle) = @_;
   AssignValue('beamer@frame@title@global'    => $title);
-  AssignValue('beamer@frame@subtitle@global' => $subtitle); }
+  AssignValue('beamer@frame@subtitle@global' => $subtitle);
+  return; }
 
 DefMacro('\beamer@slide@titles@reset', sub {
     AssignValue('beamer@frame@title@local'      => LookupValue('beamer@frame@title@global'));
     AssignValue('beamer@frame@shorttitle@local' => undef);
-    AssignValue('beamer@frame@subtitle@local'   => LookupValue('beamer@frame@subtitle@global')); });
+    AssignValue('beamer@frame@subtitle@local'   => LookupValue('beamer@frame@subtitle@global'));
+    return; });
 
 DefMacro('\beamer@slide@titles@finalize', sub {
     my (@return) = ();
@@ -1117,7 +1121,7 @@ sub beginBeamerItemize {
   # replace \item with \beamer@item
   Let('\beamer@item@org', '\item');
   Let('\item',            '\beamer@item');
-  @result; }
+  return @result; }
 
 # invoked to begin an actionitem!
 DefMacro('\beamer@item@action BeamerAngled', '\beamer@item@action@{#1}\beamer@item@action@open{#1}');
@@ -1160,14 +1164,16 @@ DefMacro('\beamer@item@before BeamerAngled []', sub {
 DefEnvironment('{itemize} [BeamerAngled]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties      => sub { beginBeamerItemize($_[1], 'itemize', '@item'); },
-  beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
+  afterDigestBody => sub { $_[0]->getGullet->unread(T_CS('\par')); return; },
+  beforeDigestEnd => sub { Digest('\beamer@closeitem'); },
   locked          => 1, mode => 'internal_vertical');
 
 # from enumitem package, because of the second arg!
 DefEnvironment('{enumerate} [BeamerAngled] OptionalUndigested',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
   properties       => sub { beginBeamerItemize($_[1], 'enumerate', 'enum'); },
-  beforeDigestEnd  => sub { Digest('\par'); Digest('\beamer@closeitem'); },
+  afterDigestBody  => sub { $_[0]->getGullet->unread(T_CS('\par')); return; },
+  beforeDigestEnd  => sub { Digest('\beamer@closeitem'); },
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(2)); });
 
 # from LaTeX.Pool
@@ -1175,7 +1181,8 @@ DefEnvironment('{description} [BeamerAngled]',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
   beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
   properties      => sub { beginBeamerItemize($_[1], 'description', '@desc'); },
-  beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
+  afterDigestBody => sub { $_[0]->getGullet->unread(T_CS('\par')); return; },
+  beforeDigestEnd => sub { Digest('\beamer@closeitem'); },
   locked          => 1, mode => 'internal_vertical');
 
 #**********************************************************************
@@ -1263,10 +1270,10 @@ sub promoteChildren {
   foreach my $element (reverse @elements) {
     $element->unbindNode;
     $node->insertBefore($element, $node->firstChild); }
-  @elements; }
+  return @elements; }
 
 # T_END_ENV($env) returns tokens representing the end of an environment.
-sub T_END_ENV { Tokens(T_CS('\end'), T_BEGIN, ExplodeText(@_), T_END); }
+sub T_END_ENV { return Tokens(T_CS('\end'), T_BEGIN, ExplodeText(@_), T_END); }
 
 # readUntilMatch reads a (balanced) sequence of tokens until all tokens in $match are encounted in order.
 # When $gullet runs out of tokens before this is the case, returns undef.
@@ -1282,13 +1289,14 @@ sub readUntilMatch {
   while (1) {
     # skip ahead until the first token; then
     $token = $gullet->readUntil($head);
-    return unless defined($token);
+    last unless defined($token);
     push(@read, $token->unlist);
     # check if we match the tail too
     # TODO: $gullet->readMatch mutates the argument, so we clone here!
     return Tokens(@read) if defined($gullet->readMatch($tail->clone));
     # we read the head, but didn't see the tail!
-    push(@read, $head); } }
+    push(@read, $head); }
+  return; }
 
 # readRawUntilMatch reads raw lines from $gullet until it finds a line containing exactly one of @lines.
 # returns a string representing the text consumed, and the last line that matched.
@@ -1298,7 +1306,7 @@ sub readRawUntilMatch {
   my ($line, @read) = ();
   while (defined($line = $gullet->readRawLine) && (!defined($linemap{$line}))) {
     push(@read, $line); }
-  join("\n", @read), $line; }
+  return join("\n", @read), $line; }
 
 #**********************************************************************
 # beamer.cls specific stuff!
@@ -1339,7 +1347,8 @@ sub AddBeamerWrapper {
     '\beameroriginal{' . $command . '}' . $tex .
     '}' .
     '}';
-  RawTeX($tex); }
+  RawTeX($tex);
+  return; }
 
 # Add wrappers to all these commands
 our %BEAMER_WRAPPED = (

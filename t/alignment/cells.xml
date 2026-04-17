@@ -145,7 +145,7 @@
               </tabular></td>
             <td align="center" border="r t" thead="column row"> <tabular rowsep="-1.7pt" vattach="middle">
                 <tr>
-                  <td align="center" class="ltx_nopad_r" thead="column row"><inline-block angle="90" depth="0.0pt" height="96.1pt" innerdepth="9.5pt" innerheight="14.5pt" innerwidth="96.1pt" width="24.0pt" xtranslate="-36.1pt" ytranslate="-36.1pt">
+                  <td align="center" class="ltx_nopad_r" thead="column row"><inline-block angle="90" depth="0.0pt" height="101.2pt" innerdepth="9.5pt" innerheight="14.5pt" innerwidth="101.2pt" width="24.0pt" xtranslate="-38.6pt" ytranslate="-38.6pt">
                       <p><text color="#FF0000" font="bold"><tabular rowsep="-1.7pt" vattach="middle">
                             <tr>
                               <td align="justify" class="ltx_nopad_r" vattach="top"><inline-block vattach="top">
@@ -318,7 +318,21 @@
         </tbody>
       </tabular>
     </para>
-  </section>
+<!--  %“end–document˝ 
+     %“makegapedcells 
+     %“renewcommand“theadset–“def“arraystretch–.85˝˝% 
+     %“renewcommand“theadgape–˝ 
+     %“makegapedcells 
+     %“renewcommand“theadset–“def“arraystretch–.85˝˝% 
+     %“renewcommand“theadgape–˝ 
+     %“begin–tabularx˝“hsize–—X—c—c—˝ 
+     %%... 
+     %“cline–1-2˝ 
+     %“makecell[––p–“hsize˝˝˝]–Cell ...˝ &amp; F &amp; ““ 
+     %“cline–1-2˝ 
+     %“makecell[––¿–“parindent1em˝p–“hsize˝˝˝]–Cell ...˝ &amp; G &amp; ““ 
+     %“hline 
+     %“end–tabularx˝ -->  </section>
   <section inlist="toc" xml:id="S9">
     <tags>
       <tag>9</tag>
@@ -370,7 +384,25 @@
         </tr>
       </tabular>
     </para>
-  </section>
+<!--  %“begin–tabular˝–—*–4˝–c—˝˝ 
+     %“hline 
+     %“thead–No˝&amp;“thead–First Data˝&amp;“thead–Second Data˝&amp;“thead–Third Data˝ ““ 
+     %“hline 
+     %“erows–4˝–8˝ 
+     %“end–tabular˝“quad 
+     %“begin–tabular˝–——c——c——c——c——˝ 
+     %“hhline–—t:=:t:=:t:=:t:=:t—˝ 
+     %“thead–No˝&amp;“thead–First Data˝&amp;“thead–Second Data˝&amp;“thead–Third Data˝ ““ 
+     %“hhline–—:=::=::=::=:—˝ 
+     %“erows[““ “hhline–—:=::=::=::=:—˝]–4˝–8˝ 
+     %“eline–4˝““ “hhline–—b:=:b:=:b:=:b:=:b—˝ 
+     %“end–tabular˝“quad 
+     %“begin–tabular˝–—*–4˝–c—˝˝ 
+     %“hline 
+     %“thead–No˝&amp;“thead–First Data˝&amp;“thead–Second Data˝&amp;“thead–Third Data˝ ““ 
+     %“hline 
+     %“Xrows–“refstepcounter–enumi˝“arabic–enumi˝.“eline–3˝““ “hline˝–8˝ 
+     %“end–tabular˝ -->  </section>
   <section inlist="toc" xml:id="S10">
     <tags>
       <tag>10</tag>
@@ -378,7 +410,20 @@
       <tag role="typerefnum">§10</tag>
     </tags>
     <title><tag close=" ">10</tag>Diagonally divided</title>
-    <para xml:id="S10.p1">
+<!--  %“makegapedcells 
+     %“begin–tabular˝–—l—c—c—˝“hline 
+     %**** cells.tex Line 125 **** 
+     %“diaghead–“theadfont Diag ColumnmnHead II˝% 
+     %–Diag Column ““Head I˝–Diag““Column Head II˝&amp; 
+     %“thead–Second““column˝&amp;“thead–Third““column˝““ 
+     %“hline... 
+     %“end–tabular˝“medskip 
+     %“begin–tabularx˝–.62“hsize˝–—X—c—c—˝“hline 
+     %“diaghead(-4,1)–“hskip“hsize˝% 
+     %–Diag ““Column Head I˝–Diag Column ““Head II˝&amp; 
+     %“thead–Second““column˝&amp;“thead–Third““column˝““ 
+     %“hline... 
+     %“end–tabularx˝“medskip -->    <para xml:id="S10.p1">
       <tabular vattach="middle">
         <thead>
           <tr>
@@ -392,7 +437,7 @@
                     </inline-block>
                   </inline-block>
                 </g>
-                <g innerheight="26.21" innerwidth="97.73" transform="translate(0,15.1275)">
+                <g innerheight="26.21" innerwidth="102.15" transform="translate(0,15.1275)">
                   <inline-block>
                     <inline-block align="left">
                       <p><text color="#FF0000" font="bold">Diag Column</text></p>

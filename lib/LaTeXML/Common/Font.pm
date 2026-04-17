@@ -598,6 +598,10 @@ sub computeStringSize {
     my $entry  = $$metric{sizes}{$char};
 ##    Debug("No size entry for '$char' (" . sprintf("%x", ord($char)) . ")") unless $entry;
     my ($cw, $ch, $cd, $ci) = ($entry ? @$entry : (0.75 * $UNITY, 0.7 * $UNITY, 0.2 * $UNITY, 0));
+    # CJK fullwidth characters have no TFM metrics; use full em-box dimensions
+    # matching browser rendering (width=1em, height=0.88em, depth=0.12em)
+    if (!$entry && ord($char) >= 0x2E80) {
+      $cw = 1.0 * $UNITY; $ch = 0.88 * $UNITY; $cd = 0.12 * $UNITY; }
     $w += int($cw * $size);
     if (my $kern = $chars[0] && $$metric{kerns}{ $char . $chars[0] }) {
       $w += int($size * $kern); }
@@ -617,11 +621,18 @@ sub getNominalSize {
   my $u    = $size * $UNITY;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
-# Nominal baseline size for a given font size
+# Nominal baseline size for a given font size (from size10.clo etc.)
 # This really should be tracked within the TeX
 my %baseline_map = (
-  5  => 6,    6  => 7,  7    => 8,  8  => 9.5, 9  => 10, 10 => 12,
-  11 => 13.6, 12 => 14, 14.4 => 18, 17 => 22,  20 => 25, 25 => 30);
+  5     => 6,    6  => 7,  7     => 8,  8  => 9.5, 9 => 11, 10 => 12,
+  11    => 13.6, 12 => 14, 14.4  => 18, 17 => 22,
+  17.28 => 22,   20 => 25, 20.74 => 25, 25 => 30, 29.8 => 30);
+
+# Return the nominal \baselineskip (in pt) for a given font size (in pt).
+# Used by MergeFont to keep \baselineskip in sync with font size changes.
+sub baseline_for_fontsize {
+  my ($size) = @_;
+  return $baseline_map{$size} || $baseline_map{ int($size) } || $size * 1.2; }
 
 # Here's where I avoid trying to emulate Knuth's line-breaking...
 # Mostly for List & Whatsit: compute the size of a List of boxes.
@@ -652,20 +663,82 @@ sub computeBoxesSize {
   # ----------------------------------------------------------------------
   my @lines = ();
   if ($layout eq 'vertical') {                               # For vertical, ALL boxes are lines
-    foreach my $box (@boxes) {
+    my @grouped = ();
+    my @hrun    = ();
+    for my $box (@boxes) {
+      my $bmode = (ref $box && $box->can('getProperty')) ? ($box->getProperty('mode') || '') : '';
+      if ($bmode eq 'horizontal' && ref $box eq 'LaTeXML::Core::Box') {
+        push(@hrun, $box); }
+      else {
+        if (@hrun >= 10) {
+          my $l = LaTeXML::Core::List->new(@hrun);
+          $l->setProperty(mode                => 'horizontal');
+          $l->setProperty('_pseudo_paragraph' => 1);
+          push(@grouped, $l); }
+        elsif (@hrun) {
+          push(@grouped, @hrun); }
+        @hrun = ();
+        push(@grouped, $box); } }
+    if (@hrun >= 10) {
+      my $l = LaTeXML::Core::List->new(@hrun);
+      $l->setProperty(mode                => 'horizontal');
+      $l->setProperty('_pseudo_paragraph' => 1);
+      push(@grouped, $l); }
+    elsif (@hrun) {
+      push(@grouped, @hrun); }
+    foreach my $box (@grouped) {
       # In TeX, a horizontal (paragraph) list would have already been typeset into
       # an internal_vertical list; inside a vertical list it should be subject to vattach
       if ((ref $box eq 'LaTeXML::Core::List')
         && (($box->getProperty('mode') || '') eq 'horizontal')) {
-        my $width = $box->getProperty('width') || $wrapwidth;
+        my $is_pseudo = $box->getProperty('_pseudo_paragraph');
+        my $width     = $is_pseudo ? undef : ($box->getProperty('width') || $wrapwidth);
         $width = $width->valueOf if ref $width;
-        push(@lines, $self->computeBoxesSize_lines($width,
-            $self->computeBoxesSize_words($box->unlist))); }
+        # Carry the per-paragraph \baselineskip captured during repackHorizontal
+        my $bs = $box->getProperty('baselineskip');
+        local $LaTeXML::Common::Font::CJK_CONTENT    = 0;
+        local $LaTeXML::Common::Font::FLATTEN_INLINE = $is_pseudo ? 0 : 1;
+        my @plines = $self->computeBoxesSize_lines($width,
+          $self->computeBoxesSize_words($box->unlist));
+        if ($bs) {    # annotate lines with their source paragraph's baselineskip
+          $$_[3] = $bs for @plines; }
+        # CJK text: browsers render CJK with ~10% larger line-height than TeX baseline,
+        # due to taller CJK glyphs in the browser's font vs TeX's CMR metrics.
+        # Only adjust lines that actually contain CJK characters ($$line[5]),
+        # leaving Latin-only lines at the normal baseline.
+        if ($LaTeXML::Common::Font::CJK_CONTENT) {
+          my $base_bs = ($bs ? $bs / 65536 : ($self->getSize || DEFSIZE() || 10) * 1.2);
+          my $cjk_bs  = fixpoint($base_bs * 1.1);
+          for my $line (@plines) {
+            if ($$line[5]) {
+              $$line[3] = $cjk_bs if !$$line[3] || $$line[3] < $cjk_bs; } } }
+        push(@lines, @plines); }
       else {
         my ($w, $h, $d) = $self->computeBoxesSize_box($box);
-        push(@lines, [$w, $h, $d]) if $w || $h || $d; } } }
+        if ($w || $h || $d) {
+          # In TeX, display math has \abovedisplayskip and \belowdisplayskip glue
+          my $boxmode = (ref $box && $box->can('getProperty')) ? ($box->getProperty('mode') || '') : '';
+          # Detect vertical glue (vskip, addvspace, etc.) — these are explicit spacing
+          # that suppresses baselineskip adjustment in TeX's vertical list.
+          my $is_vglue = (ref $box && $box->can('getProperty')
+              && $box->getProperty('isVerticalSpace')) ? 1 : 0;
+          if ($boxmode eq 'display_math') {
+            my $above = $STATE->lookupDefinition(T_CS('\abovedisplayskip'));
+            my $below = $STATE->lookupDefinition(T_CS('\belowdisplayskip'));
+            $above = $above->valueOf->valueOf if $above;
+            $below = $below->valueOf->valueOf if $below;
+            # Display skips are explicit vertical glue that replaces baselineskip.
+            # Mark them as vglue so their depth isn't baselineskip-adjusted, and
+            # adjacent text lines keep their natural depth (no interline adjustment
+            # to the skip — the skip IS the spacing).
+            push(@lines, [0, $above || 0, 0, undef, 1]) if $above;
+            push(@lines, [$w, $h, $d]);
+            push(@lines, [0, $below || 0, 0, undef, 1]) if $below; }
+          else {
+            push(@lines, [$w, $h, $d, undef, $is_vglue]); } } } } }
   else {
     # Scan all boxes, collecting into "words", then (possibly) break into lines.
+    local $LaTeXML::Common::Font::FLATTEN_INLINE = 1;
     my @words = $self->computeBoxesSize_words(@boxes);
     @lines = $self->computeBoxesSize_lines($wrapwidth, @words); }
   # ----------------------------------------------------------------------
@@ -705,6 +778,11 @@ sub computeBoxesSize_box {
 sub computeBoxesSize_words {
   no warnings 'recursion';
   my ($self, @boxes) = @_;
+  # Flatten inline whatsits (\emph, \textbf, \color, etc.) so their character
+  # content participates in word-level breaking. Without this, an entire
+  # \emph{long text with spaces} is treated as one indivisible "word",
+  # preventing accurate line-wrapping estimation and underestimating height.
+  @boxes = _flatten_inline_boxes(@boxes) if $LaTeXML::Common::Font::FLATTEN_INLINE;
   my @words = ();
   my $prevbox;
   my $prevspace = 0;
@@ -727,6 +805,18 @@ sub computeBoxesSize_words {
       else {
         $prevspace += $w; } }
     else {    # Else accumulate into "word"
+              # CJK fullwidth characters are breakable at any point (browsers do this)
+      my $char = (ref $box eq 'LaTeXML::Core::Box') ? ($box->getString || '') : '';
+      if (length($char) == 1 && ord($char) >= 0x2E80) {
+        $LaTeXML::Common::Font::CJK_CONTENT = 1;
+        # Flush any accumulated word before the CJK char
+        if ($wd || $ht || $dp) {
+          push(@words, [$prevspace, $wd, $ht, $dp]);
+          $prevspace = 0; }
+        # Each CJK char is its own breakable "word", tagged with CJK flag
+        push(@words, [$prevspace, $w, $h, $d, 1]);
+        $wd      = $ht = $dp = 0; $prevspace = 0;
+        $prevbox = $box;          next; }
       $wd += $w;
       $ht = max($ht, $h);
       $dp = max($dp, $d);
@@ -745,24 +835,69 @@ sub computeBoxesSize_words {
     push(@words, [$prevspace, $wd, $ht, $dp]); }
   return @words; }
 
+# Recursively flatten inline whatsits (restricted_horizontal mode) into their
+# constituent character boxes. This allows spaces inside \emph{}, \textbf{},
+# \color{}{} etc. to act as word-break points for line-wrapping estimation.
+# Without flattening, \emph{long phrase with spaces} is one opaque "word" of
+# ~200pt that can't be broken, causing underestimated line counts.
+sub _flatten_inline_boxes {
+  no warnings 'recursion';
+  my @result = ();
+  for my $box (@_) {
+    my $dominated = 0;
+    if (ref $box && ref $box ne 'LaTeXML::Core::Box') {
+      my $mode = (ref $box && $box->can('getProperty')) ? ($box->getProperty('mode') || '') : '';
+      if ($mode eq 'restricted_horizontal'
+        && !$box->getProperty('content_box')
+        && !$box->getProperty('isBreak')
+        && !$box->getProperty('isSpace')
+        && !(ref $box eq 'LaTeXML::Core::Whatsit'
+          && $box->getDefinition
+          && (ref($box->getDefinition->getSizer || '') eq 'CODE'
+            || defined $box->getProperty('width')
+            || defined $box->getProperty('height')))) {
+        # For Whatsits: extract content from body property or arguments
+        my @children;
+        if (ref $box eq 'LaTeXML::Core::Whatsit') {
+          my $body = $box->getProperty('body');
+          if ($body) {
+            @children = $body->unlist; }
+          else {
+            # Extract content from arguments, keeping only Box-like objects
+            @children = map { (ref $_ && $_->can('unlist')) ? $_->unlist : () }
+              grep { defined $_ && ref $_ && $_->can('isaBox') && $_->isaBox }
+              $box->getArgs; } }
+        elsif ($box->can('unlist')) {
+          @children = $box->unlist; }
+        # Only flatten if we got actual children different from the box itself
+        if (@children && !(scalar(@children) == 1 && $children[0] == $box)) {
+          push(@result, _flatten_inline_boxes(@children));
+          $dominated = 1; } } }
+    push(@result, $box) unless $dominated; }
+  return @result; }
+
 # do line breaking of words into lines, according to $wrapwidth (if), or explicit breaks.
+# Words may carry a CJK flag ($$item[4]) from computeBoxesSize_words; lines that contain
+# CJK words get $$line[5]=1 so the CJK baseline adjustment can be applied per-line.
 sub computeBoxesSize_lines {
   my ($self, $wrapwidth, @words) = @_;
   my @lines = ();
   my ($wd, $ht, $dp) = (0, 0, 0);
+  my $has_cjk = 0;
   foreach my $item (@words) {
     my ($space, $w, $h, $d) = @$item;
     if ($space == -1) {
-      push(@lines, [$wd, $ht, $dp]) if $wd;
-      $wd = $w; $ht = $h; $dp = $d; }
-    elsif ((defined $wrapwidth) && ($wd + $space * 0.5 + $w > $wrapwidth)) {
-      push(@lines, [$wrapwidth || $wd, $ht, $dp]) if $wd;
-      $wd = $w; $ht = $h; $dp = $d; }
+      push(@lines, [$wd, $ht, $dp, undef, undef, $has_cjk]) if $wd;
+      $wd = $w; $ht = $h; $dp = $d; $has_cjk = $$item[4] || 0; }
+    elsif ((defined $wrapwidth) && ($wd + $space + $w > $wrapwidth)) {
+      push(@lines, [$wrapwidth || $wd, $ht, $dp, undef, undef, $has_cjk]) if $wd;
+      $wd = $w; $ht = $h; $dp = $d; $has_cjk = $$item[4] || 0; }
     else {
+      $has_cjk ||= $$item[4] || 0;
       $wd += $space + $w;
       $ht = max($ht, $h);
       $dp = max($dp, $d); } }
-  push(@lines, [$wrapwidth || $wd, $ht, $dp]) if $wd || $ht || $dp;
+  push(@lines, [$wrapwidth || $wd, $ht, $dp, undef, undef, $has_cjk]) if $wd || $ht || $dp;
   return @lines; }
 
 # Sum up a stack of lines, determining w as max, and h & d according to $vattach.
@@ -775,16 +910,33 @@ sub computeBoxesSize_stack {
   elsif ($nlines == 1) {
     ($wd, $ht, $dp) = @{ $lines[0] }; }
   else {
-    # baseline adjustment
+    # baseline adjustment: in TeX, \baselineskip glue is inserted between lines
+    # so that baselines are \baselineskip apart (or \lineskip if boxes overlap).
+    # Lines may carry a per-line baselineskip ($$line[3]) captured at \par time
+    # via repackHorizontal; this faithfully reflects font changes like \small
+    # and \setstretch that were active when the paragraph was built.
     my $size     = int($self->getSize || DEFSIZE() || 10);
     my $baseline = fixpoint($baseline_map{$size} || $size * 1.2);
+    # Apply \setstretch factor as a global fallback for lines without stored baselineskip
+    my $stretch = $STATE->lookupValue('SETSTRETCH_FACTOR');
+    if ($stretch && $stretch > 0 && $stretch != 1) {
+      $baseline = int($baseline * $stretch); }
+    Debug("SIZE_STACK: size=$size baseline=$baseline nlines=$nlines"
+        . ($stretch ? " stretch=$stretch" : "")) if $LaTeXML::DEBUG{'size-detailed'};
     my $lineskip = $STATE->lookupDefinition(T_CS('\lineskip'))->valueOf->valueOf;
     my @l        = @lines;
     while (@l) {
       my $r = shift(@l);
       if (@l) {
-        if ($$r[2] + $l[0][1] < $baseline) {
-          $$r[2] = $baseline - $l[0][1]; }
+        # In TeX, \baselineskip glue is only inserted between two consecutive lines
+        # (hboxes).  Explicit vertical glue (\vskip, display skip, etc.) keeps its
+        # natural depth (0) — only text/box lines get baselineskip adjustment.
+        next if $$r[4];                 # current item is vertical glue: don't adjust its depth
+        my $bs = $$r[3] || $baseline;   # per-line baselineskip or global fallback
+                                        # TeX inserts \baselineskip glue when depth + height does NOT exceed
+                                        # \baselineskip (i.e. <=), otherwise uses \lineskip.
+        if ($$r[2] + $l[0][1] <= $bs) {
+          $$r[2] = $bs - $l[0][1]; }
         else {
           $$r[2] += $lineskip; } } }
     $wd = max(map { $$_[0] } @lines);

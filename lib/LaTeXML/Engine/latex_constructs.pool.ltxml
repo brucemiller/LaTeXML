@@ -265,7 +265,7 @@ DefConstructor('\lx@newline OptionalMatch:* [Glue]', sub {
       elsif ($document->canContain($context, 'ltx:break')) {
         $document->insertElement('ltx:break'); } } },
   reversion  => Tokens(T_CS("\\\\"), T_CR),
-  properties => { isBreak => 1 });
+  properties => { isBreak => 1, height => Dimension(0) });
 Let('\\\\', '\lx@newline');
 
 DefConstructor('\newline',
@@ -292,10 +292,10 @@ DefMacro('\@icentercr[]', '\vskip #1\ignorespaces');
 #    text
 #   \end{document}
 
-DefMacro('\AtBeginDocument{}', sub {
-    PushValue('@at@begin@document', $_[1]->unlist); });
-DefMacro('\AtEndDocument{}', sub {
-    PushValue('@at@end@document', $_[1]->unlist); });
+DefMacro('\AtBeginDocument[]{}', sub {
+    PushValue('@at@begin@document', $_[2]->unlist); });
+DefMacro('\AtEndDocument[]{}', sub {
+    PushValue('@at@end@document', $_[2]->unlist); });
 
 # Like  "<ltx:document xml:id='#id'>#body</ltx:document>",
 # But more complicated due to id, at begin/end document and so forth.
@@ -316,6 +316,11 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     Let('\@nodocument', '\relax', 'global');
     AssignRegister('\everypar', Tokens(), 'global');
+    # Match LaTeX's \begin{document} (ltx2e: \columnwidth\textwidth, \hsize\columnwidth)
+    my $tw = LookupRegister('\textwidth');
+    AssignRegister('\columnwidth' => $tw);
+    AssignRegister('\hsize'       => $tw);
+    AssignRegister('\linewidth'   => $tw);
     my @boxes = ();
 
     if (my $ops = LookupValue('@document@preamble@atend')) {
@@ -1363,6 +1368,7 @@ sub beginItemize {
   my $level     = LookupValue($counter . 'level') || 0;           # level for lists of specific type
   $level++ unless $options{nolevel};
   AssignRegister('\itemsep' => LookupDimension('\lx@default@itemsep'));
+  AssignRegister('\parskip' => LookupDimension('\parsep'));
   AssignValue('itemization_level' => $listlevel);
   AssignValue($counter . 'level'  => $level);
   AssignValue(itemization_items   => 0);
@@ -1507,7 +1513,9 @@ DefConstructorI('\preitem@par', undef, sub {
     if (!$props{inPreamble} && !$document->getNodeQName($document->getElement(), 'ltx:itemize')) {
       $document->maybeCloseElement('ltx:p');
       $document->maybeCloseElement('ltx:para'); } },
-  alias => '\par');
+  afterDigest => sub { $_[0]->leaveHorizontal_internal; return; },
+  properties  => sub { (alignmentSkippable => 1, height => LookupDimension('\parsep')) },
+  alias       => '\par');
 
 # id, but NO refnum (et.al) attributes on itemize \item ...
 # unless the optional tag argument was given!
@@ -1723,7 +1731,7 @@ DefConstructor('\trivlist',
   properties => sub { beginItemize('trivlist'); });
 DefConstructor('\endtrivlist', sub {
     $_[0]->maybeCloseElement('ltx:itemize'); },
-  beforeDigest => sub { Digest('\par'); });
+  beforeDigest => sub { $_[0]->getGullet->unread(T_CS('\preitem@par')); return; });
 DefMacro('\trivlist@item', '\preitem@par\trivlist@item@');
 DefConstructor('\trivlist@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
@@ -1731,11 +1739,11 @@ DefConstructor('\trivlist@item@ OptionalUndigested',
   properties => sub { ($_[1] ? (tag => Digest(Expand($_[1]))) : ()); });
 DefMacro('\@trivlist', '\relax', locked => 1);
 
-DefRegister('\topsep'             => Glue(0));
-DefRegister('\partopsep'          => Glue(0));
-DefRegister('\lx@default@itemsep' => Glue(0));
-DefRegister('\itemsep'            => Glue(0));
-DefRegister('\parsep'             => Glue(0));
+DefRegister('\topsep'             => Glue('8pt plus 2pt minus 4pt'));
+DefRegister('\partopsep'          => Glue('2pt plus 1pt minus 1pt'));
+DefRegister('\lx@default@itemsep' => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\itemsep'            => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\parsep'             => Glue('4pt plus 2pt minus 1pt'));
 DefRegister('\@topsep'            => Glue(0));
 DefRegister('\@topsepadd'         => Glue(0));
 DefRegister('\@outerparskip'      => Glue(0));
@@ -3421,7 +3429,16 @@ Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
 DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>",
-  sizer => 0, mode => 'restricted_horizontal',
+  sizer => sub {
+    my ($whatsit) = @_;
+    my $props = $whatsit->getPropertiesRef;
+    my ($w, $h, $d) = $$props{font}->computeBoxesSize($whatsit->getArg(1),
+      width => LaTeXML::Package::LookupRegister('\hsize'));
+    # Add one baseline skip to account for "Table N:" tag prefix and spacing
+    my $baseline = Dimension('12pt');
+    $h = $h->add($baseline);
+    return ($w, $h, $d); },
+  mode => 'vertical',
 );
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
   sizer => 0, mode => 'restricted_horizontal',
@@ -4691,7 +4708,19 @@ DefPrimitive('\hspace  OptionalMatch:* {Dimension}', sub {
       width => $length, isSpace => 1); });
 
 DefMacro('\vspace OptionalMatch:* {}', '\vskip #2\relax');
-DefPrimitive('\addvspace {}',  undef);
+# \addvspace adds vertical space in vertical mode. In TeX it merges with
+# preceding space (using the max). Inside minipages/vboxes, the first
+# \addvspace is absorbed by the enclosing box's spacing.
+DefPrimitive('\addvspace {}', sub {
+    my ($stomach, $length) = @_;
+    # Skip at the start of a minipage/vbox — TeX absorbs the first list topsep
+    # because the enclosing box already accounts for it in its height calculation.
+    return if LookupValue('if@minipage');
+    # Otherwise emit as \vskip for measurable vertical spacing.
+    my $skip = $length->ptValue;
+    return if !$skip || $skip <= 0;
+    Digest(Tokens(T_CS('\vskip'), $length->revert, T_CS('\relax')));
+    return; });
 DefPrimitive('\addpenalty {}', undef);
 DefPrimitiveI('\@endparenv');
 
@@ -4797,7 +4826,7 @@ Let('\lx@parboxnewline', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring inner-pos, for now, though.
 DefMacro('\parbox[] [] [] {Dimension}{}',
-'\lx@hidden@bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\lx@hidden@egroup');
+'\lx@hidden@bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize\linewidth\hsize\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\lx@hidden@egroup');
 
 DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
@@ -4806,12 +4835,38 @@ DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxConte
       vattach => $props{vattach},
       class   => 'ltx_parbox');
     return; },
-  alias      => '\parbox',
-  sizer      => '#5',
+  alias => '\parbox',
+  sizer => sub {
+    my ($whatsit) = @_;
+    my $props = $whatsit->getPropertiesRef;
+    # Compute content size from body (arg #5)
+    my ($w, $h, $d) = $$props{font}->computeBoxesSize(
+      $whatsit->getArg(5),
+      vattach => ($$props{vattach} || 'baseline'),
+      width   => $$props{width});
+    # If an explicit height was requested (arg #2), use the max of requested
+    # and content total height. In TeX the box is set to the requested height
+    # and content overflows; here we ensure the container is never smaller than
+    # the content (important for SVG foreignObject sizing).
+    my $requested = $$props{requested_height};
+    if ($requested) {
+      my $content_total = $h->add($d);
+      my $total         = ($requested->valueOf > $content_total->valueOf) ? $requested : $content_total;
+      my $vattach       = $$props{vattach} || 'baseline';
+      if ($vattach eq 'top') {
+        # vtop: height = first line height (h), depth = total - h
+        $d = $total->subtract($h); }
+      elsif ($vattach eq 'middle') {
+        my $half = Dimension($total->valueOf / 2);
+        $h = $half;
+        $d = $half; }
+      else {    # bottom/baseline: height = total - d, depth = last depth (d)
+        $h = $total->subtract($d); } }
+    return ($w, $h, $d); },
   properties => sub {
     (width => $_[4],
-      vattach => translateAttachment($_[1]),
-      height  => $_[2]); },
+      vattach          => translateAttachment($_[1]),
+      requested_height => $_[2]); },
   mode         => 'internal_vertical',
   robust       => 1,
   beforeDigest => sub {
@@ -4839,6 +4894,7 @@ DefEnvironment('{minipage}[] OptionalUndigested [] {Dimension}', sub {
     AssignRegister('\hsize'       => $width);
     AssignRegister('\textwidth'   => $width);
     AssignRegister('\columnwidth' => $width);
+    AssignRegister('\linewidth'   => $width);
     $whatsit->setProperties(width => $width, vattach => $vattach);
     Let('\\\\', '\lx@newline'); },
   afterDigestBody => sub {
@@ -5669,8 +5725,25 @@ DefMacro('\@font@warning{}',
 
 DefMacroI('\check@mathfonts', undef, Tokens());
 DefMacro('\fontsize{}{}', Tokens());
-# https://tex.stackexchange.com/questions/112492/setfontsize-vs-fontsize#112501
-DefMacro('\@setfontsize{}{}{}', '\let\@currsize#1');
+# \@setfontsize{cmd}{fontsize}{baselineskip}: update \baselineskip to match the
+# new font size, as real TeX does via \set@fontsize → \selectfont → \size@update.
+# This enables accurate box sizing through the baselineskip captured in repackHorizontal.
+DefPrimitive('\@setfontsize{}{}{}', sub {
+    my ($stomach, $cmd, $fontsize, $baselineskip) = @_;
+    Let(T_CS('\@currsize'), $cmd);
+    # Parse baselineskip: may be a number (in pt) or a dimension
+    my $bs_str = ToString($baselineskip);
+    $bs_str .= 'pt' unless $bs_str =~ /[a-z]/;    # default unit is pt
+    my $bs = Dimension($bs_str);
+    if ($bs) {
+      my $bs_sp = $bs->valueOf;
+      if ($bs_sp && $bs_sp > 0) {
+        # Apply \baselinestretch / \setstretch factor
+        my $stretch = LookupValue('SETSTRETCH_FACTOR') || 1;
+        $bs_sp = int($bs_sp * $stretch) if $stretch != 1;
+        AssignRegister('\baselineskip', Dimension($bs_sp . 'sp')); } }
+    return; },
+  locked => 1);
 
 #======================================================================
 DefMacroI('\loggingoutput', undef, Tokens());

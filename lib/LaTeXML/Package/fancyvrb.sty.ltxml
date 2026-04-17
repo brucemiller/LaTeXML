@@ -17,6 +17,12 @@ use LaTeXML::Package;
 
 #**********************************************************************
 
+# Pre-define \FancyVerbSpace as a proper skip register so that topsep
+# assignments like \topsep\FancyVerbSpace work correctly.  Without this,
+# the native TeX \newskip creates an Expandable instead of a Register,
+# causing \topsep to retain its default 8pt value inside Verbatim.
+DefRegister('\FancyVerbSpace' => Glue('0pt plus 6pt'));
+
 InputDefinitions('fancyvrb', type => 'sty', noltxml => 1);
 
 #**********************************************************************

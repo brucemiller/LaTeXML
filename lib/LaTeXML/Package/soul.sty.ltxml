@@ -97,6 +97,7 @@ DefPrimitive('\setstcolor{}', sub { AssignValue(soul_strike_color => $_[1]); });
 DefMacro('\texthl', '\@ifpackageloaded{color}{\lx@texthl@color}{\textul}');
 DefConstructor('\lx@texthl@color{}',
   "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  sizer           => '#1', mode => 'restricted_horizontal',
   enterHorizontal => 1,
   bounded => 1, beforeDigest => sub { MergeFont(background => getSOULcolor('soul_hl_color')); });
 # Customizing highlight

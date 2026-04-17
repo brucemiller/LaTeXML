@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="tcolorbox"?>
+<?latexml package="enumitem"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:svg="http://www.w3.org/2000/svg">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <figure inlist="lof" labels="LABEL:fig:ex-judge1" placement="tbp" xml:id="S0.F1">
+    <tags>
+      <tag>Figure 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Figure 1</tag>
+    </tags>
+    <logical-block align="center" class="ltx_minipage" vattach="middle" width="338.1pt">
+      <para class="ltx_noindent" xml:id="S0.F1.p1">
+        <picture height="322.3" tex="\hbox to338.1pt{\vbox to232.93pt{\pgfpicture\makeatletter\hbox{\thinspace%&#10;\lower 0.0pt\hbox to0.0pt{\pgfsys@beginscope\pgfsys@invoke{ }\definecolor{%&#10;pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@rgb@stroke{0}{0}{0}\pgfsys@invoke{ }%&#10;\pgfsys@color@rgb@fill{0}{0}{0}\pgfsys@invoke{ }\pgfsys@setlinewidth{\the%&#10;\pgflinewidth}\pgfsys@invoke{ }\nullfont\hbox to0.0pt{\pgfsys@beginscope%&#10;\pgfsys@invoke{ }{}{}{}{}\pgfsys@beginscope\pgfsys@invoke{ }{}{}{}{}{}{}{}{}%&#10;\definecolor[named]{pgffillcolor}{rgb}{0.7,0.7,0.7}\pgfsys@color@gray@fill{0.7%&#10;}\pgfsys@invoke{ }\pgfsys@fill@opacity{1.0}\pgfsys@invoke{ }\pgfsys@moveto{0.0%&#10;pt}{0.0pt}\pgfsys@lineto{0.0pt}{232.92714pt}\pgfsys@lineto{338.09853pt}{232.92%&#10;714pt}\pgfsys@lineto{338.09853pt}{0.0pt}\pgfsys@closepath\pgfsys@fill%&#10;\pgfsys@invoke{ }\pgfsys@invoke{ }\pgfsys@endscope\pgfsys@beginscope%&#10;\pgfsys@invoke{ }{}{}{}{}{}{}{}{}\definecolor[named]{pgffillcolor}{rgb}{%&#10;0.98,0.98,0.98}\pgfsys@color@gray@fill{0.98}\pgfsys@invoke{ }%&#10;\pgfsys@fill@opacity{1.0}\pgfsys@invoke{ }\pgfsys@moveto{0.4pt}{0.4pt}%&#10;\pgfsys@lineto{0.4pt}{232.52715pt}\pgfsys@lineto{337.69853pt}{232.52715pt}%&#10;\pgfsys@lineto{337.69853pt}{0.4pt}\pgfsys@closepath\pgfsys@fill\pgfsys@invoke{%&#10; }\pgfsys@invoke{ }\pgfsys@endscope\pgfsys@beginscope\pgfsys@invoke{ }%&#10;\pgfsys@fill@opacity{1.0}\pgfsys@invoke{ }{{{}}{{}}{{}}{{}}{{}}{{}}{{}}%&#10;\pgfsys@beginscope\pgfsys@invoke{ }\pgfsys@transformcm{1.0}{0.0}{0.0}{1.0}{14.%&#10;62634pt}{10.93579pt}\pgfsys@invoke{ }\hbox{{\color[rgb]{0,0,0}\definecolor[%&#10;named]{pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@gray@stroke{0}%&#10;\pgfsys@color@gray@fill{0}\hbox{\minipage[b]{308.84584pt}\color[rgb]{0,0,0}%&#10;\definecolor[named]{pgfstrokecolor}{rgb}{0,0,0}\pgfsys@color@gray@stroke{0}%&#10;\pgfsys@color@gray@fill{0}\ignorespaces\ignorespaces\footnotesize The current %&#10;kernel runs the 256$\times$256 loop fully sequentially ($\sim$65{,}543 cycles)%&#10;, so there is still headroom. To slash the latency you should:&#10;\begin{enumerate}\par\enumerate@item@Hoist {B[i]} load out of the inner j-loop%&#10; so you only read B once per row.&#10;\par\enumerate@item@Pipeline the inner loop with II=1 (\#pragma HLS pipeline %&#10;II=1).&#10;\par\enumerate@item@Vectorize by a factor of 4 on a 128-bit data path: pack 4 %&#10;values into one AXI transfer, unroll the inner loop by 4, and operate on 4 %&#10;elements/cycle to get a 4$\times$ speedup.&#10;\par\enumerate@item@(Optional) Separate memory-load, compute and write into %&#10;three functions and apply \#pragma HLS dataflow to overlap A/B reads, compute,%&#10; and C writes.&#10;\par\end{enumerate}\par With these changes you can reduce the cycles from $%&#10;\sim$65{,}536 to $\sim$16{,}384 (plus a small pipeline fill/drain), cutting %&#10;your latency by 4$\times$.&#10;\endminipage}}}\pgfsys@invoke{ }\pgfsys@endscope}\pgfsys@invoke{ }%&#10;\pgfsys@endscope&#10;\pgfsys@invoke{ }\pgfsys@endscope{}{}{}\hss}\pgfsys@discardpath\pgfsys@invoke{%&#10; }\pgfsys@endscope\hss}}\endpgfpicture}}" width="467.83" xml:id="S0.F1.p1.pic1">
+          <svg:svg height="322.3" overflow="visible" version="1.1" viewBox="0 0 467.83 322.3" width="467.83">
+            <svg:g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,322.3) matrix(1 0 0 -1 0 0)">
+              <svg:g fill="#B3B3B3" fill-opacity="1.0">
+                <svg:path d="M 0 0 L 0 322.3 L 467.83 322.3 L 467.83 0 Z" style="stroke:none"/>
+              </svg:g>
+              <svg:g fill="#FAFAFA" fill-opacity="1.0">
+                <svg:path d="M 0.55 0.55 L 0.55 321.75 L 467.27 321.75 L 467.27 0.55 Z" style="stroke:none"/>
+              </svg:g>
+              <svg:g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 20.24 15.13)">
+                <svg:foreignObject color="#000000" height="297.57" overflow="visible" style="font-size:13.84px;--ltx-fo-width:30.89em;--ltx-fo-height:294.8px;--ltx-fo-depth:2.77px;" transform="matrix(1 0 0 -1 0 294.8)" width="427.35"><inline-block class="ltx_minipage" vattach="bottom" width="30.89em">
+                    <p><text fontsize="80%">The current kernel runs the 256<Math mode="inline" tex="\times" text="*" xml:id="S0.F1.p1.pic1.m1">
+                          <XMath>
+                            <XMTok meaning="times" role="MULOP">×</XMTok>
+                          </XMath>
+                        </Math>256 loop fully sequentially (<Math mode="inline" tex="\sim" text="similar-to" xml:id="S0.F1.p1.pic1.m2">
+                          <XMath>
+                            <XMTok meaning="similar-to" name="sim" role="RELOP">∼</XMTok>
+                          </XMath>
+                        </Math>65,543 cycles), so there is still headroom. To slash the latency you should:</text></p>
+                    <enumerate xml:id="S0.I1">
+                      <item xml:id="S0.I1.i1">
+                        <tags>
+                          <tag>1.</tag>
+                          <tag role="refnum">1</tag>
+                          <tag role="typerefnum">item 1</tag>
+                        </tags>
+                        <para xml:id="S0.I1.i1.p1">
+                          <p><text fontsize="80%">Hoist </text><text font="typewriter" fontsize="80%">B[i]</text><text fontsize="80%"> load out of the inner j-loop so you only read B once per row.</text></p>
+                        </para>
+                      </item>
+                      <item itemsep="2.0pt" xml:id="S0.I1.i2">
+                        <tags>
+                          <tag>2.</tag>
+                          <tag role="refnum">2</tag>
+                          <tag role="typerefnum">item 2</tag>
+                        </tags>
+                        <para xml:id="S0.I1.i2.p1">
+                          <p><text fontsize="80%">Pipeline the inner loop with II=1 (#pragma HLS pipeline II=1).</text></p>
+                        </para>
+                      </item>
+                      <item itemsep="2.0pt" xml:id="S0.I1.i3">
+                        <tags>
+                          <tag>3.</tag>
+                          <tag role="refnum">3</tag>
+                          <tag role="typerefnum">item 3</tag>
+                        </tags>
+                        <para xml:id="S0.I1.i3.p1">
+                          <p><text fontsize="80%">Vectorize by a factor of 4 on a 128-bit data path: pack 4 values into one AXI transfer, unroll the inner loop by 4, and operate on 4 elements/cycle to get a 4</text><Math mode="inline" tex="\times" text="*" xml:id="S0.I1.i3.p1.m1">
+                              <XMath>
+                                <XMTok fontsize="80%" meaning="times" role="MULOP">×</XMTok>
+                              </XMath>
+                            </Math><text fontsize="80%"> speedup.</text></p>
+                        </para>
+                      </item>
+                      <item itemsep="2.0pt" xml:id="S0.I1.i4">
+                        <tags>
+                          <tag>4.</tag>
+                          <tag role="refnum">4</tag>
+                          <tag role="typerefnum">item 4</tag>
+                        </tags>
+                        <para xml:id="S0.I1.i4.p1">
+                          <p><text fontsize="80%">(Optional) Separate memory-load, compute and write into three functions and apply #pragma HLS dataflow to overlap A/B reads, compute, and C writes.</text></p>
+                        </para>
+                      </item>
+                    </enumerate>
+                    <p><text fontsize="80%">With these changes you can reduce the cycles from <Math mode="inline" tex="\sim" text="similar-to" xml:id="S0.F1.p1.pic1.m3">
+                          <XMath>
+                            <XMTok meaning="similar-to" name="sim" role="RELOP">∼</XMTok>
+                          </XMath>
+                        </Math>65,536 to <Math mode="inline" tex="\sim" text="similar-to" xml:id="S0.F1.p1.pic1.m4">
+                          <XMath>
+                            <XMTok meaning="similar-to" name="sim" role="RELOP">∼</XMTok>
+                          </XMath>
+                        </Math>16,384 (plus a small pipeline fill/drain), cutting your latency by 4<Math mode="inline" tex="\times" text="*" xml:id="S0.F1.p1.pic1.m5">
+                          <XMath>
+                            <XMTok meaning="times" role="MULOP">×</XMTok>
+                          </XMath>
+                        </Math>.</text></p>
+                  </inline-block></svg:foreignObject>
+              </svg:g>
+            </svg:g>
+          </svg:svg>
+        </picture>
+      </para>
+    </logical-block>
+    <toccaption class="ltx_centering"><tag close=" ">1</tag>Feedback produced by the <text font="typewriter">judge</text> agent highlighting optimization opportunities.</toccaption>
+    <caption class="ltx_centering"><tag close=": ">Figure 1</tag>Feedback produced by the <text font="typewriter">judge</text> agent highlighting optimization opportunities.</caption>
+  </figure>
+</document>

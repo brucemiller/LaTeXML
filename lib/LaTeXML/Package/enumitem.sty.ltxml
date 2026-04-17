@@ -123,6 +123,7 @@ sub endEnumItemize {
   if (my $series = $whatsit->getProperty('series')) {
     if (my $ctr = $whatsit->getProperty('counter')) {
       AssignValue('enumitem_series_' . $series . '_last' => CounterValue($ctr), 'global'); } }
+  $STATE->getStomach->getGullet->unread(T_CS('\par'));
   return; }
 
 DefMacro('\restartlist{}', sub {
@@ -199,7 +200,6 @@ DefPrimitive('\newlist{}{}{}', sub {
     DefEnvironmentI($listname, "OptionalKeyVals:enumitem",
       "<ltx:$elementname xml:id='#id'>#body</ltx:$elementname>",
       properties      => sub { beginEnumItemize($listname, $listname, $_[1]); },
-      beforeDigestEnd => sub { Digest('\par'); },
       afterDigestBody => sub { endEnumItemize($_[1]); },
       mode            => 'internal_vertical',
       locked          => 1);

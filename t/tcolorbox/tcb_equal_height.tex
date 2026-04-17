@@ -1,0 +1,58 @@
+% Extracted from arXiv:2410.05229 (issue #3148) - Figure 1
+% Tests: two side-by-side tcolorboxes with \highlight, \tcblower, equal height group
+\documentclass{article}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{most}
+\usepackage{xcolor}
+\usepackage{soul}
+\definecolor{cyan20}{HTML}{BAE6FF}
+\definecolor{orange20}{HTML}{FFD9BE}
+\definecolor{purple30}{HTML}{d4bbff}
+\definecolor{magenta20}{HTML}{FFD6E8}
+\definecolor{yellow20}{HTML}{fddc69}
+\definecolor{green20}{HTML}{A7F0BA}
+\definecolor{gray30}{HTML}{c6c6c6}
+\newcommand{\highlight}[2]{\sethlcolor{#1}\hl{#2}}
+\begin{document}
+
+\begin{figure}[t]
+\centering
+\noindent
+\begin{minipage}{0.395\textwidth}
+\begin{tcolorbox}[title=GSM8K,equal height group=problem]
+When \highlight{cyan20}{Sophie} watches her \highlight{orange20}{nephew}, she gets out a variety of toys for him. The bag of building blocks has \highlight{purple30}{31} blocks in it. The bin of stuffed animals has \highlight{magenta20}{8} stuffed animals inside. The tower of stacking rings has \highlight{yellow20}{9} multicolored rings on it. \highlight{cyan20}{Sophie} recently bought a tube of bouncy balls, bringing her total number of toys for her \highlight{orange20}{nephew} up to \highlight{green20}{62}. How many bouncy balls came in the tube?
+\vspace{1.75cm}
+\tcblower
+Let T be the number of bouncy balls in the tube.\\
+After buying the tube of balls, \highlight{cyan20}{Sophie} has \highlight{purple30}{31}+\highlight{magenta20}{8}+\highlight{yellow20}{9}+ T = {48} + T =\highlight{green20}{62} toys for her \highlight{orange20}{nephew}.\\
+Thus, T =\highlight{green20}{62}-{48} = $<$$<$\highlight{green20}{62}-48=\highlight{gray30}{14}$>$$>$\highlight{gray30}{14} bouncy balls came in the tube.
+\end{tcolorbox}
+\end{minipage}
+\hfill
+\begin{minipage}{0.595\textwidth}
+\begin{tcolorbox}[title=GSM Symbolic Template,equal height group=problem,height=9cm]
+When \highlight{cyan20}{\{name\}} watches her \highlight{orange20}{\{family\}}, she gets out a variety of toys for him. The bag of building blocks has \highlight{purple30}{\{x\}} blocks in it. The bin of stuffed animals has \highlight{magenta20}{\{y\}} stuffed animals inside. The tower of stacking rings has \highlight{yellow20}{\{z\}} multicolored rings on it. \highlight{cyan20}{\{name\}} recently bought a tube of bouncy balls, bringing her total number of toys she bought for her \highlight{orange20}{\{family\}} up to \highlight{green20}{\{total\}}. How many bouncy balls came in the tube?\\\\
+
+\#variables:\\
+- \highlight{cyan20}{name} = sample(names)\\
+- \highlight{orange20}{family} = sample(["nephew", "cousin", "brother"])\\
+- \highlight{purple30}{x} = range(5, 100)\\
+- \highlight{magenta20}{y} = range(5, 100)\\
+- \highlight{yellow20}{z} = range(5, 100)\\
+- \highlight{green20}{total} = range(100, 500)\\
+- \highlight{gray30}{ans} = range(85, 200)\\
+
+\#conditions:\\
+- \highlight{purple30}{x} + \highlight{magenta20}{y} + \highlight{yellow20}{z} + \highlight{gray30}{ans} == \highlight{green20}{total}\\
+
+\tcblower
+Let T be the number of bouncy balls in the tube. After buying the tube of balls, \highlight{cyan20}{\{name\}} has \highlight{purple30}{\{x\}} + \highlight{magenta20}{\{y\}} + \highlight{yellow20}{\{z\}} + T = \{\highlight{purple30}{x}+\highlight{magenta20}{y}+\highlight{yellow20}{z}\} + T = \highlight{green20}{\{total\}} toys for her \highlight{orange20}{\{family\}}.\\
+
+Thus, T = \highlight{green20}{\{total\}} - \{\highlight{purple30}{x}+\highlight{magenta20}{y}+\highlight{yellow20}{z}\} = \highlight{gray30}{\{ans\}} bouncy balls came in the tube.
+\end{tcolorbox}
+\end{minipage}
+
+\caption{Illustration of the GSM-Symbolic template creation process.}
+\end{figure}
+
+\end{document}
