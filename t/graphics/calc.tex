@@ -1,5 +1,6 @@
 \documentclass{article}
 \usepackage{calc}
+\usepackage{graphicx}
 \begin{document}
 
 \section{Counters}
@@ -88,4 +89,15 @@ Length of ``\foo = \the\lena.
 \setcounter{ctra}{3*\maxof{\four+5}{3*\four}}
 Count 3*maxof(\four+5)(3*\four) =\thectra.
 
+\section{Magical Redefinition}
+All but 1st 2 would fail in stock LaTeX:
+\makebox{Foo}
+\makebox[1in]{Foo}
+\makebox[{1in}]{Foo}
+\makebox[{{1in}}]{Foo}
+\makebox[0.5in*2]{Foo}
+
+\includegraphics{none}
+\includegraphics[width=2in]{none}
+\includegraphics[width=1in*2]{none}
 \end{document}

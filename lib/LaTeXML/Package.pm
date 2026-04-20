@@ -209,23 +209,33 @@ sub parseParameters {
   $p =~ s/^\s+//; $p =~ s/\s+$//;
   while ($p) {
     # Handle possibly nested cases, such as {Number}
+    # That can be explicitly defined as {Number},
+    # OR will be handled as readArg, then the content reparsed as Number
     if ($p =~ s/^(\{([^\}]*)\})\s*//) {
       my ($spec, $inner_spec) = ($1, $2);
-      my $inner = ($inner_spec ? parseParameters($inner_spec, $for) : undef);
-      # If single inner spec is optional, make whole thing optional
-      my $opt = $inner && (scalar(@$inner) == 1) && $$inner[0]{optional};
-      push(@params, LaTeXML::Core::Parameter->new('Plain', $spec, extra => [$inner],
-          optional => $opt)); }
-    elsif ($p =~ s/^(\[([^\]]*)\])\s*//) {    # Ditto for Optional
-      my ($spec, $inner_spec) = ($1, $2);
-      if ($inner_spec =~ /^Default:(.*)$/) {
-        push(@params, LaTeXML::Core::Parameter->new('Optional', $spec,
-            extra => [TokenizeInternal($1), undef])); }
-      elsif ($inner_spec) {
-        push(@params, LaTeXML::Core::Parameter->new('Optional', $spec,
-            extra => [undef, parseParameters($inner_spec, $for)])); }
+      if(LookupMapping('PARAMETER_TYPES', $spec)) { # If specially defined with braces?
+        push(@params, LaTeXML::Core::Parameter->new($spec, $spec)); }
       else {
-        push(@params, LaTeXML::Core::Parameter->new('Optional', $spec)); } }
+        my $inner = ($inner_spec ? parseParameters($inner_spec, $for) : undef);
+        # If single inner spec is optional, make whole thing optional
+        my $opt = $inner && (scalar(@$inner) == 1) && $$inner[0]{optional};
+        push(@params, LaTeXML::Core::Parameter->new('Plain', $spec, extra => [$inner],
+          optional => $opt)); } }
+    elsif ($p =~ s/^(\[([^\]]*)\])\s*//) {    # Ditto for Optional
+      # Optional also can be defined explicitly as [Type]
+      # OR read using readOptional, then content (if any) reparsed as Type.
+      my ($spec, $inner_spec) = ($1, $2);
+      if(LookupMapping('PARAMETER_TYPES', $spec)) { # If specially defined with []?
+        push(@params, LaTeXML::Core::Parameter->new($spec, $spec, optional => 1)); }
+      else {
+        if ($inner_spec =~ /^Default:(.*)$/) {
+          push(@params, LaTeXML::Core::Parameter->new('Optional', $spec,
+              extra => [TokenizeInternal($1), undef])); }
+        elsif ($inner_spec) {
+          push(@params, LaTeXML::Core::Parameter->new('Optional', $spec,
+              extra => [undef, parseParameters($inner_spec, $for)])); }
+        else {
+          push(@params, LaTeXML::Core::Parameter->new('Optional', $spec)); } } }
     elsif ($p =~ s/^((\w*)(:([^\s\{\[]*))?)\s*//) {
       my ($spec, $type, $extra) = ($1, $2, $4);
       my @extra = map { TokenizeInternal($_) } split('\|', $extra || '');
