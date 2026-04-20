@@ -45,6 +45,7 @@ DefMacro('\title[]{}',
 # otherwise, \author should be followed by \affiliation
 DefMacro('\author[]{}',    '\lx@add@author[annotations={#1}]{#2}');
 DefMacro('\affiliation{}', '\lx@add@affiliation[annotate=new]{#1}');
+DefMacro('\noaffiliation', '\lx@add@affiliation[annotate=new]{}');
 DefMacro('\affil[]{}',
   '\lx@add@affiliation[annotate={\ifx.#1.new\else 1\fi},label={#1}]{#2}');
 # \address provides an address to the previous \author

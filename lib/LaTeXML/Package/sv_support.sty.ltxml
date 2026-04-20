@@ -45,6 +45,8 @@ DefMacro('\lx@sv@institute{}', '\lx@sv@institute@#1\at\done');
 DefMacro('\lx@sv@institute@ Until:\at Until:\done',
   '\ifx.#2.\lx@add@affiliation{#1}'
     . '\else\lx@add@affiliation[label={fuzzy:#1}]{#2}\fi');
+# for older versions?
+DefMacro('\inst{}', '\lx@request@frontmatter@annotation[affiliation]{#1}');
 
 # \email should be used within \institute, (but CAN be used anywhere; it only formats)
 DefMacro('\email Semiverbatim', '\lx@add@email[name={\emailname: }]{#1}');
