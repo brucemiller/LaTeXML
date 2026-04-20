@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml" options="bibconfig=bbl"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>bbl</p>
+  </para>
+  <bibliography xml:id="bib">
+    <title>References</title>
+    <biblist>
+      <bibitem key="example" xml:id="bib.bib1">
+        <tags>
+          <tag>[1]</tag>
+          <tag role="refnum">1</tag>
+        </tags>
+        <bibblock>
+bbl.
+</bibblock>
+        <bibblock>Some bbl.
+</bibblock>
+      </bibitem>
+    </biblist>
+  </bibliography>
+  <para xml:id="p2">
+    <p><cite><bibref bibrefs="*" show="nothing"/></cite></p>
+  </para>
+</document>
