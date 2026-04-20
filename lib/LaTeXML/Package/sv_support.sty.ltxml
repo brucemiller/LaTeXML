@@ -232,7 +232,7 @@ DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
   enterHorizontal => 1,
-  reversion => '\qed');
+  reversion       => '\qed');
 Let('\smartqed',     '\qed');
 Let('\squareforqed', '\qed');
 
@@ -285,8 +285,10 @@ DefMacro('\lastevenhead', Tokens());
 # Odd; they add an optional arg!
 DefEnvironment('{description}[]',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
-  properties => sub { beginItemize('description'); },
-  locked     => 1);
+  properties   => sub { beginItemize('description', '@desc'); },
+  mode         => 'internal_vertical',
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  locked       => 1);
 
 #======================================================================
 1;
