@@ -14,7 +14,9 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## Meta elements are generally hidden;
 ## they can appear in both inline and block contexts.
-Meta.class   |= note | declare | indexmark | glossarydefinition | rdf | resource | navigation
+Meta.class   |= note | declare | indexmark | glossarydefinition
+  | rdf | resource | navigation
+  | alternate-text | long-description
 
 #======================================================================
 
@@ -171,6 +173,35 @@ rdf_attributes =
 
 ## Content model for \elementref{rdf}
 rdf_model = Flow.model
+
+#======================================================================
+# Descriptions & Accessibilty
+
+alternate-text =
+## A container for alternative or replacement text for another element (the parent);
+## This would typically be used when the parent cannot or should not be rendered;
+## for example, spoken by screen readers as a replacement for images.
+element alternate-text { alternate-text_attributes, alternate-text_model }
+
+## Attributes for \elementref{alternate-text}
+alternate-text_attributes = empty
+
+## Content for \elementref{alternate-text}
+alternate-text_model = Flow.model
+
+long-description =
+## A container for a detailed description of another element (the parent);
+## This would typically be used to describe the actual contents of
+## a figure or image, as distinct from a caption which may only describe its
+## source or purpose.
+element long-description { long-description_attributes, long-description_model }
+
+## Attributes for \elementref{long-description}
+long-description_attributes = empty
+
+## Content for \elementref{long-description}
+long-description_model = Flow.model
+
 
 #======================================================================
 # Document-level (or sub-document level) Meta objects

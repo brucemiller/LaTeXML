@@ -662,14 +662,16 @@
   </xsl:template>
 
   <xsl:template match="ltx:graphics">
-    <xsl:choose>
-      <xsl:when test="@imagesrc">
-        <graphic xlink:href="{./@imagesrc}"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <graphic xlink:href="{./@graphic}"/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <graphic>
+      <xsl:attribute name='xlink:href'>
+        <xsl:choose>
+          <xsl:when test="@imagesrc"><xsl:value-of select="./@imagesrc"/></xsl:when>
+          <xsl:otherwise><xsl:value-of select="./@graphic"/></xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+      <!-- and process any contained metadata -->
+      <xsl:apply-templates/>
+    </graphic>
   </xsl:template>
 
   <xsl:template match="ltx:theorem">
@@ -684,6 +686,20 @@
       <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
       <xsl:apply-templates/>
     </statement>
+  </xsl:template>
+
+  <xsl:template match="ltx:alternate-text">
+    <alt-text>
+      <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
+      <xsl:apply-templates/>
+    </alt-text>
+  </xsl:template>
+
+  <xsl:template match="ltx:long-description">
+    <long-desc>
+      <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
+      <xsl:apply-templates/>
+    </long-desc>
   </xsl:template>
 
   <!-- ======================================================================
