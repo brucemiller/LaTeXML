@@ -406,6 +406,37 @@ DefPrimitive('\lx@add@frontmatter@now OptionalKeyVals {} OptionalKeyVals:Frontma
     return; },
   bounded => 1);
 
+# This is a variant of \lx@add@frontmatter which digests immediately
+# until a terminator token;
+# It is useful for frontmatter environments, like {abstract}
+# (expanding until \end{abstract} generally gets tangled by contents which expect
+# digestion and side effects).
+DefPrimitive('\lx@add@frontmatter@until {} OptionalKeyVals:Frontmatter DefToken', sub {
+    my ($stomach, $tag, $kv, $end) = @_;
+    $tag = ToString($tag);
+    my $frontmatter = LookupValue('frontmatter');
+    my %options     = ($kv ? $kv->beDigested($stomach)->getHash : ());
+    my $role        = ($kv && ToString($kv->getValue('role')));          # Careful! Multiple values
+    my $n           = 0;
+    # extract (possibly multiple!) labels
+    my @labels = cleanFrontmatterLabels(($options{annotations}) || '', '');
+    if ($role) {
+      $n = LookupMapping('num_' . $tag, $role); $n++;
+      AssignMapping('num_' . $tag, $role => $n);
+      $options{role} = $role;
+      $options{_num} = $n;
+      # record sequence position as potential attachment label
+      push(@labels, CleanLabel($n, $role)); }
+    $options{name}         = getFrontmatterName($options{name}, $tag, $role);
+    $options{_annotations} = join(',', @labels);
+    my $entry = [$tag, {%options}, 'place_keeper'];    # (in case embedded)
+    push(@{ $$frontmatter{$tag} }, $entry);
+    $$entry[2] = List($stomach->digestNextBody($end));
+    Debug("FRONT Add " . showFrontmatter($entry)
+        . "\n   for: " . ToString($$entry[2])) if $LaTeXML::DEBUG{frontmatter};
+    return; },
+  bounded => 1);
+
 # Some frontmatter elements are "structured" in the sense of having a main bit of data
 # and several optional extra bits.  For example, LaTeX classes typically have markup
 # to define "creators" (authors, editors,etc) and a variety of markup strategies to
@@ -575,10 +606,17 @@ DefMacro('\lx@add@keywords[]{}',
 DefMacro('\lx@add@classification[]{}',
   '\lx@add@frontmatter{ltx:classification}[#1]{#2}');
 # To handle the above as environments
-DefMacro('\lx@begin@abstract[] XUntil:\lx@end@abstract', '\lx@add@abstract[#1]{#2}');
+DefMacro('\lx@begin@abstract[]',
+  '\lx@clear@frontmatter{ltx:abstract}'
+    . '\lx@add@frontmatter@until{ltx:abstract}[#1]{\lx@end@abstract}');
+
 ##Let('\lx@end@abstract', '\relax');
 DefPrimitive('\lx@end@abstract', sub { (); });    # Like \let \relax, but \relax not def yet!
-DefMacro('\lx@begin@keywords[] XUntil:\lx@end@keywords', '\lx@add@keywords[#1]{#2}');
+
+DefMacro('\lx@begin@keywords[]',
+  '\lx@clear@frontmatter{ltx:keywords}'
+    . '\lx@add@frontmatter@until{ltx:keywords}[#1]{\lx@end@keywords}');
+
 ##Let('\lx@end@keywords', '\relax');
 DefPrimitive('\lx@end@keywords', sub { (); });
 
@@ -665,6 +703,7 @@ DefMacro('\lx@add@authors{}', sub {
               Invocation(T_CS('\lx@affiliation@withsup'), $line))); } } }
     else {
       foreach my $block (SplitTokens($stuff, @authorsplits)) {
+        next unless $block->unlist;
         my ($author, @lines) = SplitTokens($block, T_CS("\\\\"));
         push(@calls, Invocation(T_CS('\lx@add@author'), undef,
             Tokens($author,
@@ -771,7 +810,7 @@ sub insertFrontMatter {
       local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'), '', T_SPACE);
       foreach my $item (@$list) {
         insertFrontMatter_rec($document, $item);
-  } } }
+      } } }
   relocateAnnotations($document);
   return; }
 
