@@ -59,6 +59,14 @@ sub process {
   return unless $$self{stylesheet};
   # # Set up the Stylesheet parameters; making pathname parameters relative to document
   my %params = %{ $$self{parameters} };
+  # set up XSLT extension function f:_copy-resource(src, type)
+  $$self{stylesheet}->register_function('http://dlmf.nist.gov/LaTeXML/functions', '_copy-resource', sub {
+      # values can be scalars or XML::LibXML::NodeList
+      my ($src, $type) = @_;
+      return Warn('malformed', '', $self, 'f:_copy-resource() requires at least one argument') unless defined $src;
+      # string interpolation converts node lists to the concatenation of all the string values
+      return $self->copyResource($doc, "$src", defined $type ? ("$type") : ());
+  });
   # Deal with any resources embedded within the document
   if (my @resnodes = $doc->findnodes('//ltx:resource[@src]')) {
     if ($$self{noresources}) {
