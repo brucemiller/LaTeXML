@@ -39,6 +39,7 @@ sub isDefinable {
         || LookupValue('2.09_COMPATIBILITY'))    # Let redefinitions happen in compatibility mode.
       && (($name ne 'relax') && ($name !~ /^end/))); }
 
+DefMacro('\lx@strip@braces{}', sub { $_[1]->stripBraces; });
 #======================================================================
 
 DefPrimitive('\lx@endash', sub {
@@ -145,6 +146,8 @@ sub SplitTokens {
           Warn("unexpected", "delimiter", undef,
             "SplitTokens delimiter not Token or Tokens: $t"); } }
       if ($matched) {
+        while (@toks && Equals($toks[0],  T_SPACE)) { shift(@toks); }
+        while (@toks && Equals($toks[-1], T_SPACE)) { pop(@toks); }
         push(@items, Tokens(@toks)); @toks = (); }
       elsif ($t->defined_as(T_BEGIN)) {
         push(@toks, $t);
@@ -162,6 +165,8 @@ sub SplitTokens {
           last if $cc == CC_MATH; } }
       else {
         push(@toks, $t); } } }
+  while (@toks && Equals($toks[0],  T_SPACE)) { shift(@toks); }
+  while (@toks && Equals($toks[-1], T_SPACE)) { pop(@toks); }
   push(@items, Tokens(@toks)) if @toks;
   return @items; }
 
@@ -683,6 +688,7 @@ DefMacro('\lx@add@authors{}', sub {
       my @lines   = SplitTokens($stuff, @authoraffilsplits);
       my @entries = ();
       foreach my $line (@lines) {
+        next unless $line->unlist;
         my $p = positionOf($line, @authorsup_markers);
         if (!$p) {    # No marker?
           if (@entries) {    # continues previous entry;
@@ -706,9 +712,10 @@ DefMacro('\lx@add@authors{}', sub {
       foreach my $block (SplitTokens($stuff, @authorsplits)) {
         next unless $block->unlist;
         my ($author, @lines) = SplitTokens($block, T_CS("\\\\"));
+        #        @lines = map { $_->stripBraces; } @lines;
         push(@calls, Invocation(T_CS('\lx@add@author'), undef,
             Tokens($author,
-              map { Invocation(T_CS('\lx@add@affiliation'), undef, $_); } @lines))); } }
+              map { ($_->unlist ? Invocation(T_CS('\lx@add@affiliation'), undef, $_) : ()); } @lines))); } }
     return @calls; });
 
 DefMacro('\lx@author@withsup{}',
@@ -724,17 +731,17 @@ DefMacro('\lx@affiliation@withsup{}',
     . '#1'
     . '\egroup');
 
-DefMacro('\lx@add@affiliations{}', sub {
-    my ($gullet, $stuff) = @_;
+DefMacro('\lx@add@affiliations[]{}', sub {
+    my ($gullet, $attr, $stuff) = @_;
     my @calls = ();
     dequeueFrontMatter('ltx:contact', role => 'affiliation');
     if (positionOf($stuff, @authorsup_markers)) {
       foreach my $line (SplitTokens($stuff, @affilsplits)) {
-        push(@calls, Invocation(T_CS('\lx@add@affiliation'), undef,
+        push(@calls, Invocation(T_CS('\lx@add@affiliation'), $attr,
             Invocation(T_CS('\lx@affiliation@withsup'), $line))); } }
     else {
       foreach my $line (SplitTokens($stuff, @affilsplits)) {
-        push(@calls, Invocation(T_CS('\lx@add@affiliation'), undef, $line)); } }
+        push(@calls, Invocation(T_CS('\lx@add@affiliation'), $attr, $line)); } }
     return @calls; });
 
 DefMacro('\lx@date@received@name',  'Received~');
