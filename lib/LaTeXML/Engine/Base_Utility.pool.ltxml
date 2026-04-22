@@ -671,10 +671,11 @@ my @authorsplits = (T_CS('\and'), T_CS('\And'), T_CS('\AND'), T_OTHER(','),
 # Things to split author & affilliation mix; NO comma in affiliations!!!
 my @authoraffilsplits = (T_CS('\and'), T_CS('\And'), T_CS('\AND'),
   $literaland, T_CS('\quad'), T_CS('\qquad'), T_CS("\\\\"),);
+my @affilsplits       = (T_CS('\quad'), T_CS('\qquad'), T_CS("\\\\"),);
 my @authorsup_markers = (T_SUPER, T_CS('\textsuperscript'));
 
 DefMacro('\lx@add@authors{}', sub {
-    my ($gullet, $stuff, $if, $else) = @_;
+    my ($gullet, $stuff) = @_;
     my @tokens = $stuff->unlist;
     my @calls  = ();
     dequeueFrontMatter('ltx:creator', role => 'author');
@@ -722,6 +723,19 @@ DefMacro('\lx@affiliation@withsup{}',
     . '\let\textsuperscript\lx@set@frontmatter@label'
     . '#1'
     . '\egroup');
+
+DefMacro('\lx@add@affiliations{}', sub {
+    my ($gullet, $stuff) = @_;
+    my @calls = ();
+    dequeueFrontMatter('ltx:contact', role => 'affiliation');
+    if (positionOf($stuff, @authorsup_markers)) {
+      foreach my $line (SplitTokens($stuff, @affilsplits)) {
+        push(@calls, Invocation(T_CS('\lx@add@affiliation'), undef,
+            Invocation(T_CS('\lx@affiliation@withsup'), $line))); } }
+    else {
+      foreach my $line (SplitTokens($stuff, @affilsplits)) {
+        push(@calls, Invocation(T_CS('\lx@add@affiliation'), undef, $line)); } }
+    return @calls; });
 
 DefMacro('\lx@date@received@name',  'Received~');
 DefMacro('\lx@date@revised@name',   'Revised~');
