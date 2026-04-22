@@ -31,32 +31,25 @@ Let('\And',      '\and');
 Let('\leftcite', '\cite');
 DefMacro('\pubnote{}', '\lx@add@pubnote[role=note]{#1}');
 
-# These are used as separators within \author, so... no real way to guess their arguments
+# These are used as separators WITHIN \author, so...
 DefMacro('\affiliations', Tokens());
 DefMacro('\emails',       Tokens());
 
-# Clear any \authors already defined
-# Then split the authors on \and|\And.
-# The authors will be numbered by position, internally.
-DefMacro('\author{}',
-  '\lx@clear@creators[role=author]'
-    # Note: must keep affiliations (after \\) embedded, to simplify clear@author removal
-    . '\lx@splitting{\lx@ijcai@author}{\and\And,}{#1}');
-# Affiliations is expected WITHIN \author.
-# Multiple affiliations separated by \\
-# the n-th affiliation is attached to n-th author
-DefMacro('\affiliations{}',
-  '\lx@clear@frontmatter{ltx:contact}[role=affiliation]'
-    . '\lx@splitting{\lx@ijcai@affiliation}{\\\\}{#1}');
+DefMacro('\author{}', '\lx@ijcai@authorsplit#1\affiliations\done');
+DefMacro('\lx@ijcai@authorsplit Until:\affiliations Until:\done',
+  '\lx@add@authors{#1}'
+    . '\ifx.#2.\else\lx@ijcai@affilsplit#2\emails\done\fi');
+DefMacro('\lx@ijcai@affilsplit Until:\emails Until:\done',
+  '\ifx.#1.\else\lx@add@affiliations{#1}\fi'
+    . '\ifx.#2.\else\lx@ijcai@emails{#2}\fi');
+
 # emails is expected WITHIN \author.
 # Multiple affiliations separated by ,
 # the n-th email is attached to n-th author
-DefMacro('\emails{}',
+DefMacro('\lx@ijcai@emails{}',
   '\lx@clear@frontmatter{ltx:contact}[role=email]'
     . '\lx@splitting{\lx@ijcai@email}{,}{#1}');
-DefMacro('\lx@ijcai@author{}',      '\lx@add@author{#1}');
-DefMacro('\lx@ijcai@affiliation{}', '\lx@add@affiliation[labelseq=author]{#1}');
-DefMacro('\lx@ijcai@email{}',       '\lx@add@email[labelseq=author]{#1}');
+DefMacro('\lx@ijcai@email{}', '\lx@add@email[labelseq=author]{#1}');
 
 #**********************************************************************
 

@@ -39,15 +39,15 @@ DefMacro('\icmlsetsymbol{}{}', '');
 DefEnvironment('{icmlauthorlist}', '#body');
 
 # \icmlauthor{author}{labels}   One per author; labels used to connect to affiliation
-DefMacro('\icmlauthor{}{}', '\lx@add@creator[role=author,annotations={#2}]{#1}');
+DefMacro('\icmlauthor{} Semiverbatim', '\lx@add@creator[role=author,annotations={#2}]{#1}');
 # \icmlaffiliation{label}{address}  provides affiliation for author with same label
-DefMacro('\icmlaffiliation{}{}', '\lx@add@contact[role=affiliation,label={#1}]{#2}');
-DefMacro('\icmladdress[]{}',     '\lx@add@contact[role=address,label={#1}]{#2}');       # deprecated
+DefMacro('\icmlaffiliation Semiverbatim {}', '\lx@add@contact[role=affiliation,label={#1}]{#2}');
+DefMacro('\icmladdress OptionalSemiverbatim {}', '\lx@add@contact[role=address,label={#1}]{#2}'); # deprecated
 
 # \icmlcorrespondingauthor{author}{email}
 # Attempt to use author name as a matching label to connect to author
 # (should be a fuzzy match?)
-DefMacro('\icmlcorrespondingauthor{}{}', '\lx@add@contact[label={fuzzy:#1},role=email,name={Correspondence to: }]{#2}');
+DefMacro('\icmlcorrespondingauthor{}{}', '\lx@add@contact[label={\ifx.#1.\else fuzzy:#1\fi},role=email,name={Correspondence to: }]{#2}');
 
 DefMacro('\printAffiliationsAndNotice{}', '');
 DefMacro('\icmlEqualContribution',        'Equal contribution');

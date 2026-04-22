@@ -49,7 +49,7 @@ DefMacro('\comment[]{}', '\article[#1]{Comment}{#2}');
 DefMacro('\rapid[]{}',   '\article[#1]{Rapid Communication}{#2}');
 DefMacro('\note[]{}',    '\article[#1]{Note}{#2}');
 DefMacro('\prelim[]{}',  '\article[#1]{Preliminary Communication}{#2}');
-DefMacro('\address{}',   '\lx@add@address{#1}}');
+DefMacro('\address{}',   '\lx@add@affiliations{#1}');
 DefMacro('\ead Semiverbatim', '\lx@add@email{#1}');
 Let('\mailto', '\ead');
 
