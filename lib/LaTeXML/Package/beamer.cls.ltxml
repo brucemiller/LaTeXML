@@ -98,7 +98,7 @@ sub readLiteralBalanced {
   my ($gullet) = @_;
   my $tok = $gullet->readXToken;
   $gullet->unread($tok);
-  return undef unless (ref $tok && ToString($tok) eq '{');
+  return unless (ref $tok && ToString($tok) eq '{');
   return $gullet->readArg; }
 
 #**********************************************************************
@@ -236,7 +236,7 @@ sub matchesModeSpec {
   # process the specification into a list of modes!
   $spec =~ s/\s//g;
   my $haystacks = $BEAMER_SPECIFICATION->mode_spec($spec);
-  return undef unless defined($haystacks);
+  return unless defined($haystacks);
   # iterate over the list of modes, and check if at least one of them matches
   foreach my $haystack (@{$haystacks}) {
     return 1 if matchesMode($haystack, $mode); }
@@ -338,7 +338,7 @@ sub getNextSlide {
   while ($temporal == -1) {
     $no++;
     $temporal = getTemporalSlide($actions, $no); }
-  return undef if ($temporal == 1);    # we don't have another slide!
+  return if ($temporal == 1);     # we don't have another slide!
   $no; }
 
 #**********************************************************************
@@ -375,7 +375,7 @@ sub digestBeamerSpec {
 # See getTemporalSlide for return values.
 sub digestOverlaySpec {
   my ($spec) = @_;
-  return undef unless defined($spec);
+  return unless defined($spec);
   $spec = ToString(Expand($spec));   # TODO: Should this be done ealier? Perhaps in the argument type?
                                      # get the action
   my $action = digestBeamerSpec($spec, 0);
@@ -394,14 +394,14 @@ sub digestOverlaySpec {
 # See getSlideActions for return values.
 sub digestActionSpec {
   my ($spec) = @_;
-  return undef unless defined($spec);
+  return unless defined($spec);
   $spec = ToString(Expand($spec));   # TODO: Should this be done ealier? Perhaps in the argument type?
                                      # get the action
   my $action = digestBeamerSpec($spec, 1);
   unless (defined($action)) {
     Warn('unexpected', '<overlay>', $spec, 'Missing overlay specification, treated as matching');
     return 0; }
-  return undef unless defined($action);
+  return unless defined($action);
   # check if we need to do anything
   getSlideActions($action); }
 
@@ -1160,22 +1160,22 @@ DefMacro('\beamer@item@before BeamerAngled []', sub {
 DefEnvironment('{itemize} [BeamerAngled]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties      => sub { beginBeamerItemize($_[1], 'itemize', '@item'); },
-  beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
+  beforeDigestEnd => sub { Digest('\beamer@closeitem'); },
   locked          => 1, mode => 'internal_vertical');
 
 # from enumitem package, because of the second arg!
 DefEnvironment('{enumerate} [BeamerAngled] OptionalUndigested',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
   properties       => sub { beginBeamerItemize($_[1], 'enumerate', 'enum'); },
-  beforeDigestEnd  => sub { Digest('\par'); Digest('\beamer@closeitem'); },
-  afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(2)); });
-
+  beforeDigestEnd  => sub { Digest('\beamer@closeitem'); },
+  afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(2)); },
+  locked           => 1, mode => 'internal_vertical');
 # from LaTeX.Pool
 DefEnvironment('{description} [BeamerAngled]',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
   beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
   properties      => sub { beginBeamerItemize($_[1], 'description', '@desc'); },
-  beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
+  beforeDigestEnd => sub { Digest('\beamer@closeitem'); },
   locked          => 1, mode => 'internal_vertical');
 
 #**********************************************************************

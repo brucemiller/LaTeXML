@@ -451,7 +451,7 @@ DefConstructor('\lx@note[]{}[]{}',
     . "#tags"
     . "#4"
     . "</ltx:note>",
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   sizer        => '#mark',
   beforeDigest => sub { neutralizeFont(); },
   properties   => sub {
@@ -473,7 +473,7 @@ DefConstructor('\lx@notemark[]{}[]',
   reversion => '');
 DefConstructor('\lx@notetext[]{}[]{}',
   "^<ltx:note role='#role' mark='#mark' xml:id='#id'>#4</ltx:note>",
-  mode       => 'internal_vertical',
+  mode       => 'inline_internal_vertical',
   properties => sub {
     my $type = ToString($_[2]);
     (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || DigestText(T_CS('\the' . $type)))); },
@@ -1477,23 +1477,20 @@ DefConstructor('\inline@description@item OptionalUndigested',
 
 DefEnvironment('{itemize}',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  mode            => 'internal_vertical',
-  properties      => sub { beginItemize('itemize', '@item'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode       => 'internal_vertical',
+  properties => sub { beginItemize('itemize', '@item'); },
+  locked     => 1);
 DefEnvironment('{enumerate}',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-  mode            => 'internal_vertical',
-  properties      => sub { beginItemize('enumerate', 'enum'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode       => 'internal_vertical',
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  locked     => 1);
 DefEnvironment('{description}',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
-  mode            => 'internal_vertical',
-  beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
-  properties      => sub { beginItemize('description', '@desc'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode         => 'internal_vertical',
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties   => sub { beginItemize('description', '@desc'); },
+  locked       => 1);
 
 DefMacro('\makelabel{}', '#1');
 DefMacro('\@mklab{}',    '\hfil #1');
@@ -1661,8 +1658,7 @@ DefConstructor('\trivlist',
   mode       => 'internal_vertical',
   properties => sub { beginItemize('trivlist'); });
 DefConstructor('\endtrivlist', sub {
-    $_[0]->maybeCloseElement('ltx:itemize'); },
-  beforeDigest => sub { Digest('\par'); });
+    $_[0]->maybeCloseElement('ltx:itemize'); });
 DefMacro('\trivlist@item', '\preitem@par\trivlist@item@');
 DefConstructor('\trivlist@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
@@ -1750,7 +1746,6 @@ sub beforeDigestVerbatim {
   AssignValue(current_environment => 'verbatim');
   DefMacroI('\@currenvir', undef, 'verbatim');
   MergeFont(family => 'typewriter');
-  # Digest(T_CS('\par')); # NO! See beforeConstruct!
   return @stuff; }
 
 sub afterDigestVerbatim {
@@ -4751,7 +4746,7 @@ DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxConte
     (width => $_[4],
       vattach => translateAttachment($_[1]),
       height  => $_[2]); },
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   robust       => 1,
   beforeDigest => sub {
     Let('\\\\', '\lx@newline'); });
@@ -4768,7 +4763,7 @@ DefEnvironment('{minipage}[] OptionalUndigested [] {Dimension}', sub {
       class   => 'ltx_minipage');
     return; },
   sizer        => '#body',
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   beforeDigest => sub {
     Digest(T_CS('\@minipagetrue')); },
   afterDigestBegin => sub {
@@ -4951,7 +4946,7 @@ DefEnvironment('{picture} Pair OptionalPair',
     . " fill='none' stroke='none' unitlength='#unitlength'>"
     . "?#transform(<ltx:g transform='#transform'>#body</ltx:g>)(#body)"
     . "</ltx:picture>",
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   beforeDigest => \&before_picture,
   properties   => sub {
     my ($stomach, $size, $pos) = @_;
