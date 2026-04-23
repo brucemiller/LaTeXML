@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="acl"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_authors_1line">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <title>A Test Paper</title>
+  <creator role="author">
+    <personname>Alice Smith</personname>
+    <contact name="Affiliation: " role="affiliation">University Alpha </contact>
+    <contact name="Affiliation: " role="affiliation">Institute Beta </contact>
+  </creator>
+  <creator before="  " role="author">
+    <personname>Bob Jones</personname>
+    <contact name="Affiliation: " role="affiliation">Institute Beta </contact>
+  </creator>
+  <creator before="  " role="author">
+    <personname><text font="bold">Carol White</text></personname>
+    <contact name="Affiliation: " role="affiliation">University Alpha </contact>
+  </creator>
+  <abstract name="Abstract">
+    <p>Test abstract.</p>
+  </abstract>
+  <pubnote role="email">
+<text font="typewriter">alice@alpha.edu, bob@beta.org</text></pubnote>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Introduction</title>
+    <para xml:id="S1.p1">
+      <p>Test content.</p>
+    </para>
+  </section>
+</document>
