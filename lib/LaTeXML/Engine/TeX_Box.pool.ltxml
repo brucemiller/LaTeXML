@@ -385,7 +385,7 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
         style => '--ltx-fo-width:' . $w->emValue(undef, $f) . 'em;'
           . '--ltx-fo-height:' . $h->emValue(undef, $f) . 'em;'
           . '--ltx-fo-depth:' . $d->emValue(undef, $f) . 'em;');
-    } });
+} });
 
 sub isVAttached {
   my ($node) = @_;
@@ -494,7 +494,7 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
       : insertBlock($document, $contents, vattach => 'bottom')); },
   sizer       => '#2',
   properties  => { vattach => 'bottom' },
-  mode        => 'internal_vertical',
+  mode        => 'inline_internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
@@ -516,7 +516,7 @@ DefConstructor('\vtop BoxSpecification VBoxContents', sub {
       : insertBlock($document, $contents, vattach => 'top')); },
   sizer       => '#2',
   properties  => { vattach => 'top' },
-  mode        => 'internal_vertical',
+  mode        => 'inline_internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
