@@ -241,8 +241,7 @@ table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2e
 li.ltx_item > .ltx_tag {
     display:inline-block; margin-left:-1.5em; min-width:1.5em;
     text-align:right; }
-.ltx_item .ltx_tag + .ltx_para {
-    display:inline-block; vertical-align:top;}
+.ltx_item .ltx_tag + .ltx_para,
 .ltx_item .ltx_tag + .ltx_para .ltx_p  {
     display:inline; }
 .ltx_item > .ltx_para > .ltx_p:first-child {
