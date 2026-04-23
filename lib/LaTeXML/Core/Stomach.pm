@@ -28,7 +28,7 @@ use LaTeXML::Common::Font;
 use LaTeXML::Common::Color;
 use LaTeXML::Core::Definition;
 use Scalar::Util qw(blessed);
-use base         qw(LaTeXML::Common::Object);
+use base qw(LaTeXML::Common::Object);
 
 DebuggableFeature('modes');
 
@@ -398,13 +398,14 @@ sub endgroup {
 #----------------------------------------------------------------------
 # These are the only modes that you can beginMode|endMode, and must be entered that way.
 our %bindable_mode = (
-  text                  => 'restricted_horizontal',
-  restricted_horizontal => 'restricted_horizontal',
-  vertical              => 'internal_vertical',
-  internal_vertical     => 'internal_vertical',
-  math                  => 'math',
-  inline_math           => 'math',
-  display_math          => 'display_math');
+  text                     => 'restricted_horizontal',
+  restricted_horizontal    => 'restricted_horizontal',
+  vertical                 => 'internal_vertical',
+  internal_vertical        => 'internal_vertical',
+  inline_internal_vertical => 'internal_vertical',       # BUT w/o leaveHorizontal
+  math                     => 'math',
+  inline_math              => 'math',
+  display_math             => 'display_math');
 
 # Switch to horizontal mode, w/o stacking the mode
 # Can really only switch to horizontal mode from vertical|internal_vertical,
@@ -476,9 +477,13 @@ sub leaveHorizontal_internal {
 sub beginMode {
   my ($self, $umode, $noframe) = @_;
   if (my $mode = $bindable_mode{$umode}) {
+    my $ismath     = $mode =~ /math$/;
+    my $isdisplay  = $mode =~ /^display/;
+    my $isvertical = $isdisplay || ($mode =~ /vertical/);
+    my $isinline   = $umode =~ /inline/;
+    $self->leaveHorizontal if $isvertical && !$isinline;
     my $prevmode  = $STATE->lookupValue('MODE');
     my $prevbound = $STATE->lookupValue('BOUND_MODE');
-    my $ismath    = $mode     =~ /math$/;
     my $wasmath   = $prevmode =~ /math$/;
     pushStackFrame($self) unless $noframe;                  # Effectively bgroup
     $STATE->assignValue(BOUND_MODE => $mode,   'local');    # New value within this frame!
@@ -495,8 +500,7 @@ sub beginMode {
       # and save the text font for any embedded text.
       $STATE->assignValue(savedfont         => $curfont, 'local');
       $STATE->assignValue(script_base_level => scalar(@{ $$self{boxing} }));    # See getScriptLevel
-      my $isdisplay = $mode =~ /^display/;
-      my $mathfont  = $STATE->lookupValue('mathfont')->merge(
+      my $mathfont = $STATE->lookupValue('mathfont')->merge(
         color     => $curfont->getColor, background => $curfont->getBackground,
         size      => $curfont->getSize,
         mathstyle => ($isdisplay ? 'display' : 'text'));
@@ -517,7 +521,6 @@ sub beginMode {
   else {
     Warn('unexpected', $mode, $self, "Cannot enter $mode mode"); }
   return; }
-
 # End the mode $umode; generally pops the stack frome.
 # In RARE cases, we mignt want the same effect, w/o having pushed a stack frome (see above)
 # In that case, we'll still want to do BeforeAfterGroup as-if we had an end group.
@@ -537,7 +540,7 @@ sub endMode {
         popStackFrame($self); }                                   # Effectively egroup.
       Debug("MODE unbind $mode, resume " . $STATE->lookupValue('MODE') . ", for " . Stringify($LaTeXML::CURRENT_TOKEN))
         if $LaTeXML::DEBUG{modes};
-    } }
+  } }
   else {
     Warn('unexpected', $mode, $self, "Cannot end $mode mode"); }
   return; }
