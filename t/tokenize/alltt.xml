@@ -6,40 +6,36 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p>Spacing
-<verbatim font="typewriter">
-Word
+    <p>Spacing</p>
+    <verbatim font="typewriter">Word
   Word
     Word
   Word
 Word
 </verbatim>
-OK</p>
+    <p>OK</p>
   </para>
   <para xml:id="p2">
-    <p>Funny Characters
-<verbatim font="typewriter">
-a  b $ c &amp; d # e ^ f _ g % h ~ i
-</verbatim></p>
+    <p>Funny Characters</p>
+    <verbatim font="typewriter">a  b $ c &amp; d # e ^ f _ g % h ~ i
+</verbatim>
   </para>
   <para xml:id="p3">
-    <p>With math?
-<verbatim font="typewriter">
-a+b <Math mode="inline" tex="a+b" text="a + b" xml:id="p3.m1">
-          <XMath>
-            <XMApp>
-              <XMTok font="serif" meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok font="serif italic" role="UNKNOWN">a</XMTok>
-              <XMTok font="serif italic" role="UNKNOWN">b</XMTok>
-            </XMApp>
-          </XMath>
-        </Math> a+b
-</verbatim></p>
+    <p>With math?</p>
+    <verbatim font="typewriter">a+b <Math mode="inline" tex="a+b" text="a + b" xml:id="p3.m1">
+        <XMath>
+          <XMApp>
+            <XMTok font="serif" meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok font="serif italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="serif italic" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math> a+b
+</verbatim>
   </para>
   <para xml:id="p4">
-    <p>Blank lines
-<verbatim font="typewriter">
-Word
+    <p>Blank lines</p>
+    <verbatim font="typewriter">Word
 
   Word
 
@@ -48,6 +44,6 @@ Word
   Word
 
 Word
-</verbatim></p>
+</verbatim>
   </para>
 </document>
