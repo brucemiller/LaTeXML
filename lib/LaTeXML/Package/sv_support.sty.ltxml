@@ -53,7 +53,7 @@ DefMacro('\email Semiverbatim', '\lx@add@email[name={\emailname: }]{#1}');
 
 # Are these actually defined in svjour?
 DefMacro('\address{}', '\lx@add@contact[annotate=new,role=address]{#1}');
-DefMacro('\affil[]{}',
+DefMacro('\affil OptionalSemiverbatim {}',
   '\lx@add@contact[role=affiliation,annotate={\ifx.#1.new\else 1\fi},label={#1}]{#2}');
 # These add contacts to most recent author
 # The optional arguments here are a sort of prefix to the footnote.

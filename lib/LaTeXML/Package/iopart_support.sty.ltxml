@@ -38,11 +38,12 @@ Let('\paper', '\title');
 
 DefMacro('\@articletype', '');
 DefMacro('\article[]{}{}',
-  '\ifx.#1.\else\lx@add@toctitle}{#1}\fi'
-    . '\ifx.#2.\else\lx@add@classification[scheme=type]{#2}\fi'
+  '\ifx.#1.\else\lx@add@toctitle{#1}\fi'
+    . '\ifx.#2.\else\lx@add@pubnote[role=type]{#2}\fi'
     . '\lx@add@title{#3}');
 
 DefMacro('\letter{}',    '\article[Letter to the Editor]{Letter to the Editor}{#1}\lettertrue');
+DefMacro('\ftc{}',       '\article[Fast Track Communication]{Fast Track Communication}{#1}');
 DefMacro('\review[]{}',  '\article[#1]{Review Article}{#2}');
 DefMacro('\topical[]{}', '\article[#1]{Topical Review}{#2}');
 DefMacro('\comment[]{}', '\article[#1]{Comment}{#2}');

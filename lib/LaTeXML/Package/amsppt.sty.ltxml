@@ -67,8 +67,8 @@ DefMacro('\dedicatory Until:\enddedicatory', '\lx@add@pubnote[role=dedication]{#
 DefMacro('\translator Until:\endtranslator', '\lx@add@translator{#1}');
 DefMacro('\keywords Until:\endkeywords',     '\lx@add@keywords{#1}');
 DefMacro('\subjclass Until:\endsubjclass',   '\lx@add@classification{#1}');
-DefMacro('\abstract Until:\endabstract',     '\lx@add@abstract{#1}');
-Let('\endabstract', '\relax');
+DefMacro('\abstract',                        '\lx@begin@abstract');
+DefMacro('\endabstract',                     '\lx@end@abstract\let\maybe@end@abstract\relax');
 
 DefMacro('\issueinfo{}{}{}{}', '');
 
@@ -320,6 +320,7 @@ DefPrimitiveI('\tildechar', undef, "~", font => { family => 'typewriter' });
 DefMacro('\breakcheck', '');
 DefRegister('\normalparindent' => Dimension(0));
 DefMacro('\usualspace', ' ');
+DefMacro('\@',          '@');
 #======================================================================
 # Bibliography
 DefMacro('\Refsname', 'References');

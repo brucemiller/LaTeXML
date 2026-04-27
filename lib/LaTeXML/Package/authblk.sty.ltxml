@@ -54,7 +54,7 @@ DefMacro('\author[]{}', sub {
     else {
       Invocation(T_CS('\lx@add@creator'), undef, $author); } });
 
-DefMacro('\affil[]{}',
+DefMacro('\affil OptionalSemiverbatim {}',
   '\lx@add@contact[role=affiliation,annotate={\ifx.#1.new\else 1\fi},label={#1}]{#2}');
 
 # we shouldn't need these, but if someone is using them low-level

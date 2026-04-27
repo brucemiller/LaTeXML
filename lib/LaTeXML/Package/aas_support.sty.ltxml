@@ -127,9 +127,11 @@ DefMacro('\collaboration{}{}', '\lx@add@contact[role=collaboration,annotate=new]
 DefMacro('\nocollaboration{}', '\lx@add@contact[role=collaboration,annotate=new]{}');
 
 # Older aas versions: put mark within \author, text will be attached
-DefMacro('\altaffilmark{}',   '\lx@request@frontmatter@annotation[altaffil]{#1}');
-DefMacro('\altaffiltext{}{}', '\lx@add@contact[role=altaffiliation,label=altaffil#1]{#2}');
-DefMacro('\authoremail',      '\email');    # Obsolete form
+DefMacro('\altaffilmark Semiverbatim',
+  '\lx@request@frontmatter@annotation[altaffil]{#1}');
+DefMacro('\altaffiltext Semiverbatim {}',
+  '\lx@add@contact[role=altaffiliation,label={altaffil:#1}]{#2}');
+DefMacro('\authoremail', '\email');    # Obsolete form
 
 # Redefine to straight email address after document begin.
 ###AddToMacro(T_CS('\@startsection@hook'), TokenizeInternal('\let\email\@@email'));

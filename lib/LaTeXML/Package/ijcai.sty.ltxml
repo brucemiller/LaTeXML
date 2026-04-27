@@ -38,7 +38,7 @@ DefMacro('\emails',       Tokens());
 DefMacro('\author{}', '\lx@ijcai@authorsplit#1\affiliations\done');
 DefMacro('\lx@ijcai@authorsplit Until:\affiliations Until:\done',
   '\lx@add@authors{#1}'
-    . '\ifx.#2.\else\lx@ijcai@affilsplit#2\emails\done\fi');
+    . '\ifx.#2.\else\lx@ijcai@affilsplit#2\emails\affiliations\done\fi');
 DefMacro('\lx@ijcai@affilsplit  Until:\emails Until:\affiliations Until:\done',
   '\ifx.#1.\else\expandafter\lx@ijcai@affiliations\expandafter{\lx@strip@braces{#1}}\fi'
     . '\ifx.#2.\else\expandafter\lx@ijcai@emails\expandafter{\lx@strip@braces{#2}}\fi');

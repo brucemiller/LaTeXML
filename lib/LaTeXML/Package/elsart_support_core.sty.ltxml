@@ -25,20 +25,20 @@ use LaTeXML::Package;
 #======================================================================
 # 4. Frontmatter
 
-DefEnvironment('{frontmatter}', '#body');
-
+DefPrimitiveI('\begin{frontmatter}', undef, undef);
+DefPrimitiveI('\end{frontmatter}',   undef, undef);
 # \title{}
 # \author[mark]{name}
 # One \author per authorsingle author! possibly with a mark to connect to affiliation
 # It either should be followed by \affiliation,
 # or both should get matching marks
-DefMacro('\author[]{}',
+DefMacro('\author OptionalSemiverbatim {}',
   '\lx@add@creator[role=author,annotations={#1}]{#2}');
 
-DefMacro('\address[]{}',
+DefMacro('\address OptionalSemiverbatim {}',
   '\lx@add@contact[label={#1},role=address]{#2}');
 # \affiliation[label]{text-OR-keyvals} !!
-DefMacro('\affiliation[]{}',
+DefMacro('\affiliation OptionalSemiverbatim {}',
   '\lx@add@contact[label={#1},role=affiliation]{\lx@els@parse@affiliation{#2}{#2}}');
 
 my %els_affil_keys = map { $_ => 1; } (qw(
@@ -79,11 +79,16 @@ DefMacro('\corref{}',     '\lx@request@frontmatter@annotation[cor]{#1}');
 DefMacro('\corauthref{}', '\lx@request@frontmatter@annotation[corauth]{#1}');
 DefMacro('\fnref{}',      '\lx@request@frontmatter@annotation[fn]{#1}');
 DefMacro('\tnoteref{}', '\lx@request@frontmatter@annotation[tnote]{#1}'); # Possibly for title, not author?
-DefMacro('\thanks[]{}',    '\lx@add@contact[label={thanks:#1},role=thanks]{#2}');
-DefMacro('\cortext[]{}',   '\lx@add@contact[label={cor:#1},role=correspondent]{#2}');
-DefMacro('\corauth[]{}',   '\lx@add@contact[label={corauth:#1},role=correspondent]{#2}');
-DefMacro('\fntext[]{}',    '\lx@add@contact[label={fn:#1},role=note]{#2}');
-DefMacro('\tnotetext[]{}', '\lx@add@contact[label={tnote:#1},role=note]{#2}');    # title note?
+DefMacro('\thanks OptionalSemiverbatim {}',
+  '\lx@add@contact[label={thanks:#1},role=thanks]{#2}');
+DefMacro('\cortext OptionalSemiverbatim {}',
+  '\lx@add@contact[label={cor:#1},role=correspondent]{#2}');
+DefMacro('\corauth OptionalSemiverbatim {}',
+  '\lx@add@contact[label={corauth:#1},role=correspondent]{#2}');
+DefMacro('\fntext OptionalSemiverbatim {}',
+  '\lx@add@contact[label={fn:#1},role=note]{#2}');
+DefMacro('\tnotetext OptionalSemiverbatim {}',
+  '\lx@add@contact[label={tnote:#1},role=note]{#2}');    # title note?
 
 DefMacro('\runauthor{}', Tokens());
 DefMacro('\runtitle{}',  Tokens());

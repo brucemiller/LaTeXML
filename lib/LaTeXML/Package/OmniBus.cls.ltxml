@@ -83,8 +83,10 @@ DefMacro('\emailname', 'E-mail');
 DefMacro('\speaker{}', '\lx@add@creator[role=speaker]{#1}');
 
 # like from aas
-DefMacro('\altaffilmark{}',   '\lx@request@frontmatter@annotation[altaffil]{#1}');
-DefMacro('\altaffiltext{}{}', '\lx@add@contact[role=altaffiliation,label=altaffil#1]{#2}');
+DefMacro('\altaffilmark Semiverbatim',
+  '\lx@request@frontmatter@annotation[altaffil]{#1}');
+DefMacro('\altaffiltext Semiverbatim {}',
+  '\lx@add@contact[role=altaffiliation,label={altaffil:#1}]{#2}');
 
 DefMacro('\address[]{}', '\lx@add@address{#2}');
 Let('\affaddr', '\address');
@@ -113,8 +115,8 @@ DefMacro('\numberofauthors{}', Tokens());
 DefMacro('\resumen{}',         '\lx@add@abstract{#1}');
 DefMacro('\ion{}{}',           '{#1 \textsc{#2}}');
 Let(T_CS('\fulladdresses'), T_CS('\address'));
-Let(T_CS('\smonth'),        T_CS('\month'));
-Let(T_CS('\syear'),         T_CS('\year'));
+DefMacro('\smonth{}', '\month=#1\relax');
+DefMacro('\syear{}',  '\year=#1\relax');
 
 # Comes as both macro with arg, and environment! w/ or w/o "s"!
 DefMacro('\keywords{}', '\lx@add@keywords{#1}');

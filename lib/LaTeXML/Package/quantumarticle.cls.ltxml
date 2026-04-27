@@ -30,7 +30,7 @@ RequirePackage('xcolor');
 # otherwise, \author should be followed by \affiliation
 DefMacro('\author[]{}',    '\lx@add@creator[role=author,annotations={#1}]{#2}');
 DefMacro('\affiliation{}', '\lx@add@contact[annotate=new,role=affiliation]{#1}');
-DefMacro('\affil[]{}',
+DefMacro('\affil OptionalSemiverbatim {}',
   '\lx@add@contact[role=affiliation,annotate={\ifx.#1.new\else 1\fi},label={#1}]{#2}');
 # \address provides address for previous \author
 DefMacro('\address{}', '\lx@add@contact[annotate=new,role=address]{#1}');
