@@ -1049,72 +1049,34 @@ DefRegister('\baselinestretch' => Dimension(0));
 #======================================================================
 
 # See frontmatter support in TeX.ltxml
-Let('\@title', '\@empty');
-DefMacro('\title[]{}', '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
-    . '\def\@title{#2}\@add@frontmatter{ltx:title}{#2}', locked => 1);
+Let('\@title',      '\@empty');
+Let('\@shorttitle', '\@empty');
+DefMacro('\title[]{}',
+  '\gdef\@shorttitle{#1}\gdef\@title{#2}'
+    . '\ifx.#1.\else\lx@add@toctitle{#1}\fi'
+    . '\lx@add@title{#2}',
+  locked => 1);
 
 DefMacro('\@date', '\@empty');
 DefMacro('\date{}',
   '\def\@date{#1}'
-    . '\@add@frontmatter{ltx:date}[role=creation,'
+    . '\lx@add@date[role=creation,'
     . 'name={\@ifundefined{datename}{}{\datename}}]{#1}');
 
 DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact>",
   alias => '\thanks',
   mode  => 'restricted_horizontal', enterHorizontal => 1);
-DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
-  beforeDigest => sub { Let('\thanks', '\person@thanks'); },
-  mode         => 'restricted_horizontal', enterHorizontal => 1);
-
-# Sanitize person names for (obvious) punctuation abuse at start+end
-Tag('ltx:personname', afterClose => sub {
-    my ($document, $node) = @_;
-    if (my $first = $node->firstChild) {
-      if ($first->nodeType == XML_TEXT_NODE) {
-        my $first_text = $first->data;
-        my $new_text   = $first_text;
-        $new_text =~ s/^[^\w)(}{\]\[]]+//;
-        if ($first_text ne $new_text) {
-          $first->setData($new_text); } } }
-    if (my $last = $node->lastChild) {
-      if ($last->nodeType == XML_TEXT_NODE) {
-        my $last_text = $last->data;
-        my $new_text  = $last_text;
-        $new_text =~ s/[^\w)(}{\]\[]+$//;
-        if ($last_text ne $new_text) {
-          $last->setData($new_text); } } }
-    return; });
 
 DefConstructorI('\and', undef, " and ");
-
-AssignValue(NUMBER_OF_AUTHORS => 0);
-DefPrimitive('\lx@count@author', sub {
-    AssignValue(NUMBER_OF_AUTHORS => LookupValue('NUMBER_OF_AUTHORS') + 1, 'global') });
-DefMacro('\lx@author{}',
-  '\lx@count@author'
-    . '\@add@frontmatter{ltx:creator}[role=author]{\lx@author@prefix\@personname{#1}}');
-
-DefConstructor('\lx@@@contact{}{}', "^ <ltx:contact role='#1'>#2</ltx:contact>");
-DefMacro('\lx@contact{}{}',
-  '\@add@to@frontmatter{ltx:creator}{\lx@@@contact{#1}{#2}}');
-
 DefMacro('\lx@author@sep',  '\qquad');
 DefMacro('\lx@author@conj', '\qquad');
-DefConstructor('\lx@author@prefix', sub {
-    my ($document) = @_;
-    my $node       = $document->getElement;
-    my $nauthors   = LookupValue('NUMBER_OF_AUTHORS');
-    my $i          = scalar(@{ $document->findnodes('//ltx:creator[@role="author"]') });
-    if    ($i <= 1) { }
-    elsif ($i == $nauthors) {
-      $document->setAttribute($node, before => DigestText(T_CS('\lx@author@conj'))); }
-    else {
-      $document->setAttribute($node, before => DigestText(T_CS('\lx@author@sep'))); }
-});
+DefMacro('\@author',        '\@empty');
+DefMacro('\@shortauthor',   '\@empty');
+DefMacro('\author[]{}',
+  '\def\@shortauthor{#1}\def\@author{#2}'
+    . '\lx@add@authors{#2}',
+  locked => 1);
 
-DefMacro('\@author',                 '\@empty');
-DefMacro('\author[]{}',              '\def\@author{#2}\lx@make@authors@anded{#2}', locked => 1);
-DefMacro('\lx@make@authors@anded{}', sub { andSplit(T_CS('\lx@author'), $_[1]); });
 DefPrimitive('\ltx@authors@oneline', sub {
     AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line => 1);
     return; });
@@ -1122,7 +1084,7 @@ DefPrimitive('\ltx@authors@multiline', sub {
     AssignMapping('DOCUMENT_CLASSES', ltx_authors_multiline => 1);
     return; });
 
-DefMacro('\@add@conversion@date', '\@add@frontmatter{ltx:date}[role=creation]{\today}');
+DefMacro('\@add@conversion@date', '\lx@add@date[role=conversion]{\today}');
 
 # In case \@maketitle defines these - we can't yet emulate that - so we can map them to \and:
 Let('\And', '\and');
@@ -1151,60 +1113,32 @@ AtEndDocument(T_CS('\lx@frontmatter@fallback'));
 
 DefMacro('\@thanks', '\@empty');
 # make a throwaway optional argument available for OmniBus use
-DefMacro('\thanks[]{}', '\def\@thanks{#2}\lx@make@thanks{#2}');
-DefConstructor('\lx@make@thanks{}', "<ltx:note role='thanks'>#1</ltx:note>");
+DefMacro('\thanks[]{}', '\def\@thanks{#2}\lx@add@pubnote{#2}');
 
-# Abstract SHOULD have been so simple, but seems to be a magnet for abuse.
-# For one thing, we'd like to just write
-#   DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
-# However, we don't want to place the <ltx:abstract> environment directly where
-# we found it, but we want to add it to frontmatter. This requires capturing the
-# recently digested list and storing it in the frontmatter structure.
+# Abstract SHOULD have been so simple, but seems to be a magnet for abuse & confusion.
+# Standard LaTeX classes expect it after \maketitle, and deposit it where found.
+# But many others expect it declared before \maketitle & include it within!
+# Moreover, while it's generally defined as an environment,
+# some users get away with writing \abstract{text} or even \abstract text ... \section?
 
-# The really messy stuff comes from the way authors -- and style designers -- misuse it.
-# Basic LaTeX wants it to be an environment WITHIN the document environment,
-# and AFTER the \maketitle.
-# However, since all it really does is typeset "Abstract" in bold, it allows:
-#   \abstract stuff...
-# without even an \endabstract!  We MUST know when the abstract ends, so we've got
-# to recognize when we've moved on to other stuff... \sections at the VERY LEAST.
-
-# Additional complications come from certain other classes and styles that
-# redefine abstract to take the text as an argument. And some treat it
-# like \title, \author, and such, that are expected to appear in the preamble!!
-# The treatment below allows an abstract environment in the preamble,
-# (even though straight latex doesn't) but does not cover the 1-arg case in preamble!
-#
-# Probably there are other places (eg in titlepage?) that should force the close??
-
-DefEnvironment('{abstract}', '',
-  afterDigestBegin => sub {
-    AssignValue(inPreamble => 0); },
-  afterDigest => sub {
-    my $frontmatter = LookupValue('frontmatter');
-    push(@{ $$frontmatter{'ltx:abstract'} },
-      ['ltx:abstract',
-        { name => Digest(Tokens(T_CS('\format@title@abstract'),
-              T_BEGIN, T_CS('\abstractname'), T_END)) },
-        @LaTeXML::LIST]);
-    DefMacroI('\maybe@end@abstract', undef, Tokens(), scope => 'global');
-    return; },
-  afterConstruct => sub { insertFrontMatter(@_); },    # HERE if not already done.
-  locked         => 1,
-  mode           => 'internal_vertical');
-# If we get a plain \abstract, instead of an environment, look for \abstract{the abstract}
-AssignValue('\abstract:locked' => 0);    # REDEFINE the above locked definition!
+# If called as environment, it SHOULD close as environment, as well.
+DefMacro(T_CS('\begin{abstract}'), '\lx@begin@abstract');
+DefMacro(T_CS('\end{abstract}'),   '\lx@end@abstract');
+# If called directly, maybe as
+#   \abstract{text}
+# OR \abstract text \endabstract
+# OR even \abstract text... \somethingelse  (section? \par ?)
 DefMacro('\abstract', sub {
     my ($gullet) = @_;
     ($gullet->ifNext(T_BEGIN)
-      ? (T_CS('\abstract@onearg'))
+      ? (T_CS('\lx@add@abstract'))
       : (T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@abstract'),
-        T_CS('\begin{abstract}'))); },
+        T_CS('\lx@begin@abstract'))); },
   locked => 1);
-DefMacro('\abstract@onearg{}', '\begin{abstract}#1\end{abstract}\let\endabstract\relax');
 
-DefMacroI('\maybe@end@abstract', undef, '\endabstract');
-
+DefMacro('\endabstract',        '\lx@end@abstract\let\maybe@end@abstract\relax');
+DefMacro('\maybe@end@abstract', '\lx@end@abstract');
+DefMacro('\lx@abstract@name',   '\format@title@abstract{\abstractname}');           # Redefine
 DefMacroI('\abstractname', undef, 'Abstract');
 DefMacro('\format@title@abstract{}', '#1');
 
@@ -1231,7 +1165,8 @@ DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
     AddToMacro(T_CS('\maketitle'), T_CS('\unwind@titlepage'));
     DefEnvironmentI('abstract', undef,
       '<ltx:abstract>#body</ltx:abstract>');
-    Let('\abstract', '\abstract@onearg');
+    DefConstructor('\abstract{}',
+      '<ltx:abstract>#1</ltx:abstract>');
     Info('unexpected', 'titlepage', $_[0],
       "When using titlepage, Frontmatter will not be well-structured");
     return; },
@@ -2250,7 +2185,7 @@ DefConditionalI('\if@in@firstcolumn', undef, sub {
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
   '\ifx.#1.\else'    # Ignore empty!
-    . '\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\lx@begin@inline@math \displaystyle #1\\lx@end@inline@math\mbox{}}'
+    . '\if@in@firstcolumn\multicolumn{3}{l}{\lx@add@cssclass{ltx_eqn_lefteqn}\lx@begin@inline@math \displaystyle #1\\lx@end@inline@math\mbox{}}'
     . '\else\rlap{\lx@begin@inline@math\displaystyle #1\\lx@end@inline@math}\fi\fi');
 
 # \intertext (in amsmath)
@@ -2883,8 +2818,8 @@ DefPrimitive('\th@plain', sub {
     AssignRegister('\thm@headstyling' => T_CS('\lx@makerunin'));
     return; });
 
-DefMacroI('\lx@makerunin',   undef, '\@ADDCLASS{ltx_runin}');
-DefMacroI('\lx@makeoutdent', undef, '\@ADDCLASS{ltx_outdent}');
+DefMacroI('\lx@makerunin',   undef, '\lx@add@cssclass{ltx_runin}');
+DefMacroI('\lx@makeoutdent', undef, '\lx@add@cssclass{ltx_outdent}');
 
 DefMacroI('\@thmcountersep', undef, '.');
 DefMacroI('\thm@doendmark',  undef, '');

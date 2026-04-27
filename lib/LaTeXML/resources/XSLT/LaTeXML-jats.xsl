@@ -98,10 +98,11 @@
         <xsl:apply-templates select="*[
                                      not(self::ltx:title or self::ltx:creator or self::ltx:date or self::ltx:abstract or self::ltx:keywords)
                                      and not(self::ltx:acknowledgements or self::ltx:bibliography)
+                                     and not(self::ltx:pubnote[@role='thanks'])
                                      and not(self::ltx:appendix)]"/>
       </body>
       <back>
-        <xsl:apply-templates select="ltx:acknowledgements"/>
+        <xsl:apply-templates select="ltx:acknowledgements | ltx:pubnote[@role='thanks']"/>
         <xsl:apply-templates select="ltx:bibliography"/>
         <app-group>
           <xsl:apply-templates select="//ltx:appendix"/>
@@ -172,6 +173,9 @@
     <xsl:value-of select="@close"/>
   </xsl:template>
 
+  <!-- Need to figure out where these go; presumably by @role -->
+  <xsl:template match="ltx:pubnote"/>
+
   <xsl:template match="ltx:date[@role='creation']">
     <pub-date><year><xsl:apply-templates /></year></pub-date>
   </xsl:template>
@@ -206,8 +210,6 @@
       </addr-line>
     </address>
   </xsl:template>
-
-  <xsl:template match="ltx:note[@role='institutetext']"/>
 
   <xsl:template match="ltx:personname">
     <name>
@@ -372,7 +374,7 @@
     <xsl:apply-templates/>
   </xsl:template>
 
-  <xsl:template match="ltx:acknowledgements">
+  <xsl:template match="ltx:acknowledgements | ltx:pubnote[@role='thanks']">
     <ack>
       <xsl:call-template name="require_p"/>
     </ack>
@@ -689,14 +691,14 @@
   <!-- ======================================================================
        Mid-level text -->
 
-  <xsl:template match="ltx:note[@role='thanks']">
+  <xsl:template match="ltx:contact[@role='thanks']">
     <p>
       <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
       <xsl:apply-templates/>
     </p>
   </xsl:template>
 
-  <xsl:template match="ltx:p/ltx:note[@role='thanks']">
+  <xsl:template match="ltx:p/ltx:contact[@role='thanks']">
     <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
     <xsl:apply-templates/>
   </xsl:template>

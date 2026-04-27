@@ -964,7 +964,12 @@ sub ExpandPartially {
 
 sub Invocation {
   my ($token, @args) = @_;
-  $token = (ref $token ? $token : T_CS($token));
+  $token = TokenizeInternal($token) unless ref $token;
+  my ($cs, @more) = $token->unlist;
+  if (! scalar(@more)) {
+    $token = $cs; }             # reduce to single token.
+  else {                  # Treat as anonymous macro
+    return $token->packParameters->substituteParameters(@args); }
   # Note: $token may have been \let to another defn!
   if (my $defn = $STATE->lookupDefinition($token)) {
     my $params = $defn->getParameters;
@@ -4667,7 +4672,9 @@ Like C<DigestText>, neither mode changes nor side-dffects leak out.
 
 X<Invocation>
 Constructs a sequence of tokens that would invoke the token C<$cs>
-on the arguments.
+on the arguments.  If C<$cs> is a string, it is tokenized and assumed to contain
+parameter markers like C<#1>; it will be treated as an anonymous macro with the arguments
+being substituted in.
 
 =item C<< RawTeX('... tex code ...'); >>
 

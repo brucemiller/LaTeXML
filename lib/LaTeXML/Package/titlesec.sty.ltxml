@@ -48,13 +48,13 @@ DefMacro('\lx@titleformat {} [] {}{}{}{}[]', sub {
     my $sec   = ToString($cmd); $sec =~ s/^\\//;
     # Perhaps should wrap $label with \lx@tag, but then have to worry about inheritted CSS?
     DefMacroI(T_CS('\format@title@font@' . $sec), undef,
-      Tokens($format, ($class ? (T_CS('\@ADDCLASS'), T_OTHER($class)) : ())));
+      Tokens($format, ($class ? (T_CS('\lx@add@cssclass'), T_OTHER($class)) : ())));
     DefMacroI(T_CS('\format@title@' . $sec), convertLaTeXArgs(1),
       Tokens(
         T_CS('\format@title@font@' . $sec),
         $label,
         T_CS('\hspace'), T_BEGIN, $sep, T_END,
-        T_PARAM, T_OTHER('1'))); });
+        T_PARAM,         T_OTHER('1'))); });
 
 DefMacro('\chaptertitlename',                        '\chaptername');
 DefMacro('\titlespacing OptionalMatch:* {}{}{}{}[]', '');
