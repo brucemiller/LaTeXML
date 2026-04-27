@@ -217,8 +217,15 @@ sub positionOf {
 DebuggableFeature('frontmatter');
 
 DefConstructor('\lx@personname{}', "<ltx:personname>#1</ltx:personname>",
-  beforeDigest => sub { Let('\thanks', '\person@thanks'); },
-  mode         => 'restricted_horizontal', enterHorizontal => 1);
+  beforeDigest => sub {
+    Let('\thanks', '\person@thanks');
+    # And be a bit desperate to counter overzealous formatting
+    Let('\begin{tabular}', '\lx@ignore@tabular');
+    Let('\end{tabular}',   '\lx@ignore@endtabular');
+  },
+  mode => 'restricted_horizontal', enterHorizontal => 1);
+DefMacro('\lx@ignore@tabular[]{}', '');
+DefMacro('\lx@ignore@endtabular',  '');
 
 # Sanitize person names for (obvious) punctuation abuse at start+end
 Tag('ltx:personname', afterClose => sub {
@@ -359,6 +366,7 @@ sub cleanFrontmatterLabels {
   $labels = ToString($labels);
   $prefix = ToString($prefix) || '';
   my @labels = ();
+  $labels =~ s/\\rm//g;
   foreach my $label (split(',', $labels)) {
     $label =~ s/^\s+//; $label =~ s/\s+$//;
     if ($label =~ /^\\ref\{\s*([^\}]*)\s*\}$/) {
@@ -366,6 +374,7 @@ sub cleanFrontmatterLabels {
     elsif ($prefix) {
       $label = $prefix . ':' . $label; }
     $label =~ s/\s+/_/sg;
+    $label =~ s/[{}()]//g;
     push(@labels, $label); }
   return @labels; }
 
@@ -560,7 +569,7 @@ DefPrimitive('\lx@request@frontmatter@annotation[]{}', sub {
 DefPrimitive('\lx@set@frontmatter@label Semiverbatim', sub {
     my ($stomach, $label) = @_;
     if (my $current = fetchPendingEntry()) {
-      $label = CleanLabel($label, 'LABEL');
+      ($label) = cleanFrontmatterLabels($label, 'LABEL');
       $$current[1]{_annotations} = $label;
       Debug("FRONT set label $label") if $LaTeXML::DEBUG{frontmatter}; } });
 
@@ -873,16 +882,23 @@ sub relocateAnnotations {
   my ($document) = @_;
   # Find dummy frontmatter elements containing not-yet-attached annotations
   if (my @pending = $document->findnodes(".//*[\@role='pending']")) {
-    my %labeltable = ();    # Collect the frontmatter that have attachment labels
+    my %labeltable   = ();    # Collect the frontmatter that have attachment labels
+    my %unlabeltable = ();    # fallback: Same, but without prefix
     foreach my $target ($document->findnodes(".//*[\@_annotations]")) {
       next if ($target->getAttribute('role') || '') eq 'pending';
       foreach my $label (split(',', $target->getAttribute('_annotations'))) {
         $labeltable{$label} = [] unless $labeltable{$label};
-        push(@{ $labeltable{$label} }, $target); } }
+        push(@{ $labeltable{$label} }, $target);
+        # Misuse of labelling macros can lead to prefix mismatch
+        if ($label =~ s/^[^:]*://) {
+          $unlabeltable{$label} = [] unless $unlabeltable{$label};
+          push(@{ $unlabeltable{$label} }, $target); } } }
     foreach my $pending (@pending) {
       foreach my $note (element_nodes($pending)) {
         if (my $label = $note->getAttribute('_label')) {
-          if (my $targets = $labeltable{$label}) {
+          my $noprefix = $label; $noprefix =~ s/^[^:]*://;
+          if (my $targets = $labeltable{$label} || $unlabeltable{$label}
+            || $labeltable{$noprefix} || $unlabeltable{$noprefix}) {
             foreach my $target (@$targets) {
               Debug("FRONT Moving annotation for $label: " . ToString($target))
                 if $LaTeXML::DEBUG{frontmatter};
