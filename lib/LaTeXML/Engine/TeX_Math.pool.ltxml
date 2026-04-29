@@ -300,7 +300,7 @@ sub cleanup_XMText {
             $document->replaceNode($m, map { $_->childNodes } $m->childNodes); }
           else {                                           # Otherwise, wrap whatever it is in an XMText
             $document->wrapNodes('ltx:XMText', $m); }
-        } } }
+    } } }
     # And now we don't need the XMText any more.
     foreach my $attr ($textnode->attributes) {    # Copy the child's attributes (should Merge!!)
       $table->setAttribute($attr->nodeName => $attr->getValue); }
@@ -423,7 +423,7 @@ sub scriptHandler {
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
     Error('unexpected', $c, $stomach, "Script $c can only appear in math mode");
     return Box($c, undef, undef, (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
-  } }
+} }
 
 DefPrimitiveI(T_SUPER, undef, sub { scriptHandler($_[0], 'SUPERSCRIPT'); });
 DefPrimitiveI(T_SUB,   undef, sub { scriptHandler($_[0], 'SUBSCRIPT'); });
@@ -544,7 +544,7 @@ DefRewrite(xpath => 'descendant::ltx:Math[child::ltx:XMath[child::ltx:XMApp[' .
             elsif ($role eq 'FLOATSUBSCRIPT') {
               $document->insertElement('ltx:sub', $text);
               return; }
-          } } } }
+    } } } }
     # should never happen, but just in case:
     Info("rewrite", "footnotemark", "Failed to find floating node in: " . $math->toString(1));
     $document->getNode->appendChild($math);
@@ -819,7 +819,7 @@ sub augmentDelimiterProperties {
       if (exists $$entry{char}) {                    # replace the char content!
         if (my $char = $$entry{char}) {
           $delim->firstChild->setData($char); } }
-    } }
+  } }
   return; }
 
 # Useful for afterConstruct of delimiter sizing macros (eg. \bigl)
@@ -953,13 +953,23 @@ DefMath('\lx@math@overline{}', UTF(0xAF),
   name          => 'overline',   alias             => '\overline');
 DefConstructor('\lx@text@overline{}',
   "<ltx:text framed='overline' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1, mode => 'restricted_horizontal',
+  sizer           => sub {
+    my $text = $_[0]->getArg(1);
+    my ($w, $h, $d) = $text->getSize;
+    my $pad = Dimension($text->getFont->getEXHeight);    # WAG
+    return ($w, $h->add($pad), $d); });
 DefMath('\lx@math@underline{}', UTF(0xAF),
   operator_role => 'UNDERACCENT', operator_stretchy => 'true',
   name          => 'underline',   alias             => '\underline');
 DefConstructor('\lx@text@underline{}',
   "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1, mode => 'restricted_horizontal',
+  sizer           => sub {
+    my $text = $_[0]->getArg(1);
+    my ($w, $h, $d) = $text->getSize;
+    my $pad = Dimension($text->getFont->getEXHeight);    # WAG
+    return ($w, $h, $d->add($pad)); });
 DefMath('\lx@math@overrightarrow{}', "\x{2192}",
   operator_role => 'OVERACCENT',     operator_stretchy => 'true',
   name          => 'overrightarrow', alias             => '\overrightarrow');
