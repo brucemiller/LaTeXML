@@ -19,6 +19,10 @@ use LaTeXML::Package;
 
 InputDefinitions('fancyvrb', type => 'sty', noltxml => 1);
 
+# Hack internals to add css class ltx_nowrap
+Let('\lx@save@FancyVerbFormatLine', '\FancyVerbFormatLine');
+DefMacro('\FancyVerbFormatLine{}',
+  '\@ADDCLASS{ltx_verbatim}\lx@save@FancyVerbFormatLine{#1}');
 #**********************************************************************
 
 1;
