@@ -36,7 +36,7 @@ DefPrimitive(T_BEGIN, sub {
     my $ismath = $STATE->lookupValue('IN_MATH');
     my $mode   = $STATE->lookupValue('MODE');
     my @body   = $stomach->digestNextBody();
-    List($open, @body, mode => $mode); });
+    return ($ismath ? List($open, @body, mode => $mode) : ($open, @body)); });
 
 #######DefPrimitive('}', sub {
 DefPrimitive(T_END, sub {
