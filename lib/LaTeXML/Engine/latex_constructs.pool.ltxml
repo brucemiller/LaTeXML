@@ -316,6 +316,10 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     Let('\@nodocument', '\relax', 'global');
     AssignRegister('\everypar', Tokens(), 'global');
+    my $textwidth = LookupRegister('\textwidth');
+    AssignRegister('\columnwidth' => $textwidth);
+    AssignRegister('\hsize'       => $textwidth);
+    AssignRegister('\linewidth'   => $textwidth);
     my @boxes = ();
 
     if (my $ops = LookupValue('@document@preamble@atend')) {
