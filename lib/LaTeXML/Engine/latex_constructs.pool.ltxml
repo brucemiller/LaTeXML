@@ -1903,7 +1903,7 @@ DefConstructor('\@internal@math@verb{} Undigested {}',
 DefConstructor('\@internal@text@verb{} Undigested {}',
   "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
   font            => { family => 'typewriter', series => 'medium', shape => 'upright' },
-  enterHorizontal => 1,
+  mode            => 'restricted_horizontal', enterHorizontal => 1,
   beforeConstruct => sub {
     my ($doc, $whatsit) = @_;
     $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); },
@@ -4243,8 +4243,8 @@ DefConstructor('\@@cite []{}', "<ltx:cite ?#1(class='ltx_citemacro_#1')>#2</ltx:
 DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
   "<ltx:bibref show='#1' bibrefs='#bibrefs' inlist='#bibunit'"
     . " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
-  enterHorizontal => 1,
-  properties      => sub { (bibrefs => CleanBibKey($_[2]),
+  mode       => 'restricted_horizontal', enterHorizontal => 1,
+  properties => sub { (bibrefs => CleanBibKey($_[2]),
       separator   => DigestText(LookupValue('CITE_SEPARATOR')),
       yyseparator => DigestText(LookupValue('CITE_YY_SEPARATOR')),
       bibunit     => LookupValue('CITE_UNIT')); });
