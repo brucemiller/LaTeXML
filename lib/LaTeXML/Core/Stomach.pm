@@ -92,10 +92,19 @@ sub getScriptLevel {
 sub digestNextBody {
   my ($self, $terminal) = @_;
   no warnings 'recursion';
+  local @LaTeXML::LIST = ();
+  digestUntil($self, $terminal);
+  return @LaTeXML::LIST; }
+
+# This method digests content until $terminal or closing initial mode,
+# pushing onto @LaTeXML::LIST.
+# But, unlike digestNextBody, it does NOT bind @LaTeXML::LIST, nor return anything.
+sub digestUntil {
+  my ($self, $terminal) = @_;
+  no warnings 'recursion';
   my $startloc  = getLocator($self);
   my $initdepth = scalar(@{ $$self{boxing} });
   my $token;
-  local @LaTeXML::LIST = ();
   my $alignment = $STATE->lookupValue('Alignment');
   my @aug       = ();
 
@@ -108,7 +117,7 @@ sub digestNextBody {
       # at least \over calls in here without the intent to passing through the alignment.
       # So if we already have some digested boxes available, return them here.
       $$self{gullet}->unread($token);
-      return @LaTeXML::LIST; }
+      return; }
     my @r = invokeToken($self, $token);
     push(@LaTeXML::LIST, @r);
     push(@aug, $token, @r);
@@ -119,7 +128,7 @@ sub digestNextBody {
     "Got " . join("\n -- ", map { Stringify($_) } @aug))
     if $terminal && !Equals($token, $terminal);
   push(@LaTeXML::LIST, Box()) unless $token;               # Dummy `trailer' if none explicit.
-  return @LaTeXML::LIST; }
+  return; }
 
 # Digest a list of tokens independent from any current Gullet.
 # Typically used to digest arguments to primitives or constructors.
