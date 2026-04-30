@@ -68,7 +68,7 @@ sub getSOULcolor {
 # (should set framecolor from \setulcolor)
 DefConstructor('\textul{}',
   "<ltx:text framed='underline' framecolor='#framecolor'_noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1,
+  enterHorizontal => 1, mode => 'restricted_horizontal',
   properties      => { framecolor => sub { getSOULcolor('soul_ul_color'); } });
 
 # Customizing underlines
@@ -85,7 +85,7 @@ DefMacro('\setuloverlap{Dimension}',     undef);
 # but then how to make framecolor end up as text-decoration-color?
 DefConstructor('\textst{}',
   "<ltx:text cssstyle='text-decoration:line-through;#framecolor' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1,
+  enterHorizontal => 1, mode => 'restricted_horizontal',
   properties      => { framecolor => sub {
       my $framecolor = getSOULcolor('soul_strike_color');
       return $framecolor ? "text-decoration-color:" . ($framecolor->toAttribute()) . ";" : ""; } });
@@ -97,7 +97,7 @@ DefPrimitive('\setstcolor{}', sub { AssignValue(soul_strike_color => $_[1]); });
 DefMacro('\texthl', '\@ifpackageloaded{color}{\lx@texthl@color}{\textul}');
 DefConstructor('\lx@texthl@color{}',
   "<ltx:text _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1,
+  enterHorizontal => 1, mode => 'restricted_horizontal',
   bounded => 1, beforeDigest => sub { MergeFont(background => getSOULcolor('soul_hl_color')); });
 # Customizing highlight
 AssignValue(soul_hl_color => 'yellow');
