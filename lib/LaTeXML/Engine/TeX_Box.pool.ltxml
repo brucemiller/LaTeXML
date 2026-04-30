@@ -27,18 +27,19 @@ $LaTeXML::DEBUG{svg} = 1 if $$LaTeXML::DEBUG{svg_verbose};
 
 # These are actually TeX primitives, but we treat them as a Whatsit so they
 # remain in the constructed tree.
-#DefConstructor('{','#body', beforeDigest=>sub{$_[0]->bgroup;}, captureBody=>1);
-######DefPrimitive('{', sub {
 DefPrimitive(T_BEGIN, sub {
     my ($stomach) = @_;
     $stomach->bgroup;
-    my $open   = Box(undef, undef, undef, T_BEGIN, isEmpty => 1, alignmentSkippable => 1);
-    my $ismath = $STATE->lookupValue('IN_MATH');
-    my $mode   = $STATE->lookupValue('MODE');
-    my @body   = $stomach->digestNextBody();
-    return ($ismath ? List($open, @body, mode => $mode) : ($open, @body)); });
+    my $open = Box(undef, undef, undef, T_BEGIN, isEmpty => 1, alignmentSkippable => 1);
+    my $mode = $STATE->lookupValue('MODE');
+    if ($STATE->lookupValue('IN_MATH')) {    # In math, we return a Math List
+      my @body = $stomach->digestNextBody();
+      return List($open, @body, mode => $mode); }
+    else {                                   # Else just digest directly to @LaTeXML::LIST
+      push(@LaTeXML::LIST, $open);
+      $stomach->digestUntil();
+      return; } });
 
-#######DefPrimitive('}', sub {
 DefPrimitive(T_END, sub {
     my $f = LookupValue('font');
     $_[0]->egroup;
