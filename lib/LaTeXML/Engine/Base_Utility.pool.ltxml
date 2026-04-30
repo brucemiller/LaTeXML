@@ -362,17 +362,22 @@ sub removeEmptyElement {
 DefConstructor('\lx@tag[][][]{}',
   "<ltx:tag open='#1' close='#2'>#4</ltx:tag>",
   mode           => 'restricted_horizontal',
+  sizer          => '#4',
   afterConstruct => \&removeEmptyElement);
 
 # \lx@tag@intags{role}{stuff}
 DefConstructor('\lx@tag@intags[]{}',
   "<ltx:tag role='#1'>#2</ltx:tag>",
   mode           => 'restricted_horizontal',
+  sizer          => '#2',
   beforeDigest   => sub { neutralizeFont() },
   afterConstruct => \&removeEmptyElement);
 
 DefConstructor('\lx@tags{}',
   "<ltx:tags>#1</ltx:tags>",
+  sizer => sub {
+    my @tags = $_[0]->getArg(1)->unlist;    # Arbitarily, only size the 1st ltx:tag.
+    ($tags[0] ? $tags[0]->getSize : (Dimension(0), Dimension(0), Dimension(0))); },
   afterConstruct => \&removeEmptyElement);
 
 #----------------------------------------------------------------------
