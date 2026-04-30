@@ -411,7 +411,7 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 /*======================================================================
  Misc */
 /* .ltx_verbatim*/
-.ltx_verbatim { text-align:left; }
+.ltx_verbatim { text-align:left; white-space:nowrap; }
 /*======================================================================
  Meta stuff, footnotes */
 .ltx_note_content { display:none; }

@@ -316,6 +316,10 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     Let('\@nodocument', '\relax', 'global');
     AssignRegister('\everypar', Tokens(), 'global');
+    my $textwidth = LookupRegister('\textwidth');
+    AssignRegister('\columnwidth' => $textwidth);
+    AssignRegister('\hsize'       => $textwidth);
+    AssignRegister('\linewidth'   => $textwidth);
     my @boxes = ();
 
     if (my $ops = LookupValue('@document@preamble@atend')) {
@@ -451,7 +455,7 @@ DefConstructor('\lx@note[]{}[]{}',
     . "#tags"
     . "#4"
     . "</ltx:note>",
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   sizer        => '#mark',
   beforeDigest => sub { neutralizeFont(); },
   properties   => sub {
@@ -473,7 +477,7 @@ DefConstructor('\lx@notemark[]{}[]',
   reversion => '');
 DefConstructor('\lx@notetext[]{}[]{}',
   "^<ltx:note role='#role' mark='#mark' xml:id='#id'>#4</ltx:note>",
-  mode       => 'internal_vertical',
+  mode       => 'inline_internal_vertical',
   properties => sub {
     my $type = ToString($_[2]);
     (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || DigestText(T_CS('\the' . $type)))); },
@@ -1538,23 +1542,20 @@ DefConstructor('\inline@description@item OptionalUndigested',
 
 DefEnvironment('{itemize}',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  mode            => 'internal_vertical',
-  properties      => sub { beginItemize('itemize', '@item'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode       => 'internal_vertical',
+  properties => sub { beginItemize('itemize', '@item'); },
+  locked     => 1);
 DefEnvironment('{enumerate}',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-  mode            => 'internal_vertical',
-  properties      => sub { beginItemize('enumerate', 'enum'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode       => 'internal_vertical',
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  locked     => 1);
 DefEnvironment('{description}',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
-  mode            => 'internal_vertical',
-  beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
-  properties      => sub { beginItemize('description', '@desc'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode         => 'internal_vertical',
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties   => sub { beginItemize('description', '@desc'); },
+  locked       => 1);
 
 DefMacro('\makelabel{}', '#1');
 DefMacro('\@mklab{}',    '\hfil #1');
@@ -1722,8 +1723,7 @@ DefConstructor('\trivlist',
   mode       => 'internal_vertical',
   properties => sub { beginItemize('trivlist'); });
 DefConstructor('\endtrivlist', sub {
-    $_[0]->maybeCloseElement('ltx:itemize'); },
-  beforeDigest => sub { Digest('\par'); });
+    $_[0]->maybeCloseElement('ltx:itemize'); });
 DefMacro('\trivlist@item', '\preitem@par\trivlist@item@');
 DefConstructor('\trivlist@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
@@ -1811,7 +1811,6 @@ sub beforeDigestVerbatim {
   AssignValue(current_environment => 'verbatim');
   DefMacroI('\@currenvir', undef, 'verbatim');
   MergeFont(family => 'typewriter');
-  # Digest(T_CS('\par')); # NO! See beforeConstruct!
   return @stuff; }
 
 sub afterDigestVerbatim {
@@ -1904,7 +1903,7 @@ DefConstructor('\@internal@math@verb{} Undigested {}',
 DefConstructor('\@internal@text@verb{} Undigested {}',
   "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
   font            => { family => 'typewriter', series => 'medium', shape => 'upright' },
-  enterHorizontal => 1,
+  mode            => 'restricted_horizontal', enterHorizontal => 1,
   beforeConstruct => sub {
     my ($doc, $whatsit) = @_;
     $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); },
@@ -3031,7 +3030,7 @@ sub defineNewTheorem {
               T_CS('\let'), T_CS('\the' . $counter), T_CS('\@empty'),
               Invocation(T_CS('\lx@make@tags'), T_OTHER($thmset)),
               T_END);
-          } }
+        } }
         else {
           %ctr = RefStepCounter($thmset); } }
       my $title = DigestText(Tokens(T_BEGIN,
@@ -3379,7 +3378,7 @@ sub arrange_panels_and_breaks {
               my $block = $document->wrapNodes('ltx:block', $prev_node, $child);
               push(@row_contents, [$block, 'ltx:block', $prev_width + $child_width]);
               pop(@all_panels); push(@all_panels, $block);
-            } }
+          } }
           else {
             # otherwise keep the last panel as-is, and append a sibling
             push(@row_contents, $prev_panel);
@@ -3420,11 +3419,25 @@ Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
+# These (should) appear in an internal_vertical context,
+# BUT the arg should be processed to a horizontal (paragraph) List!
 DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>",
-  sizer => 0, mode => 'restricted_horizontal',
+  sizer        => '#1',
+  beforeDigest => sub {
+    $_[0]->beginMode('internal_vertical');
+    $_[0]->enterHorizontal; },
+  afterDigest => sub {
+    $_[0]->leaveHorizontal_internal;
+    $_[0]->endMode('internal_vertical') },
 );
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
-  sizer => 0, mode => 'restricted_horizontal',
+  sizer        => 0,
+  beforeDigest => sub {
+    $_[0]->beginMode('internal_vertical');
+    $_[0]->enterHorizontal; },
+  afterDigest => sub {
+    $_[0]->leaveHorizontal_internal;
+    $_[0]->endMode('internal_vertical') },
 );
 
 sub beforeFloat {
@@ -4244,8 +4257,8 @@ DefConstructor('\@@cite []{}', "<ltx:cite ?#1(class='ltx_citemacro_#1')>#2</ltx:
 DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
   "<ltx:bibref show='#1' bibrefs='#bibrefs' inlist='#bibunit'"
     . " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
-  enterHorizontal => 1,
-  properties      => sub { (bibrefs => CleanBibKey($_[2]),
+  mode       => 'restricted_horizontal', enterHorizontal => 1,
+  properties => sub { (bibrefs => CleanBibKey($_[2]),
       separator   => DigestText(LookupValue('CITE_SEPARATOR')),
       yyseparator => DigestText(LookupValue('CITE_YY_SEPARATOR')),
       bibunit     => LookupValue('CITE_UNIT')); });
@@ -4812,7 +4825,7 @@ DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxConte
     (width => $_[4],
       vattach => translateAttachment($_[1]),
       height  => $_[2]); },
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   robust       => 1,
   beforeDigest => sub {
     Let('\\\\', '\lx@newline'); });
@@ -4829,7 +4842,7 @@ DefEnvironment('{minipage}[] OptionalUndigested [] {Dimension}', sub {
       class   => 'ltx_minipage');
     return; },
   sizer        => '#body',
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   beforeDigest => sub {
     Digest(T_CS('\@minipagetrue')); },
   afterDigestBegin => sub {
@@ -5012,7 +5025,7 @@ DefEnvironment('{picture} Pair OptionalPair',
     . " fill='none' stroke='none' unitlength='#unitlength'>"
     . "?#transform(<ltx:g transform='#transform'>#body</ltx:g>)(#body)"
     . "</ltx:picture>",
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   beforeDigest => \&before_picture,
   properties   => sub {
     my ($stomach, $size, $pos) = @_;
