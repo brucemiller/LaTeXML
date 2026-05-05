@@ -218,11 +218,7 @@ DebuggableFeature('frontmatter');
 
 DefConstructor('\lx@personname{}', "<ltx:personname>#1</ltx:personname>",
   beforeDigest => sub {
-    Let('\thanks', '\person@thanks');
-    # And be a bit desperate to counter overzealous formatting
-    Let('\begin{tabular}', '\lx@ignore@tabular');
-    Let('\end{tabular}',   '\lx@ignore@endtabular');
-  },
+    Let('\thanks', '\person@thanks'); },
   mode => 'restricted_horizontal', enterHorizontal => 1);
 DefMacro('\lx@ignore@tabular[]{}', '');
 DefMacro('\lx@ignore@endtabular',  '');
@@ -693,7 +689,10 @@ DefMacro('\lx@add@authors{}', sub {
     my @tokens = $stuff->unlist;
     my @calls  = ();
     dequeueFrontMatter('ltx:creator', role => 'author');
-    if (positionOf($stuff, @authorsup_markers)) {
+    # If too much formatting, fall back to unstructued author content
+    if (ToString($stuff) =~ /(?:\{tabular\}|\{minipage\}|\\halign)/) {
+      push(@calls, Invocation(T_CS('\lx@add@author'), undef, $stuff)); }
+    elsif (positionOf($stuff, @authorsup_markers)) {
       my @lines   = SplitTokens($stuff, @authoraffilsplits);
       my @entries = ();
       foreach my $line (@lines) {
