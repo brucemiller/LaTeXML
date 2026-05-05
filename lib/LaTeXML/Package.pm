@@ -966,9 +966,9 @@ sub Invocation {
   my ($token, @args) = @_;
   $token = TokenizeInternal($token) unless ref $token;
   my ($cs, @more) = $token->unlist;
-  if (! scalar(@more)) {
-    $token = $cs; }             # reduce to single token.
-  else {                  # Treat as anonymous macro
+  if (!scalar(@more)) {
+    $token = $cs; }    # reduce to single token.
+  else {               # Treat as anonymous macro
     return $token->packParameters->substituteParameters(@args); }
   # Note: $token may have been \let to another defn!
   if (my $defn = $STATE->lookupDefinition($token)) {
@@ -1666,7 +1666,7 @@ sub defmath_introspective {
   AssignValue(join("##", "math_definition", $cs->getString, $nargs,
       $options{role} || $options{operator_role} || '', $options{name} || '',
       (defined $options{meaning} ? $options{meaning} : ''),
-      $STATE->getStomach->getGullet->getMouth->getSource,
+      $STATE->getStomach->getGullet->getMouth->getSource || '',
       (ref $presentation ? '' : $presentation)) => 1, global => 1);
   return; }
 
@@ -1907,10 +1907,10 @@ sub DefEnvironmentI {
         sub { $_[0]->bgroup; },
         sub { my $b = LookupValue('@environment@' . $name . '@atbegin');
           ($b ? Digest(@$b) : ()); },
-        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; })  : ()),
-        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; })  : ()),
+        ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; }) : ()),
+        ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; }) : ()),
         # if mode switch, do now (after @atbegin) WITHOUT pushing stack, since already done
-        ($mode                     ? (sub { $_[0]->beginMode($mode, 1); }) : ()),
+        ($mode ? (sub { $_[0]->beginMode($mode, 1); }) : ()),
         sub { AssignValue(current_environment => $name);
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
