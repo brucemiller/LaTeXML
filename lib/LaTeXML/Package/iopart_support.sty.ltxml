@@ -31,36 +31,34 @@ DefMacroI('\theequation', undef, '\ifnumbysec\arabic{section}.\arabic{equation}\
 # Frontmatter
 
 DefMacro('\title[]{}',
-  '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
-    . '\@add@frontmatter{ltx:title}{#2}');
+  '\gdef\@shorttitle{#1}\gdef\@title{#2}'
+    . '\ifx.#1.\else\lx@add@toctitle{#1}\fi'
+    . '\lx@add@title{#2}');
 Let('\paper', '\title');
 
 DefMacro('\@articletype', '');
 DefMacro('\article[]{}{}',
-  '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
-    . '\ifx.#2.\else\@add@frontmatter{ltx:classification}[scheme=type]{#2}\fi'
-    . '\@add@frontmatter{ltx:title}{#3}');
+  '\ifx.#1.\else\lx@add@toctitle{#1}\fi'
+    . '\ifx.#2.\else\lx@add@pubnote[role=type]{#2}\fi'
+    . '\lx@add@title{#3}');
 
 DefMacro('\letter{}',    '\article[Letter to the Editor]{Letter to the Editor}{#1}\lettertrue');
+DefMacro('\ftc{}',       '\article[Fast Track Communication]{Fast Track Communication}{#1}');
 DefMacro('\review[]{}',  '\article[#1]{Review Article}{#2}');
 DefMacro('\topical[]{}', '\article[#1]{Topical Review}{#2}');
 DefMacro('\comment[]{}', '\article[#1]{Comment}{#2}');
 DefMacro('\rapid[]{}',   '\article[#1]{Rapid Communication}{#2}');
 DefMacro('\note[]{}',    '\article[#1]{Note}{#2}');
 DefMacro('\prelim[]{}',  '\article[#1]{Preliminary Communication}{#2}');
-
-DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>", bounded => 1);
-DefMacro('\address{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1}}');
-
-DefMacro('\ead Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\address{}',   '\lx@add@affiliations{#1}');
+DefMacro('\ead Semiverbatim', '\lx@add@email{#1}');
 Let('\mailto', '\ead');
 
 DefMacro('\eads {}', '#1');
 
-DefMacro('\pacno{}', '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
-DefMacro('\pacs{}',  '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
-DefMacro('\ams{}',   '\@add@frontmatter{ltx:classification}[scheme=ams]{#1}');
+DefMacro('\pacno{}', '\lx@add@classification[scheme=pacs,name={PACS:~}]{#1}');
+DefMacro('\pacs{}',  '\lx@add@classification[scheme=pacs,name={PACS:~}]{#1}');
+DefMacro('\ams{}',   '\lx@add@classification[scheme=ams,name={AMS Classification:~}]{#1}');
 
 our @journals = ('Institute of Physics Publishing',
   'J. Phys.\ A: Math.\ Gen.\ ',
@@ -98,7 +96,7 @@ our @journals = ('Institute of Physics Publishing',
   'New. J. Phys.\ ');
 DefMacro('\journal',    'Institute of Physics Publishing');
 DefMacro('\submitted',  '\submitto{\journal}');
-DefMacro('\submitto{}', '\def\journal{#1}\@add@to@frontmatter{ltx:note}[role=submitted]{#1}');
+DefMacro('\submitto{}', '\def\journal{#1}\lx@add@pubnote[role=journal]{#1}');
 DefPrimitive('\jl{}', sub {
     if (my $j = $journals[ToString($_[1])]) {
       DefMacroI('\journal', undef, Tokenize($j)); } });

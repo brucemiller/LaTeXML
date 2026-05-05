@@ -476,7 +476,7 @@ sub normalize_cell_sizes {
       else {
         $$cell{empty}     = 1;
         $$cell{skippable} = 1; }
-  } }
+    } }
   return; }
 
 # Check whether all these things are "empty" or only spaces or otherwise skippable in a table cell
@@ -492,6 +492,8 @@ sub isSkippable {
     elsif ($ref eq 'LaTeXML::Core::Token') {
       my $cc = $$thing[1];
       return 0 if ($cc == CC_LETTER) || ($cc == CC_OTHER) || ($cc == CC_ACTIVE) || ($cc == CC_CS); }
+    elsif ($thing->getProperty('alignmentPreserve')) {
+      return 0; }
     elsif ((!$thing->getProperty('isEmpty'))
       && (!$thing->getProperty('isSpace'))
       && (!$thing->getProperty('alignmentSkippable'))) {
@@ -538,20 +540,21 @@ sub normalize_sum_sizes {
     my ($rowh, $rowd) = (0, 0);
     my ($rowt, $rowb) = (($$row{tpadding} ? $$row{tpadding}->valueOf : 0),
       ($$row{bpadding} ? $$row{bpadding}->valueOf : 0));
-    my ($bordert, $borderb) = (0,0);
+    my ($bordert, $borderb) = (0, 0);
     for (my $j = 0 ; $j < $ncols ; $j++) {
       my $cell = $cols[$j];
       next if $$cell{skipped};
       next unless $$cell{boxes};
-      my $w = $$cell{cwidth};
-      my $h = $$cell{cheight};
-      my $d = $$cell{cdepth};
-      my $t = $$cell{tpadding};
-      my $b = $$cell{bpadding};
-      my $r = $$cell{rpadding};
-      my $l = $$cell{lpadding};
+      my $w  = $$cell{cwidth};
+      my $h  = $$cell{cheight};
+      my $d  = $$cell{cdepth};
+      my $t  = $$cell{tpadding};
+      my $b  = $$cell{bpadding};
+      my $r  = $$cell{rpadding};
+      my $l  = $$cell{lpadding};
       my $cs = $$cell{colspan} || 1;
       my $rs = $$cell{rowspan} || 1;
+
       if ($cs == 1) {
         $colwidths[$j] = max($colwidths[$j], $w->valueOf) if $w;
         $collefts[$j]  = max($collefts[$j],  $l->valueOf) if $l;
@@ -559,12 +562,12 @@ sub normalize_sum_sizes {
       else {
         # Divide up spanned columns, but don't double count
         my $innerw = $w && $w->valueOf;
-        $innerw = $innerw - ($cs-1) * $l->valueOf if $l;
-        $innerw = $innerw - ($cs-1) * $r->valueOf if $r;
-        for (my $jj = $j; $jj < $j + $cs; $jj++) {
-          $colwidths[$jj] = max($colwidths[$jj], $innerw/$cs) if $w;
-          $collefts[$jj]  = max($collefts[$jj],  $l->valueOf/$cs) if $l;
-          $colrights[$jj] = max($colrights[$jj], $r->valueOf/$cs) if $r; } }
+        $innerw = $innerw - ($cs - 1) * $l->valueOf if $l;
+        $innerw = $innerw - ($cs - 1) * $r->valueOf if $r;
+        for (my $jj = $j ; $jj < $j + $cs ; $jj++) {
+          $colwidths[$jj] = max($colwidths[$jj], $innerw / $cs)     if $w;
+          $collefts[$jj]  = max($collefts[$jj],  $l->valueOf / $cs) if $l;
+          $colrights[$jj] = max($colrights[$jj], $r->valueOf / $cs) if $r; } }
 
       if (($$cell{rowspan} || 1) == 1) {
         $rowh = max($rowh, $h->valueOf) if $h;
@@ -576,16 +579,16 @@ sub normalize_sum_sizes {
         $bordert = 1 if $border =~ /[tT]/;
         $borderb = 1 if $border =~ /[bB]/; }
     }
-    if(($i == 0) && !$self->getProperty('isLaTeX')){
-      $$row{cheight}  = Dimension($rowh); }
+    if (($i == 0) && !$self->getProperty('isLaTeX')) {
+      $$row{cheight} = Dimension($rowh); }
     else {
-      $$row{cheight}  = Dimension($rowh)->larger($hs); }
-    if(($i == $nrows-1) && !$self->getProperty('isLaTeX')){
-      $$row{cdepth}   = Dimension($rowd); }
+      $$row{cheight} = Dimension($rowh)->larger($hs); }
+    if (($i == $nrows - 1) && !$self->getProperty('isLaTeX')) {
+      $$row{cdepth} = Dimension($rowd); }
     else {
-      $$row{cdepth}   = Dimension($rowd)->larger($ds); }
-    $$row{tpadding} = Dimension($rowt + ($bordert ? 0.4*$UNITY : 0));
-    $$row{bpadding} = Dimension($rowb + ($borderb ? 0.4*$UNITY : 0));
+      $$row{cdepth} = Dimension($rowd)->larger($ds); }
+    $$row{tpadding} = Dimension($rowt + ($bordert ? 0.4 * $UNITY : 0));
+    $$row{bpadding} = Dimension($rowb + ($borderb ? 0.4 * $UNITY : 0));
     # NOTE: Should be storing column widths to; individually, as well as per-column!
     push(@rowdepths,  $$row{cdepth}->valueOf);
     push(@rowheights, $$row{cheight}->valueOf); }
@@ -609,20 +612,20 @@ sub normalize_sum_sizes {
     $x += $colrights[$j]; }
   my $vattach = $$self{properties}{attributes}{vattach} || 'middle';
   $$self{cwidth} = Dimension($x);
-  if($vattach eq 'top'){
+  if ($vattach eq 'top') {
     my $h = $rowheights[0] || 0;
     $$self{cheight} = Dimension($h);
     $$self{cdepth}  = Dimension($y - $h); }
-  elsif($vattach eq 'bottom'){
+  elsif ($vattach eq 'bottom') {
     my $d = $rowdepths[-1] || 0;
     $$self{cheight} = Dimension($y - $d);
     $$self{cdepth}  = Dimension($d); }
-  else {                        # middle
+  else {    # middle
     my $font = $STATE->lookupValue('font');
-#    my $c = $font && $font->getEXHeight || Dimension('1ex');
-    my $c = $font && ($font->getSize * $UNITY)/2 || Dimension('1ex'); # Math axis?
-    $$self{cheight} = Dimension(($y+$c)/2);
-    $$self{cdepth}  = Dimension(($y-$c)/2);  }
+    #    my $c = $font && $font->getEXHeight || Dimension('1ex');
+    my $c = $font && ($font->getSize * $UNITY) / 2 || Dimension('1ex');    # Math axis?
+    $$self{cheight} = Dimension(($y + $c) / 2);
+    $$self{cdepth}  = Dimension(($y - $c) / 2); }
   @colwidths           = map { Dimension($_); } @colwidths;
   @rowheights          = map { Dimension($_); } @rowheights;
   @rowdepths           = map { Dimension($_); } @rowdepths;
@@ -649,15 +652,15 @@ sub normalize_sum_sizes {
       $$cell{y} = $rowpos[$i];
       Debug("CELL[$i,$j] " . showSize($$cell{cwidth}, $$cell{cheight}, $$cell{cdepth})
           . " @ " . ToString($$cell{x}) . "," . ToString($$cell{y})
-          . " pad ".ToString($$cell{lpadding}).",".ToString($$cell{rpadding})
+          . " pad " . ToString($$cell{lpadding}) . "," . ToString($$cell{rpadding})
           . " w/ " . join(',', map { $_ . '=' . ToString($$cell{$_}); }
             (qw(align vattach skipped colspan rowspan))))
         if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
     }
     Debug("ROW[$i] " . showSize($$row{cwidth}, $$row{cheight}, $$row{cdepth})
         . " @ " . ToString($$row{x}) . "," . ToString($$row{y})
-        . " pad ".ToString($$row{tpadding}).",".ToString($$row{bpadding}))
-    if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
+        . " pad " . ToString($$row{tpadding}) . "," . ToString($$row{bpadding}))
+      if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
   }
   Debug("ALIGNMENT " . showSize($$self{cwidth}, $$self{cheight}, $$self{cdepth}))
     if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
@@ -722,7 +725,7 @@ sub normalize_mark_spans {
               $border =~ s/[^bB]//g;    # mask all but bottom border
               $sborder = $border unless $sborder; } }
           $$col{border} .= $sborder if $sborder; }
-  } } }
+      } } }
   return; }
 
 # Now scan for and remove empty rows & columns
@@ -842,7 +845,7 @@ sub normalize_prune_columns {
                   ? (@preserve, $$next{boxes}->unlist) : @preserve); }
             }    # Now, remove the column
             $$row{columns} = [grep { $_ ne $col } @{ $$row{columns} }];
-        } }
+          } }
         $prunew = Dimension($prunew);
         if ($j) {    # If not 1st row, add right padding to previous column
           foreach my $row (@rows) {
@@ -853,7 +856,7 @@ sub normalize_prune_columns {
             if (my $col = $$row{columns}[0]) {
               $$col{lpadding} = ($$col{lpadding} ? $$col{lpadding}->add($prunew) : $prunew); } } }
         Debug("PRUNE COLUMN $j") if $LaTeXML::DEBUG{alignment_normalize};
-  } } }
+      } } }
   return; }
 
 sub show_row {
@@ -1080,7 +1083,7 @@ sub collect_alignment_rows {
         $rows[$r + $sr][$c + $cs - 1]{r} = $rb; }
       for (my $sc = 0 ; $sc < $cs ; $sc++) {
         $rows[$r + $rs - 1][$c + $sc]{b} = $bb; }
-  } }
+    } }
 
   # Now, do some border massaging...
   for (my $r = 0 ; $r < $nrows ; $r++) {
@@ -1147,7 +1150,7 @@ sub classify_alignment_cell {
           $class .= 'm' unless $class eq 'm'; }
         else {
           $class .= '?' unless $class; }
-  } } }
+      } } }
   $class = 'mx' if $class && (($class =~ /^((m|i)t)+(m|i)?$/) || ($class =~ /^(t(m|i))+t?$/));
   return $class || '_'; }
 

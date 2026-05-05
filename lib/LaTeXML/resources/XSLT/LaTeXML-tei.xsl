@@ -61,10 +61,11 @@
           <xsl:apply-templates select="*[
                                        not(self::ltx:title or self::ltx:creator or self::ltx:date or self::ltx:abstract or self::ltx:keywords or self::ltx:classification)
                                        and not(self::ltx:acknowledgements or self::ltx:bibliography)
+                                       and not(self::ltx:pubnote[@role='thanks'])
                                        and not(self::ltx:appendix)]"/>
         </body>
         <back>
-          <xsl:apply-templates select="ltx:acknowledgements"/>
+          <xsl:apply-templates select="ltx:acknowledgements | ltx:pubnote[@role='thanks']"/>
           <xsl:apply-templates select="ltx:bibliography"/>
           <xsl:apply-templates select="//ltx:appendix"/>
         </back>
@@ -145,6 +146,9 @@
     <xsl:apply-templates/>
   </xsl:template>
 
+  <!-- Need to figure out where these go; presumably by @role -->
+  <xsl:template match="ltx:pubnote"/>
+
   <xsl:template match="ltx:creator[@role='author']">
     <author>
       <xsl:apply-templates/>
@@ -207,16 +211,14 @@
     <xsl:apply-templates/>
   </xsl:template>
 
-  <xsl:template match="ltx:note[@role='institutetext']"/>
-
-  <xsl:template match="ltx:note[@role='thanks']">
+  <xsl:template match="ltx:contact[@role='thanks']">
     <p>
       <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
       <xsl:apply-templates/>
     </p>
   </xsl:template>
 
-  <xsl:template match="ltx:p/ltx:note[@role='thanks']">
+  <xsl:template match="ltx:p/ltx:contact[@role='thanks']">
     <xsl:apply-templates/>
   </xsl:template>
 
@@ -387,7 +389,7 @@
     </hi>
   </xsl:template>
 
-  <xsl:template match="ltx:acknowledgements">
+  <xsl:template match="ltx:acknowledgements | ltx:pubnote[@role='thanks']">
     <div type="acknowledgements">
       <xsl:if test="not(./ltx:p)">
         <p>

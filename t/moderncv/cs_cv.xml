@@ -9,17 +9,17 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <resource src="ltx-cv.css" type="text/css"/>
+  <title><inline-block vattach="bottom">
+      <p>Computer Science,<break/></p>
+      <p>Ph.D. Candidate</p>
+    </inline-block></title>
   <creator role="cv">
     <contact role="firstname">Jane</contact>
     <contact role="familyname">Doe</contact>
-    <contact role="position"><inline-block vattach="bottom">
-        <p>Computer Science,<break/></p>
-        <p>Ph.D. Candidate</p>
-      </inline-block></contact>
-    <contact role="address">777 Slevin Street<break/>New York, NY, 10010, USA</contact>
-    <contact role="mobile">+1 555 555 5555</contact>
-    <contact role="email">email@example.com</contact>
-    <contact role="homepage"><ref class="ltx_url" font="typewriter" href="https://www.example.com">https://www.example.com</ref></contact>
+    <contact name="Address: " role="address">777 Slevin Street<break/>New York, NY, 10010, USA</contact>
+    <contact name="Mobile" role="mobile">+1 555 555 5555</contact>
+    <contact name="Email: " role="email">email@example.com</contact>
+    <contact name="URL: " role="url">https://www.example.com</contact>
   </creator>
   <section inlist="toc" xml:id="Sx1">
     <title class="ltx_cv"><text class="ltx_section_mark"></text><text class="ltx_cv_heading" font="smallcaps">Education</text></title>
