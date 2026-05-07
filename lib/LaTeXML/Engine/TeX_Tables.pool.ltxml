@@ -66,12 +66,11 @@ DefColumnType('r', sub {
 
 DefColumnType('p{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before => Tokens(T_CS('\vtop'), T_BEGIN, T_CS('\hbox'),
-        T_LETTER('t'), T_LETTER('o'), $_[1]->revert, T_CS('\relax'),
-        T_BEGIN),
+      before => Tokens(T_CS('\vtop'), T_BEGIN, T_BEGIN,
+        T_CS('\hsize'), $_[1]->revert, T_CS('\relax')),
       after   => Tokens(T_END, T_END),
       vattach => 'top',
-      align   => 'justify',
+      align   => 'justify', width => $_[1],
     ); return; });
 
 DefColumnType('*{Number}{}', sub {
@@ -170,7 +169,7 @@ DefConstructor('\halign BoxSpecification',
   beforeConstruct => sub {
     my ($document) = @_;
     $document->maybeCloseElement('ltx:p'); },
-  afterDigest => sub {          # After spec, but before body!
+  afterDigest => sub {    # After spec, but before body!
     my ($stomach, $whatsit) = @_;
     $whatsit->setProperty(mode => 'internal_vertical');
     $stomach->beginMode('restricted_horizontal');
@@ -360,7 +359,7 @@ sub digestAlignmentColumn {
   my ($stomach, $alignment, $lastwascr) = @_;
   my $gullet = $stomach->getGullet;
   my $ismath = $STATE->lookupValue('IN_MATH');
-  my $mode = $STATE->lookupValue('MODE');
+  my $mode   = $STATE->lookupValue('MODE');
   local @LaTeXML::LIST = ();
   # Scan for leading \omit, skipping over (& saving) \hline.
   Debug("Halign $alignment: COLUMN starting scan ($mode)") if $LaTeXML::DEBUG{halign};
@@ -456,16 +455,19 @@ sub trimColumnTemplate {
 
 # Given the boxes for an alignment cell,
 # extract & remove the various fills and rules from the ends to annotate the cell structure
+# Note: With spanned columns (\multicolumn) \omit has moved to the LAST column of span,
+# but we want to store data in the FIRST column, to be consistent with rowspan.
 sub extractAlignmentColumn {
   my ($alignment, $boxes) = @_;
   return () unless $alignment;    # ??
       # Note: $n0,$n1 is a VERY round-about way of tracking the column spanning!
-  my $ismath  = $STATE->lookupValue('IN_MATH');
-  my $n0      = (LookupValue('alignmentStartColumn') || 0) + 1;
-  my $n1      = $alignment->currentColumnNumber;
-  my $colspec = $alignment->getColumn($n0);
-  my $align   = $$colspec{align} || 'left';
-  my $border  = '';
+  my $ismath   = $STATE->lookupValue('IN_MATH');
+  my $n0       = (LookupValue('alignmentStartColumn') || 0) + 1;
+  my $n1       = $alignment->currentColumnNumber;
+  my $colspec0 = $alignment->getColumn($n0);                       # Where we'll PUT the info
+  my $colspec1 = $alignment->getColumn($n1);                       # But this is the spec USED
+  my $align    = $$colspec1{align} || 'left';
+  my $border   = '';
   # Peel off any boxes from both sides until we get the "meat" of the column.
   # from this we can establish borders, alignment and emptiness.
   # But we, of course, immediately put them back...
@@ -473,7 +475,7 @@ sub extractAlignmentColumn {
   my @saveleft  = ();
   my @saveright = ();
   my (@lspaces, @rspaces);
-  if (my $skip = $$colspec{tabskip}) {
+  if (my $skip = $$colspec1{tabskip}) {
     push(@lspaces, Digest(Tokens(T_CS('\hskip'), $skip->revert, T_CS('\relax')))); }
   while (@boxes) {
     if (ref $boxes[0] eq 'LaTeXML::Core::List') {
@@ -515,24 +517,26 @@ sub extractAlignmentColumn {
       unshift(@saveright, pop(@boxes)); }
     else {
       last; } }
-  delete $$colspec{width} unless $align eq 'justify';
+  delete $$colspec0{width} unless $align eq 'justify';
   # Replacing boxes with the fil padding & vertical rules stripped off
   @boxes = (@saveleft, @boxes, @saveright);
   $boxes = List(@boxes, mode => $boxes->getProperty('mode'));
   # record relevant info in the Alignment.
-  $$colspec{align}   = $align;
-  $$colspec{border}  = $border = ($$colspec{border} || '') . $border;
-  $$colspec{boxes}   = $boxes;
-  $$colspec{lspaces} = List(@lspaces) if @lspaces;
-  $$colspec{rspaces} = List(@rspaces) if @rspaces;
-  $$colspec{colspan} = $n1 - $n0 + 1;
+  $$colspec0{align}   = $align;
+  $$colspec0{width}   = $$colspec1{width};
+  $$colspec0{border}  = $border = ($$colspec1{border} || '') . $border;
+  $$colspec0{boxes}   = $boxes;
+  $$colspec0{lspaces} = List(@lspaces) if @lspaces;
+  $$colspec0{rspaces} = List(@rspaces) if @rspaces;
+  $$colspec0{colspan} = $n1 - $n0 + 1;
 
   if ($$alignment{in_tabular_head} || $$alignment{in_tabular_foot}) {
-    $$colspec{thead}{column} = 1; }
+    $$colspec0{thead}{column} = 1; }
+
   for (my $i = $n0 + 1 ; $i <= $n1 ; $i++) {
     my $c = $alignment->getColumn($i);
     $$c{skipped} = 1 if $c; }
-  Debug("Halign $alignment: INSTALL column " . join(',', map { $_ . "=" . ToString($$colspec{$_}); } sort keys %$colspec)) if $LaTeXML::DEBUG{halign};
+  Debug("Halign $alignment: INSTALL column " . join(',', map { $_ . "=" . ToString($$colspec0{$_}); } sort keys %$colspec0)) if $LaTeXML::DEBUG{halign};
   return $boxes; }
 
 #======================================================================
@@ -690,6 +694,17 @@ DefMacro('\lx@alignment@multicolumn {Number}  AlignmentTemplate {}', sub {
       ($column ? beforeCellUnlist($$column{before}) : ()),
       $tokens->unlist,
       ($column ? afterCellUnlist($$column{after}) : ())); });
+
+DefMacro('\lx@alignment@multicolumn {Number}{}{}', sub {
+    my ($gullet, $span, $template, $tokens) = @_;
+    $span = $span->valueOf;
+    # First part, like \multispan
+    (T_CS('\omit'), (map { (T_CS('\span'), T_CS('\omit')) } 1 .. $span - 1),
+      T_CS('\lx@alignment@altcolumn'), T_BEGIN, $template, T_END, $tokens); });
+DefMacro('\lx@alignment@altcolumn AlignmentTemplate', sub {
+    my ($gullet, $template) = @_;
+    if (my $alignment = LookupValue('Alignment')) {
+      $alignment->replaceColumn($template->column(1)); } });
 
 DefConditionalI('\if@in@lx@alignment', undef, sub { LookupValue('Alignment'); });
 

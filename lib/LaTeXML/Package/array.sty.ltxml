@@ -24,18 +24,24 @@ DefMacroI('\lasthline',  undef, '\hline');
 DefColumnType('>{}', sub { $LaTeXML::BUILD_TEMPLATE->addBeforeColumn($_[1]->unlist); return; });
 DefColumnType('<{}', sub { $LaTeXML::BUILD_TEMPLATE->addAfterColumn($_[1]->unlist);  return; });
 
-# This is the same as p
+# This is the same as p, but using \vtop
 # but really needs to specify vertical alignment as centered
 DefColumnType('m{Dimension}', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),    #Tokens(T_BEGIN),
-      after => Tokens(T_END),
-      align => 'justify', width => $_[1], vattach => 'middle'); return; });
-# This is also the same as p
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before => Tokens(T_CS('\vbox'), T_BEGIN, T_BEGIN,
+        T_CS('\hsize'), $_[1]->revert, T_CS('\relax')),
+      after   => Tokens(T_END, T_END),
+      align   => 'justify', width => $_[1],
+      vattach => 'middle'); return; });
+# This is also the same as p, but SHOULD use \vbot (if there was one)
 # but really needs to specify vertical alignment as bottom
 DefColumnType('b{Dimension}', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vbox'), T_BEGIN),    #Tokens(T_BEGIN),
-      after => Tokens(T_END),
-      align => 'justify', width => $_[1], vattach => 'bottom'); return; });
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before => Tokens(T_CS('\vbox'), T_BEGIN, T_BEGIN,
+        T_CS('\hsize'), $_[1]->revert, T_CS('\relax')),
+      after   => Tokens(T_END, T_END),
+      align   => 'justify', width => $_[1],
+      vattach => 'bottom'); return; });
 
 # Like @{}, but should NOT suppress intercolumn space
 DefColumnType('!{}', sub {
