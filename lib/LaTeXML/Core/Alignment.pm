@@ -21,8 +21,8 @@ use LaTeXML::Common::XML;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Core::Alignment::Template;
 use List::Util qw(max sum);
-use base       qw(LaTeXML::Core::Whatsit);
-use base       qw(Exporter);
+use base qw(LaTeXML::Core::Whatsit);
+use base qw(Exporter);
 our @EXPORT = (qw(
     &ReadAlignmentTemplate &MatrixTemplate));
 
@@ -164,6 +164,14 @@ sub currentRowNumber {
 sub currentColumn {
   my ($self) = @_;
   return $$self{current_row} && $$self{current_row}->column($$self{current_column}); }
+
+# Used by \multicolumn to replace the current column spec with a new one
+# (the row has been cloned from the overall spec)
+sub replaceColumn {
+  my ($self, $colspec) = @_;
+  $$self{current_row}->replaceColumn($$self{current_column}, $colspec)
+    if $$self{current_row};
+  return; }
 
 sub getColumn {
   my ($self, $n) = @_;

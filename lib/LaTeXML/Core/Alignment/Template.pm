@@ -150,6 +150,15 @@ sub column {
         push(@{ $$self{columns} }, {%dup}); } } }
   return ($n > 0 ? $$self{columns}->[$n - 1] : undef); }
 
+# Used by \multicolumn to replace column $n spec with a new one
+# (the row has been cloned from the overall spec)
+sub replaceColumn {
+  my ($self, $n, $colspec) = @_;
+  my $N = scalar(@{ $$self{columns} });
+  if ($n <= $N) {
+    $$self{columns}->[$n] = $colspec; }
+  return; }
+
 sub columns {
   my ($self) = @_;
   return @{ $$self{columns} }; }
