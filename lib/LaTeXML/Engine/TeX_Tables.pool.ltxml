@@ -64,14 +64,20 @@ DefColumnType('c', sub {
 DefColumnType('r', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\hfil'))); return; });
 
+# Note that p typesets as a paragraph of given width,
+# BUT @{} might add other contents to the cell!  So, we need an inline-block
 DefColumnType('p{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before => Tokens(T_CS('\vtop'), T_BEGIN, T_BEGIN,
-        T_CS('\hsize'), $_[1]->revert, T_CS('\relax')),
-      after   => Tokens(T_END, T_END),
+      before  => Tokens(T_CS('\lx@tabular@p'), T_LETTER('t'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
+      after   => Tokens(T_END),
       vattach => 'top',
-      align   => 'justify', width => $_[1],
     ); return; });
+# Make sure the content sees the desired width as \hsize
+DefMacro('\lx@tabular@p{}{}', '\hsize=#2\relax\lx@tabular@p@{#1}{#2}');
+DefConstructor('\lx@tabular@p@{}{Dimension} VBoxContents',
+  "?#3(<ltx:inline-block vattach='#vattach' width='#2'>#3</ltx:inline-block>)()",
+  sizer      => '#3', reversion => '#3',
+  properties => sub { (vattach => translateAttachment($_[1])); });
 
 DefColumnType('*{Number}{}', sub {
     my ($gullet, $n, $pattern) = @_;

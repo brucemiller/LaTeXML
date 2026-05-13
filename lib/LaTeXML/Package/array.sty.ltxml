@@ -24,24 +24,19 @@ DefMacroI('\lasthline',  undef, '\hline');
 DefColumnType('>{}', sub { $LaTeXML::BUILD_TEMPLATE->addBeforeColumn($_[1]->unlist); return; });
 DefColumnType('<{}', sub { $LaTeXML::BUILD_TEMPLATE->addAfterColumn($_[1]->unlist);  return; });
 
-# This is the same as p, but using \vtop
-# but really needs to specify vertical alignment as centered
+# m{} and b{} are like p{}, but vertical alignment is middle or bottom
 DefColumnType('m{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before => Tokens(T_CS('\vbox'), T_BEGIN, T_BEGIN,
-        T_CS('\hsize'), $_[1]->revert, T_CS('\relax')),
-      after   => Tokens(T_END, T_END),
-      align   => 'justify', width => $_[1],
-      vattach => 'middle'); return; });
-# This is also the same as p, but SHOULD use \vbot (if there was one)
-# but really needs to specify vertical alignment as bottom
+      before  => Tokens(T_CS('\lx@tabular@p'), T_LETTER('m'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
+      after   => Tokens(T_END),
+      vattach => 'middle',
+    ); return; });
 DefColumnType('b{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before => Tokens(T_CS('\vbox'), T_BEGIN, T_BEGIN,
-        T_CS('\hsize'), $_[1]->revert, T_CS('\relax')),
-      after   => Tokens(T_END, T_END),
-      align   => 'justify', width => $_[1],
-      vattach => 'bottom'); return; });
+      before  => Tokens(T_CS('\lx@tabular@p'), T_LETTER('b'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
+      after   => Tokens(T_END),
+      vattach => 'bottom',
+    ); return; });
 
 # Like @{}, but should NOT suppress intercolumn space
 DefColumnType('!{}', sub {
