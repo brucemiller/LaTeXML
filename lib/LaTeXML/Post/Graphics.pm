@@ -53,7 +53,7 @@ sub new {
   $$self{trivial_scaling} = $options{trivial_scaling} || 1;
   $$self{graphics_types}  = $options{graphics_types}
     || [qw(svg png gif jpg jpeg
-      eps ps postscript ai pdf)];
+    eps ps postscript ai pdf)];
   $$self{type_properties} = $options{type_properties}
     || {
     ai => { destination_type => 'png',
@@ -248,7 +248,7 @@ sub transformGraphic {
 
   my $dest = $self->desiredResourcePathname($doc, $node, $source, $type);
   if (my $prev = $doc->cacheLookup($key)) {                 # Image was processed on previous run?
-    if ($prev =~ /^(.*?)\|(\d*)\|(\d*)$/) {
+    if ($prev =~ /^(.*?)\|(\d*\.?\d*)\|(\d*\.?\d*)$/) {
       my ($cached, $width, $height) = ($1, $2, $3);
       $width  = undef unless $width;
       $height = undef unless $height;
