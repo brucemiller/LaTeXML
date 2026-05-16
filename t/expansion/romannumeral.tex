@@ -1,0 +1,58 @@
+\documentclass{article}
+\begin{document}
+
+% Zero and negative (should all produce nothing)
+[\romannumeral 0] %
+[\romannumeral -1] %
+[\romannumeral -1000] %
+
+% Basic 1-9
+[\romannumeral 1]    % i
+[\romannumeral 4]    % iv
+[\romannumeral 5]    % v
+[\romannumeral 9]    % ix
+
+% Tens
+[\romannumeral 10]   % x
+[\romannumeral 40]   % xl
+[\romannumeral 50]   % l
+[\romannumeral 90]   % xc
+
+% Hundreds
+[\romannumeral 99]   % xcix
+[\romannumeral 100]  % c
+[\romannumeral 400]  % cd
+[\romannumeral 500]  % d
+[\romannumeral 900]  % cm
+[\romannumeral 999]  % cmxcix
+
+% Round thousands (the bug zone)
+[\romannumeral 1000]  % m
+[\romannumeral 2000]  % mm
+[\romannumeral 3000]  % mmm
+[\romannumeral 4000]  % mmmm
+
+% Thousands plus remainder
+[\romannumeral 1001]  % mi
+[\romannumeral 1999]  % mcmxcix
+[\romannumeral 2025]  % mmxxv
+[\romannumeral 3999]  % mmmcmxcix
+
+% Large values
+[\romannumeral 5000]  % mmmmm
+[\romannumeral 10000] % ten m's
+
+% Boundary between roman letter groups
+[\romannumeral 49]    % xlix
+[\romannumeral 99]    % xcix
+[\romannumeral 499]   % cdxcix
+[\romannumeral 949]   % cmxlix
+
+% Powers of two (arbitrary but good cross-check)
+[\romannumeral 64]    % lxiv
+[\romannumeral 128]   % cxxviii
+[\romannumeral 256]   % cclvi
+[\romannumeral 512]   % dxii
+[\romannumeral 1024]  % mxxiv
+
+\end{document}

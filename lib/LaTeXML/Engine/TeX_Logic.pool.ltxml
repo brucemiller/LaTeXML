@@ -74,14 +74,19 @@ sub compare {
       "Expected a relational token for comparision", "Got " . Stringify($rel));
     return; } }
 
-DefConditional('\ifnum Number Token Number', sub { compare($_[1], $_[2], $_[3]); });
-DefConditional('\ifodd Number',              sub { $_[1]->valueOf % 2; });
-DefConditional('\ifcase Number',             undef);    # BUILT-IN to Definition
+DefParameterType('Relation', sub {
+    my ($gullet) = @_;
+    $gullet->skipSpaces;
+    return $gullet->readXToken(0, 1); });
+
+DefConditional('\ifnum Number Relation Number', sub { compare($_[1], $_[2], $_[3]); });
+DefConditional('\ifodd Number',                 sub { $_[1]->valueOf % 2; });
+DefConditional('\ifcase Number',                undef);    # BUILT-IN to Definition
 #======================================================================
 # Dimension testing
 #----------------------------------------------------------------------
 # \ifdim            c  compares two dimensions.
-DefConditional('\ifdim Dimension Token Dimension', sub { compare($_[1], $_[2], $_[3]); });
+DefConditional('\ifdim Dimension Relation Dimension', sub { compare($_[1], $_[2], $_[3]); });
 
 #======================================================================
 # Box testing
@@ -116,13 +121,13 @@ DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox'; });
 # \ifvmode          c  is true if TeX is in vertical or internal vertical mode.
 
 DefConditionalI('\ifvmode', undef, sub {
-  LookupValue('MODE') =~ /vertical$/; });
+    LookupValue('MODE') =~ /vertical$/; });
 DefConditionalI('\ifhmode', undef, sub {
-  LookupValue('MODE') =~ /horizontal$/; });
+    LookupValue('MODE') =~ /horizontal$/; });
 DefConditionalI('\ifinner', undef, sub {
-  LookupValue('MODE') =~ /^(?:restricted_horizontal|internal_vertical|math)$/; });
+    LookupValue('MODE') =~ /^(?:restricted_horizontal|internal_vertical|math)$/; });
 DefConditionalI('\ifmmode', undef, sub {
-  LookupValue('MODE') =~ /math$/; });
+    LookupValue('MODE') =~ /math$/; });
 
 #======================================================================
 # I/O testing

@@ -1564,12 +1564,12 @@ RawTeX(<<'EoTeX');
   number-unit-product = \,      ,
   product-units       = repeat,
 
-  list-final-separator = { ~ and ~ } ,
-  list-pair-separator  = { ~ and ~ } ,
-  list-separator       = { , ~ }     ,
+  list-final-separator = { and } ,
+  list-pair-separator  = { and } ,
+  list-separator       = {, }    ,
   list-units           = repeat,
 
-  range-phrase = { ~ to ~ },
+  range-phrase = { to },
   range-units  = repeat,
 
   table-unit-alignment = center,

@@ -196,7 +196,7 @@ sub getLocator {
   else {
     $fromLine = $toLine;
     $fromCol  = $toCol; }
-  return LaTeXML::Common::Locator->new($$self{source}, $fromLine, $fromCol, $toLine, $toCol); }
+  return LaTeXML::Common::Locator->new($$self{source}, $fromLine, $fromCol + 1, $toLine, $toCol + 1); }
 
 sub getSource {
   my ($self) = @_;

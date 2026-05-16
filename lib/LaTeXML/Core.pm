@@ -223,8 +223,9 @@ sub finishDigestion {
     push(@stuff, @{ $$stomach{rescued_boxes} });
   }
   if (my $env = $state->lookupValue('current_environment')) {
+    # Note that the document environment does NOT create a new group!
     Error('expected', "\\end{$env}", $stomach,
-      "Input ended while environment $env was open"); }
+      "Input ended while environment $env was open") if $env ne 'document'; }
   my $ifstack = $state->lookupValue('if_stack');
   if ($ifstack && $$ifstack[0]) {
     Error('expected', '\fi', $stomach,

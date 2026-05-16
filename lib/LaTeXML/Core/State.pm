@@ -579,7 +579,7 @@ sub popFrame {
 # This may give incorrect results for some special environments (e.g. minipage)
 sub getFrameDepth {
   my ($self) = @_;
-  return scalar(grep { not defined $$_{_FRAME_LOCK_} } @{ $$self{undo} }) - 1; }
+  return scalar(grep { not defined $$_{_FRAME_LOCK_} } @{ $$self{undo} }); }
 
 #======================================================================
 # This is primarily about catcodes, but a bit more...

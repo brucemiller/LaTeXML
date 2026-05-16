@@ -88,6 +88,16 @@ MuGlue=\the\mymuskip.
 \mymuskip=\muexpr \aspace ( \aspace 2mu \aspace - \aspace 5mu \aspace ) \aspace * \aspace \numexpr \aspace 3 \aspace - \aspace 3 \aspace * \aspace 13 \aspace / \aspace 5 \aspace \relax \aspace + \aspace 34mu \aspace / \aspace 2 \aspace \relax
 MuGlue=\the\mymuskip.
 
+\section{Expandafter on primitive separators}
+\let\sep\right
+\def\feed#1#2{%
+\number \numexpr 
+  \expandafter \NwNw
+  \number \numexpr #1 \expandafter \sep
+  \number \numexpr #2 \sep\relax}
+\long\gdef\NwNw#1#2\sep #3#4\sep {1:#1; 2:#2; 3:#3; 4:#4}
+\feed{140}{100}
+
 \end{document}
 
 % Errors...
@@ -105,4 +115,3 @@ Num=\the\mynum
 Num=\the\mynum
 
 {\mynum=\numexpr 13*}
-

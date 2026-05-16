@@ -1,4 +1,6 @@
+\edef\initmsg{\par Initially group level=\number\currentgrouplevel.}
 \documentclass{article}
+\edef\preamblemsg{\par Preamble group level=\number\currentgrouplevel.}
 \begin{document}
 \section{Version}
 Running eTeX version \the\eTeXversion\eTeXrevision.
@@ -199,5 +201,24 @@ widowpenalties, displaywidowpenalties should behave the similarly.
 \font\tenrm=cmr10
 Size of x: \charsize\tenrm x.
 Size of X: \charsize\tenrm X.
+
+\section{Group levels}
+\initmsg
+\preamblemsg
+\par Body group level=\number\currentgrouplevel.
+\bgroup
+\par bgroup group level=\number\currentgrouplevel.
+\egroup
+\par Return to body group level=\number\currentgrouplevel.
+
+\begingroup
+\par begingroup group level=\number\currentgrouplevel.
+\endgroup
+\par Return to body group level=\number\currentgrouplevel.
+
+\begin{quote}
+\par quote env group level=\number\currentgrouplevel.
+\end{quote}
+\par Return to body group level=\number\currentgrouplevel.
 
 \end{document}

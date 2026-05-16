@@ -455,7 +455,7 @@ sub roman_aux {
   # TeX proper returns empty on negative integers
   return '' unless $n && ($n > 0);
   my $div = 1000;
-  my $s   = ($n > $div ? ('m' x int($n / $div)) : '');
+  my $s   = ($n >= $div ? ('m' x int($n / $div)) : '');
   my $p   = 4;
   while ($n %= $div) {
     $div /= 10;
@@ -952,7 +952,7 @@ sub Expand {
   return () unless @tokens;
   my $gullet = $STATE->getStomach->getGullet;
   return $gullet->readingFromMouth(Tokens(T_BEGIN, @tokens, T_END), sub {
-    $gullet->readBalanced(2, 0, 1); }); }
+      $gullet->readBalanced(2, 0, 1); }); }
 
 # Return $tokens, partially expanded (defer protected, and results of \the)
 sub ExpandPartially {
@@ -960,7 +960,7 @@ sub ExpandPartially {
   return () unless @tokens;
   my $gullet = $STATE->getStomach->getGullet;
   return $gullet->readingFromMouth(Tokens(T_BEGIN, @tokens, T_END), sub {
-    $gullet->readBalanced(1, 0, 1); }); }
+      $gullet->readBalanced(1, 0, 1); }); }
 
 sub Invocation {
   my ($token, @args) = @_;
@@ -1371,7 +1371,7 @@ sub LookupDimension {
       return $defn->valueOf; }
     else {
       return $STATE->getStomach->getGullet->readingFromMouth($cs, sub {
-        $_[0]->readDimension; }); } }
+          $_[0]->readDimension; }); } }
   else {
     Warn('expected', 'register', $STATE->getStomach,
       "The control sequence " . ToString($cs) . " is not a register"); }
@@ -1904,7 +1904,8 @@ sub DefEnvironmentI {
           ($b ? Digest(@$b) : ()); },
         ($options{enterHorizontal} ? (sub { $_[0]->enterHorizontal; })  : ()),
         ($options{leaveHorizontal} ? (sub { $_[0]->leaveHorizontal; })  : ()),
-        ($mode                     ? (sub { $_[0]->beginMode($mode); }) : ()),
+        # if mode switch, do now (after @atbegin) WITHOUT pushing stack, since already done
+        ($mode                     ? (sub { $_[0]->beginMode($mode, 1); }) : ()),
         sub { AssignValue(current_environment => $name);
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1940,8 +1941,8 @@ sub DefEnvironmentI {
             Error('unexpected', "\\end{$name}", $_[0],
               "Can't close environment $name;", "Current are:", @lines); }
           return; },
-        ($mode ? (sub { $_[0]->endMode($mode) }) : ()),
-        sub { $_[0]->egroup; },
+        # Switch mode (w/stack frame pop), OR egroup
+        ($mode ? (sub { $_[0]->endMode($mode) }) : sub { $_[0]->egroup; }),
       ),
       ), $options{scope});
   # For the uncommon case opened by \csname env\endcsname
@@ -2738,7 +2739,7 @@ sub LoadFormat {
     && FindFile($format . '_dump', type => 'pool', notex => 1,
       installation_subdir => 'Engine')) {    # dump of $format?
     LoadPool($format . '_bootstrap', noerror => 1);
-    local $LaTeXML::LOCATOR = LaTeXML::Common::Locator->new($format, 0, 0, 0, 0);
+    local $LaTeXML::LOCATOR = LaTeXML::Common::Locator->new($format, 1, 1, 1, 1);
     $success = LoadPool($format . '_dump');
     LoadPool($format . '_constructs', noerror => 1); }
   elsif (FindFile($format . '_base', type => 'pool', notex => 1,
@@ -2952,11 +2953,11 @@ sub decodeMathChar {
       elsif ($fontdef = LookupValue('textfont_' . $fam))         { $downsize = 2; } }
     my $defn = $STATE->lookupDefinition($fontdef);
     $fontinfo = $defn && $defn->isFontDef;
-    if(! $fontinfo) {
-      $defn = $STATE->lookupDefinition(T_CS('\lx@default@font'));
+    if (!$fontinfo) {
+      $defn     = $STATE->lookupDefinition(T_CS('\lx@default@font'));
       $fontinfo = $defn && $defn->isFontDef; }
     if ($fontinfo && (ref $fontinfo eq 'HASH')
-        && $basefontinfo && ($$basefontinfo{size} != $curfont->getSize)) {
+      && $basefontinfo && ($$basefontinfo{size} != $curfont->getSize)) {
       # If we've gotten an explicit font SIZE change; Adjust!
       $fontinfo = {%$fontinfo}; $$fontinfo{size} = $curfont->getSize; } }
   my $font = $curfont;

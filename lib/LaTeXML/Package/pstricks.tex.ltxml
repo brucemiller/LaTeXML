@@ -13,6 +13,15 @@
 package LaTeXML::Package::Pool;
 use LaTeXML::Package;
 use strict;
+use warnings;
 
-InputDefinitions('pstricks', type=>'sty');
+# Load raw pstricks.tex so its internal registers (\pst@dima, etc.),
+# utility macros (\pstheader, \pst@number, etc.), and key-value handlers
+# are available for downstream raw packages.
+InputDefinitions('pstricks', type => 'tex', noltxml => 1);
+
+# We then provide nominal SVG support via pstricks_support,
+# for cases where pstricks.tex was used directly.
+RequirePackage('pstricks_support');
+
 1;

@@ -49,7 +49,7 @@ sub new {
   my ($class, $prefix, $keysets, %options) = @_;
   # parse all the arguments
   $prefix = defined($prefix) ? ToString($prefix) : 'KV';
-  $keysets = [split(',', ToString(defined($keysets) ? $keysets : '_anonymous_'))] unless (ref($keysets) eq 'ARRAY');
+  $keysets = [grep { $_ ne '' } split(',', ToString(defined($keysets) ? $keysets : '_anonymous_'))] unless (ref($keysets) eq 'ARRAY');
   my $skip = $options{skip};
   $skip = [split(',', ToString(defined($options{skip}) ? $options{skip} : ''))] unless (ref($options{skip}) eq 'ARRAY');
   my $setAll       = $options{setAll}       ? 1 : 0;
@@ -390,7 +390,7 @@ sub setKeysExpansion {
           T_CS('\def'), T_CS('\XKV@tfam'),   T_BEGIN, T_END,
           T_CS('\def'), T_CS('\XKV@header'), T_BEGIN, T_END,
           T_CS('\def'), T_CS('\XKV@tkey'),   T_BEGIN, T_END) if $setInternals;
-  } } }
+      } } }
 
   # and assign the skipmissing macro with the other keys
   push(@tokens, T_CS('\def'), $rmmacro, T_BEGIN, @rmtokens, T_END) if $rmmacro;
