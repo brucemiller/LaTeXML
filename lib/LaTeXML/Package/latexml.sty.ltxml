@@ -49,6 +49,16 @@ DeclareOption('nomathparserspeculate', sub { AssignValue('MATHPARSER_SPECULATE' 
 DeclareOption('guesstabularheaders',   sub { AssignValue(GUESS_TABULAR_HEADERS => 1, 'global'); });
 DeclareOption('noguesstabularheaders', sub { AssignValue(GUESS_TABULAR_HEADERS => 0, 'global'); });
 
+# Styling options
+DeclareOption('authorsoneline', sub {
+    AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line     => 1);
+    AssignMapping('DOCUMENT_CLASSES', ltx_authors_multiline => undef);
+    return; });
+DeclareOption('authorsmultiline', sub {
+    AssignMapping('DOCUMENT_CLASSES', ltx_authors_multiline => 1);
+    AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line     => undef);
+    return; });
+
 # 'nobibtex' intended to be used for arXiv-like build harnesses, where there
 # is explicit instruction to only use ".bbl" and that bibtex will not be ran.
 DeclareOption('bibtex',   sub { AssignValue('BIB_CONFIG' => ['bib', 'bbl'], 'global'); });
