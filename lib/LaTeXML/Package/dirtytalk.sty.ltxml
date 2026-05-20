@@ -1,0 +1,54 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  dirtytalk                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# \=====================================================================/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+sub setDirtytalkSymbol {
+  my ($cs, $tokens) = @_;
+  return if IsEmpty($tokens);
+  DefMacroI($cs, undef, $tokens);
+  return;
+}
+
+DefMacro('\\dirtytalk@lqq', '\\textquotedblleft');
+DefMacro('\\dirtytalk@rqq', '\\textquotedblright');
+DefMacro('\\dirtytalk@lq',  '\\textquoteleft');
+DefMacro('\\dirtytalk@rq',  '\\textquoteright');
+
+DefKeyVal('dirtytalk', 'left',     'UndigestedKey', '', code => sub { setDirtytalkSymbol('\\dirtytalk@lqq', $_[1]); });
+DefKeyVal('dirtytalk', 'right',    'UndigestedKey', '', code => sub { setDirtytalkSymbol('\\dirtytalk@rqq', $_[1]); });
+DefKeyVal('dirtytalk', 'leftsub',  'UndigestedKey', '', code => sub { setDirtytalkSymbol('\\dirtytalk@lq',  $_[1]); });
+DefKeyVal('dirtytalk', 'rightsub', 'UndigestedKey', '', code => sub { setDirtytalkSymbol('\\dirtytalk@rq',  $_[1]); });
+
+ProcessOptions(inorder => 1, keysets => ['dirtytalk']);
+
+RawTeX(<<'EoTeX');
+\newcounter{dirtytalk@qdepth}
+\newcommand{\dirtytalk@lsymb}{%
+  \ifnum\value{dirtytalk@qdepth}>1
+    \dirtytalk@lq
+  \else
+    \dirtytalk@lqq
+  \fi}
+\newcommand{\dirtytalk@rsymb}{%
+  \ifnum\value{dirtytalk@qdepth}>1
+    \dirtytalk@rq
+  \else
+    \dirtytalk@rqq
+  \fi}
+\providecommand{\say}[1]{%
+  \addtocounter{dirtytalk@qdepth}{1}%
+  \dirtytalk@lsymb #1\dirtytalk@rsymb%
+  \addtocounter{dirtytalk@qdepth}{-1}}
+EoTeX
+
+1;
