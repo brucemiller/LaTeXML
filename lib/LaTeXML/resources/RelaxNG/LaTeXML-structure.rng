@@ -997,6 +997,45 @@ Commonly useful values are specified, but is open-ended to support extension.</a
     <a:documentation>Content model for \elementref{classification}.</a:documentation>
     <ref name="Inline.model"/>
   </define>
+  <!-- ====================================================================== -->
+  <define name="pubnote">
+    <element name="pubnote">
+      <a:documentation>A note about the document itself.</a:documentation>
+      <ref name="pubnote_attributes"/>
+      <ref name="pubnote_model"/>
+    </element>
+  </define>
+  <define name="pubnote_attributes">
+    <a:documentation>Attributes for \elementref{pubnote}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="FrontMatter.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>indicates the kind of note.
+Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
+        <choice>
+          <value>type</value>
+          <value>pubid</value>
+          <value>doi</value>
+          <value>arxiv</value>
+          <value>isbn</value>
+          <value>preprint</value>
+          <value>journal</value>
+          <value>conference</value>
+          <value>issue</value>
+          <value>volume</value>
+          <value>dedication</value>
+          <value>thanks</value>
+          <value>pages</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="pubnote_model">
+    <a:documentation>Content model for \elementref{pubnote}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
   <!--
     ======================================================================
     Fallback
@@ -1173,6 +1212,7 @@ for the front matter of a document.</a:documentation>
       <ref name="acknowledgements"/>
       <ref name="keywords"/>
       <ref name="classification"/>
+      <ref name="pubnote"/>
     </choice>
   </define>
   <define name="BackMatter.class">

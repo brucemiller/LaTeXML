@@ -17,41 +17,66 @@ use LaTeXML::Package;
 
 # Only if option natbib!
 RequirePackage('natbib');
-RequirePackage('inst_support');
 
 #======================================================================
 # Frontmatter
 DefRegister('\titlerunning', Tokens());
 DefMacro('\titrun',     Tokens());
-DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\subtitle{}', '\lx@add@subtitle{#1}');
 
 DefRegister('\authorrunning', Tokens());
 DefMacro('\authrun', Tokens());
 
 DefMacro('\emailname', 'E-mail');
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
-  properties => { (name => Digest(T_CS('\emailname'))) });
-DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
-DefMacro('\mailname',           '\textit{Correspondence}');
-DefConstructor('\@@@mail{}', "^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
-  properties => { (name => Digest(T_CS('\mailname'))) });
-DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
+DefMacro('\mailname',  '\textit{Correspondence}');
 
-DefMacro('\keywordname',  '\textbf{Keywords}');
-DefMacro('\keywords{}',   '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
-DefMacro('\subclassname', '\textbf{Mathematics Subject Classification (2000)}');
-DefMacro('\subclass{}', '\@add@frontmatter{ltx:classification}[scheme=MSC,name={\subclassname}]{#1}');
-DefMacro('\CRclassname', '\textbf{CR Subject Classification}');
-DefMacro('\CRclass{}',  '\@add@frontmatter{ltx:classification}[scheme=CR,name={\CRclassname}]{#1}');
-DefMacro('\ESMname',    '\textbf{Electronic Supplementary Material}');
-DefMacro('\ESM{}',      '\@add@frontmatter{ltx:note}[role=supplemental,name={\ESMname}]{#1}');
-DefMacro('\PACSname',   '\textbf{PACS}');
-DefMacro('\PACS{}',     '\@add@frontmatter{ltx:classification}[scheme=pacs,name={\PACSname}]{#1}');
-DefMacro('\headnote{}', '\@add@frontmatter{ltx:note}{#1}');
-DefMacro('\dedication{}',  '\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
-DefMacro('\offprints{}',   '\@add@frontmatter{ltx:note}[role=offprints]{#1}');
-DefMacro('\journalname{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\papertype{}',   '\@add@frontmatter{ltx:classification}[scheme=papertype]{#1}');
+# Single \author containing multiple authors separated by \and
+DefMacro('\author{}',
+  '\lx@clear@creators[role=author]'
+    . '\lx@splitting{\lx@add@author}{\and\And,}{#1}');
+# Single \institute containing name \at institute \and ... repeating.
+# Note that the name corresponds to (but probably won't match exactly!) an author name
+# We'll want some kind of fuzzy matching of labels to attach institute to author
+DefMacro('\institute{}',
+  '\lx@clear@frontmatter{ltx:contact}[role=affiliation]'
+    . '\lx@splitting{\lx@sv@institute}{\and\And}{#1}');
+Let('\at', '\relax');
+DefMacro('\lx@sv@institute{}', '\lx@sv@institute@#1\at\done');
+DefMacro('\lx@sv@institute@ Until:\at Until:\done',
+  '\ifx.#2.\lx@add@affiliation{#1}'
+    . '\else\lx@add@affiliation[label={fuzzy:#1}]{#2}\fi');
+# for older versions?
+DefMacro('\inst{}', '\lx@request@frontmatter@annotation[affiliation]{#1}');
+
+# \email should be used within \institute, (but CAN be used anywhere; it only formats)
+DefMacro('\email Semiverbatim', '\lx@add@email[name={\emailname: }]{#1}');
+
+# Are these actually defined in svjour?
+DefMacro('\address{}', '\lx@add@contact[annotate=new,role=address]{#1}');
+DefMacro('\affil OptionalSemiverbatim {}',
+  '\lx@add@contact[role=affiliation,annotate={\ifx.#1.new\else 1\fi},label={#1}]{#2}');
+# These add contacts to most recent author
+# The optional arguments here are a sort of prefix to the footnote.
+DefMacro('\mail {}',                 '\lx@add@contact[role=address,name={\mailname: }]{#1}');
+DefMacro('\homepage[] Semiverbatim', '\lx@add@contact[role=url,name={\ifx.#1.URL:~\else#1\fi}]{#2}');
+DefMacro('\thanks[]{}',              '\lx@add@contact[role=thanks,name={#1}]{#2}');
+DefMacro('\orcid[]{}',               '\lx@add@contact[role=orcid,name={#1}]{#2}');    # ?
+
+DefMacro('\keywordname',   '\textbf{Keywords}');
+DefMacro('\keywords{}',    '\lx@add@keywords[name={\keywordname:~}]{#1}');
+DefMacro('\subclassname',  '\textbf{Mathematics Subject Classification (2000)}');
+DefMacro('\subclass{}',    '\lx@add@classification[scheme=MSC,name={\subclassname: }]{#1}');
+DefMacro('\CRclassname',   '\textbf{CR Subject Classification}');
+DefMacro('\CRclass{}',     '\lx@add@classification[scheme=CR,name={\CRclassname: }]{#1}');
+DefMacro('\ESMname',       '\textbf{Electronic Supplementary Material}');
+DefMacro('\ESM{}',         '\lx@add@pubnote[role=supplemental,name={\ESMname: }]{#1}');
+DefMacro('\PACSname',      '\textbf{PACS}');
+DefMacro('\PACS{}',        '\lx@add@classification[scheme=pacs,name={\PACSname: }]{#1}');
+DefMacro('\headnote{}',    '\lx@add@pubnote[role=node]{#1}');
+DefMacro('\dedication{}',  '\lx@add@pubnote[role=dedication]{#1}');
+DefMacro('\offprints{}',   '\lx@add@pubnote[role=preprint]{#1}');
+DefMacro('\journalname{}', '\lx@add@pubnote[role=journal]{#1}');
+DefMacro('\papertype{}',   '\lx@add@pubnote[role=type]{#1}');
 
 Let('\journalopt', '\@empty');
 
@@ -72,7 +97,7 @@ DefMacro('\abstract OptionalMatch:*', sub {
 
 # Just ignore \abstract* (what's it for?)
 DefMacro('\lx@ignore@sv@abstract{}', '');
-DefMacro('\@abstract@with@arg{}',    '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{#1}');
+DefMacro('\@abstract@with@arg{}',    '\lx@add@abstract[name={\abstractname}]{#1}');
 
 DefMacro('\makereferee', Tokens());
 
@@ -232,7 +257,7 @@ DefMacro('\qed', '\ltx@qed');
 DefConstructor('\ltx@qed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
   enterHorizontal => 1,
-  reversion => '\qed');
+  reversion       => '\qed');
 Let('\smartqed',     '\qed');
 Let('\squareforqed', '\qed');
 
