@@ -572,6 +572,14 @@ sub pmml_maybe_resize {
       my $s     = $$attr{style};
       my $style = 'border-color: ' . $color;
       $$attr{style} = ($s ? $s . '; ' . $style : $style); } }
+
+  # Preserve href attribute for links in math mode
+  if (ref $result && $result->[0] =~ /^m:/) {
+    my $href = $node->getAttribute('href');
+    my $attr = $$result[1];
+    $$attr{href} = $href if $href;
+  }
+
   return $result; }
 
 sub filter_row {
