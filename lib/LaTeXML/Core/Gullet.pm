@@ -455,9 +455,6 @@ sub readBalanced {
   my ($token, $cc, $defn, $atoken, $atype, $ahidden);
   # Inlined readToken (we'll keep comments in the result)
   while (1) {
-    if (@{ $$self{pending_comments} }) {
-      push(@tokens, @{ $$self{pending_comments} });
-      $$self{pending_comments} = []; }
     # Examine pushback first
     while (($token = shift(@{ $$self{pushback} })) && $CATCODE_HOLD[$cc = $$token[1]]) {
       if    ($cc == CC_COMMENT) { push(@tokens, $token); }
