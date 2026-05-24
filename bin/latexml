@@ -22,6 +22,10 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Common::Error;
 use Encode;
 
+# decode @ARGV before further processing
+use Encode::Locale;
+Encode::Locale::decode_argv(Encode::FB_CROAK);
+
 #**********************************************************************
 # Parse command line
 my ($verbosity, $strict, $comments, $noparse, $includestyles) = (0, 0, 1, 0, 0);

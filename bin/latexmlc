@@ -41,6 +41,10 @@ use HTTP::Response;
 use HTTP::Request;
 use JSON::XS qw(decode_json);
 
+# decode @ARGV before further processing
+use Encode::Locale;
+Encode::Locale::decode_argv(Encode::FB_CROAK);
+
 # Determine if a socket server is installed locally and obtain its pathname:
 my $latexmls;
 $latexmls = catfile($RealBin_safe, 'latexmls') if (-e catfile($RealBin_safe, 'latexmls'));
