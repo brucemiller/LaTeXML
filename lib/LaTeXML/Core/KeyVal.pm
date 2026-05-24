@@ -23,7 +23,7 @@ use base qw(LaTeXML::Common::Object);
 our @EXPORT = (
   qw(&DefKeyVal &DisableKeyVal &HasKeyVal),
   # Semi-internals
-  qw(&keyval_qname &keyval_get));
+  qw(&keyval_qname &keyval_get &TrimmedCommaList));
 
 #======================================================================
 # Exposed Methods
@@ -182,6 +182,29 @@ sub defineBoolean {
       @tokens; },
     $mismatch, [("true", "false")], 1);
   return; }
+
+#======================================================================
+
+# Helper to split a comma-separated list, unwrapping wrapping braces,
+#   trimming spaces, and respecting inner braces as argument groupings.
+sub TrimmedCommaList {
+  my ($text) = @_;
+  $text = ToString($text);
+  $text =~ s/^\s*\{(.+)\}\s*$/$1/g;    # unwrap outer braces
+  $text =~ s/^\s+|\s+$//g;             # trim leading/trailing spaces
+  my $level  = 0;
+  my @pieces = ();
+  my $piece  = '';
+  for my $c (split('', $text)) {
+    if    ($c eq '{') { $level++; $piece .= $c; }
+    elsif ($c eq '}') { $level--; $piece .= $c; }
+    elsif (($c eq ',') && ($level == 0)) {
+      push(@pieces, $piece) if length($piece) > 0;
+      $piece = ''; }
+    else {
+      $piece .= $c; } }
+  push(@pieces, $piece) if length($piece) > 0;
+  return @pieces; }
 
 #======================================================================
 1;
