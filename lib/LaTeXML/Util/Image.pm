@@ -260,7 +260,7 @@ sub image_graphicx_sizer {
   my ($whatsit) = @_;
   if (my $candidates = $whatsit->getProperty('candidates')) {
     my $dpi = ($STATE && $STATE->lookupValue('DPI')) || $DPI;
-    foreach my $source (split(/,/, $candidates)) {
+    foreach my $source (pathname_from_urls($candidates)) {
       if (!pathname_is_absolute($source)) {
         if (my $base = $STATE->lookupValue('SOURCEDIRECTORY')) {
           $source = pathname_concat($base, $source); } }

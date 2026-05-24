@@ -123,7 +123,7 @@ sub findGraphicsPaths {
   my @paths = ();
   foreach my $pi ($doc->findnodes('.//processing-instruction("latexml")')) {
     if ($pi->textContent =~ /^\s*graphicspath\s*=\s*([\"\'])(.*?)\1\s*$/) {
-      push(@paths, $2); } }
+      push(@paths, pathname_from_url($2)); } }
   return @paths; }
 
 sub getGraphicsSourceTypes {
@@ -133,9 +133,9 @@ sub getGraphicsSourceTypes {
 # Return the pathname to an appropriate image.
 sub findGraphicFile {
   my ($self, $doc, $node) = @_;
-  if (my $source = $node->getAttribute('graphic')) {
+  if (my $source = pathname_from_url($node->getAttribute('graphic'))) {
     # if we already have a usable candidate, save ourselves the work
-    my @paths = grep { -e $_ } split(',', $node->getAttribute('candidates') || '');
+    my @paths = grep { -e $_ } pathname_from_urls($node->getAttribute('candidates') || '');
     if (!scalar(@paths)) {
       # Find all acceptable image files, in order of search paths
       my ($dir, $name, $reqtype) = pathname_split($source);

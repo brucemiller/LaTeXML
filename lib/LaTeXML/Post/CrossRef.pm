@@ -650,8 +650,9 @@ sub generateURL {
     if ($location = $object->getValue('location')) {
       my $doclocation = $doc->siteRelativeDestination;
       my $pathdir     = pathname_directory($doclocation);
-      my $url         = pathname_relative(($location =~ m|^/| ? $location : '/' . $location),
+      my $relpath     = pathname_relative(($location =~ m|^/| ? $location : '/' . $location),
         ($pathdir =~ m|^/| ? $pathdir : '/' . $pathdir));
+      my $url       = pathname_to_url($relpath);
       my $extension = $$self{extension} || 'xml';
       my $urlstyle  = $$self{urlstyle}  || 'file';
       if ($urlstyle eq 'server') {
@@ -667,7 +668,7 @@ sub generateURL {
         $url .= '#' . $fragid; }
       elsif ($location eq $doclocation) {
         $url = ''; }
-      return pathname_to_url($url); }
+      return $url; }
     else {
       $self->note_missing('warn', 'File location for ID', $id); } }
   else {
