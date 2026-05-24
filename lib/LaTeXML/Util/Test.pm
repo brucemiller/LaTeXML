@@ -31,6 +31,9 @@ sub latexml_tests {
   if ($options{texlive_min} && (texlive_version() < $options{texlive_min})) {
     plan skip_all => "Requirement minimal texlive $options{texlive_min} not met.";
     return done_testing(); }
+  if ($options{texlive_max} && ($options{texlive_max} < texlive_version() )) {
+    plan skip_all => "Requirement maximal texlive $options{texlive_max} not met.";
+    return done_testing(); }
   if (!opendir($DIR, $directory)) {
     # Can't read directory? Fail (assumed single) test.
     return do_fail($directory, "Couldn't read directory $directory:$!"); }
@@ -86,6 +89,7 @@ sub check_requirements {
     next unless $reqmts;
     my @required_packages = ();
     my $texlive_min       = 0;
+    my $texlive_max       = 0;
     my $required_env;
     if (!(ref $reqmts)) {
       @required_packages = ($reqmts); }
@@ -94,7 +98,8 @@ sub check_requirements {
     elsif (ref $reqmts eq 'HASH') {
       @required_packages = (ref $$reqmts{packages} eq 'ARRAY' ? @{ $$reqmts{packages} } : $$reqmts{packages});
       $required_env      = $$reqmts{env};
-      $texlive_min       = $$reqmts{texlive_min} || 0; }
+      $texlive_min       = $$reqmts{texlive_min} || 0;
+      $texlive_max       = $$reqmts{texlive_max} || 0; }
     foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
@@ -105,6 +110,11 @@ sub check_requirements {
     # Check if specific texlive versions are required for this test
     if ($texlive_min && (texlive_version() < $texlive_min)) {
       my $message = "Minimal texlive $texlive_min requirement not met for $test";
+      diag("Skip: $message");
+      skip($message, $ntests);
+      return 0; }
+    if ($texlive_max && ($texlive_max < texlive_version() )) {
+      my $message = "Maximal texlive $texlive_max requirement not met for $test";
       diag("Skip: $message");
       skip($message, $ntests);
       return 0; }

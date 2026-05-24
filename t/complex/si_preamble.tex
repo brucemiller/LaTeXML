@@ -1,0 +1,62 @@
+% these are options that can only be changed in the preamble or on package load
+\documentclass{article}
+\usepackage[
+	list-input-separator=:,     % only on package load
+	product-input-separator=*,  % only on package load
+	table-column-type=T         % only in preamble
+]{siunitx}
+%\usepackage{babel}  % affects the range phrase (even in english)
+
+\usepackage{booktabs}
+\providecommand{\toprule}{\hline}
+\providecommand{\midrule}{\hline}
+\providecommand{\bottomrule}{\hline}
+
+
+\begin{document}
+
+%\tableofcontents
+
+\setcounter{section}{3}
+\section{Package Control Options}
+
+\setcounter{subsection}{13}
+\subsection{Preamble-only options}
+
+\subsubsection{list-input-separator, product-input-separator}
+
+\numlist{10:30:45}
+
+\numproduct{4 * 5 * 6}
+
+\subsubsection{table-column-type}
+
+\begin{table}[h]
+\caption{Aligning the \texttt{T} (n\'ee \texttt{S}) column.%
+\label{tab:S:align}}
+\centering
+\sisetup{table-format = 2.4, table-alignment-mode = format}
+\begin{tabular}{@{}
+T[table-alignment-mode = marker]
+T[table-number-alignment = center]
+T[table-number-alignment = left]
+T[table-number-alignment = right]
+@{}}
+\toprule
+{Some Values} & {Some Values} & {Some Values} & {Some Values} \\
+\midrule
+2.3456 & 2.3456 & 2.3456 & 2.3456 \\
+34.2345 & 34.2345 & 34.2345 & 34.2345 \\
+56.7835 & 56.7835 & 56.7835 & 56.7835 \\
+90.473 & 90.473 & 90.473 & 90.473 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\setcounter{section}{7}
+
+\section{Localisation}
+
+\numrange{10}{20}
+
+\end{document}
