@@ -446,7 +446,7 @@ sub convert_post {
   my @procs    = ();
   #TODO: Add support for the following:
   my $dbfile = $$opts{dbfile};
-  if (defined $dbfile && !-f $dbfile) {
+  if (defined $dbfile && !pathname_test_f($dbfile)) {
     if (my $dbdir = pathname_directory($dbfile)) {
       pathname_mkdir($dbdir); } }
   my $DB = LaTeXML::Util::ObjectDB->new(dbfile => $dbfile, %PostOPS);
@@ -632,7 +632,7 @@ sub convert_post {
       NoteLog(($$opts{recursive} ? "recursive " : "") . "processing finished " . localtime());
       my $archive_log_status_code = max($$runtime{status_code}, $latexmlpost->getStatusCode);
       Note("Status:conversion:" . $archive_log_status_code);
-      open my $log_fh, '>', $log_file;
+      pathname_openfile(my $log_fh, '>', $log_file);
       print $log_fh $self->flush_log;
       close $log_fh;
       $self->bind_log; }
@@ -702,7 +702,7 @@ sub new_latexml {
     nomathparse     => $$opts{nomathparse},     # Backwards compatibility
     mathparse       => $$opts{mathparse});
 
-  if (my @baddirs = grep { !-d $_ } @{ $$opts{paths} }) {
+  if (my @baddirs = grep { !pathname_test_d($_) } @{ $$opts{paths} }) {
     warn "\n$LaTeXML::IDENTITY : these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
   $latexml->withState(sub {

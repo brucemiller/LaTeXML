@@ -116,7 +116,7 @@ DefMacro('\pdffilesize{}', sub {
     # used in expl3's \__file_full_name:n , among others
     my ($gullet, $file) = @_;
     if (my $path = FindFile(ToString(Expand($file)))) {
-      my @stat = stat $path;
+      my @stat = pathname_stat($path);
       return (defined $stat[7]) ? Explode($stat[7]) : (); }
     else {
       return (); } });

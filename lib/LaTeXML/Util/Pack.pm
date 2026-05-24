@@ -16,6 +16,7 @@ use warnings;
 use IO::String;
 use JSON::XS qw(decode_json);
 use File::Find;
+use LaTeXML::Util::Pathname;
 
 use base qw(Exporter);
 our @EXPORT = qw(&pack_collection);
@@ -68,7 +69,7 @@ sub detect_source {
   if ($readme_file = $self->find_file('00README.json')) {
     my $json_str = do {
       local $/ = undef;
-      open(my $README_FH, '<', $readme_file) or
+      pathname_openfile(my $README_FH, '<', $readme_file) or
         (print STDERR "failed to open '$readme_file' for use as input directives: $!. Continuing.\n");
       <$README_FH>;
     } || '';
@@ -80,7 +81,7 @@ sub detect_source {
   } }
   # I.1.2. Legacy arXiv 00README.XXX
   elsif ($readme_file = $self->find_file('00README.XXX')) {
-    open(my $README_FH, '<', $readme_file) or
+    pathname_openfile(my $README_FH, '<', $readme_file) or
       (print STDERR "failed to open '$readme_file' for use as input directives: $!. Continuing.\n");
     local $/ = "\n";
     my $toplevelfile;
@@ -93,7 +94,7 @@ sub detect_source {
           $toplevelfile = $self->full_filename($name);
         } elsif ($directive eq 'ignore') {
           my $ignored_filepath = $self->full_filename($name);
-          unlink($ignored_filepath) if -e $ignored_filepath; } } }
+          pathname_unlink($ignored_filepath) if pathname_test_e($ignored_filepath); } } }
     return $toplevelfile if $toplevelfile; }
 
   # I.2. Without an explicit directive,
@@ -107,8 +108,8 @@ sub detect_source {
     $tex_file = $self->full_filename($tex_file);
     # Open file and read first few bytes to do magic sequence identification
     # note that file will be auto-closed when $FILE_TO_GUESS goes out of scope
-    next unless -e $tex_file;    # skip deleted "ignored" files.
-    open(my $FILE_TO_GUESS, '<', $tex_file) or
+    next unless pathname_test_e($tex_file);    # skip deleted "ignored" files.
+    pathname_openfile(my $FILE_TO_GUESS, '<', $tex_file) or
       (print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n");
     local $/ = "\n";
     my ($maybe_tex, $maybe_tex_priority, $maybe_tex_priority2);
@@ -200,7 +201,7 @@ sub detect_source {
       @files_by_likelihood = @pdf_includes if @pdf_includes; }
     # Special heuristic 3: prefer "best" candidates with a .bbl file
     if (scalar(@files_by_likelihood) > 1) {
-      my @with_bbl = grep { my $base = $_; $base =~ s/\.tex$//; -e "$base.bbl"; } @files_by_likelihood;
+      my @with_bbl = grep { my $base = $_; $base =~ s/\.tex$//; pathname_test_e("$base.bbl"); } @files_by_likelihood;
       @files_by_likelihood = @with_bbl if @with_bbl; }
 # Special heuristic 4 ?!: Sometimes in arXiv the decision is made in an unclear manner
 # (example: see 2112.08935 v1, which has equally good main.tex and bare_adv.tex)
@@ -223,7 +224,7 @@ sub heuristic_check_for_pdftex {
   my @filenames    = @_;
   my @pdf_includes = ();
   for my $tex_file (@filenames) {
-    my $is_open = open(my $TEX_FH, '<', $tex_file);
+    my $is_open = pathname_openfile(my $TEX_FH, '<', $tex_file);
     if (!$is_open) {
       print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n";
       next; }
@@ -340,7 +341,7 @@ sub pack_collection {
     elsif ($whatsout eq 'math') {
       # Math output - least common ancestor of all math in the document
       push @packed_docs, get_math($doc);
-      unlink('LaTeXML.cache'); }
+      pathname_unlink('LaTeXML.cache'); }
     else { push @packed_docs, $doc; } }
   return @packed_docs; }
 

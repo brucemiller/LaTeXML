@@ -633,7 +633,7 @@ sub _read_options_file {
   my $OPT;
 #### Now can we report status to right places before we've gotten configuration??? (verbosity, logfile...)
 ####  ProgressSpinup("Loading profile $file");
-  unless (open($OPT, "<", $file)) {
+  unless (pathname_openfile($OPT, "<", $file)) {
     Error('expected', $file, "Could not open options file '$file'");
     return; }
   while (my $line = <$OPT>) {
@@ -662,7 +662,7 @@ sub _read_options_file {
           # But also the standard behaviour, where the $env is an array of paths
           $env_value = $ENV{$env_name};
           next unless $env_value;
-          @values = grep { -d $_ } reverse(split(':', $env_value));
+          @values = grep { pathname_test_d($_) } reverse(split(':', $env_value));
           next unless @values; }
         CORE::push(@$opts, "--$key=$_") foreach (@values); }
       else {

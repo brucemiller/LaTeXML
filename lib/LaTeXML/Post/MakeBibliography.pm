@@ -155,7 +155,7 @@ sub getBibliographies {
           $raw .= $rawbib; }
         else {
           # TODO: Is this a memory concern for large bib files?
-          if (open(my $bibfh, '<', $rawbib)) {
+          if (pathname_openfile(my $bibfh, '<', $rawbib)) {
             $raw .= join("", <$bibfh>);
             close $bibfh; }
           else {
@@ -217,7 +217,7 @@ sub convertBibliography {
   # ->bind_log analog:
   my $biblog = '';
 ###  my $biblog_handle;
-###  open($biblog_handle, ">>", \$biblog) or Error("Can't redirect STDERR to log for inner bibliography converter!");
+###  pathname_openfile($biblog_handle, ">>", \$biblog) or Error("Can't redirect STDERR to log for inner bibliography converter!");
 ###  *BIB_STDERR_SAVED = *STDERR;
 ###  *STDERR           = *$biblog_handle;
   # end ->bind_log

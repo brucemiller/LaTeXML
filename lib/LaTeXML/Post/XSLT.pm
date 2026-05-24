@@ -40,7 +40,7 @@ sub new {
       types => ['xsl'], installation_subdir => 'resources/XSLT',
       paths => $$self{searchpaths} || ['.']);
     Error('missing-file', $stylesheet, undef, "No stylesheet '$stylesheet' found!")
-      unless $pathname && -f $pathname;
+      unless $pathname && pathname_test_f($pathname);
     $stylesheet = $pathname; }
   $stylesheet = $stylesheet && LaTeXML::Common::XML::XSLT->new($stylesheet);
   if ((!ref $stylesheet) || !($stylesheet->can('transform'))) {

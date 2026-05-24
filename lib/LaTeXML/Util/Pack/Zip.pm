@@ -75,7 +75,7 @@ sub get_archive {
   my ($directory, $whatsout) = @_;
   # Zip and send back
   my $archive = Archive::Zip->new();
-  opendir(my $dirhandle, $directory)
+  pathname_opendir(my $dirhandle, $directory)
     # TODO: Switch to Error API
     # or Fatal('expected', 'directory', undef,
     # "Expected a directory to archive '$directory':", $@);
@@ -83,8 +83,8 @@ sub get_archive {
   my @entries = grep { /^[^.]/ } readdir($dirhandle);
   closedir $dirhandle;
   my $ext_exclude = $LaTeXML::Util::Pack::ARCHIVE_EXT_EXCLUDE;
-  my @files       = grep { !/$ext_exclude/ && -f pathname_concat($directory, $_) } @entries;
-  my @subdirs     = grep { -d File::Spec->catdir($directory, $_) } @entries;
+  my @files       = grep { !/$ext_exclude/ && pathname_test_f(pathname_concat($directory, $_)) } @entries;
+  my @subdirs     = grep { pathname_test_d(File::Spec->catdir($directory, $_)) } @entries;
  # We want to first add the files instead of simply invoking ->addTree on the top level
  # without ANY file attributes at all,
  # since EPUB is VERY picky about the first entry in the archive starting at byte 38 (file 'mimetype')
@@ -96,7 +96,7 @@ sub get_archive {
     local $/ = undef;
     my $FH;
     my $pathname = pathname_concat($directory, $file);
-    open $FH, "<", $pathname
+    pathname_openfile($FH, "<", $pathname)
       # TODO: Switch to Error API
       #or Fatal('I/O', $pathname, undef, "File $pathname is not readable.");
       or (print STDERR "Fatal:I/O:$pathname File $pathname is not readable.");
