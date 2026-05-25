@@ -241,6 +241,7 @@
       </xsl:if>
       <!-- the object tag does not support alt, so use
            aria-label instead -->
+      <xsl:attribute name="role">img</xsl:attribute>
       <xsl:if test="$description!=''">
         <xsl:attribute name='{f:if(@aria:label,"aria-description","aria-label")}'>
           <xsl:value-of select="$description"/>
