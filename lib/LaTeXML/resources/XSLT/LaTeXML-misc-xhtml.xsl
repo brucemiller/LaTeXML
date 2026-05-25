@@ -18,6 +18,7 @@
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
     xmlns:func  = "http://exslt.org/functions"
     xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:aria  = "http://www.w3.org/ns/wai-aria"
     extension-element-prefixes="func f"
     exclude-result-prefixes = "ltx func f">
 
@@ -164,12 +165,21 @@
           <xsl:value-of select="@imageheight"/>
         </xsl:attribute>
       </xsl:if>
+      <xsl:if test="@aria:label">
+        <!-- img takes its accessible name from @alt, not @aria-label -->
+        <xsl:attribute name="alt">
+          <xsl:value-of select="@aria:label"/>
+        </xsl:attribute>
+      </xsl:if>
       <xsl:choose>
         <xsl:when test="@description">
-          <xsl:attribute name='alt'>
+          <!-- use @alt if available, otherwise divert to @description -->
+          <xsl:attribute name='{f:if(@aria:label,"aria-description","alt")}'>
             <xsl:value-of select="@description"/>
           </xsl:attribute>
         </xsl:when>
+        <xsl:when test="@aria:label or @aria:hidden='true'"/>
+        <!-- not an artifact, but no text provided, tyr to refer to caption -->
         <xsl:when test="ancestor::ltx:figure/ltx:caption">
           <xsl:attribute name='alt'><xsl:text>Refer to caption</xsl:text></xsl:attribute>
           <!-- Possibly aria-describedby, providing the caption has an id ??? -->
@@ -187,6 +197,9 @@
     </xsl:element>
   </xsl:template>
 
+  <!-- for the img tag, @aria:label is diverted to @alt -->
+  <xsl:template match="ltx:graphics[f:ends-with(@imagesrc,'.svg')!='true']/@aria:label" mode="copy-attribute"/>
+
   <!-- svg graphics should use the object tag, rather than img,
        to preserve any interactivity. -->
   <xsl:template match="ltx:graphics[f:ends-with(@imagesrc,'.svg')='true']">
@@ -196,10 +209,13 @@
         <xsl:when test="@description">
           <xsl:value-of select="@description"/>
         </xsl:when>
+        <xsl:when test="@aria:label or @aria:hidden='true'"/>
         <xsl:when test="ancestor::ltx:figure/ltx:caption">
           <xsl:attribute name='alt'><xsl:text>Refer to caption</xsl:text></xsl:attribute>
         </xsl:when>
-        <xsl:otherwise/>
+        <xsl:otherwise>
+          <xsl:attribute name='alt'><xsl:text>[Uncaptioned image]</xsl:text></xsl:attribute>
+        </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
     <xsl:element name="object" namespace="{$html_ns}">
@@ -226,7 +242,7 @@
       <!-- the object tag does not support alt, so use
            aria-label instead -->
       <xsl:if test="$description!=''">
-        <xsl:attribute name='aria-label'>
+        <xsl:attribute name='{f:if(@aria:label,"aria-description","aria-label")}'>
           <xsl:value-of select="$description"/>
         </xsl:attribute>
       </xsl:if>
