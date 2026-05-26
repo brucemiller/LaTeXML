@@ -646,6 +646,7 @@ sub computeBoxesSize {
       || $STATE->lookupDefinition(T_CS('\hsize'));
     $wrapwidth = $wrapwidth->valueOf if ref $wrapwidth;      # Register or Dimension
     $wrapwidth = $wrapwidth->valueOf if ref $wrapwidth; }    # still Dimension (Register)
+  my $maxwidth = $wrapwidth || 0;
   no warnings 'recursion';
   my @boxes = grep { !(ref $_) || !$_->getProperty('isEmpty') }
     grep { !(ref $_) || $_->can('getSize'); } $boxes->unlist;
@@ -659,6 +660,7 @@ sub computeBoxesSize {
         && (($box->getProperty('mode') || '') eq 'horizontal')) {
         my $width = $box->getProperty('width') || $wrapwidth;
         $width = $width->valueOf if ref $width;
+        $maxwidth = $width if $width && $width > $maxwidth;
         push(@lines, $self->computeBoxesSize_lines($width,
             $self->computeBoxesSize_words($box->unlist))); }
       else {
@@ -666,17 +668,30 @@ sub computeBoxesSize {
         push(@lines, [$w, $h, $d]) if $w || $h || $d; } } }
   else {
     # Scan all boxes, collecting into "words", then (possibly) break into lines.
+    # Should get single line, if no $wrapwidth
     my @words = $self->computeBoxesSize_words(@boxes);
     @lines = $self->computeBoxesSize_lines($wrapwidth, @words); }
   # ----------------------------------------------------------------------
   # Now, stack up the multiple lines
   my ($wd, $ht, $dp) = $self->computeBoxesSize_stack($vattach, @lines);
-
+  $wd = $maxwidth if $wd && $maxwidth; # Set to wrapwidth, unless empty.
+  if (my $th = $options{totalheight}) { # divie up totalheight, if requested
+    $th = $th->valueOf;
+    my $diff = $th - $ht - $dp;
+    if ($diff > 0) {
+      if ($vattach eq 'bottom') { $ht += $diff; }
+      elsif ($vattach eq 'middle') { $ht += $diff/2; $dp += $diff/2; }
+      else { $dp += $diff; } } }
   Debug("Size boxes " . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "\n"
       . "  Boxes: " . ToString($boxes) . "\n"
       . "  Boxes: " . Stringify($boxes) . "\n"
+      . " Options:" . join(',',map { $_."=".ToString($options{$_}); } sort keys %options)
       . "  Sizes: " . join("\n", map { _showsize(@$_); } @lines) . "\n"
       . "  => " . _showsize($wd, $ht, $dp)) if $LaTeXML::DEBUG{'size-detailed'};
+  $wd += $options{padleft}->valueOf   if $options{padleft};
+  $wd += $options{padright}->valueOf  if $options{padright};
+  $ht += $options{padtop}->valueOf    if $options{padtop};
+  $dp += $options{padbottom}->valueOf if $options{padbottom};
   return (Dimension($wd), Dimension($ht), Dimension($dp)); }
 
 # Compute (w/guards) the size of a single box
@@ -706,6 +721,7 @@ sub computeBoxesSize_words {
   no warnings 'recursion';
   my ($self, @boxes) = @_;
   my @words = ();
+  my @word  = ();
   my $prevbox;
   my $prevspace = 0;
   my $size      = int($self->getSize || DEFSIZE() || 10);
@@ -715,21 +731,22 @@ sub computeBoxesSize_words {
     # Check for possible line-break points
     if ((ref $box) && $box->getProperty('isBreak')) {
       if ($wd || $ht || $dp || ($prevspace > 0)) {
-        push(@words, [$prevspace, $wd, $ht, $dp]);
-        $wd = $ht = $dp = 0; $prevspace = -1; }
+        push(@words, [$prevspace, $wd, $ht, $dp, @word]);
+        $wd = $ht = $dp = 0; $prevspace = -1; @word = (); }
       else {
         $prevspace = -1; } }
     # Pernaps not "isSpace", but excluding struts, neg space, etc ???
     elsif ((ref $box) && $box->getProperty('isSpace') && !$box->getProperty('isVerticalSpace')) {
       if ($wd || $ht || $dp || ($prevspace < 0)) {
-        push(@words, [$prevspace, $wd, $ht, $dp]);
-        $wd = $ht = $dp = 0; $prevspace = $w; }
+        push(@words, [$prevspace, $wd, $ht, $dp, @word]);
+        $wd = $ht = $dp = 0; $prevspace = $w; @word = (); }
       else {
         $prevspace += $w; } }
     else {    # Else accumulate into "word"
       $wd += $w;
       $ht = max($ht, $h);
       $dp = max($dp, $d);
+      push(@word, $box);
       # Kern HACK for lists of individual Box's
       if ($prevbox && (ref $prevbox eq 'LaTeXML::Core::Box') && (ref $box eq 'LaTeXML::Core::Box')) {
         my $prevchar = substr($prevbox->getString || '', -1, 1);
@@ -741,28 +758,32 @@ sub computeBoxesSize_words {
           $wd += $size * $kern; } }
     }
     $prevbox = $box; }
-  if ($wd || $ht || $dp || $prevspace) {    # be sure to get last bit
-    push(@words, [$prevspace, $wd, $ht, $dp]); }
+  if ($wd || $ht || $dp || $prevspace || @word) {    # be sure to get last bit
+    push(@words, [$prevspace, $wd, $ht, $dp, @word]); }
   return @words; }
 
 # do line breaking of words into lines, according to $wrapwidth (if), or explicit breaks.
 sub computeBoxesSize_lines {
   my ($self, $wrapwidth, @words) = @_;
   my @lines = ();
+  my @line  = ();
+  my $fuzz  = Dimension('1pt')->valueOf;
+  my $squeeze = ($wrapwidth ? 0.6 : 1.0); # Let spaces shrink in paragraph mode
   my ($wd, $ht, $dp) = (0, 0, 0);
   foreach my $item (@words) {
-    my ($space, $w, $h, $d) = @$item;
+    my ($space, $w, $h, $d, @word) = @$item;
     if ($space == -1) {
-      push(@lines, [$wd, $ht, $dp]) if $wd;
-      $wd = $w; $ht = $h; $dp = $d; }
-    elsif ((defined $wrapwidth) && ($wd + $space * 0.5 + $w > $wrapwidth)) {
-      push(@lines, [$wrapwidth || $wd, $ht, $dp]) if $wd;
-      $wd = $w; $ht = $h; $dp = $d; }
+      push(@lines, [$wd, $ht, $dp, @line]) if $wd;
+      $wd = $w; $ht = $h; $dp = $d; @line = @word; }
+    elsif ((defined $wrapwidth) && ($wd + $space * 0.5 + $w > $wrapwidth + $fuzz)) {
+      push(@lines, [$wd, $ht, $dp, @line]) if $wd;
+      $wd = $w; $ht = $h; $dp = $d; @line = @word; }
     else {
-      $wd += $space + $w;
+      $wd += $space*$squeeze + $w;
       $ht = max($ht, $h);
-      $dp = max($dp, $d); } }
-  push(@lines, [$wrapwidth || $wd, $ht, $dp]) if $wd || $ht || $dp;
+      $dp = max($dp, $d);
+      push(@line, @word); } }
+  push(@lines, [$wd, $ht, $dp, @line]) if $wd || $ht || $dp;
   return @lines; }
 
 # Sum up a stack of lines, determining w as max, and h & d according to $vattach.
@@ -835,8 +856,9 @@ sub math_bearing {
   return $STATE->lookupDefinition($$mathbearingreg[abs($bearing)])->valueOf->spValue; }
 
 sub _showsize {
-  my ($wd, $ht, $dp) = @_;
-  return ($wd / $UNITY) . " x " . ($ht / $UNITY) . " + " . ($dp / $UNITY); }
+  my ($wd, $ht, $dp, @stuff) = @_;
+  return ($wd / $UNITY) . " x " . ($ht / $UNITY) . " + " . ($dp / $UNITY)
+    . (@stuff ? ' '.join('', map { ToString($_); } @stuff) : ''); }
 
 sub isSticky {
   my ($self) = @_;
