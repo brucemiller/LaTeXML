@@ -38,7 +38,7 @@ sub Box {
     $properties{height} = Dimension(0) unless defined $properties{height};
     $properties{depth}  = Dimension(0) unless defined $properties{depth}; }
   my $state = $STATE;
-  my $mode = $properties{mode} || $state->lookupValue('MODE') || 'restricted_horizontal';
+  my $mode  = $properties{mode} || $state->lookupValue('MODE') || 'restricted_horizontal';
   if ($state->lookupValue('IN_MATH')) {
     my $attr      = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
     my $usestring = ($attr && $$attr{replace}) || $string;
@@ -47,7 +47,7 @@ sub Box {
       mode => $mode, ($attr ? %$attr : ()), %properties); }
   else {
     return LaTeXML::Core::Box->new($string, $font, $locator, $tokens,
-                                   mode => $mode, %properties); } }
+      mode => $mode, %properties); } }
 
 #======================================================================
 # Box Object
@@ -113,10 +113,10 @@ my %mode_abbrev = (
 
 sub _stringify {
   my ($self) = @_;
-  my $type = ref $self;
-  my $mode = $$self{properties}{mode};
+  my $type   = ref $self;
+  my $mode   = $$self{properties}{mode};
   $type =~ s/^LaTeXML::Core:://;
-  $type .= '!'. ($mode_abbrev{$mode} || $mode) if $mode;
+  $type .= '!' . ($mode_abbrev{$mode} || $mode) if $mode;
   return $type; }
 
 sub stringify {
@@ -235,12 +235,6 @@ sub getSize {
     unless (defined $$props{cwidth})
     && (defined $$props{cheight})
     && (defined $$props{cdepth});
-  Debug("SIZE of $self"
-      . "\n preassigned: " . _showsize($$props{width},  $$props{height},  $$props{depth})
-      . "\n calculated : " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
-      . "\n w/options " . join(',', map { $_ . "=" . ToString($options{$_}); } sort keys %options)
-      . "\n =>: " . _showsize($$props{width} || $$props{cwidth}, $$props{height} || $$props{cheight}, $$props{depth} || $$props{cdepth})
-      . "\n   Of " . ToString($self)) if $LaTeXML::DEBUG{size};
   return ($$props{width} || $$props{cwidth},
     $$props{height}  || $$props{cheight},
     $$props{depth}   || $$props{cdepth},
@@ -260,19 +254,25 @@ sub showSize {
 #omg
 # Fake computing the dimensions of strings (typically single chars).
 # Eventually, this needs to link into real font data
+our @sizing_properties = (qw(
+    width height depth totalheight vattach layout
+    padtop padbottom padleft padright));
+
 sub computeSizeStore {
   my ($self, %options) = @_;
   no warnings 'recursion';
   my $props = $self->getPropertiesRef;
-  $options{width}   = $$props{width}   if $$props{width};
-  $options{height}  = $$props{height}  if $$props{height};
-  $options{depth}   = $$props{depth}   if $$props{depth};
-  $options{vattach} = $$props{vattach} if $$props{vattach};
-  $options{layout}  = $$props{layout}  if $$props{layout};
+  map { $options{$_} = $$props{$_} if defined $$props{$_}; } @sizing_properties;
   my ($w, $h, $d) = $self->computeSize(%options);
   $$props{cwidth}  = $w unless defined $$props{cwidth};
   $$props{cheight} = $h unless defined $$props{cheight};
   $$props{cdepth}  = $d unless defined $$props{cdepth};
+  Debug("SIZE of $self"
+      . "\n preassigned: " . _showsize($$props{width},  $$props{height},  $$props{depth})
+      . "\n calculated : " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
+      . "\n w/options " . join(',', map { $_ . "=" . ToString($options{$_}); } sort keys %options)
+      . "\n =>: " . _showsize($$props{width} || $$props{cwidth}, $$props{height} || $$props{cheight}, $$props{depth} || $$props{cdepth})
+      . "\n   Of " . ToString($self)) if $LaTeXML::DEBUG{size};
   return; }
 
 sub computeSize {
