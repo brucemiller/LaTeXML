@@ -1368,7 +1368,11 @@ sub RefStepItemCounter {
   my %attr = ();
   my $sep  = LookupDimension('\itemsep');
   if (($n > 0) && $sep && ($sep->valueOf != LookupDimension('\lx@default@itemsep')->valueOf)) {
-    $attr{itemsep} = $sep; }
+    $attr{itemsep} = $sep;
+    # this SHOULD pad the item, but \item is ONLY the marker, not the item content!
+##    $attr{padtop}  = $sep;
+##    $attr{height}  = Dimension('1em');
+  }
   if (defined $tag) {
     my @props = RefStepID($counter);
     if (IsEmpty($tag)) {    # empty tag?
@@ -1670,11 +1674,11 @@ DefConstructor('\trivlist@item@ OptionalUndigested',
   properties => sub { ($_[1] ? (tag => Digest(Expand($_[1]))) : ()); });
 DefMacro('\@trivlist', '\relax', locked => 1);
 
-DefRegister('\topsep'             => Glue(0));
-DefRegister('\partopsep'          => Glue(0));
-DefRegister('\lx@default@itemsep' => Glue(0));
-DefRegister('\itemsep'            => Glue(0));
-DefRegister('\parsep'             => Glue(0));
+DefRegister('\topsep'             => Glue('8pt plus 2pt minus 4pt'));
+DefRegister('\partopsep'          => Glue('2pt plus 1pt minus 1pt'));
+DefRegister('\lx@default@itemsep' => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\itemsep'            => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\parsep'             => Glue('4pt plus 2pt minus 1pt'));
 DefRegister('\@topsep'            => Glue(0));
 DefRegister('\@topsepadd'         => Glue(0));
 DefRegister('\@outerparskip'      => Glue(0));
@@ -2024,6 +2028,9 @@ sub afterEquation {
   elsif ($whatsit) {
     $whatsit->setProperties(%{ LookupValue('EQUATIONROW_TAGS') }); }
   $$numbering{in_equation} = 0;
+  $whatsit->setProperties(
+    padtop    => LookupRegister('\abovedisplayskip'),
+    padbottom => LookupRegister('\belowdisplayskip')) if $whatsit;
   return; }
 
 # My first inclination is to Lock {math}, but it is surprisingly common to redefine it in silly ways... So...?
@@ -2969,7 +2976,7 @@ sub defineNewTheorem {
               T_CS('\let'), T_CS('\the' . $counter), T_CS('\@empty'),
               Invocation(T_CS('\lx@make@tags'), T_OTHER($thmset)),
               T_END);
-        } }
+          } }
         else {
           %ctr = RefStepCounter($thmset); } }
       my $title = DigestText(Tokens(T_BEGIN,
@@ -3317,7 +3324,7 @@ sub arrange_panels_and_breaks {
               my $block = $document->wrapNodes('ltx:block', $prev_node, $child);
               push(@row_contents, [$block, 'ltx:block', $prev_width + $child_width]);
               pop(@all_panels); push(@all_panels, $block);
-          } }
+            } }
           else {
             # otherwise keep the last panel as-is, and append a sibling
             push(@row_contents, $prev_panel);
@@ -4762,8 +4769,8 @@ DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxConte
   sizer      => '#5',
   properties => sub {
     (width => $_[4],
-      vattach => translateAttachment($_[1]),
-      height  => $_[2]); },
+      vattach     => translateAttachment($_[1]),
+      totalheight => $_[2]); },
   mode         => 'inline_internal_vertical',
   robust       => 1,
   beforeDigest => sub {

@@ -133,7 +133,10 @@ DefConstructorI('\lx@begin@display@math', undef,
   beforeDigest => sub {
     $_[0]->enterHorizontal;
     $_[0]->beginMode('display_math'); },
-  properties  => { mode => 'display_math' },
+  properties => sub {
+    (mode => 'display_math',
+      padtop    => LookupRegister('\abovedisplayskip'),
+      padbottom => LookupRegister('\belowdisplayskip')); },
   captureBody => 1);
 DefConstructorI('\lx@end@display@math', undef, "",
   reversion    => Tokens(T_MATH, T_MATH),
