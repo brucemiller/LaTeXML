@@ -385,7 +385,8 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       $document->setAttribute($node,
         style => '--ltx-fo-width:' . $w->emValue(undef, $f) . 'em;'
           . '--ltx-fo-height:' . $h->emValue(undef, $f) . 'em;'
-          . '--ltx-fo-depth:' . $d->emValue(undef, $f) . 'em;');
+          . '--ltx-fo-depth:' . $d->emValue(undef, $f) . 'em;'
+          . 'font-size:' . $f->getSize . 'pt;');
 } });
 
 sub isVAttached {
@@ -418,8 +419,6 @@ sub insertBlock {
   if (($context_tag =~ /^ltx:XM/) && ($context_tag ne 'ltx:XMText')) {    # but math always needs this
     $context     = $document->openElement('ltx:XMText');
     $context_tag = $document->getNodeQName($context); }
-  if (my $w = $is_svg && $blockattr{width}) {
-    $blockattr{width} = $w->emValue(undef, $contents->getFont) . "em" if ref $w; }
   my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
   my $container = $document->openElement('ltx:_CaptureBlock_', %blockattr);
   $document->absorb($contents);
