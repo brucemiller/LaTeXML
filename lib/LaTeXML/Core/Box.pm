@@ -263,7 +263,15 @@ sub computeSizeStore {
   no warnings 'recursion';
   my $props = $self->getPropertiesRef;
   map { $options{$_} = $$props{$_} if defined $$props{$_}; } @sizing_properties;
-  my ($w, $h, $d) = $self->computeSize(%options);
+  my $w = $options{width};
+  my $h = $options{height};
+  my $d = $options{depth};
+  if ((defined $w) && (defined $h) && (defined $d)) {
+    $w = Dimension($w) unless ref $w;
+    $h = Dimension($h) unless ref $h;
+    $d = Dimension($d) unless ref $d; }
+  else {
+    ($w, $h, $d) = $self->computeSize(%options); }
   $$props{cwidth}  = $w unless defined $$props{cwidth};
   $$props{cheight} = $h unless defined $$props{cheight};
   $$props{cdepth}  = $d unless defined $$props{cdepth};
