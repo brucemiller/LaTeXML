@@ -32,8 +32,8 @@ use List::Util qw(min max);
 # C.0 Prelminaries & Shorthands
 #======================================================================
 
-Let('\@pushfilename','\lx@pushfilename');
-Let('\@popfilename', '\lx@popfilename');
+Let('\@pushfilename', '\lx@pushfilename');
+Let('\@popfilename',  '\lx@popfilename');
 
 DefMacroI('\@ehc', undef, "I can't help");
 
@@ -139,18 +139,18 @@ DefMacro('\@xviipt', '17.28');
 DefMacro('\@xxpt',   '20.74');
 DefMacro('\@xxvpt',  '24.88');
 # LaTeX 209 stuff
-DefMacro('\vpt',     '\edef\f@size{\@vpt}\rm');
-DefMacro('\vipt',    '\edef\f@size{\@vipt}\rm');
-DefMacro('\viipt',   '\edef\f@size{\@viipt}\rm');
-DefMacro('\viiipt',  '\edef\f@size{\@viiipt}\rm');
-DefMacro('\ixpt',    '\edef\f@size{\@ixpt}\rm');
-DefMacro('\xpt',     '\edef\f@size{\@xpt}\rm');
-DefMacro('\xipt',    '\edef\f@size{\@xipt}\rm');
-DefMacro('\xiipt',   '\edef\f@size{\@xiipt}\rm');
-DefMacro('\xivpt',   '\edef\f@size{\@xivpt}\rm');
-DefMacro('\xviipt',  '\edef\f@size{\@xviipt}\rm');
-DefMacro('\xxpt',    '\edef\f@size{\@xxpt}\rm');
-DefMacro('\xxvpt',   '\edef\f@size{\@xxvpt}\rm');
+DefMacro('\vpt',    '\edef\f@size{\@vpt}\rm');
+DefMacro('\vipt',   '\edef\f@size{\@vipt}\rm');
+DefMacro('\viipt',  '\edef\f@size{\@viipt}\rm');
+DefMacro('\viiipt', '\edef\f@size{\@viiipt}\rm');
+DefMacro('\ixpt',   '\edef\f@size{\@ixpt}\rm');
+DefMacro('\xpt',    '\edef\f@size{\@xpt}\rm');
+DefMacro('\xipt',   '\edef\f@size{\@xipt}\rm');
+DefMacro('\xiipt',  '\edef\f@size{\@xiipt}\rm');
+DefMacro('\xivpt',  '\edef\f@size{\@xivpt}\rm');
+DefMacro('\xviipt', '\edef\f@size{\@xviipt}\rm');
+DefMacro('\xxpt',   '\edef\f@size{\@xxpt}\rm');
+DefMacro('\xxvpt',  '\edef\f@size{\@xxvpt}\rm');
 
 #**********************************************************************
 # Basic \documentclass & \documentstyle
@@ -268,8 +268,8 @@ DefMacro('\@restorepar', '\def\par{\@par}');
 NewCounter('footnote');
 DefMacroI('\thefootnote', undef, '\arabic{footnote}');
 NewCounter('mpfootnote');
-DefMacroI('\thempfn',             undef, '\thefootnote');
-DefMacroI('\thempfootnote',       undef, '\arabic{mpfootnote}');
+DefMacroI('\thempfn',       undef, '\thefootnote');
+DefMacroI('\thempfootnote', undef, '\arabic{mpfootnote}');
 DefRegister('\footnotesep' => Dimension(0));
 #======================================================================
 # C.3.4 Accents and Special Symbols
@@ -291,9 +291,9 @@ DefMacroI('\appendixesname', undef, 'Appendixes');
 # C.4.3 Table of Contents
 #======================================================================
 # Insert stubs that will be filled in during post processing.
-DefMacroI('\contentsname', undef, 'Contents');
+DefMacroI('\contentsname',   undef, 'Contents');
 DefMacroI('\listfigurename', undef, 'List of Figures');
-DefMacroI('\listtablename', undef, 'List of Tables');
+DefMacroI('\listtablename',  undef, 'List of Tables');
 #======================================================================
 # C.4.4 Style registers
 #======================================================================
@@ -357,10 +357,9 @@ DefMacro('\subparagraphmark{}',  Tokens());
 DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
 
 DefPrimitive('\DeclareTextAccent DefToken {}{}', sub {
-   ignoredDefinition('DeclareTextAccent', $_[1]); });
+    ignoredDefinition('DeclareTextAccent', $_[1]); });
 DefPrimitive('\DeclareTextAccentDefault{}{}',
   sub { ignoredDefinition('DeclareTextAccentDefault', $_[1]); });
-
 
 DefPrimitive('\DeclareTextComposite{}{}{}{}',
   sub { ignoredDefinition('DeclareTextComposite', $_[1]); });
@@ -401,17 +400,17 @@ DefMacroI('\floatpagefraction', undef, "0.25");
 NewCounter('dbltopnumber');
 DefMacroI('\dbltopfraction',       undef, "0.7");
 DefMacroI('\dblfloatpagefraction', undef, "0.25");
-DefRegister('\floatsep'         => Glue('12.0pt plus 2.0pt minus 2.0pt'));
-DefRegister('\textfloatsep'     => Glue('20.0pt plus 2.0pt minus 4.0pt'));
-DefRegister('\intextsep'        => Glue('12.0pt plus 2.0pt minus 2.0pt'));
-DefRegister('\dblfloatsep'      => Glue('12.0pt plus 2.0pt minus 2.0pt'));
-DefRegister('\dbltextfloatsep'  => Glue('20.0pt plus 2.0pt minus 4.0pt'));
-DefRegister('\@fptop'           => Glue(0));
-DefRegister('\@fpsep'           => Glue(0));
-DefRegister('\@fpbot'           => Glue(0));
-DefRegister('\@dblfptop'        => Glue(0));
-DefRegister('\@dblfpsep'        => Glue(0));
-DefRegister('\@dblfpbot'        => Glue(0));
+DefRegister('\floatsep'        => Glue('12.0pt plus 2.0pt minus 2.0pt'));
+DefRegister('\textfloatsep'    => Glue('20.0pt plus 2.0pt minus 4.0pt'));
+DefRegister('\intextsep'       => Glue('12.0pt plus 2.0pt minus 2.0pt'));
+DefRegister('\dblfloatsep'     => Glue('12.0pt plus 2.0pt minus 2.0pt'));
+DefRegister('\dbltextfloatsep' => Glue('20.0pt plus 2.0pt minus 4.0pt'));
+DefRegister('\@fptop'          => Glue(0));
+DefRegister('\@fpsep'          => Glue(0));
+DefRegister('\@fpbot'          => Glue(0));
+DefRegister('\@dblfptop'       => Glue(0));
+DefRegister('\@dblfpsep'       => Glue(0));
+DefRegister('\@dblfpbot'       => Glue(0));
 Let('\topfigrule', '\relax');
 Let('\botfigrule', '\relax');
 Let('\dblfigrule', '\relax');
@@ -484,7 +483,6 @@ RawTeX(<<'EOL');
 \def\endlrbox{\unskip\color@endgroup}
 \DeclareRobustCommand\usebox[1]{\leavevmode\copy #1\relax}
 EOL
-
 
 #**********************************************************************
 # C.14 Pictures and Color
@@ -596,7 +594,6 @@ EoTeX
 #======================================================================
 
 #======================================================================
-
 
 RawTeX(<<'EOTeX');
   \chardef\@xxxii=32
@@ -802,8 +799,9 @@ RawTeX(<<'EOTeX');
 \def\glb@settings{}%
 EOTeX
 
-
-
+DefPrimitive('\addvspace {}',  undef);
+DefPrimitive('\addpenalty {}', undef);
+DefPrimitiveI('\@endparenv');
 
 #======================================================================
 DefMacroI('\loggingall', undef, Tokens());

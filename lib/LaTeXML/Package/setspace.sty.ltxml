@@ -26,10 +26,11 @@ DefEnvironment("{onehalfspace}", "#body");
 DefEnvironment("{doublespace}",  "#body");
 DefEnvironment("{spacing}{}",    "#body");
 
-DefMacroI('\setstretch',            '{}',  '');
-DefMacroI('\SetSinglespace',        '{}',  '');
-DefMacroI('\setdisplayskipstretch', '{}',  '');
-DefMacroI('\restore@spacing',       undef, '');
+DefMacro('\setspace@singlespace',    '1');
+DefMacro('\setstretch{}',            '\def\baselinestretch{#1}');
+DefMacro('\SetSinglespace{}',        '\def\setspace@singlespace{#1}');
+DefMacro('\setdisplayskipstretch{}', '');
+DefMacro('\restore@spacing',         '');
 #**********************************************************************
 
 1;

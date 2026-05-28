@@ -4647,9 +4647,6 @@ DefPrimitive('\hspace  OptionalMatch:* {Dimension}', sub {
       width => $length, isSpace => 1); });
 
 DefMacro('\vspace OptionalMatch:* {}', '\vskip #2\relax');
-DefPrimitive('\addvspace {}',  undef);
-DefPrimitive('\addpenalty {}', undef);
-DefPrimitiveI('\@endparenv');
 
 # \hfill, \vfill
 
