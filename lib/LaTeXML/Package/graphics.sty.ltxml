@@ -63,9 +63,9 @@ DefParameterType('GraphixDimensions', sub {
 sub graphics_scaledbox_props {
   my ($box, $xscale, $yscale) = @_;
   my ($w,   $h,      $d)      = $box->getSize;
-  my ($sw, $sh, $sd) =
+  my ($sw,  $sh,     $sd) =
     ($w && $w->multiply($xscale), $h && $h->multiply($yscale), $d && $d->multiply($yscale));
-  my $H  = $h && ($d ? $h->add($d) : $h);
+  my $H  = $h  && ($d  ? $h->add($d)   : $h);
   my $sH = $sh && ($sd ? $sh->add($sd) : $sh);
   return (
     box         => $box,
@@ -78,7 +78,7 @@ sub graphics_scaledbox_props {
     depth       => $sd,
     totalheight => $h  && ($d ? $h->add($d) : $h)->multiply($yscale),
     xtranslate  => $sw && $w && $sw->subtract($w)->multiply(+0.5),
-    ytranslate  => $sH && $H && $sH->subtract($H)->multiply(-0.5) ); }
+    ytranslate  => $sH && $H && $sH->subtract($H)->multiply(-0.5)); }
 
 sub graphics_scaledbox_insert {
   my ($document, %props) = @_;
