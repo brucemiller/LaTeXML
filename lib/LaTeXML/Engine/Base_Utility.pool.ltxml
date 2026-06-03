@@ -218,8 +218,8 @@ DebuggableFeature('frontmatter');
 
 DefConstructor('\lx@personname{}', "<ltx:personname>#1</ltx:personname>",
   beforeDigest => sub {
-    Let('\thanks', '\person@thanks'); },
-  mode => 'restricted_horizontal', enterHorizontal => 1);
+    Let('\thanks', '\lx@add@thanks'); },
+  mode => 'restricted_horizontal', enterHorizontal => 1, sizer => '#1');
 DefMacro('\lx@ignore@tabular[]{}', '');
 DefMacro('\lx@ignore@endtabular',  '');
 
@@ -839,7 +839,7 @@ sub insertFrontMatter {
       local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'), '', T_SPACE);
       foreach my $item (@$list) {
         insertFrontMatter_rec($document, $item);
-      } } }
+  } } }
   relocateAnnotations($document);
   return; }
 
