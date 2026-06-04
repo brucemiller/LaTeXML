@@ -349,6 +349,9 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 .ltx_transformed_inner {
     display:block;
     position:absolute;bottom:0pt;left:0pt; }
+.ltx_inline-block > .ltx_para > .ltx_p:first-child,
+.ltx_logical-block > .ltx_para > .ltx_p:first-child {
+    text-indent:0em; }
 .ltx_transformed_inner > .ltx_p {text-indent:0em; margin:0; padding:0; }
 
 /* If simulating a table (html5), try to get rowspan to work...sorta? */
