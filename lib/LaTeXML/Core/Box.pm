@@ -251,9 +251,6 @@ sub showSize {
   my ($self) = @_;
   return '[' . ToString($self->getWidth) . ' x ' . ToString($self->getHeight) . ' + ' . ToString($self->getDepth) . ']'; }
 
-#omg
-# Fake computing the dimensions of strings (typically single chars).
-# Eventually, this needs to link into real font data
 our @sizing_properties = (qw(
     width height depth totalheight vattach layout
     padtop padbottom padleft padright));
@@ -267,14 +264,23 @@ sub computeSizeStore {
   my $h = $options{height};
   my $d = $options{depth};
   if ((defined $w) && (defined $h) && (defined $d)) {
-    $w = Dimension($w) unless ref $w;
-    $h = Dimension($h) unless ref $h;
-    $d = Dimension($d) unless ref $d; }
+    $w = (ref $w ? $w->spValue : $w || 0);
+    $h = (ref $h ? $h->spValue : $h || 0);
+    $d = (ref $d ? $d->spValue : $d || 0); }
   else {
-    ($w, $h, $d) = $self->computeSize(%options); }
-  $$props{cwidth}  = $w unless defined $$props{cwidth};
-  $$props{cheight} = $h unless defined $$props{cheight};
-  $$props{cdepth}  = $d unless defined $$props{cdepth};
+    ($w, $h, $d) = $self->computeSize(%options);
+    $w = $w->spValue;
+    $h = $h->spValue;
+    $d = $d->spValue; }
+  # Add requested padding
+  $w += $options{padleft}->spValue   if $options{padleft};
+  $w += $options{padright}->spValue  if $options{padright};
+  $h += $options{padtop}->spValue    if $options{padtop};
+  $d += $options{padbottom}->spValue if $options{padbottom};
+  # Now store
+  $$props{cwidth}  = Dimension($w) unless defined $$props{cwidth};
+  $$props{cheight} = Dimension($h) unless defined $$props{cheight};
+  $$props{cdepth}  = Dimension($d) unless defined $$props{cdepth};
   Debug("SIZE of $self"
       . "\n preassigned: " . _showsize($$props{width},  $$props{height},  $$props{depth})
       . "\n calculated : " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
