@@ -155,9 +155,13 @@ DefConstructor('\@proof OptionalUndigested',
     PushValue('QED@stack', T_CS('\qed'));
     Digest(Tokens(T_CS('\the'), T_CS('\thm@bodyfont'))); },
   properties => sub {
-    my $title = Digest(Tokens(T_BEGIN, T_CS('\the'), T_CS('\thm@headfont'),
-        ($_[1] ? $_[1]->unlist : (T_CS('\proofname'))),
-        T_OTHER('.'), T_END));
+    my @content = $_[1] ? $_[1]->unlist : (T_CS('\proofname'));
+    # Like LaTeX's \@addpunct: only append the period if the title doesn't
+    # already end in punctuation (e.g. \begin{proof}[x.] should give "x.", not "x..").
+    my $last   = @content ? $content[-1]->toString : '';
+    my @period = ($last =~ /[.!?:;,]$/ ? () : (T_OTHER('.')));
+    my $title  = Digest(Tokens(T_BEGIN, T_CS('\the'), T_CS('\thm@headfont'),
+        @content, @period, T_END));
     my $titlefont = [$title->unlist]->[1]->getFont;
     (title => $title,
       titlefont  => $titlefont,
