@@ -60,7 +60,7 @@ DeclareOption('thref', sub {
     DefConstructor('\thref OptionalMatch:* Semiverbatim',
       "<ltx:ref labelref='#label' show='typerefnum' _force_font='true'/>",
       enterHorizontal => 1,
-      properties => sub { (label => CleanLabel($_[2])); });
+      properties      => sub { (label => CleanLabel($_[2])); });
 });
 
 ProcessOptions();
@@ -149,7 +149,7 @@ DefPrimitive('\theoremclass{}', sub {
 # need some styling here to put at right...
 DefMacro('\TheoremSymbol', '\@qedbox{\the\thm@symbol}');
 DefConstructor('\@qedbox{}', "<ltx:text class='ltx_align_floatright'>#1</ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1, bounded => 1, sizer => '#1');
 RawTeX('\newif\ifsetendmark\setendmarktrue');
 DefMacro('\NoEndMark', '\global\setendmarkfalse');
 DefMacroI('\thm@doendmark', undef, '\ifsetendmark\TheoremSymbol\fi');
@@ -178,7 +178,7 @@ Let('\renewtheorem', '\newtheorem');
 
 DefPrimitive('\newtheoremstyle{}{}{}', sub {
     my ($stomach, $name, $noopt, $opt) = @_;
-    my $style = ToString($name);
+    my $style   = ToString($name);
     my %savable = %{ LookupValue('SAVABLE_THEOREM_PARAMETERS') };
     my %saved   = ();
     foreach my $key (keys %savable) {

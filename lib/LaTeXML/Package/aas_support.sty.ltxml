@@ -142,7 +142,7 @@ DefMacro('\software{}',      '\lx@add@pubnote[role=software]{#1}');
 DefMacro('\submitjournal{}', '\lx@add@pubnote[role=journal]{#1}');
 # Alas \doi is not frontmatter.
 DefConstructor('\doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>',
-  enterHorizontal => 1);
+  enterHorizontal => 1, sizer => '#1');
 
 #======================================================================
 # 2.4 Abstract
@@ -242,7 +242,7 @@ Let('\acknowledgments', '\acknowledgements');
 # Ultimately, this would get some more explicit semantic markup, but..
 # \facility{facilityID}
 DefConstructor('\facility{}', "<ltx:text class='ltx_ast_facility'>#1</ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1, sizer => '#1');
 DefMacro('\facilities{}', '\lx@add@pubnote[role=thanks,name={Facilities:~}]{#1}');
 
 #======================================================================
@@ -415,11 +415,11 @@ DefMacro('\phm{}', '\phantom{string}');
 # \dataset[catalogid]{text}
 DefConstructor('\objectname OptionalSemiverbatim {}',
   "<ltx:text class='ltx_ast_objectname'>#2 (catalog #1)</ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1, sizer => '#1');
 Let('\object', '\objectname');    # ???
 DefConstructor('\dataset OptionalSemiverbatim {}  ',
   "<ltx:text class='ltx_ast_dataset'>#2 (catalog #1)</ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1, sizer => '#1');
 
 #======================================================================
 # 2.17.2 Ionic Species and Chemical Bonds
@@ -572,15 +572,8 @@ RequirePackage('url');
 
 DefConstructor('\anchor Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  enterHorizontal => 1,
+  enterHorizontal => 1, sizer => '#2',
   properties      => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[1])); });
-
-# This should be in effect only after frontmatter
-# \email{address}
-DefConstructor('\@@email Semiverbatim',
-  "<ltx:ref href='#href'>#1</ltx:ref>",
-  enterHorizontal => 1,
-  properties      => sub { (href => CleanURL("mailto:" . ToString($_[1]))); });
 
 # RequirePackage('verbatim');
 

@@ -47,7 +47,7 @@ DefMacro('\ltx@text@numprint@@{}{}', '\ltx@text@number{\ltx@orig@numprint[#1]{#2
 
 DefConstructor('\ltx@text@number{}',
   "<ltx:text class='ltx_number' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1, bounded => 1, sizer => '#1');
 
 # Math mode
 DefMacro('\ltx@math@numprint@{}',
@@ -130,7 +130,7 @@ DefColumnType('N Optional:-1 Optional:-1 {}{}', sub {
       after => Invocation(T_CS('\nprt@end'),
         $nd_man_before, $nd_man_after,
         $nd_exp_before, $nd_exp_after,
-        Tokens(), Tokens()),
+        Tokens(),       Tokens()),
       align => 'char:' . ToString(Digest(T_CS('\nprt@decimal'))));
     return; });
 
@@ -140,7 +140,7 @@ DefColumnType('n Optional:-1 Optional:-1 {}{}', sub {
       after => Invocation(T_CS('\nprt@end'),
         $nd_man_before, $nd_man_after,
         $nd_exp_before, $nd_exp_after,
-        T_MATH, T_MATH),
+        T_MATH,         T_MATH),
       align => 'char:' . ToString(Digest(T_CS('\nprt@decimal'))));
     return; });
 

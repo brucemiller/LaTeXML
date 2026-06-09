@@ -108,27 +108,27 @@ DefConstructor('\@@text@cancel{}',
     . "#1"
     . "</ltx:text>"
     . "</ltx:del>",
-  alias      => '\cancel',
-  mode       => 'restricted_horizontal', enterHorizontal => 1,
-  properties => \&cancelColorProperties);
+  alias           => '\cancel',
+  enterHorizontal => 1, mode => 'restricted_horizontal', sizer => '#1',
+  properties      => \&cancelColorProperties);
 DefConstructor('\@@text@bcancel{}',
   "<ltx:del class='updiagonalstrike' _force_font='#forcefont' _font='#cancelfont'>"
     . "<ltx:text _noautoclose='1' _force_font='#forcefont' _font='#innerfont'>"
     . "#1"
     . "</ltx:text>"
     . "</ltx:del>",
-  alias      => '\bcancel',
-  mode       => 'restricted_horizontal', enterHorizontal => 1,
-  properties => \&cancelColorProperties);
+  alias           => '\bcancel',
+  enterHorizontal => 1, mode => 'restricted_horizontal', sizer => '#1',
+  properties      => \&cancelColorProperties);
 DefConstructor('\@@text@xcancel{}',
   "<ltx:del class='downdiagonalstrike updiagonalstrike' _force_font='#forcefont' _font='#cancelfont'>"
     . "<ltx:text _noautoclose='1' _force_font='#forcefont' _font='#innerfont'>"
     . "#1"
     . "</ltx:text>"
     . "</ltx:del>",
-  alias      => '\xcancel',
-  mode       => 'restricted_horizontal', enterHorizontal => 1,
-  properties => \&cancelColorProperties);
+  alias           => '\xcancel',
+  enterHorizontal => 1, bounded => 1, sizer => '#1',
+  properties      => \&cancelColorProperties);
 
 ProcessOptions();
 
