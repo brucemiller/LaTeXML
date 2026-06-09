@@ -17,7 +17,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::Dimension;
 use List::Util qw(min max);
-use base       qw(Exporter LaTeXML::Core::Box);
+use base qw(Exporter LaTeXML::Core::Box);
 our @EXPORT = (qw(&List));
 
 # Tricky; don't really want a separate constructor for a Math List,
@@ -30,28 +30,26 @@ our @EXPORT = (qw(&List));
 # Also, if there's only 1 box, we just return it!
 sub List {
   my (@boxes) = @_;
-  my $mode;
+  my $mode    = '';
+  my $reqmode = '';
   # Check for Hacky mode argument!!!
   if ((scalar(@boxes) >= 2) && ($boxes[-2] eq 'mode')) {
-    $mode = pop(@boxes); pop(@boxes); }
+    $reqmode = $mode = pop(@boxes); pop(@boxes); }
   else {
-    $mode = $STATE->lookupValue('MODE'); } # HOPEFULLY, mode hasn't changed by now?
-  @boxes = grep { defined $_ } @boxes;    # strip out undefs
-  # Simplify single box, IFF NOT vertical list or box IS vertical
-  if ((scalar(@boxes) == 1)
-      && (!$mode || ($mode !~ /vertical$/)
-          || (($boxes[0]->getProperty('mode')||'') =~ /vertical$/))) {
-    return $boxes[0]; }                   # Simplify!
+    $mode = $STATE->lookupValue('MODE'); }    # HOPEFULLY, mode hasn't changed by now?
+  @boxes = grep { defined $_ } @boxes;        # strip out undefs
+  if ((scalar(@boxes) == 1)                   # Simplify single box, if req. SAME mode
+    && (!$reqmode
+      || ($reqmode eq ($boxes[0]->getProperty('mode') || '')))) {
+    return $boxes[0]; }                       # Simplify!
   else {
     # Flatten horizontal lists within horizontal lists
-    if($mode eq 'horizontal'){
+    if ($mode eq 'horizontal') {
       @boxes = map { ((ref $_ eq 'LaTeXML::Core::List')
-                      && (($_->getProperty('mode')||'') eq 'horizontal')
-                      ? $_->unlist : $_); } @boxes; }
+            && (($_->getProperty('mode') || '') eq 'horizontal')
+          ? $_->unlist : $_); } @boxes; }
     my $list = LaTeXML::Core::List->new(@boxes);
     $list->setProperty(mode => $mode);
-    $list->setProperty(width => LaTeXML::Package::LookupRegister('\hsize'))
-        if $mode eq 'horizontal';
     return $list; } }
 
 sub new {

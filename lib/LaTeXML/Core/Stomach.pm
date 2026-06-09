@@ -448,7 +448,7 @@ sub leaveHorizontal {
 
 # Repack recently digested horizontal items into single horizontal List.
 # Note that TeX would have done paragraph line-breaking, resulting in essentially
-# a vertical list.
+# a vertical list.  We record the fill width (\hsize) here!
 sub repackHorizontal {
   my ($self) = @_;
   my @para = ();
@@ -462,7 +462,10 @@ sub repackHorizontal {
     # if ONLY horizontal mode spaces, we can prune them; it just makes an empty ltx:p
     $keep = 1 if ($mode ne 'horizontal') || !$item->getProperty('isSpace');
     unshift(@para, pop(@LaTeXML::LIST)); }
-  push(@LaTeXML::LIST, List(@para, mode => 'horizontal')) if $keep;
+  if ($keep) {
+    my $list = List(@para, mode => 'horizontal');
+    $list->setProperty(width => LaTeXML::Package::LookupRegister('\hsize'));
+    push(@LaTeXML::LIST, $list); }
   return; }
 
 # Resume vertical mode, internal form: reset mode, and repacks recently
