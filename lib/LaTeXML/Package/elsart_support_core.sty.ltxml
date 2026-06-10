@@ -25,64 +25,97 @@ use LaTeXML::Package;
 #======================================================================
 # 4. Frontmatter
 
-DefEnvironment('{frontmatter}', '#body');
-
+DefPrimitiveI('\begin{frontmatter}', undef, undef);
+DefPrimitiveI('\end{frontmatter}',   undef, undef);
 # \title{}
-# single author!
-DefMacro('\author[]{}',
-  '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#2}}');
+# \author[mark]{name}
+# One \author per authorsingle author! possibly with a mark to connect to affiliation
+# It either should be followed by \affiliation,
+# or both should get matching marks
+DefMacro('\author OptionalSemiverbatim {}',
+  '\lx@add@creator[role=author,annotations={#1}]{#2}');
 
-DefMacro('\address[]{}', '\lx@contact{address}{#2}');
+DefMacro('\address OptionalSemiverbatim {}',
+  '\lx@add@contact[label={#1},role=address]{#2}');
+# \affiliation[label]{text-OR-keyvals} !!
+DefMacro('\affiliation OptionalSemiverbatim {}',
+  '\lx@add@contact[label={#1},role=affiliation]{\lx@els@parse@affiliation{#2}{#2}}');
+
+my %els_affil_keys = map { $_ => 1; } (qw(
+    o or organization
+    a ad addressline
+    c ci city
+    p pc postcode
+    s st state
+    country));
+# Detect if affiliation is just text, or keyvals; if latter, format into text.
+DefMacro('\lx@els@parse@affiliation {} RequiredKeyVals', sub {
+    my ($gullet, $raw, $data) = @_;
+    my @pairs = $data->getPairs;
+    # Note: keys is ALREADY ToString
+    if ((scalar(@pairs) <= 2) && !$pairs[1]) {    # 1 key, novalue:: No Keyvals at all!
+      return $raw; }
+    else {
+      my @affil = ();
+      while (@pairs) {
+        my ($key, $value) = (shift(@pairs), shift(@pairs));
+        if ($els_affil_keys{$key}) {
+          push(@affil, T_OTHER(','), T_SPACE) if @affil;
+          push(@affil, $value); } }
+      return Tokens(@affil); } });
+
 # Redefine to account for the label, which we ignore for now!
 DefConstructor('\thanks[]{}', "<ltx:note role='thanks'>#2</ltx:note>");
-DefConstructor('\person@thanks[]{}', "^ <ltx:contact role='thanks'>#2</ltx:contact>",
-  alias => '\thanks', mode => 'restricted_horizontal');
-DefMacro('\thanksref{}',  Tokens());
-DefMacro('\corauth[]{}',  '\lx@contact{correspondent}{#2}');
-DefMacro('\corref{}',     Tokens());
-DefMacro('\corauthref{}', Tokens());
-DefMacro('\cortext[]{}',  Tokens());
 
 # Is this significantly different?
 DefMacro('\collab OptionalMatch:* {}', '\author{#1}');
 Let('\collaboration', '\collab');
 
-DefMacro('\tnotetext[]{}', '\lx@notetext[#1]{footnote}{#2}');
-DefMacro('\fntext[]{}',    '\lx@notetext[#1]{footnote}{#2}');
-DefMacro('\lx@elsart@noteref{}', sub {
-    return map { (T_CS('\lx@notemark'),
-        T_OTHER('['), T_OTHER($_),         T_OTHER(']'),
-        T_BEGIN,      T_OTHER('footnote'), T_END); } split(/,/, ToString($_[1])); });
-
-DefMacro('\tnoteref{}', '\lx@elsart@noteref{#1}');
-DefMacro('\fnref{}',    '\lx@elsart@noteref{#1}');
+# These pairs add various contact information to authors.
+# The \<XXX>ref forms are used within the \author text to anchor the connection
+# the \<XXX>text forms supply the text (& and role) for the contact that will be attached.
+DefMacro('\thanksref{}',  '\lx@request@frontmatter@annotation[thanks]{#1}');
+DefMacro('\corref{}',     '\lx@request@frontmatter@annotation[cor]{#1}');
+DefMacro('\corauthref{}', '\lx@request@frontmatter@annotation[corauth]{#1}');
+DefMacro('\fnref{}',      '\lx@request@frontmatter@annotation[fn]{#1}');
+DefMacro('\tnoteref{}', '\lx@request@frontmatter@annotation[tnote]{#1}'); # Possibly for title, not author?
+DefMacro('\thanks OptionalSemiverbatim {}',
+  '\lx@add@contact[label={thanks:#1},role=thanks]{#2}');
+DefMacro('\cortext OptionalSemiverbatim {}',
+  '\lx@add@contact[label={cor:#1},role=correspondent]{#2}');
+DefMacro('\corauth OptionalSemiverbatim {}',
+  '\lx@add@contact[label={corauth:#1},role=correspondent]{#2}');
+DefMacro('\fntext OptionalSemiverbatim {}',
+  '\lx@add@contact[label={fn:#1},role=note]{#2}');
+DefMacro('\tnotetext OptionalSemiverbatim {}',
+  '\lx@add@contact[label={tnote:#1},role=note]{#2}');    # title note?
 
 DefMacro('\runauthor{}', Tokens());
 DefMacro('\runtitle{}',  Tokens());
 
-DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\subtitle{}', '\lx@add@subtitle{#1}');
 
+# \ead[label]{email} provides email address for the preceding \author (no marks used)
 DefMacro('\ead Optional:email Semiverbatim',
- '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{#2}}');
-DefConstructor('\@@@email{}{}', "^ <ltx:contact role='#1'>#2</ltx:contact>");
+  '\lx@add@contact[role=#1]{#2}');
 
 DefMacro('\sep', '\unskip,\space');
 
-DefMacro('\received{}',     '\@add@frontmatter{ltx:date}[role=received]{#1}');
-DefMacro('\revised{}',      '\@add@frontmatter{ltx:date}[role=revised]{#1}');
-DefMacro('\accepted{}',     '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
-DefMacro('\communicated{}', '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
-DefMacro('\dedicated{}',    '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
-DefMacro('\presented{}',    '\@add@frontmatter{ltx:date}[role=presented]{#1}');
-DefMacro('\articletype{}',  '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
-DefMacro('\issue{}',        '\@add@frontmatter{ltx:note}[role=issue]{#1}');
-DefMacro('\journal{}',      '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\volume{}',       '\@add@frontmatter{ltx:note}[role=volume]{#1}');
-DefMacro('\pubyear{}',      '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\received{}',     '\lx@add@date[role=received]{#1}');
+DefMacro('\revised{}',      '\lx@add@date[role=revised]{#1}');
+DefMacro('\accepted{}',     '\lx@add@date[role=accepted]{#1}');
+DefMacro('\communicated{}', '\lx@add@date[role=communicated]{#1}');
+DefMacro('\dedicated{}',    '\lx@add@pubnote[role=dedication]{#1}');
+DefMacro('\presented{}',    '\lx@add@date[role=presented]{#1}');
+DefMacro('\articletype{}',  '\lx@add@pubnote[role=type]{#1}');
+DefMacro('\issue{}',        '\lx@add@pubnote[role=issue]{#1}');
+DefMacro('\journal{}',      '\lx@add@pubnote[role=journal]{#1}');
+DefMacro('\volume{}',       '\lx@add@pubnote[role=volume]{#1}');
+DefMacro('\pubyear{}',      '\lx@add@date[role=publication]{#1}');
 
 DefMacro('\FullCopyrightText', Tokens());
-DefMacro('\copyear{}',         '\@add@frontmatter{ltx:date}[role=copyright]{#1}');
-DefMacro('\copyrightholder{}', '\@add@frontmatter{ltx:note}[role=copyrightholder]{#1}');
+DefMacro('\copyear{}',         '\lx@add@copyrightyear{#1}');
+DefMacro('\copyrightholder{}', '\lx@add@copyrightholder{#1}');
 Let('\copyrightyear', '\copyear');
 
 DefMacro('\RUNART',    Tokens());
@@ -145,11 +178,11 @@ DefMacro('\MSC []',     '\@keyword@cut\@MSC{#1}');
 DefMacro('\JEL',        '\@keyword@cut\@JEL');
 DefMacro('\UK',         '\@keyword@cut\@UK');
 
-DefMacro('\@keyword XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=keywords]{#1}');
-DefMacro('\@PACS    XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=PACS]{#1}');
-DefMacro('\@MSC {} XUntil:\@keyword@cut',  '\@add@frontmatter{ltx:classification}[scheme={#1 MSC}]{#2}');
-DefMacro('\@JEL     XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=JEL]{#1}');
-DefMacro('\@UK      XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=UK]{#1}');
+DefMacro('\@keyword XUntil:\@keyword@cut', '\lx@add@keywords{#1}');
+DefMacro('\@PACS    XUntil:\@keyword@cut', '\lx@add@classification[scheme=PACS,name={PACS:~}]{#1}');
+DefMacro('\@MSC {} XUntil:\@keyword@cut', '\lx@add@classification[scheme={#1 MSC},name={MSC:~}]{#2}');
+DefMacro('\@JEL     XUntil:\@keyword@cut', '\lx@add@classification[scheme=JEL,name={JEL:~}]{#1}');
+DefMacro('\@UK      XUntil:\@keyword@cut', '\lx@add@classification[scheme=UK,name={UK:~}]{#1}');
 DefConstructor('\@keyword@cut', '');
 
 #======================================================================

@@ -24,9 +24,8 @@ RequirePackage('hyperref');
 
 RequireResource('ltx-cv.css');
 
-RawTeX('\@add@frontmatter{ltx:creator}[role=cv]{}');
-DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\address{}{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1\newline #2}}');
+RawTeX('\lx@add@frontmatter{ltx:creator}[role=cv]{}');
+DefMacro('\address{}{}', '\lx@add@address{#1\newline #2}');
 
 DefMacro('\addressfont',   Tokens());
 DefMacro('\addressstyle',  Tokens());
@@ -48,12 +47,10 @@ DefConstructor('\cvitem{}{}',
     "</ltx:para>",
   enterHorizontal => 1);
 
-DefConstructor('\@@@homepage{}', "^ <ltx:contact role='homepage'>#1</ltx:contact>");
-DefMacro('\homepage{}',     '\@add@to@frontmatter{ltx:creator}{\@@@homepage{\url{#1}}}');
-DefMacro('\homepagesymbol', Tokens());
+DefMacro('\homepage Semiverbatim', '\lx@add@url{#1}');
+DefMacro('\homepagesymbol',        Tokens());
 
-DefConstructor('\@@@mobile{}', "^ <ltx:contact role='mobile'>#1</ltx:contact>");
-DefMacro('\mobile{}', '\@add@to@frontmatter{ltx:creator}{\@@@mobile{#1}}');
+DefMacro('\mobile{}', '\lx@add@contact[role=mobile,name=Mobile]{#1}');
 
 DefConstructor('\@@cv@section{} Undigested OptionalUndigested Undigested', sub {
     my ($document, $type, $inlist, $toctitle, $title, %props) = @_;
@@ -79,11 +76,11 @@ Let(T_CS('\\@@unnumbered@section'), T_CS('\\@@cv@section'));
 
 DefMacro('\closesection{}', Tokens(), locked => 1);
 
-DefMacro('\title Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@position{#1}}');
-DefMacro('\email Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
-DefMacro('\firstname Semiverbatim',  '\@add@to@frontmatter{ltx:creator}{\@@@firstname{#1}}');
-DefMacro('\familyname Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@familyname{#1}}');
-DefMacro('\photo[]{}',               Tokens());                                               # TODO
+DefMacro('\title {}',                '\lx@add@title{#1}');
+DefMacro('\email Semiverbatim',      '\lx@add@email{#1}');
+DefMacro('\firstname Semiverbatim',  '\lx@add@contact[role=firstname]{#1}');
+DefMacro('\familyname Semiverbatim', '\lx@add@contact[role=familyname]{#1}');
+DefMacro('\photo[]{}',               Tokens());                                 # TODO
 
 DefConstructor('\@@@position{}',   "^ <ltx:contact role='position'>#1</ltx:contact>");
 DefConstructor('\@@@email{}',      "^ <ltx:contact role='email'>#1</ltx:contact>");

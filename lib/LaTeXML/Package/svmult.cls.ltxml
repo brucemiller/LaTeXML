@@ -39,7 +39,7 @@ RequirePackage('url');    # included in later versions?
 # Hopefully we can get away with just reseting the display of section numbers?
 DefMacro('\title OptionalMatch:* {}',
   '\if.#1.\else\def\thesection{\arabic{section}}\fi'
-    . '\@add@frontmatter{ltx:title}{#2}');
+    . '\lx@add@title{#2}');
 
 #======================================================================
 # And some additional stuff

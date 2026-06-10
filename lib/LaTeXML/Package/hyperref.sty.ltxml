@@ -127,7 +127,10 @@ DefPrimitive('\hypersetup RequiredKeyVals:Hyp', sub {
     my @pairs = $kv->getPairs;
     while (@pairs) {
       my ($key, $value) = (shift(@pairs), shift(@pairs));
-      hyperref_setoption($key, Digest($value)); }
+      # This actually needs some sort of "safe" digestion,
+      # recognizing unicode, but no macros
+###      hyperref_setoption($key, Digest($value)); }
+      hyperref_setoption($key, ToString($value)); }
     return; });
 
 PushValue('@at@end@document', T_CS('\@add@PDF@RDFa@triples'));

@@ -399,7 +399,7 @@ sub finalize_rec {
           # Merge to set the font currently in effect
           $declared_font = $declared_font->merge(%{ $pending_declaration{$attr}{properties} });
           delete $pending_declaration{$attr}; } }
-  } }
+    } }
   # Optionally add ids to all nodes (AFTER all parsing, rearrangement, etc)
   if ($STATE && $STATE->lookupValue('GENERATE_IDS')
     && !$node->hasAttribute('xml:id')
@@ -443,7 +443,7 @@ sub finalize_rec {
           setAttribute($self, $text, $attr => $value); }
         finalize_rec($self, $text);    # Now have to clean up the new node!
       }
-  } }
+    } }
 
   # Attributes (non-namespaced) that begin with "_" are for internal, temporary, Bookkeeping.
   # Remove them now.
@@ -1034,7 +1034,7 @@ sub getInsertionCandidates {
       $node = $node->parentNode;
       my $t = $node->localname || '';
       $do_sibs = 0 unless ($t eq 'p') || ($t eq 'para');
-  } }
+    } }
   push(@nodes, $first) if $isCapture;
   return @nodes; }
 
@@ -1654,18 +1654,18 @@ sub collapseXMDual {
 sub setNodeBox {
   my ($self, $node, $box) = @_;
   return unless $box && $node && ($node->nodeType == XML_ELEMENT_NODE);
-  my $boxid     = "$box";    # Effectively the address
+  my $boxid     = "$box";                            # Effectively the address
   my $prevboxid = $node->getAttribute('_box');
-  if (!(ref $box) && !$$self{node_boxes}{$box}) { # $box not a ref, nor recorded Box?
-    # Could get string for $box when copying nodes; should already be internned
+  if (!(ref $box) && !$$self{node_boxes}{$box}) {    # $box not a ref, nor recorded Box?
+        # Could get string for $box when copying nodes; should already be internned
     Warn('internal', 'nonbox', $self,
       "setNodeBox recording unknown source box: $box");
     return; }
-  if (ref $box) {               # Record the box.
+  if (ref $box) {    # Record the box.
     $$self{node_boxes}{$boxid} = $box; }
-  if($prevboxid){               # Cleanup previous box (if any)
+  if ($prevboxid) {    # Cleanup previous box (if any)
     $$self{node_boxes_refs}{$prevboxid}--;
-    if(($prevboxid ne $boxid) && ! $$self{node_boxes_refs}{$prevboxid}){
+    if (($prevboxid ne $boxid) && !$$self{node_boxes_refs}{$prevboxid}) {
       delete $$self{node_boxes}{$prevboxid}; } }
   $$self{node_boxes_refs}{$boxid}++;
   $node->setAttribute(_box => $boxid);
@@ -1684,42 +1684,42 @@ sub getNodeBox {
 # (while attempting to avoid duplication)
 sub appendNodeBox {
   my ($self, $node, $box) = @_;
-  return unless $box;
+  return                          unless $box;
   $box = $$self{node_boxes}{$box} unless ref $box;
   do {
     my $origbox = getNodeBox($self, $node);
-    if(! $origbox){
+    if (!$origbox) {
       setNodeBox($self, $node, $box); }
     elsif (($box eq $origbox) || ($box eq ($origbox->unlist)[-1])) {
-      }                         # Already there
+    }    # Already there
     else {
       setNodeBox($self, $node, List($origbox, $box,
-        mode => $origbox->getProperty('mode'))); }
+          mode => $origbox->getProperty('mode'))); }
     $node = $node->parentNode;
-  } while($node && ($node->nodeType == XML_ELEMENT_NODE)
-        && $node->getAttribute('_autoopened'));
+  } while ($node && ($node->nodeType == XML_ELEMENT_NODE)
+    && $node->getAttribute('_autoopened'));
   return; }
 
 # Similarly when you remove an node, fixup the parent's nodeBox
 sub removeNodeBox {
   my ($self, $node, $box) = @_;
-  return unless $box;
+  return                          unless $box;
   $box = $$self{node_boxes}{$box} unless ref $box;
   do {
     my $origbox = getNodeBox($self, $node);
-#    Debug("Remove $box (".ToString($box).") from $origbox (".ToString($origbox).")?");
-    if(!$origbox){}
-    elsif($origbox eq $box){
+    #    Debug("Remove $box (".ToString($box).") from $origbox (".ToString($origbox).")?");
+    if    (!$origbox) { }
+    elsif ($origbox eq $box) {
       $node->removeAttribute('_box'); }
     else {
       my @b = $origbox->unlist;
       # Note that this does NOT see (or remove) boxes embedded within a parent's Whatsit
       if (grep { $_ eq $box; } @b) {
-        setNodeBox($self,$node, List((grep { $_ ne $box; } @b),
-          mode => $origbox->getProperty('mode'))); } }
+        setNodeBox($self, $node, List((grep { $_ ne $box; } @b),
+            mode => $origbox->getProperty('mode'))); } }
     $node = $node->parentNode;
-  } while($node && ($node->nodeType == XML_ELEMENT_NODE)
-        && $node->getAttribute('_autoopened'));
+  } while ($node && ($node->nodeType == XML_ELEMENT_NODE)
+    && $node->getAttribute('_autoopened'));
   return; }
 
 # Record the font used on this node.
@@ -1763,10 +1763,11 @@ sub getNodeFont {
 
 sub getNodeLanguage {
   my ($self, $node) = @_;
-  my ($font, $lang);
+  my ($font, $lang, $nf);
   while ($node && ($node->nodeType == XML_ELEMENT_NODE)
     && !(($lang = $node->getAttribute('xml:lang'))
-      || (($font = $$self{node_fonts}{ $node->getAttribute('_font') })
+      || (($nf = $node->getAttribute('_font'))
+        && ($font = $$self{node_fonts}{$nf})
         && ($lang = $font->getLanguage)))) {
     $node = $node->parentNode; }
   return $lang || 'en'; }
@@ -1780,12 +1781,12 @@ sub removeNode {
   my ($self, $node) = @_;
   if ($node) {
     my $chopped = $$self{node}->isSameNode($node);    # Note if we're removing insertion point
-    my $parent = $node->parentNode;
+    my $parent  = $node->parentNode;
     if ($node->nodeType == XML_ELEMENT_NODE) {        # If an element, do ID bookkeeping.
       if (my $id = $node->getAttribute('xml:id')) {
         unRecordID($self, $id); }
-      if (my $box = getNodeBox($self,$node)) {
-        removeNodeBox($self,$parent, $box); }
+      if (my $box = getNodeBox($self, $node)) {
+        removeNodeBox($self, $parent, $box); }
       $chopped ||= grep { removeNode_aux($self, $_) } $node->childNodes; }
     if ($chopped) {                                   # Don't remove insertion point!
       setNode($self, $parent); }
@@ -1839,10 +1840,10 @@ sub openElementAt {
     recordConstructedNode($self, $newnode);
     $$self{document}->setDocumentElement($newnode);
     if ($ns) {
-      # Here, we're creating the initial, document element, which will hold ALL of the namespace declarations.
-      # If there is a default namespace (no prefix), that will also be declared, and applied here.
-      # However, if there is ALSO a prefix associated with that namespace, we have to declare it FIRST
-      # due to the (apparently) buggy way that XML::LibXML works with namespaces in setAttributeNS.
+  # Here, we're creating the initial, document element, which will hold ALL of the namespace declarations.
+  # If there is a default namespace (no prefix), that will also be declared, and applied here.
+  # However, if there is ALSO a prefix associated with that namespace, we have to declare it FIRST
+  # due to the (apparently) buggy way that XML::LibXML works with namespaces in setAttributeNS.
       my $prefix    = $$self{model}->getDocumentNamespacePrefix($ns);
       my $attprefix = $$self{model}->getDocumentNamespacePrefix($ns, 1, 1);
       if (!$prefix && $attprefix) {
@@ -1856,9 +1857,9 @@ sub openElementAt {
     next if $key eq 'font';       # !!!
     next if $key eq 'locator';    # !!!
     setAttribute($self, $newnode, $key, $attributes{$key}); }
-  setNodeFont($self, $newnode, $font)                                      if $font;
-  if (my $box = $attributes{_box} || getNodeBox($self,$point) || $LaTeXML::BOX) {
-    appendNodeBox($self,$newnode,$box); }
+  setNodeFont($self, $newnode, $font) if $font;
+  if (my $box = $attributes{_box} || getNodeBox($self, $point) || $LaTeXML::BOX) {
+    appendNodeBox($self, $newnode, $box); }
   Debug("Inserting " . Stringify($newnode) . " into " . Stringify($point)) if $LaTeXML::DEBUG{document};
   # Run afterOpen operations
   afterOpen($self, $newnode);
@@ -2020,7 +2021,7 @@ sub replaceNode {
     else     { $parent->replaceChild($c1, $node); }
     $c0 = $c1; }
   removeNode($self, $node);
-  map { appendNodeBox($self,$parent, getNodeBox($self,$_)); } @nodes;
+  map { appendNodeBox($self, $parent, getNodeBox($self, $_)); } @nodes;
   return $node; }
 
 # initially since $node->setNodeName was broken in XML::LibXML 1.58

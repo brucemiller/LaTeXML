@@ -210,7 +210,6 @@
           <xsl:apply-templates select="@name">
             <xsl:with-param name="context" select="$innercontext"/>
           </xsl:apply-templates>
-          <xsl:text>: </xsl:text>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates>
@@ -240,7 +239,6 @@
           <xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
           <xsl:when test='@name'><xsl:value-of select='@name'/></xsl:when>
         </xsl:choose>
-        <xsl:text>: </xsl:text>
       </xsl:element>
       <xsl:apply-templates>
         <xsl:with-param name="context" select="$context"/>
@@ -435,6 +433,12 @@
       <xsl:apply-templates>
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
+      <!-- collect all pubnotes into a footnote-like block -->
+      <xsl:if test="parent::*/ltx:pubnote">
+      <xsl:call-template name="pubnotes">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:call-template>
+      </xsl:if>
     </xsl:element>
     <!-- include parent's subtitle, author & date (if any)-->
     <xsl:apply-templates select="../ltx:subtitle" mode="intitle">
@@ -458,6 +462,63 @@
     <xsl:apply-templates select="parent::*" mode="auto-toc">
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
+  </xsl:template>
+
+  <xsl:template name="pubnotes">
+    <xsl:param name="context"/>
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_pubnotes</xsl:attribute>
+      <xsl:element name="span" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_pubnotes_content</xsl:attribute>
+        <xsl:apply-templates select="parent::*/ltx:pubnote" mode="intitle">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+      </xsl:element>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:pubnote"/>
+  <xsl:template match="ltx:pubnote" mode="intitle">
+    <xsl:param name="context"/>
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
+      <xsl:if test="@name">
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_note_name</xsl:attribute>
+          <xsl:value-of select="@name"/>
+        </xsl:element>
+      </xsl:if>
+      <xsl:apply-templates select="." mode="inner"/>
+      <xsl:apply-templates select="." mode="end">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:pubnote" mode="inner">
+    <xsl:param name="context"/>
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match="ltx:pubnote[@role='doi']" mode="inner">
+    <xsl:param name="context"/>
+    <xsl:element name="a" namespace="{$html_ns}">
+      <xsl:attribute name="href"><xsl:value-of select="concat('https://doi.org/',text())"/></xsl:attribute>
+      <xsl:apply-templates/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:pubnote[@role='arxiv']" mode="inner">
+    <xsl:param name="context"/>
+    <xsl:element name="a" namespace="{$html_ns}">
+      <xsl:attribute name="href"><xsl:value-of select="concat('https://arxiv.org/abs/',text())"/></xsl:attribute>
+      <xsl:apply-templates/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template name="sidebarauthordate">
@@ -552,12 +613,9 @@
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
       <xsl:if test="ltx:contact">
-        <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:attribute name="class">ltx_author_notes</xsl:attribute>
-          <xsl:apply-templates select="ltx:contact">
-            <xsl:with-param name="context" select="$innercontext"/>
-          </xsl:apply-templates>
-        </xsl:element>
+        <xsl:call-template name="author_notes">
+          <xsl:with-param name="context" select="$innercontext"/>
+        </xsl:call-template>
       </xsl:if>
       <xsl:apply-templates select="." mode="end">
         <xsl:with-param name="context" select="$innercontext"/>
@@ -570,6 +628,19 @@
         <xsl:value-of select="@after"/>
       </xsl:element>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="author_notes">
+    <xsl:param name="context"/>
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_author_notes</xsl:attribute>
+      <xsl:element name="span" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_author_notes_content</xsl:attribute>
+        <xsl:apply-templates select="ltx:contact">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+      </xsl:element>
+    </xsl:element>
   </xsl:template>
 
   <xsl:preserve-space elements="ltx:personname"/>
@@ -606,7 +677,8 @@
   </xsl:template>
 
   <xsl:preserve-space elements="ltx:contact"/>
-  <xsl:template match="ltx:contact[@role='address' or @role='affiliation']">
+
+  <xsl:template match="ltx:contact">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
@@ -617,7 +689,13 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
-      <xsl:apply-templates>
+      <xsl:if test="@name">
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_contact_name</xsl:attribute>
+          <xsl:value-of select="@name"/>
+        </xsl:element>
+      </xsl:if>
+      <xsl:apply-templates select="." mode="inner">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
@@ -627,96 +705,43 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:contact[@role='email']">
+  <xsl:template match="ltx:contact" mode="inner">
     <xsl:param name="context"/>
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:element name="a" namespace="{$html_ns}">
-        <xsl:attribute name="href"><xsl:value-of select="concat('mailto:',text())"/></xsl:attribute>
-        <xsl:apply-templates>
-          <xsl:with-param name="context" select="$innercontext"/>
-        </xsl:apply-templates>
-      </xsl:element>
-      <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:text>&#x0A;</xsl:text>
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match="ltx:contact[@role='email']" mode="inner">
+    <xsl:param name="context"/>
+    <xsl:element name="a" namespace="{$html_ns}">
+      <xsl:attribute name="href"><xsl:value-of select="concat('mailto:',text())"/></xsl:attribute>
+      <xsl:apply-templates/>
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:contact[@role='orcid']">
+  <xsl:template match="ltx:contact[@role='orcid']" mode="inner">
     <xsl:param name="context"/>
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-    </xsl:element>
-    <xsl:text>&#x0A;</xsl:text>
+    <xsl:choose>
+      <xsl:when test="ltx:ref"> <!--Already formatted as link?-->
+        <xsl:apply-templates/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:element name="a" namespace="{$html_ns}">
+          <xsl:attribute name="href">
+            <xsl:value-of select="concat('https://orcid.org/',text())"/>
+          </xsl:attribute>
+          <xsl:apply-templates/>
+        </xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="ltx:contact[@role='homepage']">
+  <xsl:template match="ltx:contact[@role='url']" mode="inner">
     <xsl:param name="context"/>
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:element name="a" namespace="{$html_ns}">
-        <xsl:attribute name="href"><xsl:value-of select="text()"/></xsl:attribute>
-        <xsl:apply-templates>
-          <xsl:with-param name="context" select="$innercontext"/>
-        </xsl:apply-templates>
-      </xsl:element>
-      <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="a" namespace="{$html_ns}">
+      <xsl:attribute name="href"><xsl:value-of select="text()"/></xsl:attribute>
+      <xsl:apply-templates/>
     </xsl:element>
   </xsl:template>
-
-  <xsl:template match="ltx:contact[@role='dedicatory' or @role='mobile']">
-    <xsl:param name="context"/>
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
-      </xsl:apply-templates>
-      <xsl:text>&#x0A;</xsl:text>
-    </xsl:element>
-  </xsl:template>
-
 
   <!-- If we want to deduce style & children, we could set this up as a parameter option -->
   <xsl:template match="*|/" mode="auto-toc"/>
@@ -737,7 +762,11 @@
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
         <xsl:text>(</xsl:text>
-        <xsl:apply-templates select="$dates" mode="intitle">
+        <!-- Next best thing to a sensible sorting? -->
+        <xsl:apply-templates select="$dates[not(@name)]" mode="intitle">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="$dates[@name]" mode="intitle">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
         <xsl:text>)</xsl:text>

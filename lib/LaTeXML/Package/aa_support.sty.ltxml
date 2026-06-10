@@ -26,7 +26,7 @@ use LaTeXML::Package;
 foreach my $option (qw(10pt 11pt 12pt twoside onecolumn twocolumn
   draft final referee
   leqno fleqn longauth rnote
-  oldversion
+  oldversion utf8 hideoverfull
   runningheads
   envcountreset envcountsect
   structabstract traditabstract
@@ -67,17 +67,17 @@ RequirePackage('rotating');
 # The Manuscript Header
 
 # Title
-DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\subtitle{}', '\lx@add@subtitle{#1}');
 
 # "Structured" abstract
 # Note that they suggest either a 5 or 1 argument version!
 # NOT an environment!!!
 DefMacro('\abstract@old{}',
-  '\@add@frontmatter{ltx:abstract}{#1}');
+  '\lx@add@abstract{#1}');
 
 # Apparently args #2--#4 are required non-empty.
 DefMacro('\abstract@new{}{}{}{}{}',
-  '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{'
+  '\lx@add@abstract[name={\abstractname}]{'
     . '\ifx.#1.\else\textit{Context. }#1\par\fi'
     . '\textit{Aims. }#2\par'
     . '\textit{Methods. }#3\par'
@@ -93,7 +93,7 @@ DefMacro('\abstract{}', sub {
       T_BEGIN, $arg1->unlist, T_END); });
 # Keywords
 DefMacroI('\keywordname', undef, '\sffamily\bfseries Key Words.');
-DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
+DefMacro('\keywords{}', '\lx@add@keywords[name={\keywordname}]{#1}');
 
 # Formatting the header and running title
 DefRegister('\titlerunning',  Tokens());    # Ignorable
@@ -104,21 +104,20 @@ DefMacro('\authrun', '');
 DefMacro('\titrun',  '');
 
 # undocumented ?
-DefMacro('\offprints{}', '\@add@frontmatter{ltx:note}[role=offprints]{#1}');
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+DefMacro('\offprints{}', '\lx@add@pubnote[role=preprint]{#1}');
+
+DefMacro('\email Semiverbatim', '\lx@add@contact[role=email]{#1}');
 
 DefMacro('\journalname{}', '');
 DefMacro('\rnotename',     '(Research Note)');
 DefMacro('\rnotname',      '(RN)');
 
 # should add a note?
-DefMacro('\headnote{}',   '\@add@frontmatter{ltx:note}{#1}');
-DefMacro('\dedication{}', '\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
-DefConstructor('\@@@mail{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\mail Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
-DefMacro('\mailname',          '\it Correspondence to \/');
-DefMacro('\doi{}',             '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
+DefMacro('\headnote{}',   '\lx@add@pubnote[role={note}]{#1}');
+DefMacro('\dedication{}', '\lx@add@pubnote[role=dedication]{#1}');
+DefMacro('\mailname',     '\it Correspondence to \/');
+DefMacro('\mail {}',      '\lx@add@address[name={\mailname}]{#1}');
+DefMacro('\doi{}',        '\lx@add@pubnote[role=doi]{#1}');
 
 DefMacro('\idline{}{}',    '');                             # ?
 DefMacro('\msnr{}',        '');                             # ??
@@ -237,6 +236,7 @@ DefMacro('\tablefoottext{}{}', '\footnotetext[$#1$]{#2}');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Typography
 
+DefConstructor('\mdash', "\x{2014}");
 DefMacro('\vec{}', '\ensuremath{\@vec{#1}}');
 DefMath('\@vec{}', '#1', role => 'ID', font => { forcebold => 1 });
 DefMacro('\tens{}', '\ensuremath{\@tens{#1}}');

@@ -553,6 +553,25 @@ classification_attributes = Common.attributes, FrontMatter.attributes,
 classification_model = Inline.model
 
 #======================================================================
+
+pubnote =
+## A note about the document itself.
+element pubnote { pubnote_attributes, pubnote_model }
+
+## Attributes for \elementref{pubnote}.
+pubnote_attributes =
+  Common.attributes, FrontMatter.attributes,
+
+  ## indicates the kind of note.
+  ## Commonly useful values are specified, but is open-ended to support extension.
+  attribute role { "type" | "pubid" | "doi" | "arxiv" | "isbn" | "preprint"
+                 | "journal" | "conference" | "issue" | "volume"
+                 | "dedication" | "thanks" | "pages" | text }?
+
+## Content model for \elementref{pubnote}.
+pubnote_model = Inline.model
+
+#======================================================================
 # Fallback
 
 titlepage =
@@ -650,7 +669,7 @@ SectionalFrontMatter.class = tags? | title | toctitle | creator
 ## for the front matter of a document.
 FrontMatter.class =
   subtitle | date | abstract | acknowledgements
-  | keywords | classification
+  | keywords | classification | pubnote
 
 ## The content allowed a the end of a document.
 ## Note that this includes random trailing Block and Para material,
