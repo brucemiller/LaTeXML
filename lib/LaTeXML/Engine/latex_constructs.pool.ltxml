@@ -5120,7 +5120,6 @@ DefConstructor('\shortstack[]{}  OptionalMatch:* [Dimension]',
     $_[0]->bgroup; },
   afterDigest => sub { $_[1]->getSize;    # precompute while binding in effect
     $_[0]->egroup; },
-  # Note: does not get layout=vertical, since linebreaks are explicit
   properties => { align => sub { ($_[1] ? $alignments{ ToString($_[1]) } : undef); },
     vattach => 'bottom' },                # for size computation
   mode => 'restricted_horizontal');

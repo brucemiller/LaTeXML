@@ -61,17 +61,22 @@ DefConstructor('\lx@hidden@egroup', '',
 DefConstructor('\lx@framed[]{}',
   "<ltx:text framed='#frame' _noautoclose='1'>#2</ltx:text>",
   properties      => { frame => sub { ToString($_[1] || 'rectangle'); } },
-  enterHorizontal => 1);
+  enterHorizontal => 1, sizer => '#2');
 
 DefConstructor('\lx@hflipped{}',
   "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1, sizer => '#1');
 
 DefConstructor('\lx@overlay{}{}',
   "<ltx:text class='ltx_overlay'>"
     . "<ltx:text class='ltx_overlay_base' _noautoclose='1'>#1</ltx:text>"
     . "<ltx:text class='ltx_overlay_over' _noautoclose='1'>#2</ltx:text></ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1,
+  sizer           => sub {
+    my ($whatsit) = @_;
+    my ($w1, $h1, $d1) = $whatsit->getArg(1)->getSize;
+    my ($w2, $h2, $d2) = $whatsit->getArg(2)->getSize;
+    ($w1->larger($w2), $h1->larger($h2), $d1->larger($d2)); });
 
 #======================================================================
 DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
