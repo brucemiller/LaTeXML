@@ -320,7 +320,7 @@ sub listingsReadRawLines {
 sub listingsReadRawFile {
   my ($gullet, $file) = @_;
   my $filename = ToString(Expand($file));
-  my $path     = FindFile($filename);
+  my $path     = FindFile($filename, noltxml => 1);
   my $text;
   my $LST_FH;
   if ($path && open($LST_FH, '<', $path)) {
