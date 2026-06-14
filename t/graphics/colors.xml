@@ -105,10 +105,10 @@ vs. <text color="#E6E6E6">Light</text></p>
       <p>vs. <text backgroundcolor="#808080" color="#E6E6E6">Light within Gray</text></p>
     </para>
     <para xml:id="S5.p3">
-      <p><text backgroundcolor="#FF0000" color="#00FF00" framecolor="#0000FF" framed="rectangle">Green in Red surrounded by Blue</text></p>
+      <p><text backgroundcolor="#FF0000" class="ltx_framebox" color="#00FF00" framecolor="#0000FF" framed="rectangle">Green in Red surrounded by Blue</text></p>
     </para>
     <para xml:id="S5.p4">
-      <p><text backgroundcolor="#00FFFF" color="#FFFF00" framecolor="#FF00FF" framed="rectangle">Yellow in Cyan surrounded by Magenta</text></p>
+      <p><text backgroundcolor="#00FFFF" class="ltx_framebox" color="#FFFF00" framecolor="#FF00FF" framed="rectangle">Yellow in Cyan surrounded by Magenta</text></p>
     </para>
   </section>
   <section inlist="toc" xml:id="S6">
@@ -152,9 +152,9 @@ vs. <text color="#E6E6E6">Light</text></p>
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMText backgroundcolor="#0000FF" framecolor="#00FF00" framed="rectangle"><text color="#FF0000">R</text></XMText>
-              <XMText backgroundcolor="#FF0000" framecolor="#0000FF" framed="rectangle"><text color="#00FF00">G</text></XMText>
-              <XMText backgroundcolor="#00FF00" framecolor="#FF0000" framed="rectangle"><text color="#0000FF">B</text></XMText>
+              <XMText backgroundcolor="#0000FF" class="ltx_framebox" framecolor="#00FF00" framed="rectangle"><text color="#FF0000">R</text></XMText>
+              <XMText backgroundcolor="#FF0000" class="ltx_framebox" framecolor="#0000FF" framed="rectangle"><text color="#00FF00">G</text></XMText>
+              <XMText backgroundcolor="#00FF00" class="ltx_framebox" framecolor="#FF0000" framed="rectangle"><text color="#0000FF">B</text></XMText>
             </XMApp>
           </XMath>
         </Math>

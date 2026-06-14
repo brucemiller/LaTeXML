@@ -885,12 +885,16 @@ DefConstructor('\boxed@math{}',
   alias => '\boxed');
 
 DefConstructor('\boxed@text{}',
-  "<ltx:Math mode='display' framed='rectangle'>"
+  "<ltx:Math mode='display' framed='rectangle' class='ltx_framebox' framecolor='#framecolor' cssstyle='#cssstyle'>"
     . "<ltx:XMath>"
     . "#1"
     . "</ltx:XMath>"
     . "</ltx:Math>",
   mode         => 'math', bounded => 1,
+  properties => sub {
+    my $sep = LookupRegister('\fboxsep')->toAttribute;
+    (framecolor => LookupValue('font')->getColor,
+      ($sep ne '3.0pt' ? (cssstyle => 'padding:' . $sep) : ())); },
   beforeDigest => sub {
     Let("\\\\", '\lx@newline'); },
   alias => '\boxed');

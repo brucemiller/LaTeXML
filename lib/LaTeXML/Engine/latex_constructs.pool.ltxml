@@ -4722,7 +4722,8 @@ DefConstructor('\@framebox[Dimension][]{}',
       $document->unwrapNodes($node);
       foreach my $k (qw(width align framed)) {
         if (my $v = $node->getAttribute($k)) {
-          $document->setAttribute($c[0], $k => $v); } } } }
+          $document->setAttribute($c[0], $k => $v); } } }
+    $document->addClass($node, 'ltx_framebox'); }
 );
 
 AssignValue(allocated_boxes => 0, 'global');
