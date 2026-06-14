@@ -317,6 +317,8 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
     margin: 1ex 3em 1ex 0em;
     overflow-x:auto;
     text-align: left; }
+.ltx_lstlisting.ltx_listing.ltx_framed {
+    padding: 3pt; }
 .ltx_float .ltx_listing {
     margin: 0; }
 .ltx_listingline { white-space:nowrap; min-height:1em; }
@@ -427,7 +429,7 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_border_B  { border-bottom:1px solid gray; }
 .ltx_border_L  { border-left:1px solid gray; }
 /* Framing */
-.ltx_framed    { padding:3pt; }
+.ltx_framebox         { padding:3pt; }
 span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/margin collapse */
 .ltx_framed_rectangle { border-style:solid; border-width:1px; }
 .ltx_framed_top       { border-top-style:solid; border-top-width:1px; }

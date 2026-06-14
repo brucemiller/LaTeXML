@@ -106,9 +106,12 @@ DefMacro('\colorbox[]{}{}', '\hbox{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}
 
 #\fcolorbox{name}{text} or \fcolorbox[model]{spec}{text}
 DefConstructor('\fcolorbox[]{}{} Undigested',
-  "<ltx:text framed='rectangle' framecolor='#framecolor'"
+  "<ltx:text framed='rectangle' framecolor='#framecolor' class='ltx_framebox' cssstyle='#cssstyle'"
     . " _noautoclose='1'>#text</ltx:text>",
   mode => 'internal_vertical',
+  properties => sub {
+    my $sep = LookupRegister('\fboxsep')->toAttribute;
+    $sep ne '3.0pt' ? (cssstyle => 'padding:' . $sep) : (); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;
