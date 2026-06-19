@@ -1369,7 +1369,7 @@ sub LookupRegister {
   return; }
 
 sub LookupDimension {
-  my ($cs) = @_;
+  my ($cs, $noerror) = @_;
   $cs = T_CS($cs) unless ref $cs;
   if (my $defn = $STATE->lookupDefinition($cs)) {
     if ($defn->isRegister) {    # Easy (and proper) case.
@@ -1377,7 +1377,7 @@ sub LookupDimension {
     else {
       return $STATE->getStomach->getGullet->readingFromMouth($cs, sub {
           $_[0]->readDimension; }); } }
-  else {
+  elsif (!$noerror) {
     Warn('expected', 'register', $STATE->getStomach,
       "The control sequence " . ToString($cs) . " is not a register"); }
   return Dimension(0); }
@@ -1842,7 +1842,7 @@ sub defmath_cons {
         ? $cs : $presentation->unlist); }; }
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($defcs, $paramlist,
       ($nargs == 0
-        # If trivial presentation, allow it in Text
+          # If trivial presentation, allow it in Text
         ? ($presentation !~ /(?:\(|\)|\\)/
           ? "?#isMath(<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok)"
@@ -2531,7 +2531,7 @@ sub AddToMacro {
   else {
     local $LaTeXML::Core::State::UNLOCKED = 1;    # ALLOW redefinitions that only adding to the macro
     DefMacroI($cs, undef, Tokens(map { $_->unlist }
-        map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
+          map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
       nopackParameters => 1, scope => 'global', locked => $$defn{locked}); }
   return; }
 
