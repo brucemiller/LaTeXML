@@ -24,12 +24,15 @@ jobs:
 
     name: MiKTeX ${{ matrix.miktex }} / Strawberry Perl ${{ matrix.perl }}
     strategy:
+      # Don't let one Perl version's failure (e.g. a transient Chocolatey 503)
+      # cancel the sibling jobs; we want to see every version's result.
+      fail-fast: false
       matrix:
         include:
           - perl: 5.42.0.1
             miktex: none
             allow_failure: false
-          - perl: 5.38.4.1
+          - perl: 5.40.0.1
             miktex: none
             allow_failure: false
           - perl: 5.38.4.1
@@ -39,7 +42,7 @@ jobs:
             miktex: none
             allow_failure: false
           - perl: 5.34.3.1
-            miktex: none  
+            miktex: none
             allow_failure: true
           # - perl: 5.42.0.1
           #   miktex: 25.3.0
@@ -67,8 +70,22 @@ jobs:
         if: steps.perl-cache.outputs.cache-hit != 'true'
         # GitHub's CI environment comes with a preinstalled version of Strawberry Perl.
         # So first uninstall that one, then pick the version we want.
+        #
+        # The Chocolatey community feed (community.chocolatey.org) intermittently
+        # returns HTTP 503 / rate-limit errors. When the per-version cache has been
+        # evicted (GitHub drops caches after 7 days of inactivity), this step has to
+        # do a cold install and a single 503 fails the whole build. Retry with
+        # exponential backoff so a transient feed outage doesn't break CI.
         run: |
-          choco install -y strawberryperl --version ${{ matrix.perl }}
+          $max = 5
+          for ($i = 1; $i -le $max; $i++) {
+            choco install -y strawberryperl --version ${{ matrix.perl }} --no-progress
+            if ($LASTEXITCODE -eq 0) { break }
+            if ($i -eq $max) { throw "choco install failed after $max attempts (last exit $LASTEXITCODE)" }
+            $delay = [math]::Min(120, [math]::Pow(2, $i) * 10)
+            Write-Host "::warning::choco install attempt $i failed (exit $LASTEXITCODE); retrying in $delay s"
+            Start-Sleep -Seconds $delay
+          }
 
       # ====================
       # Setup MiKTeX
