@@ -172,6 +172,17 @@ DefParameterType('VBoxContents', sub {
   undigested => 1,                                           # Cause it already is digested!
   reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
+# Similar to VBoxContents, but immediately enter horizontal mode;
+# This returns a horizontal list, "formatted" as a paragraph, with (current) width.
+DefParameterType('PBoxContents', sub {
+    readBoxContents($_[0], T_CS('\lx@enterhorizontal'), 'internal_vertical'); },
+  undigested => 1,                                           # Cause it already is digested!
+  reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+DefPrimitive('\lx@enterhorizontal', sub {
+    $_[0]->enterHorizontal;
+    return; });
+
 # Obsolete/Deprecated
 sub reenterTextMode {
   my ($verticalmode) = @_;

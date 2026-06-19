@@ -3363,25 +3363,11 @@ Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
 # These (should) appear in an internal_vertical context,
-# BUT the arg should be processed to a horizontal (paragraph) List!
-DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>",
-  sizer        => '#1',
-  beforeDigest => sub {
-    $_[0]->beginMode('internal_vertical');
-    $_[0]->enterHorizontal; },
-  afterDigest => sub {
-    $_[0]->leaveHorizontal_internal;
-    $_[0]->endMode('internal_vertical') },
-);
-DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
-  sizer        => 0,
-  beforeDigest => sub {
-    $_[0]->beginMode('internal_vertical');
-    $_[0]->enterHorizontal; },
-  afterDigest => sub {
-    $_[0]->leaveHorizontal_internal;
-    $_[0]->endMode('internal_vertical') },
-);
+# BUT the ARGUMENT should be processed to a horizontal (paragraph) List! Thus PBoxContents
+DefConstructor('\@@caption PBoxContents', "^^<ltx:caption>#1</ltx:caption>",
+  sizer => '#1');
+DefConstructor('\@@toccaption PBoxContents', "^^<ltx:toccaption>#1</ltx:toccaption>",
+  sizer => 0);
 
 sub beforeFloat {
   my ($type, %options) = @_;
