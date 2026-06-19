@@ -464,7 +464,12 @@ sub repackHorizontal {
     unshift(@para, pop(@LaTeXML::LIST)); }
   if ($keep) {
     my $list = List(@para, mode => 'horizontal');
-    $list->setProperty(width => LaTeXML::Package::LookupRegister('\hsize'));
+    # We're pretending to format the paragraph (horizontal list),
+    # so we record the current fill width, as well as the baselineskip.
+    # We SHOULD also save \lineskip & \lineskiplimit, but they don't change as much.
+    # See List.pm: vertical lists also record the baselineskip
+    $list->setProperty(width    => LaTeXML::Package::LookupDimension('\hsize'));
+    $list->setProperty(baseline => LaTeXML::Package::LookupDimension('\baselineskip', 1));
     push(@LaTeXML::LIST, $list); }
   return; }
 

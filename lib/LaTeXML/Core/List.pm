@@ -49,7 +49,9 @@ sub List {
             && (($_->getProperty('mode') || '') eq 'horizontal')
           ? $_->unlist : $_); } @boxes; }
     my $list = LaTeXML::Core::List->new(@boxes);
-    $list->setProperty(mode => $mode);
+    $list->setProperty(mode     => $mode);
+    $list->setProperty(baseline => LaTeXML::Package::LookupDimension('\baselineskip', 1))
+      if @boxes && ($mode =~ /vertical$/);
     return $list; } }
 
 sub new {
