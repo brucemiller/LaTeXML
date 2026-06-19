@@ -37,6 +37,8 @@ sub Box {
     $properties{width}  = Dimension(0) unless defined $properties{width};
     $properties{height} = Dimension(0) unless defined $properties{height};
     $properties{depth}  = Dimension(0) unless defined $properties{depth}; }
+  if ($string && $string =~ /\p{Ideographic}/) {
+    $properties{isIdeographic} = 1; }
   my $state = $STATE;
   my $mode  = $properties{mode} || $state->lookupValue('MODE') || 'restricted_horizontal';
   if ($state->lookupValue('IN_MATH')) {
