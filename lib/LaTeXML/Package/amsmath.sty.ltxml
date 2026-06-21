@@ -446,11 +446,14 @@ DefConstructor('\@@amsalign SkipSpaces DigestedBody',
   afterConstruct => sub { rearrangeAMSAlign($_[0], $_[0]->getNode->lastChild); });
 DefPrimitive('\end@amsalign', sub { $_[0]->egroup; });
 
+# Placeholder token to make operators infix when at the start of a left-aligned cell (see MathParser.pm for the 'absent' meaning)
+DefConstructorI('\@ams@absent', undef, '<ltx:XMTok meaning="absent"/>', reversion => '', alias => '');
+
 # Set up repeated pairs of columns.
 DefPrimitive('\@ams@align@bindings', sub {
     my $col1 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
       after => Tokens(T_MATH) };
-    my $col2 = { before => Tokens(T_MATH, T_CS('\displaystyle')),
+    my $col2 = { before => Tokens(T_MATH, T_CS('\displaystyle'), T_CS('\@ams@absent')),
       after => Tokens(T_MATH, T_CS('\hfil')) };
     amsRearrangeableBindings(LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]),
       attributes => { class => 'ltx_eqn_align', colsep => '0pt' });
@@ -662,7 +665,7 @@ sub rearrangeLoneAMSAligned {
               my $xmath = $document->openElementAt($imath, 'ltx:XMath');
               # Clone the math nodes from the original equation but morphing the ID's
               { local $LaTeXML::Core::Document::ID_SUFFIX = '.mf';
-                $document->appendClone($xmath, $stuff->childNodes); }
+                $document->appendClone($xmath, $stuff->findnodes('node()[local-name() != "XMTok" or @meaning != "absent" or text() != ""]')); }
               $document->closeElementAt($xmath);
               $document->closeElementAt($imath); }
             $document->closeElementAt($td); }

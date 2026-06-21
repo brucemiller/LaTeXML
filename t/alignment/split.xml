@@ -35,9 +35,13 @@
                   </XMApp>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle B" text="B" xml:id="Ch0.E1.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle B" text="absent * B" xml:id="Ch0.E1.m2">
                 <XMath>
-                  <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  </XMApp>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -68,9 +72,13 @@
                   </XMApp>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle D" text="D" xml:id="Ch0.E2.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle D" text="absent * D" xml:id="Ch0.E2.m2">
                 <XMath>
-                  <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                  </XMApp>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -105,9 +113,13 @@
                   </XMApp>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle B" text="B" xml:id="Ch0.E4.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle B" text="absent * B" xml:id="Ch0.E4.m2">
                 <XMath>
-                  <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  </XMApp>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -138,9 +150,13 @@
                   </XMApp>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle D" text="D" xml:id="Ch0.E5.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle D" text="absent * D" xml:id="Ch0.E5.m2">
                 <XMath>
-                  <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                  </XMApp>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -158,10 +174,11 @@
           </Math>
           <MathBranch>
             <td/>
-            <td align="left"><Math mode="inline" tex="\displaystyle+E" text="+ E" xml:id="Ch0.Ex1.m1">
+            <td align="left"><Math mode="inline" tex="\displaystyle+E" text="absent + E" xml:id="Ch0.Ex1.m1">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMTok font="italic" role="UNKNOWN">E</XMTok>
                   </XMApp>
                 </XMath>
@@ -208,21 +225,25 @@
           </Math>
           <MathBranch>
             <td align="right"/>
-            <td align="left"><Math mode="inline" tex="\displaystyle x\quad c_{1}," text="list@(x, c _ 1)" xml:id="Ch0.E6.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle x\quad c_{1}," text="list@(absent * x, c _ 1)" xml:id="Ch0.E6.m2">
                 <XMath>
                   <XMDual>
-                    <XMRef idref="Ch0.E6.m2.2"/>
+                    <XMRef idref="Ch0.E6.m2.1"/>
                     <XMWrap>
-                      <XMDual xml:id="Ch0.E6.m2.2">
+                      <XMDual xml:id="Ch0.E6.m2.1">
                         <XMApp>
                           <XMTok meaning="list"/>
-                          <XMRef idref="Ch0.E6.m2.1"/>
-                          <XMRef idref="Ch0.E6.m2.2.1"/>
+                          <XMRef idref="Ch0.E6.m2.1.1"/>
+                          <XMRef idref="Ch0.E6.m2.1.2"/>
                         </XMApp>
                         <XMWrap>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E6.m2.1">x</XMTok>
+                          <XMApp xml:id="Ch0.E6.m2.1.1">
+                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                            <XMTok meaning="absent"/>
+                            <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                          </XMApp>
                           <XMHint name="quad" role="PUNCT" width="10pt"/>
-                          <XMApp xml:id="Ch0.E6.m2.2.1">
+                          <XMApp xml:id="Ch0.E6.m2.1.2">
                             <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                             <XMTok font="italic" role="UNKNOWN">c</XMTok>
                             <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
@@ -273,21 +294,25 @@
             </XMath>
           </Math>
           <MathBranch>
-            <td align="left"><Math mode="inline" tex="\displaystyle y\quad c_{2}," text="list@(y, c _ 2)" xml:id="Ch0.E7.m1">
+            <td align="left"><Math mode="inline" tex="\displaystyle y\quad c_{2}," text="list@(absent * y, c _ 2)" xml:id="Ch0.E7.m1">
                 <XMath>
                   <XMDual>
-                    <XMRef idref="Ch0.E7.m1.2"/>
+                    <XMRef idref="Ch0.E7.m1.1"/>
                     <XMWrap>
-                      <XMDual xml:id="Ch0.E7.m1.2">
+                      <XMDual xml:id="Ch0.E7.m1.1">
                         <XMApp>
                           <XMTok meaning="list"/>
-                          <XMRef idref="Ch0.E7.m1.1"/>
-                          <XMRef idref="Ch0.E7.m1.2.1"/>
+                          <XMRef idref="Ch0.E7.m1.1.1"/>
+                          <XMRef idref="Ch0.E7.m1.1.2"/>
                         </XMApp>
                         <XMWrap>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E7.m1.1">y</XMTok>
+                          <XMApp xml:id="Ch0.E7.m1.1.1">
+                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                            <XMTok meaning="absent"/>
+                            <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                          </XMApp>
                           <XMHint name="quad" role="PUNCT" width="10pt"/>
-                          <XMApp xml:id="Ch0.E7.m1.2.1">
+                          <XMApp xml:id="Ch0.E7.m1.1.2">
                             <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                             <XMTok font="italic" role="UNKNOWN">c</XMTok>
                             <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
@@ -380,9 +405,13 @@
                   <XMTok font="italic" role="UNKNOWN">A</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle B" text="B" xml:id="Ch0.Ex4.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle B" text="absent * B" xml:id="Ch0.Ex4.m2">
                 <XMath>
-                  <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  </XMApp>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -414,15 +443,18 @@
               </Math></td>
             <td align="left"><Math class="ltx_math_unparsed" mode="inline" tex="\displaystyle\left\{\begin{aligned} &amp;D\end{aligned}\right." xml:id="Ch0.Ex5.m2">
                 <XMath>
-                  <XMTok role="OPEN" stretchy="true">{</XMTok>
-                  <XMArray colsep="0pt" name="aligned">
-                    <XMRow>
-                      <XMCell/>
-                      <XMCell align="left">
-                        <XMTok font="italic" role="UNKNOWN">D</XMTok>
-                      </XMCell>
-                    </XMRow>
-                  </XMArray>
+                  <XMTok meaning="absent"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="true">{</XMTok>
+                    <XMArray colsep="0pt" name="aligned">
+                      <XMRow>
+                        <XMCell/>
+                        <XMCell align="left">
+                          <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                        </XMCell>
+                      </XMRow>
+                    </XMArray>
+                  </XMWrap>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -477,25 +509,28 @@
               </Math></td>
             <td align="left"><Math class="ltx_math_unparsed" mode="inline" tex="\displaystyle\left\{\begin{aligned} B&amp;\text{if}\\&#10;C&amp;\text{otherwise}\end{aligned}\right." xml:id="Ch0.E8.m2">
                 <XMath>
-                  <XMTok role="OPEN" stretchy="true">{</XMTok>
-                  <XMArray colsep="0pt" name="aligned">
-                    <XMRow>
-                      <XMCell align="right">
-                        <XMTok font="italic" role="UNKNOWN">B</XMTok>
-                      </XMCell>
-                      <XMCell align="left">
-                        <XMText>if</XMText>
-                      </XMCell>
-                    </XMRow>
-                    <XMRow>
-                      <XMCell align="right">
-                        <XMTok font="italic" role="UNKNOWN">C</XMTok>
-                      </XMCell>
-                      <XMCell align="left">
-                        <XMText>otherwise</XMText>
-                      </XMCell>
-                    </XMRow>
-                  </XMArray>
+                  <XMTok meaning="absent"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="true">{</XMTok>
+                    <XMArray colsep="0pt" name="aligned">
+                      <XMRow>
+                        <XMCell align="right">
+                          <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                        </XMCell>
+                        <XMCell align="left">
+                          <XMText>if</XMText>
+                        </XMCell>
+                      </XMRow>
+                      <XMRow>
+                        <XMCell align="right">
+                          <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                        </XMCell>
+                        <XMCell align="left">
+                          <XMText>otherwise</XMText>
+                        </XMCell>
+                      </XMRow>
+                    </XMArray>
+                  </XMWrap>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -939,9 +974,13 @@ Notice that the split acts like a column pair in the align.</p>
                   </XMApp>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle\ B" text="B" xml:id="Ch0.E19.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle\ B" text="absent * B" xml:id="Ch0.E19.m2">
                 <XMath>
-                  <XMTok font="italic" lpadding="5.0pt" role="UNKNOWN">B</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok meaning="absent" rpadding="5.0pt"/>
+                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  </XMApp>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -975,10 +1014,11 @@ Notice that the split acts like a column pair in the align.</p>
                   </XMApp>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle-C" text="- C" xml:id="Ch0.E20.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle-C" text="absent - C" xml:id="Ch0.E20.m2">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMTok font="italic" role="UNKNOWN">C</XMTok>
                   </XMApp>
                 </XMath>
