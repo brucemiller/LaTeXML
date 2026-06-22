@@ -21,8 +21,8 @@ use LaTeXML::Common::XML;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Core::Alignment::Template;
 use List::Util qw(max sum);
-use base       qw(LaTeXML::Core::Whatsit);
-use base       qw(Exporter);
+use base qw(LaTeXML::Core::Whatsit);
+use base qw(Exporter);
 our @EXPORT = (qw(
     &ReadAlignmentTemplate &MatrixTemplate));
 
@@ -164,6 +164,14 @@ sub currentRowNumber {
 sub currentColumn {
   my ($self) = @_;
   return $$self{current_row} && $$self{current_row}->column($$self{current_column}); }
+
+# Used by \multicolumn to replace the current column spec with a new one
+# (the row has been cloned from the overall spec)
+sub replaceColumn {
+  my ($self, $colspec) = @_;
+  $$self{current_row}->replaceColumn($$self{current_column}, $colspec)
+    if $$self{current_row};
+  return; }
 
 sub getColumn {
   my ($self, $n) = @_;
@@ -433,11 +441,10 @@ sub normalize_cell_sizes {
     foreach my $cell (@{ $$row{columns} }) {
       $j++;
       if (my $boxes = $$cell{boxes}) {
-        my ($w, $h, $d, $cw, $ch, $cd)
-          = $boxes->getSize(align => $$cell{align}, width => $$cell{width},
-          vattach => $$cell{vattach});
-        my $fullw = $cw;
+        my ($w, $h, $d) = $boxes->getSize(
+          align => $$cell{align}, width => $$cell{width}, vattach => $$cell{vattach});
         my ($lpad, $rpad, $padh, $padd);
+        my $fullw = $w;
         if (my $lspaces = $$cell{lspaces}) {
           ($lpad, $padh, $padd) = $lspaces->getSize;
           $fullw = ($fullw ? $fullw->add($lpad) : $lpad) if $lpad;
@@ -455,10 +462,11 @@ sub normalize_cell_sizes {
               || (ref $_ eq 'LaTeXML::Core::Comment')
           ); } @boxes);
         my $empty =
-          (((!$fullw) || $fullw->valueOf < 1)
-            && (((!$ch) || $ch->valueOf < 1)
-            && ((!$cd) || $cd->valueOf < 1))
-            || $isrule
+          $boxes->getProperty('isEmpty')
+          || (((!$fullw) || $fullw->valueOf < 1)
+          && (((!$h) || $h->valueOf < 1)
+            && ((!$d) || $d->valueOf < 1))
+          || $isrule
           ) && !preservedBoxes($boxes);
         $$cell{cwidth}    = $w || Dimension(0);
         $$cell{cheight}   = $h || Dimension(0);
@@ -468,7 +476,7 @@ sub normalize_cell_sizes {
         $$cell{empty}     = $empty;
         $$cell{skippable} = $empty || isSkippable($boxes);
         $$cell{align}     = undef if $$cell{skippable};
-        Debug("CELL[$i,$j] size=" . showSize($w, $h, $d) . " csize " . showSize($cw, $ch, $cd)
+        Debug("CELL[$i,$j] size=" . showSize($w, $h, $d)
             . ";\n   " . join(',', map { $_ . "=" . ToString($$cell{$_}); } sort keys %$cell)
             . "\n    Boxes=" . Stringify($boxes)
         ) if $LaTeXML::DEBUG{alignment_normalize};
@@ -476,7 +484,7 @@ sub normalize_cell_sizes {
       else {
         $$cell{empty}     = 1;
         $$cell{skippable} = 1; }
-    } }
+  } }
   return; }
 
 # Check whether all these things are "empty" or only spaces or otherwise skippable in a table cell
@@ -725,7 +733,7 @@ sub normalize_mark_spans {
               $border =~ s/[^bB]//g;    # mask all but bottom border
               $sborder = $border unless $sborder; } }
           $$col{border} .= $sborder if $sborder; }
-      } } }
+  } } }
   return; }
 
 # Now scan for and remove empty rows & columns
@@ -845,7 +853,7 @@ sub normalize_prune_columns {
                   ? (@preserve, $$next{boxes}->unlist) : @preserve); }
             }    # Now, remove the column
             $$row{columns} = [grep { $_ ne $col } @{ $$row{columns} }];
-          } }
+        } }
         $prunew = Dimension($prunew);
         if ($j) {    # If not 1st row, add right padding to previous column
           foreach my $row (@rows) {
@@ -856,7 +864,7 @@ sub normalize_prune_columns {
             if (my $col = $$row{columns}[0]) {
               $$col{lpadding} = ($$col{lpadding} ? $$col{lpadding}->add($prunew) : $prunew); } } }
         Debug("PRUNE COLUMN $j") if $LaTeXML::DEBUG{alignment_normalize};
-      } } }
+  } } }
   return; }
 
 sub show_row {
@@ -1083,7 +1091,7 @@ sub collect_alignment_rows {
         $rows[$r + $sr][$c + $cs - 1]{r} = $rb; }
       for (my $sc = 0 ; $sc < $cs ; $sc++) {
         $rows[$r + $rs - 1][$c + $sc]{b} = $bb; }
-    } }
+  } }
 
   # Now, do some border massaging...
   for (my $r = 0 ; $r < $nrows ; $r++) {
@@ -1150,7 +1158,7 @@ sub classify_alignment_cell {
           $class .= 'm' unless $class eq 'm'; }
         else {
           $class .= '?' unless $class; }
-      } } }
+  } } }
   $class = 'mx' if $class && (($class =~ /^((m|i)t)+(m|i)?$/) || ($class =~ /^(t(m|i))+t?$/));
   return $class || '_'; }
 

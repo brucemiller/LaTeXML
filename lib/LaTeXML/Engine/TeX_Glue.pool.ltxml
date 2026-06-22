@@ -84,21 +84,22 @@ DefConstructor('\hskip Glue', sub {
   reversion       => sub { revertSkip(T_CS('\hskip'), $_[1]); },
   attributeForm   => sub { DimensionToSpaces($_[1]); },
   enterHorizontal => 1,
-   properties      => sub { (width => $_[1], isSpace => 1, isSkip => 1); });
+  properties      => sub { (width => $_[1], isSpace => 1, isSkip => 1); });
 
 # We should be combining adjacent vskips (?)
 # And then add appropriate class/css for spacing to preceding element.
 DefConstructor('\vskip Glue', sub {
-  my ($document, $length, %props) = @_;
-  $length = $length->ptValue;
-  if ($length <= 0) { }   # Or what!?!?!?!
-  elsif(($length < 4) && $document->isCloseable('ltx:p')) {
-    $document->closeElement('ltx:p'); }
-  elsif($document->isCloseable('ltx:para')) {
-    $document->closeElement('ltx:para'); }
-  return; },
+    my ($document, $length, %props) = @_;
+    $length = $length->ptValue;
+    if    ($length <= 0) { }                                     # Or what!?!?!?!
+    elsif (($length < 4) && $document->isCloseable('ltx:p')) {
+      $document->closeElement('ltx:p'); }
+    elsif ($document->isCloseable('ltx:para')) {
+      $document->closeElement('ltx:para'); }
+    return; },
   leaveHorizontal => 1,
-  properties      => sub { (height => $_[1], isSpace => 1, isSkip => 1, isVerticalSpace => 1); });
+  properties      => sub { (height => $_[1], width => Dimension(0), depth => Dimension(0),
+      isSpace => 1, isSkip => 1, isVerticalSpace => 1); });
 
 # Remove skip, if last on LIST
 DefPrimitiveI('\unskip', undef, sub {
@@ -125,12 +126,12 @@ DefPrimitiveI('\hss',     undef, undef, enterHorizontal => 1,);
 DefPrimitiveI('\hfilneg', undef, undef, enterHorizontal => 1);
 
 DefPrimitiveI('\hfil', undef, sub {
-  Box(' ', undef, undef, T_CS('\hfil'), isSpace => 1, isFill => 1); },
+    Box(' ', undef, undef, T_CS('\hfil'), isSpace => 1, isFill => 1); },
   enterHorizontal => 1);
 ###    Box("\x{200B}", undef, undef, T_CS('\hfil'), isSpace => 1, isFill => 1); });
 ###    Box("\x{200A}", undef, undef, T_CS('\hfil'), isSpace => 1, isFill => 1); });
 DefPrimitiveI('\hfill', undef, sub {
-  Box(' ', undef, undef, T_CS('\hfill'), isSpace => 1, isFill => 1); },
+    Box(' ', undef, undef, T_CS('\hfill'), isSpace => 1, isFill => 1); },
   enterHorizontal => 1);
 ####    Box("\x{200B}", undef, undef, T_CS('\hfill'), isSpace => 1, isFill => 1); });
 ###    Box("\x{200A}", undef, undef, T_CS('\hfill'), isSpace => 1, isFill => 1); });

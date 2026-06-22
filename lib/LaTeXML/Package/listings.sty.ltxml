@@ -106,8 +106,8 @@ sub lstProcessInline {
 
 DefConstructor('\@listings@inline {}',
   "<ltx:text class='ltx_lstlisting' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1,
-  reversion => '\lstinline{#1}');
+  enterHorizontal => 1, sizer => '#2',
+  reversion       => '\lstinline{#1}');
 
 # Not a regular environment, since we're going to read the body verbatim!
 DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST', sub {
@@ -249,7 +249,7 @@ DefConstructor('\@@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
-  mode           => 'internal_vertical',
+  mode       => 'internal_vertical',
   properties => sub {
     my %props = RefStepID('lstlisting');
     return %props; },
@@ -1484,12 +1484,12 @@ sub TokenizeBalanced {
 
 DefConstructor('\@listingLiterate {}',
   "<ltx:text class='ltx_lst_literate' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1,);
+  enterHorizontal => 1, sizer => '#1');
 
 DefConstructor('\@listingKeyword Semiverbatim {}',
   "?#class(<ltx:text class='ltx_lst_#class' _noautoclose='1'>#2</ltx:text>)(#2)",
-  enterHorizontal => 1,
-  properties => { class => sub {
+  enterHorizontal => 1, sizer => '#1',
+  properties      => { class => sub {
       my $classname = ToString($_[1]);
       my $class     = $classname && LookupValue('LST_CLASSES')->{$classname};
       my $cssclass  = $class     && $$class{cssclass};
@@ -1501,7 +1501,7 @@ DefConstructor('\@listingKeyword Semiverbatim {}',
 DefConstructor('\@listingGroup Semiverbatim {}',
   #   "<ltx:text class='#1'>#2</ltx:text>");
   "<ltx:text class='#1'>#2",
-  enterHorizontal => 1,
+  enterHorizontal => 1, sizer => '#2',
   # sorta like maybeCloseElement, except only if CURRENT
   afterConstruct => sub { my ($doc) = @_;
     if ($doc->getNodeQName($doc->getElement) eq 'ltx:text') {

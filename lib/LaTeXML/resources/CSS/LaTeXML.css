@@ -336,7 +336,7 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
     max-width:0em; text-align:right; }
 */
 .ltx_parbox {
-    text-indent:0em;
+    text-indent:0em !important;
     display: inline-block; }
 
 /* NOTE that it is CRITICAL to put position:relative outside & absolute inside!!
@@ -349,6 +349,10 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 .ltx_transformed_inner {
     display:block;
     position:absolute;bottom:0pt;left:0pt; }
+.ltx_inline-block > .ltx_para > .ltx_p:first-child,
+.ltx_logical-block > .ltx_para > .ltx_p:first-child,
+.ltx_inline-logical-block > .ltx_para > .ltx_p:first-child {
+    text-indent:0em; }
 .ltx_transformed_inner > .ltx_p {text-indent:0em; margin:0; padding:0; }
 
 /* If simulating a table (html5), try to get rowspan to work...sorta? */
@@ -442,10 +446,13 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 
 .ltx_rule { vertical-align: bottom; height: 0.4pt; width: 0.4pt; }
 
+.ltx_underline { text-decoration: underline; }
+.ltx_overline  { text-decoration: overline; }
+
 /*======================================================================
  Misc */
 /* .ltx_verbatim*/
-.ltx_verbatim { text-align:left; }
+.ltx_verbatim { text-align:left; white-space:nowrap; }
 /*======================================================================
  Meta stuff, footnotes */
 .ltx_note_content { display:none; }
@@ -562,6 +569,7 @@ cite                 { font-style: normal; }
 .ltx_minipage {
   align-self: normal;
   display: inline-block;
+  text-align: justify;
 }
 .ltx_minipage > .ltx_graphics {
   max-width:100%;

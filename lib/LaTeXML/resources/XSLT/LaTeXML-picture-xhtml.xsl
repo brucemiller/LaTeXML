@@ -169,8 +169,9 @@
             <xsl:attribute name="class">ltx_foreignobject_container</xsl:attribute>
             <xsl:element name="span" namespace="{$html_ns}">
               <xsl:attribute name="class">ltx_foreignobject_content</xsl:attribute>
-
-              <xsl:apply-templates mode='copy-foreign'/>
+              <xsl:apply-templates mode='copy-foreign'>
+                <xsl:with-param name="context" select="block"/>
+              </xsl:apply-templates>
             </xsl:element>
           </xsl:element>
         </xsl:when>

@@ -24,18 +24,19 @@ DefMacroI('\lasthline',  undef, '\hline');
 DefColumnType('>{}', sub { $LaTeXML::BUILD_TEMPLATE->addBeforeColumn($_[1]->unlist); return; });
 DefColumnType('<{}', sub { $LaTeXML::BUILD_TEMPLATE->addAfterColumn($_[1]->unlist);  return; });
 
-# This is the same as p
-# but really needs to specify vertical alignment as centered
+# m{} and b{} are like p{}, but vertical alignment is middle or bottom
 DefColumnType('m{Dimension}', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),    #Tokens(T_BEGIN),
-      after => Tokens(T_END),
-      align => 'justify', width => $_[1], vattach => 'middle'); return; });
-# This is also the same as p
-# but really needs to specify vertical alignment as bottom
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before  => Tokens(T_CS('\lx@tabular@p'), T_LETTER('m'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
+      after   => Tokens(T_END),
+      vattach => 'middle',
+    ); return; });
 DefColumnType('b{Dimension}', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vbox'), T_BEGIN),    #Tokens(T_BEGIN),
-      after => Tokens(T_END),
-      align => 'justify', width => $_[1], vattach => 'bottom'); return; });
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before  => Tokens(T_CS('\lx@tabular@p'), T_LETTER('b'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
+      after   => Tokens(T_END),
+      vattach => 'bottom',
+    ); return; });
 
 # Like @{}, but should NOT suppress intercolumn space
 DefColumnType('!{}', sub {

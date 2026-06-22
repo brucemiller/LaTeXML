@@ -316,6 +316,10 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     Let('\@nodocument', '\relax', 'global');
     AssignRegister('\everypar', Tokens(), 'global');
+    my $textwidth = LookupRegister('\textwidth');
+    AssignRegister('\columnwidth' => $textwidth);
+    AssignRegister('\hsize'       => $textwidth);
+    AssignRegister('\linewidth'   => $textwidth);
     my @boxes = ();
 
     if (my $ops = LookupValue('@document@preamble@atend')) {
@@ -404,9 +408,9 @@ DefConstructor('\emph{}', sub {
     $document->openElement($tag, _force_font => 1, %props);
     $document->absorb($body);
     $document->maybeCloseElement($tag); },
-  mode         => 'restricted_horizontal', enterHorizontal => 1,
-  font         => { emph => 1 },           alias           => '\emph',
-  beforeDigest => sub {
+  enterHorizontal => 1,             sizer => '#1', bounded => 1,
+  font            => { emph => 1 }, alias => '\emph',
+  beforeDigest    => sub {
     DefMacroI('\f@shape', undef,
       (ToString(Tokens(Expand(T_CS('\f@shape')))) eq 'it' ? 'n' : 'it')); });
 Tag('ltx:emph', autoClose => 1);
@@ -451,7 +455,7 @@ DefConstructor('\lx@note[]{}[]{}',
     . "#tags"
     . "#4"
     . "</ltx:note>",
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   sizer        => '#mark',
   beforeDigest => sub { neutralizeFont(); },
   properties   => sub {
@@ -473,7 +477,7 @@ DefConstructor('\lx@notemark[]{}[]',
   reversion => '');
 DefConstructor('\lx@notetext[]{}[]{}',
   "^<ltx:note role='#role' mark='#mark' xml:id='#id'>#4</ltx:note>",
-  mode       => 'internal_vertical',
+  mode       => 'inline_internal_vertical',
   properties => sub {
     my $type = ToString($_[2]);
     (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || DigestText(T_CS('\the' . $type)))); },
@@ -1027,22 +1031,22 @@ DefMacro('\@dbltoplist',   '');
 DefMacro('\@dbldeferlist', '');
 DefMacro('\@startcolumn',  '');
 # Style parameters from Fig. C.3, p.182
-DefRegister('\paperheight'     => Dimension('11in'));
-DefRegister('\paperwidth'      => Dimension('8.5in'));
-DefRegister('\textheight'      => Dimension('550pt'));
-DefRegister('\textwidth'       => Dimension('345pt'));
-DefRegister('\topmargin'       => Dimension(0));
-DefRegister('\headheight'      => Dimension(0));
-DefRegister('\headsep'         => Dimension(0));
-DefRegister('\footskip'        => Dimension(0));
-DefRegister('\footheight'      => Dimension(0));
-DefRegister('\evensidemargin'  => Dimension(0));
-DefRegister('\oddsidemargin'   => Dimension(0));
-DefRegister('\marginparwidth'  => Dimension(0));
-DefRegister('\marginparsep'    => Dimension(0));
-DefRegister('\columnwidth'     => Dimension('6in'));
-DefRegister('\linewidth'       => Dimension('6in'));
-DefRegister('\baselinestretch' => Dimension(0));
+DefRegister('\paperheight'    => Dimension('11in'));
+DefRegister('\paperwidth'     => Dimension('8.5in'));
+DefRegister('\textheight'     => Dimension('550pt'));
+DefRegister('\textwidth'      => Dimension('345pt'));
+DefRegister('\topmargin'      => Dimension(0));
+DefRegister('\headheight'     => Dimension(0));
+DefRegister('\headsep'        => Dimension(0));
+DefRegister('\footskip'       => Dimension(0));
+DefRegister('\footheight'     => Dimension(0));
+DefRegister('\evensidemargin' => Dimension(0));
+DefRegister('\oddsidemargin'  => Dimension(0));
+DefRegister('\marginparwidth' => Dimension(0));
+DefRegister('\marginparsep'   => Dimension(0));
+DefRegister('\columnwidth'    => Dimension('6in'));
+DefRegister('\linewidth'      => Dimension('6in'));
+DefMacro('\baselinestretch' => '1');
 
 #======================================================================
 # C.5.4 The Title Page and Abstract
@@ -1062,10 +1066,6 @@ DefMacro('\date{}',
   '\def\@date{#1}'
     . '\lx@add@date[role=creation,'
     . 'name={\@ifundefined{datename}{}{\datename}}]{#1}');
-
-DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact>",
-  alias => '\thanks',
-  mode  => 'restricted_horizontal', enterHorizontal => 1);
 
 DefConstructorI('\and', undef, " and ");
 DefMacro('\lx@author@sep',  '\qquad');
@@ -1347,8 +1347,11 @@ sub beginItemize {
   else {
     ResetCounter($usecounter); }
 ##  return RefStepCounter('@itemize' . $listpostfix); }
+  my $pad = LookupDimension('\topsep')->add(LookupDimension('\parskip'))->add(LookupDimension('\partopsep'));
   return (RefStepCounter('@itemize' . $listpostfix),
-    counter => $usecounter, series => $series); }    # So end can save counter value
+    counter => $usecounter, series    => $series,    # So end can save counter value
+    padtop  => $pad,        padbottom => $pad
+  ); }
 
 # These counters are ONLY used for id's of ALL the various itemize, enumerate, etc elements
 # Only create the 1st level (so that binding style can start numbering 'within' appropriately)
@@ -1363,8 +1366,9 @@ sub RefStepItemCounter {
   AssignValue(itemization_items => $n + 1);
   my %attr = ();
   my $sep  = LookupDimension('\itemsep');
-  if (($n > 0) && $sep && ($sep->valueOf != LookupDimension('\lx@default@itemsep')->valueOf)) {
-    $attr{itemsep} = $sep; }
+  if (($n > 0) && $sep) {
+    if ($sep->valueOf != LookupDimension('\lx@default@itemsep')->valueOf) {
+      $attr{itemsep} = $sep; } }
   if (defined $tag) {
     my @props = RefStepID($counter);
     if (IsEmpty($tag)) {    # empty tag?
@@ -1441,12 +1445,13 @@ sub setEnumerationStyle {
   return; }
 
 # End paragraphs, like \par, but only if within an item's text
-DefConstructorI('\preitem@par', undef, sub {
-    my ($document, %props) = @_;
-    if (!$props{inPreamble} && !$document->getNodeQName($document->getElement(), 'ltx:itemize')) {
-      $document->maybeCloseElement('ltx:p');
-      $document->maybeCloseElement('ltx:para'); } },
-  alias => '\par');
+# Also, add a vskip, between for sizing
+DefMacro('\preitem@par', sub {
+    return ((LookupValue('itemization_items') || 0) > 0
+      ? (T_CS('\par'),
+        Invocation(T_CS('\vskip'), T_CS('\itemsep')),
+        Invocation(T_CS('\vskip'), T_CS('\parsep')))
+      : ()); });
 
 # id, but NO refnum (et.al) attributes on itemize \item ...
 # unless the optional tag argument was given!
@@ -1477,23 +1482,20 @@ DefConstructor('\inline@description@item OptionalUndigested',
 
 DefEnvironment('{itemize}',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  mode            => 'internal_vertical',
-  properties      => sub { beginItemize('itemize', '@item'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode       => 'internal_vertical',
+  properties => sub { beginItemize('itemize', '@item'); },
+  locked     => 1);
 DefEnvironment('{enumerate}',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-  mode            => 'internal_vertical',
-  properties      => sub { beginItemize('enumerate', 'enum'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode       => 'internal_vertical',
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  locked     => 1);
 DefEnvironment('{description}',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
-  mode            => 'internal_vertical',
-  beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
-  properties      => sub { beginItemize('description', '@desc'); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  locked          => 1);
+  mode         => 'internal_vertical',
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties   => sub { beginItemize('description', '@desc'); },
+  locked       => 1);
 
 DefMacro('\makelabel{}', '#1');
 DefMacro('\@mklab{}',    '\hfil #1');
@@ -1661,8 +1663,7 @@ DefConstructor('\trivlist',
   mode       => 'internal_vertical',
   properties => sub { beginItemize('trivlist'); });
 DefConstructor('\endtrivlist', sub {
-    $_[0]->maybeCloseElement('ltx:itemize'); },
-  beforeDigest => sub { Digest('\par'); });
+    $_[0]->maybeCloseElement('ltx:itemize'); });
 DefMacro('\trivlist@item', '\preitem@par\trivlist@item@');
 DefConstructor('\trivlist@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
@@ -1670,11 +1671,11 @@ DefConstructor('\trivlist@item@ OptionalUndigested',
   properties => sub { ($_[1] ? (tag => Digest(Expand($_[1]))) : ()); });
 DefMacro('\@trivlist', '\relax', locked => 1);
 
-DefRegister('\topsep'             => Glue(0));
-DefRegister('\partopsep'          => Glue(0));
-DefRegister('\lx@default@itemsep' => Glue(0));
-DefRegister('\itemsep'            => Glue(0));
-DefRegister('\parsep'             => Glue(0));
+DefRegister('\topsep'             => Glue('8pt plus 2pt minus 4pt'));
+DefRegister('\partopsep'          => Glue('2pt plus 1pt minus 1pt'));
+DefRegister('\lx@default@itemsep' => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\itemsep'            => Glue('4pt plus 2pt minus 1pt'));
+DefRegister('\parsep'             => Glue('4pt plus 2pt minus 1pt'));
 DefRegister('\@topsep'            => Glue(0));
 DefRegister('\@topsepadd'         => Glue(0));
 DefRegister('\@outerparskip'      => Glue(0));
@@ -1750,7 +1751,6 @@ sub beforeDigestVerbatim {
   AssignValue(current_environment => 'verbatim');
   DefMacroI('\@currenvir', undef, 'verbatim');
   MergeFont(family => 'typewriter');
-  # Digest(T_CS('\par')); # NO! See beforeConstruct!
   return @stuff; }
 
 sub afterDigestVerbatim {
@@ -1843,7 +1843,7 @@ DefConstructor('\@internal@math@verb{} Undigested {}',
 DefConstructor('\@internal@text@verb{} Undigested {}',
   "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
   font            => { family => 'typewriter', series => 'medium', shape => 'upright' },
-  enterHorizontal => 1,
+  mode            => 'restricted_horizontal', enterHorizontal => 1,
   beforeConstruct => sub {
     my ($doc, $whatsit) = @_;
     $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); },
@@ -2025,6 +2025,9 @@ sub afterEquation {
   elsif ($whatsit) {
     $whatsit->setProperties(%{ LookupValue('EQUATIONROW_TAGS') }); }
   $$numbering{in_equation} = 0;
+  $whatsit->setProperties(
+    padtop    => LookupRegister('\abovedisplayskip'),
+    padbottom => LookupRegister('\belowdisplayskip')) if $whatsit;
   return; }
 
 # My first inclination is to Lock {math}, but it is surprisingly common to redefine it in silly ways... So...?
@@ -3359,12 +3362,12 @@ Tag('ltx:table',  afterClose => sub { BuildPanelsAndID(@_, 'tab'); });
 
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
-DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>",
-  sizer => 0, mode => 'restricted_horizontal',
-);
-DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
-  sizer => 0, mode => 'restricted_horizontal',
-);
+# These (should) appear in an internal_vertical context,
+# BUT the ARGUMENT should be processed to a horizontal (paragraph) List! Thus PBoxContents
+DefConstructor('\@@caption PBoxContents', "^^<ltx:caption>#1</ltx:caption>",
+  sizer => '#1');
+DefConstructor('\@@toccaption PBoxContents', "^^<ltx:toccaption>#1</ltx:toccaption>",
+  sizer => 0);
 
 sub beforeFloat {
   my ($type, %options) = @_;
@@ -4183,8 +4186,8 @@ DefConstructor('\@@cite []{}', "<ltx:cite ?#1(class='ltx_citemacro_#1')>#2</ltx:
 DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
   "<ltx:bibref show='#1' bibrefs='#bibrefs' inlist='#bibunit'"
     . " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
-  enterHorizontal => 1,
-  properties      => sub { (bibrefs => CleanBibKey($_[2]),
+  mode       => 'restricted_horizontal', enterHorizontal => 1,
+  properties => sub { (bibrefs => CleanBibKey($_[2]),
       separator   => DigestText(LookupValue('CITE_SEPARATOR')),
       yyseparator => DigestText(LookupValue('CITE_YY_SEPARATOR')),
       bibunit     => LookupValue('CITE_UNIT')); });
@@ -4630,9 +4633,6 @@ DefPrimitive('\hspace  OptionalMatch:* {Dimension}', sub {
       width => $length, isSpace => 1); });
 
 DefMacro('\vspace OptionalMatch:* {}', '\vskip #2\relax');
-DefPrimitive('\addvspace {}',  undef);
-DefPrimitive('\addpenalty {}', undef);
-DefPrimitiveI('\@endparenv');
 
 # \hfill, \vfill
 
@@ -4694,18 +4694,23 @@ DefConstructor('\@framebox[Dimension][]{}',
     $stomach->beginMode('restricted_horizontal');
     AssignValue(FRAME_IN_MATH => $wasmath); },
   properties => sub {
-    my $sep = LookupRegister('\fboxsep')->toAttribute;
+    my $sep     = LookupRegister('\fboxsep');
+    my $sep_pts = $sep->toAttribute;
+    my $pad     = $sep->add(LookupRegister('\fboxrule'));
     (($_[2] ? (align => $makebox_alignment{ ToString($_[2]) }) : ()),
       framecolor => LookupValue('font')->getColor,
-      ($sep ne '3.0pt' ? (cssstyle => 'padding:' . $sep) : ()),
-      ($_[1]           ? (width    => $_[1])             : ())); },
+      ($sep ne '3.0pt' ? (cssstyle => 'padding:' . $sep_pts) : ()),
+      ($_[1]           ? (width    => $_[1])                 : ()),
+      padtop => $pad, padbottom => $pad, padleft => $pad, padright => $pad,
+    ); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $wasmath = LookupValue('FRAME_IN_MATH');
     my $arg     = $whatsit->getArg(3);
     $stomach->endMode('restricted_horizontal');
-    if ($wasmath && $arg->isMath) {
-      $whatsit->setProperties(mathframe => 1, inner => $arg->getBody); }
+    my @arg = $arg->unlist;    # Will have been wrapped in List/restricted_horizontal
+    if ($wasmath && (scalar(@arg) == 1) && $arg[0]->isMath) {
+      $whatsit->setProperties(mathframe => 1, inner => $arg[0]->getBody); }
     return; },
   afterConstruct => sub {
     my ($document, $whatsit) = @_;
@@ -4736,7 +4741,9 @@ Let('\lx@parboxnewline', '\lx@newline');    # Obsolete, but in case still used
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring inner-pos, for now, though.
 DefMacro('\parbox[] [] [] {Dimension}{}',
-'\lx@hidden@bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\lx@hidden@egroup');
+  '\lx@hidden@bgroup\hsize=#4\textwidth\hsize\columnwidth\hsize'
+    . '\parindent\z@\parskip\z@skip'
+    . '\ifx.#2.\lx@parbox[#1]{#4}{#5}\else\lx@parbox[#1][#2][#3]{#4}{#5}\fi\lx@hidden@egroup');
 
 DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
@@ -4749,9 +4756,9 @@ DefConstructor('\lx@parbox[][Dimension] OptionalUndigested {Dimension} VBoxConte
   sizer      => '#5',
   properties => sub {
     (width => $_[4],
-      vattach => translateAttachment($_[1]),
-      height  => $_[2]); },
-  mode         => 'internal_vertical',
+      vattach     => translateAttachment($_[1]),
+      totalheight => $_[2]); },
+  mode         => 'inline_internal_vertical',
   robust       => 1,
   beforeDigest => sub {
     Let('\\\\', '\lx@newline'); });
@@ -4768,7 +4775,7 @@ DefEnvironment('{minipage}[] OptionalUndigested [] {Dimension}', sub {
       class   => 'ltx_minipage');
     return; },
   sizer        => '#body',
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   beforeDigest => sub {
     Digest(T_CS('\@minipagetrue')); },
   afterDigestBegin => sub {
@@ -4951,7 +4958,7 @@ DefEnvironment('{picture} Pair OptionalPair',
     . " fill='none' stroke='none' unitlength='#unitlength'>"
     . "?#transform(<ltx:g transform='#transform'>#body</ltx:g>)(#body)"
     . "</ltx:picture>",
-  mode         => 'internal_vertical',
+  mode         => 'inline_internal_vertical',
   beforeDigest => \&before_picture,
   properties   => sub {
     my ($stomach, $size, $pos) = @_;
@@ -5012,6 +5019,7 @@ DefConstructor('\oval [Float] Pair []',
       x      => $halfsize->getX->negate, y => $halfsize->getY->negate,
       width  => Dimension($size->getX->valueOf),
       height => Dimension($size->getY->valueOf),
+      #                  depth => Dimension(0),
     ); });
 
 DefConstructor('\qbezier [Number] Pair Pair Pair',
@@ -5033,6 +5041,7 @@ DefConstructor('\pic@makebox@ Undigested RequiredKeyVals Pair []{}',
     . " stroke='#color' stroke-width='#thick' fill='none' stroke-dasharray='#dash'/>)()"
     . "<ltx:g class='makebox' innerwidth='#width' innerheight='#height' innerdepth='#depth'"
     . " transform='translate(#xshift,#yshift)'>#box</ltx:g>",
+  mode       => 'restricted_horizontal',
   reversion  => '#1#3[#4]{#5}',
   properties => sub {
     my ($stomach, $cs, $kv, $size, $pos, $box) = @_;
@@ -5097,7 +5106,6 @@ DefConstructor('\shortstack[]{}  OptionalMatch:* [Dimension]',
     $_[0]->bgroup; },
   afterDigest => sub { $_[1]->getSize;    # precompute while binding in effect
     $_[0]->egroup; },
-  # Note: does not get layout=vertical, since linebreaks are explicit
   properties => { align => sub { ($_[1] ? $alignments{ ToString($_[1]) } : undef); },
     vattach => 'bottom' },                # for size computation
   mode => 'restricted_horizontal');
@@ -5359,13 +5367,13 @@ DefPrimitiveI('\textellipsis',   undef, "\x{2026}");    # HORIZONTAL ELLIPSIS
 DefPrimitiveI('\textregistered', undef, UTF(0xAE));     # REGISTERED SIGN
 DefPrimitiveI('\texttrademark',  undef, "\x{2122}");    # TRADE MARK SIGN
 DefConstructor('\textsuperscript{}', "<ltx:sup>#1</ltx:sup>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
+  mode => 'restricted_horizontal', enterHorizontal => 1, sizer => '#1');
 DefConstructor('\@textsuperscript{}', "<ltx:sup>#1</ltx:sup>",
-  mode => 'restricted_horizontal', enterHorizontal => 1, locked => 1);
+  mode => 'restricted_horizontal', enterHorizontal => 1, sizer => '#1', locked => 1);
 # This is something coming from xetex/xelatex ? Why define this way?
 #DefConstructor('\realsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
 DefConstructor('\realsuperscript{}', "<ltx:sup>#1</ltx:sup>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
+  mode => 'restricted_horizontal', enterHorizontal => 1, sizer => '#1');
 DefPrimitiveI('\textordfeminine',  undef, UTF(0xAA));    # FEMININE ORDINAL INDICATOR
 DefPrimitiveI('\textordmasculine', undef, UTF(0xBA));    # MASCULINE ORDINAL INDICATOR
 
@@ -5855,7 +5863,7 @@ DefMacro('\eminnershape', "");
 DefMacro('\TextOrMath{}{}', '\ifmmode#2\else#1\fi');
 
 DefConstructor('\textsubscript{}', "<ltx:sub>#1</ltx:sub>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
+  mode => 'restricted_horizontal', enterHorizontal => 1, sizer => '#1');
 
 #**********************************************************************
 # We need this bit from utf8.def for textcomp

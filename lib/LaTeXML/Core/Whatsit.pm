@@ -76,8 +76,8 @@ sub getBody {
 sub setBody {
   my ($self, @body) = @_;
   my $trailer = pop(@body);
-  my $mode = $$self{properties}{mode};
-  $$self{properties}{body} = List(@body, ($mode ? (mode => $mode) : ()));
+  my $mode    = $$self{properties}{mode};
+  $$self{properties}{body}    = List(@body, ($mode ? (mode => $mode) : ()));
   $$self{properties}{trailer} = $trailer;
   # And copy any otherwise undefined properties from the trailer
   if ($trailer) {
@@ -174,11 +174,11 @@ sub stringify {
   my ($self) = @_;
   my $hasbody = defined $$self{properties}{body};
   return $self->_stringify . $self->getDefinition->getCS->getCSName
-      . "[" . join(',', map { Stringify($_) }
-         $self->getArgs,
-        (defined $$self{properties}{body}
-         ? ($$self{properties}{body}, $$self{properties}{trailer})
-         : ()))
+    . "[" . join(',', map { Stringify($_) }
+      $self->getArgs,
+    (defined $$self{properties}{body}
+      ? ($$self{properties}{body}, $$self{properties}{trailer})
+      : ()))
     . "]"; }
 
 sub equals {
@@ -262,7 +262,32 @@ sub computeSize {
       push(@boxes, $sizer); }
     no warnings 'recursion';
     return $$props{font}->computeBoxesSize(
-      (scalar(@boxes)==1 ? $boxes[0] : List(@boxes, mode=>$$props{mode})), %options); } }
+      (scalar(@boxes) == 1 ? $boxes[0] : List(@boxes, mode => $$props{mode})), %options); } }
+
+# If this Whatsit is in horizontal mode, and it's sized by a few components,
+# all of which are also horizontal (or restricted), we can return those components
+# to be line-broken within a bigger paragraph.
+# This handles things like \emph, which should be broken
+# across several lines, rather than a single paragraph or (worse) a LONG line.
+sub flattenForSizing {
+  my ($self, %options) = @_;
+  my $defn  = $self->getDefinition;
+  my $props = $self->getPropertiesRef;
+  my $sizer = $defn->getSizer;
+  if ((($$props{mode} || '') eq 'horizontal')
+    && $sizer && (!ref $sizer) && ($sizer =~ /^(#\w+)*$/)) {    # ALL '#digit' or '#prop'
+    my @boxes = ();
+    while ($sizer =~ s/^#(\w+)//) {
+      my $arg = $1;
+      my $box = ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg});
+      push(@boxes, $box); }
+    if (!grep { ($_->getProperty('mode') || '') !~ /horizontal$/ } @boxes) {
+      return @boxes; } }
+  return; }
+
+sub _showsize {
+  my ($wd, $ht, $dp, @stuff) = @_;
+  return ToString($wd) . " x " . ToString($ht) . " + " . ToString($dp); }
 
 #======================================================================
 1;

@@ -84,10 +84,13 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
       $document->absorb($content);
       $document->closeElement('svg:g'); }
     else {
+      my $font = $props{_font};
       $document->openElement('ltx:picture');
       $document->openElement('svg:svg',
         version  => "1.1",
-        width    => $props{pxwidth}, height => $props{pxheight}, style => $props{style},
+        width    => $props{width}->emValue(2, $font) . 'em',
+        height   => $props{height}->emValue(2, $font) . 'em',
+        style    => $props{style},
         viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
         overflow => "visible");
       my $x0 = -(0 + $props{minx});
@@ -134,6 +137,8 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     $whatsit->setProperty(pxwidth  => $w);
     $whatsit->setProperty(pxheight => $h);
     $whatsit->setProperty(style    => "vertical-align:" . $base . "px") if $base;
+    $whatsit->setProperty(_font    => $whatsit->getFont);
+
     # or tikz macro (see corescopes)
     return; },
   # \pgfpicture seems to make a 0 sized box, which throws off our postprocessor

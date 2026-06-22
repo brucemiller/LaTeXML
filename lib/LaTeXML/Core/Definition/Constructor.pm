@@ -79,7 +79,7 @@ sub invoke {
 
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
-  my @pre = $self->executeBeforeDigest($stomach);
+  $self->executeBeforeDigest($stomach);
 
   Debug('{' . $self->tracingCSName . '}') if $tracing;
   # Get some info before we process arguments...
@@ -116,7 +116,7 @@ sub invoke {
     $whatsit->setBody(@post, $stomach->digestNextBody((ref $cap ? $cap : undef))); @post = (); }
   my @postpost = $self->executeAfterDigestBody($stomach, $whatsit);
   LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
-  return (@pre, $whatsit, @post, @postpost); }
+  return ($whatsit, @post, @postpost); }
 
 # Similar to executeAfterDigest
 sub executeAfterDigestBody {

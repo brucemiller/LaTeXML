@@ -36,11 +36,16 @@ sub isPrefix {
   my ($self) = @_;
   return $$self{isPrefix}; }
 
+# Execute the beforeDigest functions (on $stomach),
+# pushing the results (if any) directly on the the @LIST being accumulated.
+# returns nothing
 sub executeBeforeDigest {
   my ($self, $stomach) = @_;
   local $LaTeXML::Core::State::UNLOCKED = 1;
   my @pre = grep { defined } @{ $$self{beforeDigest} || [] };
-  return (map { &$_($stomach) } @pre); }
+  foreach my $f (@pre) {
+    push(@LaTeXML::LIST, &$f($stomach)); }
+  return; }
 
 sub executeAfterDigest {
   my ($self, $stomach, @whatever) = @_;
@@ -57,7 +62,8 @@ sub invoke {
 
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
   Debug('{' . $self->tracingCSName . '}')                        if $tracing;
-  my @result = ($self->executeBeforeDigest($stomach));
+  $self->executeBeforeDigest($stomach);
+  my @result = ();
   my $parms  = $$self{parameters};
   my @args   = ($parms ? $parms->readArguments($stomach->getGullet, $self) : ());
   Debug($self->tracingArgs(@args)) if $tracing && @args;

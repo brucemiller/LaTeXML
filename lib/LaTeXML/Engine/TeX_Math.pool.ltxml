@@ -133,7 +133,10 @@ DefConstructorI('\lx@begin@display@math', undef,
   beforeDigest => sub {
     $_[0]->enterHorizontal;
     $_[0]->beginMode('display_math'); },
-  properties  => { mode => 'display_math' },
+  properties => sub {
+    (mode => 'display_math',
+      padtop    => LookupRegister('\abovedisplayskip'),
+      padbottom => LookupRegister('\belowdisplayskip')); },
   captureBody => 1);
 DefConstructorI('\lx@end@display@math', undef, "",
   reversion    => Tokens(T_MATH, T_MATH),
@@ -952,14 +955,16 @@ DefMath('\lx@math@overline{}', UTF(0xAF),
   operator_role => 'OVERACCENT', operator_stretchy => 'true',
   name          => 'overline',   alias             => '\overline');
 DefConstructor('\lx@text@overline{}',
-  "<ltx:text framed='overline' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1);
+  "<ltx:text class='ltx_overline' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1,    mode       => 'restricted_horizontal',
+  sizer           => '#1', properties => { padtop => Dimension('2pt') });
 DefMath('\lx@math@underline{}', UTF(0xAF),
   operator_role => 'UNDERACCENT', operator_stretchy => 'true',
   name          => 'underline',   alias             => '\underline');
 DefConstructor('\lx@text@underline{}',
-  "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1);
+  "<ltx:text class='ltx_underline' _noautoclose='1'>#1</ltx:text>",
+  enterHorizontal => 1,    mode       => 'restricted_horizontal',
+  sizer           => '#1', properties => { padbottom => Dimension('2pt') });
 DefMath('\lx@math@overrightarrow{}', "\x{2192}",
   operator_role => 'OVERACCENT',     operator_stretchy => 'true',
   name          => 'overrightarrow', alias             => '\overrightarrow');

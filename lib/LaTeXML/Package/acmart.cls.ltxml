@@ -101,7 +101,7 @@ DefMacro('\lx@acm@addresspart{}{}',
     . '\lx@acm@addresspart@{#1}{#2}\fi');
 DefConstructor('\lx@acm@addresspart@{}{}',
   "<ltx:text class='ltx_affiliation_#1' _noautoclose='1'>#2</ltx:text>",
-  mode => 'restricted_horizontal', enterHorizontal => 1);
+  enterHorizontal => 1, bounded => 1, sizer => '#2');
 DefMacro('\position{}',      '\lx@acm@addresspart{position}{#1}');
 DefMacro('\institution{}',   '\lx@acm@addresspart{institution}{#1}');
 DefMacro('\department{}',    '\lx@acm@addresspart{department}{#1}');

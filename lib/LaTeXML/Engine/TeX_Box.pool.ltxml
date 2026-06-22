@@ -27,18 +27,19 @@ $LaTeXML::DEBUG{svg} = 1 if $$LaTeXML::DEBUG{svg_verbose};
 
 # These are actually TeX primitives, but we treat them as a Whatsit so they
 # remain in the constructed tree.
-#DefConstructor('{','#body', beforeDigest=>sub{$_[0]->bgroup;}, captureBody=>1);
-######DefPrimitive('{', sub {
 DefPrimitive(T_BEGIN, sub {
     my ($stomach) = @_;
     $stomach->bgroup;
-    my $open   = Box(undef, undef, undef, T_BEGIN, isEmpty => 1, alignmentSkippable => 1);
-    my $ismath = $STATE->lookupValue('IN_MATH');
-    my $mode   = $STATE->lookupValue('MODE');
-    my @body   = $stomach->digestNextBody();
-    List($open, @body, mode => $mode); });
+    my $open = Box(undef, undef, undef, T_BEGIN, isEmpty => 1, alignmentSkippable => 1);
+    my $mode = $STATE->lookupValue('MODE');
+    if ($STATE->lookupValue('IN_MATH')) {    # In math, we return a Math List
+      my @body = $stomach->digestNextBody();
+      return List($open, @body, mode => $mode); }
+    else {                                   # Else just digest directly to @LaTeXML::LIST
+      push(@LaTeXML::LIST, $open);
+      $stomach->digestUntil();
+      return; } });
 
-#######DefPrimitive('}', sub {
 DefPrimitive(T_END, sub {
     my $f = LookupValue('font');
     $_[0]->egroup;
@@ -60,17 +61,22 @@ DefConstructor('\lx@hidden@egroup', '',
 DefConstructor('\lx@framed[]{}',
   "<ltx:text framed='#frame' _noautoclose='1'>#2</ltx:text>",
   properties      => { frame => sub { ToString($_[1] || 'rectangle'); } },
-  enterHorizontal => 1);
+  enterHorizontal => 1, sizer => '#2');
 
 DefConstructor('\lx@hflipped{}',
   "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1, sizer => '#1');
 
 DefConstructor('\lx@overlay{}{}',
   "<ltx:text class='ltx_overlay'>"
     . "<ltx:text class='ltx_overlay_base' _noautoclose='1'>#1</ltx:text>"
     . "<ltx:text class='ltx_overlay_over' _noautoclose='1'>#2</ltx:text></ltx:text>",
-  enterHorizontal => 1);
+  enterHorizontal => 1,
+  sizer           => sub {
+    my ($whatsit) = @_;
+    my ($w1, $h1, $d1) = $whatsit->getArg(1)->getSize;
+    my ($w2, $h2, $d2) = $whatsit->getArg(2)->getSize;
+    ($w1->larger($w2), $h1->larger($h2), $d1->larger($d2)); });
 
 #======================================================================
 DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
@@ -165,6 +171,17 @@ DefParameterType('VBoxContents', sub {
     readBoxContents($_[0], LookupValue('\everyvbox'), 'internal_vertical'); },
   undigested => 1,                                           # Cause it already is digested!
   reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+# Similar to VBoxContents, but immediately enter horizontal mode;
+# This returns a horizontal list, "formatted" as a paragraph, with (current) width.
+DefParameterType('PBoxContents', sub {
+    readBoxContents($_[0], T_CS('\lx@enterhorizontal'), 'internal_vertical'); },
+  undigested => 1,                                           # Cause it already is digested!
+  reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+DefPrimitive('\lx@enterhorizontal', sub {
+    $_[0]->enterHorizontal;
+    return; });
 
 # Obsolete/Deprecated
 sub reenterTextMode {
@@ -384,8 +401,9 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       $document->setAttribute($node,
         style => '--ltx-fo-width:' . $w->emValue(undef, $f) . 'em;'
           . '--ltx-fo-height:' . $h->emValue(undef, $f) . 'em;'
-          . '--ltx-fo-depth:' . $d->emValue(undef, $f) . 'em;');
-    } });
+          . '--ltx-fo-depth:' . $d->emValue(undef, $f) . 'em;'
+          . 'font-size:' . $f->getSize . 'pt;');
+} });
 
 sub isVAttached {
   my ($node) = @_;
@@ -417,8 +435,6 @@ sub insertBlock {
   if (($context_tag =~ /^ltx:XM/) && ($context_tag ne 'ltx:XMText')) {    # but math always needs this
     $context     = $document->openElement('ltx:XMText');
     $context_tag = $document->getNodeQName($context); }
-  if (my $w = $is_svg && $blockattr{width}) {
-    $blockattr{width} = $w->emValue(undef, $contents->getFont) . "em" if ref $w; }
   my $inline    = $is_svg || $document->canContain($context_tag, '#PCDATA');
   my $container = $document->openElement('ltx:_CaptureBlock_', %blockattr);
   $document->absorb($contents);
@@ -494,7 +510,7 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
       : insertBlock($document, $contents, vattach => 'bottom')); },
   sizer       => '#2',
   properties  => { vattach => 'bottom' },
-  mode        => 'internal_vertical',
+  mode        => 'inline_internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
@@ -516,7 +532,7 @@ DefConstructor('\vtop BoxSpecification VBoxContents', sub {
       : insertBlock($document, $contents, vattach => 'top')); },
   sizer       => '#2',
   properties  => { vattach => 'top' },
-  mode        => 'internal_vertical',
+  mode        => 'inline_internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);

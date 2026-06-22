@@ -103,7 +103,7 @@ DefMacro('\makereferee', Tokens());
 
 DefMacro('\ackname', 'Acknowledgements');
 DefConstructor('\acknowledgements', "<ltx:acknowledgements name='#name'>",
-  properties => { (name => Digest(T_CS('\ackname'))) });
+  properties => sub { (name => Digest(T_CS('\ackname'))) });
 DefMacro('\acknowledgement', '\acknowledgements');
 DefConstructor('\endacknowledgements', "</ltx:acknowledgements>");
 DefConstructor('\endacknowledgement',  "</ltx:acknowledgements>");
@@ -112,7 +112,7 @@ Tag("ltx:acknowledgements", autoClose => 1);
 DefMacro('\noteaddname', 'Note added in proof');
 DefMacro('\notename',    'Note');
 DefEnvironment('{noteadd}', "<ltx:note name='#name'>#body</ltx:note>",
-  properties => { (name => Digest(T_CS('\noteaddname'))) });
+  properties => sub { (name => Digest(T_CS('\noteaddname'))) });
 
 Let('\orithanks', '\thanks');
 DefMacro('\runheadhook', Tokens());
@@ -310,8 +310,10 @@ DefMacro('\lastevenhead', Tokens());
 # Odd; they add an optional arg!
 DefEnvironment('{description}[]',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
-  properties => sub { beginItemize('description'); },
-  locked     => 1);
+  mode         => 'internal_vertical',
+  properties   => sub { beginItemize('description', '@desc'); },
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  locked       => 1);
 
 #======================================================================
 1;

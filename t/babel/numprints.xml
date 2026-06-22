@@ -811,15 +811,15 @@ vs.
       <tabular class="ltx_guessed_headers" vattach="middle">
         <thead>
           <tr>
-            <td align="char:." border="t" thead="column row">without braces</td>
+            <td align="char:." border="t" thead="column">without braces</td>
             <td align="char:." border="t" thead="column">with braces</td>
             <td align="char:." border="t" thead="column">with braces and box</td>
-            <td align="char:." border="t" thead="column">with braces, exp, and box</td>
+            <td align="left" border="t" thead="column">with braces, exp, and box</td>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td align="char:." border="t" thead="row">error</td>
+            <td align="char:." border="t">error</td>
             <td align="char:." border="t">abc def <Math mode="inline" tex="\numprint{12,3e3}" text="12,3e3" xml:id="S3.p4.m1">
                 <XMath>
                   <XMDual>
@@ -901,7 +901,7 @@ vs.
               </Math> rt</td>
           </tr>
           <tr>
-            <td align="char:." thead="row">mor<Math mode="inline" tex="\numprint{e45,1}" text="e45,1" xml:id="S3.p4.m4">
+            <td align="char:.">mor<Math mode="inline" tex="\numprint{e45,1}" text="e45,1" xml:id="S3.p4.m4">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="e45,1" role="NUMBER">e45,1</XMTok>
@@ -963,7 +963,7 @@ vs.
               </Math> txt</td>
           </tr>
           <tr>
-            <td align="char:." border="b t" thead="row">notblu<Math mode="inline" tex="\numprint{e45,1}" text="e45,1" xml:id="S3.p4.m8">
+            <td align="char:." border="b t">notblu<Math mode="inline" tex="\numprint{e45,1}" text="e45,1" xml:id="S3.p4.m8">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="e45,1" role="NUMBER">e45,1</XMTok>

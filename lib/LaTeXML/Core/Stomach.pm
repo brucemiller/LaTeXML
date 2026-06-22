@@ -28,7 +28,7 @@ use LaTeXML::Common::Font;
 use LaTeXML::Common::Color;
 use LaTeXML::Core::Definition;
 use Scalar::Util qw(blessed);
-use base         qw(LaTeXML::Common::Object);
+use base qw(LaTeXML::Common::Object);
 
 DebuggableFeature('modes');
 
@@ -92,10 +92,19 @@ sub getScriptLevel {
 sub digestNextBody {
   my ($self, $terminal) = @_;
   no warnings 'recursion';
+  local @LaTeXML::LIST = ();
+  digestUntil($self, $terminal);
+  return @LaTeXML::LIST; }
+
+# This method digests content until $terminal or closing initial mode,
+# pushing onto @LaTeXML::LIST.
+# But, unlike digestNextBody, it does NOT bind @LaTeXML::LIST, nor return anything.
+sub digestUntil {
+  my ($self, $terminal) = @_;
+  no warnings 'recursion';
   my $startloc  = getLocator($self);
   my $initdepth = scalar(@{ $$self{boxing} });
   my $token;
-  local @LaTeXML::LIST = ();
   my $alignment = $STATE->lookupValue('Alignment');
   my @aug       = ();
 
@@ -108,7 +117,7 @@ sub digestNextBody {
       # at least \over calls in here without the intent to passing through the alignment.
       # So if we already have some digested boxes available, return them here.
       $$self{gullet}->unread($token);
-      return @LaTeXML::LIST; }
+      return; }
     my @r = invokeToken($self, $token);
     push(@LaTeXML::LIST, @r);
     push(@aug, $token, @r);
@@ -119,7 +128,7 @@ sub digestNextBody {
     "Got " . join("\n -- ", map { Stringify($_) } @aug))
     if $terminal && !Equals($token, $terminal);
   push(@LaTeXML::LIST, Box()) unless $token;               # Dummy `trailer' if none explicit.
-  return @LaTeXML::LIST; }
+  return; }
 
 # Digest a list of tokens independent from any current Gullet.
 # Typically used to digest arguments to primitives or constructors.
@@ -398,13 +407,14 @@ sub endgroup {
 #----------------------------------------------------------------------
 # These are the only modes that you can beginMode|endMode, and must be entered that way.
 our %bindable_mode = (
-  text                  => 'restricted_horizontal',
-  restricted_horizontal => 'restricted_horizontal',
-  vertical              => 'internal_vertical',
-  internal_vertical     => 'internal_vertical',
-  math                  => 'math',
-  inline_math           => 'math',
-  display_math          => 'display_math');
+  text                     => 'restricted_horizontal',
+  restricted_horizontal    => 'restricted_horizontal',
+  vertical                 => 'internal_vertical',
+  internal_vertical        => 'internal_vertical',
+  inline_internal_vertical => 'internal_vertical',       # BUT w/o leaveHorizontal
+  math                     => 'math',
+  inline_math              => 'math',
+  display_math             => 'display_math');
 
 # Switch to horizontal mode, w/o stacking the mode
 # Can really only switch to horizontal mode from vertical|internal_vertical,
@@ -438,7 +448,7 @@ sub leaveHorizontal {
 
 # Repack recently digested horizontal items into single horizontal List.
 # Note that TeX would have done paragraph line-breaking, resulting in essentially
-# a vertical list.
+# a vertical list.  We record the fill width (\hsize) here!
 sub repackHorizontal {
   my ($self) = @_;
   my @para = ();
@@ -452,7 +462,15 @@ sub repackHorizontal {
     # if ONLY horizontal mode spaces, we can prune them; it just makes an empty ltx:p
     $keep = 1 if ($mode ne 'horizontal') || !$item->getProperty('isSpace');
     unshift(@para, pop(@LaTeXML::LIST)); }
-  push(@LaTeXML::LIST, List(@para, mode => 'horizontal')) if $keep;
+  if ($keep) {
+    my $list = List(@para, mode => 'horizontal');
+    # We're pretending to format the paragraph (horizontal list),
+    # so we record the current fill width, as well as the baselineskip.
+    # We SHOULD also save \lineskip & \lineskiplimit, but they don't change as much.
+    # See List.pm: vertical lists also record the baselineskip
+    $list->setProperty(width    => LaTeXML::Package::LookupDimension('\hsize'));
+    $list->setProperty(baseline => LaTeXML::Package::LookupDimension('\baselineskip', 1));
+    push(@LaTeXML::LIST, $list); }
   return; }
 
 # Resume vertical mode, internal form: reset mode, and repacks recently
@@ -476,9 +494,13 @@ sub leaveHorizontal_internal {
 sub beginMode {
   my ($self, $umode, $noframe) = @_;
   if (my $mode = $bindable_mode{$umode}) {
+    my $ismath     = $mode =~ /math$/;
+    my $isdisplay  = $mode =~ /^display/;
+    my $isvertical = $isdisplay || ($mode =~ /vertical/);
+    my $isinline   = $umode =~ /inline/;
+    $self->leaveHorizontal if $isvertical && !$isinline;
     my $prevmode  = $STATE->lookupValue('MODE');
     my $prevbound = $STATE->lookupValue('BOUND_MODE');
-    my $ismath    = $mode     =~ /math$/;
     my $wasmath   = $prevmode =~ /math$/;
     pushStackFrame($self) unless $noframe;                  # Effectively bgroup
     $STATE->assignValue(BOUND_MODE => $mode,   'local');    # New value within this frame!
@@ -495,8 +517,7 @@ sub beginMode {
       # and save the text font for any embedded text.
       $STATE->assignValue(savedfont         => $curfont, 'local');
       $STATE->assignValue(script_base_level => scalar(@{ $$self{boxing} }));    # See getScriptLevel
-      my $isdisplay = $mode =~ /^display/;
-      my $mathfont  = $STATE->lookupValue('mathfont')->merge(
+      my $mathfont = $STATE->lookupValue('mathfont')->merge(
         color     => $curfont->getColor, background => $curfont->getBackground,
         size      => $curfont->getSize,
         mathstyle => ($isdisplay ? 'display' : 'text'));
@@ -517,7 +538,6 @@ sub beginMode {
   else {
     Warn('unexpected', $mode, $self, "Cannot enter $mode mode"); }
   return; }
-
 # End the mode $umode; generally pops the stack frome.
 # In RARE cases, we mignt want the same effect, w/o having pushed a stack frome (see above)
 # In that case, we'll still want to do BeforeAfterGroup as-if we had an end group.
@@ -537,7 +557,7 @@ sub endMode {
         popStackFrame($self); }                                   # Effectively egroup.
       Debug("MODE unbind $mode, resume " . $STATE->lookupValue('MODE') . ", for " . Stringify($LaTeXML::CURRENT_TOKEN))
         if $LaTeXML::DEBUG{modes};
-    } }
+  } }
   else {
     Warn('unexpected', $mode, $self, "Cannot end $mode mode"); }
   return; }
