@@ -134,13 +134,14 @@ DefEnvironment('{asparaitem} OptionalUndigested',
 if (IfCondition(T_CS('\if@plnewitem'))) {
   DefEnvironment('{itemize} OptionalUndigested',
     "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+    mode             => 'internal_vertical',
     properties       => sub { beginItemize('itemize', '@item'); },
     afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); }); }
 
 #======================================================================
 # Descriptions
 DefEnvironment('{inparadesc}',
-  "<lttx:inline-description xml:id='#id'>#body</ltx:inline-description>",
+  "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
   mode       => 'inline_internal_vertical',
   properties => sub { beginItemize('inline@description', '@desc'); });
 
