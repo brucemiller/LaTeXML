@@ -496,7 +496,8 @@ sub lstSetClassStyle {
       $props{class} = $stylestring; }            # add indirect to class.
     else {
       delete $$classes{$class}{class};
-      $props{begin} = $style; } }                # Otherwise, presumably TeX
+      $props{begin} = Tokens($style, T_BEGIN);   # Otherwise, presumably TeX
+      $props{end} = T_END; } }
   if ($class =~ /^(\w+?)s?$/) {
     $props{cssclass} = $1; }
   map { $$classes{$class}{$_} = $props{$_} } keys %props;
@@ -1412,7 +1413,7 @@ sub lstProcess_internal {
       my @tokens    = map { lstRescan($_) } Explode($word);                                   # rescan??
       if (my $indexname = $$words{$lookup}{index} || lstClassProperty($classname, 'index')) { # Should be indexed?
         if (my $index = $indexname && $$classes{$indexname}) {
-          lstProcessPush(lstRescan($$index{begin})->unlist, T_BEGIN, @tokens, T_END); } }
+          lstProcessPush(lstRescan($$index{begin})->unlist, @tokens, lstRescan($$index{end})->unlist); } }
       my @pre = ();
       # Special hackery for tex cs to take the "\" outside of the styling
       if ($classname && $$classes{$classname} && $$classes{$classname}{excludeslash}) {
