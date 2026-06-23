@@ -1,0 +1,31 @@
+\documentclass{article}
+% for LaTeXML testing
+\usepackage{amsthm}
+\begin{document}
+
+% Default proof name gets a period.
+\begin{proof}
+Body.
+\end{proof}
+
+% Optional title without trailing punctuation gets a period.
+\begin{proof}[Optional title]
+Body.
+\end{proof}
+
+% Optional title already ending in a period must NOT get a second one (issue #2240).
+\begin{proof}[x.]
+Body.
+\end{proof}
+
+% Two trailing periods are preserved verbatim (matches LaTeX).
+\begin{proof}[x..]
+Body.
+\end{proof}
+
+% Other end punctuation is also respected.
+\begin{proof}[Case 1:]
+Body.
+\end{proof}
+
+\end{document}
