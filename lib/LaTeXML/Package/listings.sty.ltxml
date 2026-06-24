@@ -58,6 +58,7 @@ DefMacro('\lx@lstinline OptionalKeyVals:LST', sub {
     lstActivate($keyvals);         # But do BEFORE reading arg, since some options screw things up.
                                    # get opening delim from gullet, before cattable swap,
                                    # in case token was already peeked for the optional args!
+    AssignValue('LISTINGS_INLINE' => 1);
     my $init = $gullet->readToken;
     my $body = listingsReadRawString($gullet, (Equals($init, T_BEGIN) ? T_END : $init));
     return (
@@ -93,6 +94,7 @@ DefMacroI(T_CS('\begin{lstinline}'), 'OptionalKeyVals:LST', sub {
     DefMacroI('@currenvir', undef, 'lstlisting');
     my $text = listingsReadRawLines($gullet, 'lstinline');
     lstActivate($keyvals);
+    AssignValue('LISTINGS_INLINE' => 1);
     return (
       @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
       lstProcessInline($text),
@@ -927,7 +929,8 @@ DefPrimitive('\lst@@frame Until:\end', sub {
     lstPushValueLocally(LISTINGS_PREAMBLE => T_CS('\lst@@@set@frame')); });
 
 DefConstructor('\lst@@@set@frame', "^framed='#frame'",
-  properties => { frame => sub { LookupValue('LISTINGS_FRAME'); } });
+  properties => {
+    frame => sub { LookupValue('LISTINGS_INLINE') ? undef : LookupValue('LISTINGS_FRAME'); } });
 
 DefKeyVal('LST', 'framearound',        '');            # t|f * 4
 DefKeyVal('LST', 'framesep',           'Dimension');
@@ -955,7 +958,8 @@ DefPrimitive('\lst@@backgroundcolor Until:\end', sub {
     lstPushValueLocally(LISTINGS_PREAMBLE_BEFORE => T_CS('\lst@@@set@background')); });
 
 DefPrimitive('\lst@@@set@background', sub {
-    MergeFont(background => LookupValue('LISTINGS_BACKGROUND')); });
+    MergeFont(background => LookupValue('LISTINGS_BACKGROUND')) unless LookupValue('LISTINGS_INLINE');
+    return; });
 
 DefKeyVal('LST', 'rulecolor', '');
 DefPrimitive('\lst@@rulecolor Until:\end', sub {
