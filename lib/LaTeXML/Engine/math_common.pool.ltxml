@@ -652,27 +652,27 @@ DefConstructor('\phantom{}',
     $whatsit->setProperties(width => $w, height => $h, depth => $d);
     return; });
 
-DefConstructor('\hphantom{}',
-  "?#isMath(<ltx:XMHint width='#width' name='hphantom'/>)"
-    . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
-  properties => { isSpace => 1 },
-  # In TeX, \hphantom always processes its argument inside an \hbox.
-  # In text/horizontal mode, we enforce restricted_horizontal to prevent
-  # display math from leaking through the argument (as can happen with
-  # complex TikZ library expansions like quantikz2).
-  # In math mode, we preserve the current mode for correct font metrics.
-  beforeDigest => sub {
-    my ($stomach) = @_;
-    if (!$STATE->lookupValue('IN_MATH')) {
-      $stomach->beginMode('restricted_horizontal');
-      AssignValue('_hphantom_mode_override' => 1); }
-    else {
-      AssignValue('_hphantom_mode_override' => 0); }
-    return; },
+DefMacro('\hphantom{}', '\protect\ifmmode\lx@math@hphantom{#1}\else\lx@text@hphantom{#1}\fi');
+# In math mode we preserve the current mode, so the argument keeps correct font metrics.
+DefConstructor('\lx@math@hphantom{}',
+  "<ltx:XMHint width='#width' name='hphantom'/>",
+  alias       => '\hphantom',
+  properties  => { isSpace => 1 },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    if (LookupValue('_hphantom_mode_override')) {
-      $stomach->endMode('restricted_horizontal'); }
+    my $whatsit = $_[1];
+    my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
+    $whatsit->setProperties(width => $w, height => $h, depth => $d);
+    return; });
+# In TeX, \hphantom always typesets its argument inside an \hbox; binding
+# restricted_horizontal mode mirrors that and keeps display math from leaking
+# through the argument (as can happen with TikZ library expansions like quantikz2).
+DefConstructor('\lx@text@hphantom{}',
+  "<ltx:text class='ltx_phantom'>#1</ltx:text>",
+  alias       => '\hphantom',
+  mode        => 'restricted_horizontal',
+  properties  => { isSpace => 1 },
+  afterDigest => sub {
+    my $whatsit = $_[1];
     my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
     $whatsit->setProperties(width => $w, height => $h, depth => $d);
     return; });
