@@ -292,10 +292,11 @@ DefMacro('\@icentercr[]', '\vskip #1\ignorespaces');
 #    text
 #   \end{document}
 
-DefMacro('\AtBeginDocument{}', sub {
-    PushValue('@at@begin@document', $_[1]->unlist); });
-DefMacro('\AtEndDocument{}', sub {
-    PushValue('@at@end@document', $_[1]->unlist); });
+# Support optional [label] argument from modern LaTeX hooks system (e.g. \AtBeginDocument[tcolorbox]{...})
+DefMacro('\AtBeginDocument[]{}', sub {
+    PushValue('@at@begin@document', $_[2]->unlist); });
+DefMacro('\AtEndDocument[]{}', sub {
+    PushValue('@at@end@document', $_[2]->unlist); });
 
 # Like  "<ltx:document xml:id='#id'>#body</ltx:document>",
 # But more complicated due to id, at begin/end document and so forth.
