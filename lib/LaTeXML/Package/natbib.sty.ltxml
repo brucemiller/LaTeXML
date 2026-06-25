@@ -529,7 +529,7 @@ DefPrimitiveI('\reset@natbib@cites', undef, sub {
 
 # Kinda rediculous simulating this here (we can almost pull it off in TeX)
 # but the TeX tends to be quite brittle in the wilds of arXiv, so...
-DefMacro('\lx@NAT@parselabel{}{}', sub {
+DefMacro('\lx@NAT@parselabel {}{}', sub {
     my ($gullet, $label, $key) = @_;
     my ($number, $year, $authors, $fullauthors);
     my $bare   = 1;
@@ -561,7 +561,10 @@ DefMacro('\lx@NAT@parselabel{}{}', sub {
         ($a1, @tokens) = NAT_peel_arg(@tokens);
         $authors = $a1; $year = Tokens(@tokens); $bare = 0; } }
     if ($bare) {
-      @tokens = Expand($label)->unlist;
+      # Goal: deactivate underscores
+      #  (but not quite Semiverbatim, as math should be active things like \ddot{a})
+      my @safe_tks = map { Equals($_, T_SUB) ? T_OTHER("_") : $_ } $label->unlist;
+      @tokens = Expand(Tokens(@safe_tks))->unlist;
       # \bibitem[Jones et al.(1990)]{key}...
       # \bibitem[Jones et al.(1990)Jones, Baker, and Williams]{key}...
       # \bibitem[Jones et al., 1990]{key}...
