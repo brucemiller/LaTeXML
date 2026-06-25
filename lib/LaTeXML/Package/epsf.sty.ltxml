@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Image;
+use URI::file;
 
 #**********************************************************************
 # (See  LaTeXML::Post::Graphics for suggested postprocessing)
@@ -51,6 +52,7 @@ DefConstructor('\epsfbox[] Semiverbatim',
     my $clip    = LookupValue('epsf_clip');
     my $options = ($clip ? ($bb ? "viewport=" . ToString($bb) . ", clip" : "clip") : '');
     my ($file, @candidates) = image_candidates(ToString($graphic));
+    @candidates = map { URI::file->new($_) } @candidates;
     my $w = LookupRegister('\epsfxsize');
     my $h = LookupRegister('\epsfysize');
     if ($w->valueOf > 0) {

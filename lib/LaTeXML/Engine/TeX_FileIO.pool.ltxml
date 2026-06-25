@@ -17,6 +17,7 @@ use LaTeXML::Package;
 #use Unicode::Normalize;
 use LaTeXML::Util::Pathname;
 #use List::Util qw(min max);
+use URI::file;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # File I/O Family of primitive control sequences
@@ -211,7 +212,7 @@ DefConstructor('\lx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
     my $searchpaths = LookupValue('GRAPHICSPATHS');
     my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map { pathname_relative($_, $base) } @candidates; }
+      @candidates = map { URI::file->new(pathname_relative($_, $base)) } @candidates; }
     my $options = '';
     if ($kv) {    # remap psfile options to includegraphics options:
       if (my $hscale = $kv->getValue('hscale')) {
