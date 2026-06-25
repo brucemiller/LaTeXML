@@ -13,6 +13,7 @@ package LaTeXML::Post::MakeBibliography;
 use strict;
 use warnings;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Radix;
 use charnames qw(:full);
@@ -155,6 +156,7 @@ sub getBibliographies {
           $raw .= $rawbib; }
         else {
           # TODO: Is this a memory concern for large bib files?
+          RecordInput($rawbib);
           if (open(my $bibfh, '<', $rawbib)) {
             $raw .= join("", <$bibfh>);
             close $bibfh; }
