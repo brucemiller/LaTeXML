@@ -58,10 +58,35 @@ DefConstructor('\lx@hidden@egroup', '',
 #======================================================================
 # A few useful low-level boxing things
 
-DefConstructor('\lx@framed[]{}',
-  "<ltx:text framed='#frame' _noautoclose='1'>#2</ltx:text>",
-  properties      => { frame => sub { ToString($_[1] || 'rectangle'); } },
+DefKeyVal('framed', 'margin', 'Dimension');
+DefKeyVal('framed', 'rule',   'Dimension');
+DefConstructor('\lx@framed OptionalKeyVals:framed {}',
+  "<ltx:text framed='#framed'  framecolor='#framecolor' cssstyle='#cssstyle'"
+    . " _noautoclose='1'>#2</ltx:text>",
+  properties      => sub { framedProperties(($_[1] ? $_[1]->getHash : ())); },
   enterHorizontal => 1, sizer => '#2');
+
+# Compute the properties required for a framed something. Options are:
+#  margin : the margin separation, eg. margin => '\fboxsep'
+#  rule   : the rule thickness
+#  color  : the rule color (default, the current font color)
+#  backgroundcolor  : the background color (default, NONE)
+sub framedProperties {
+  my (%options) = @_;
+  my $sep       = $options{margin} && LookupDimension($options{margin});
+  my $th        = $options{rule}   && LookupDimension($options{rule});
+  my $pad       = ($sep && $th ? $sep->add($th) : $sep || $th);
+  my $th_pt     = $th && $th->toAttribute;
+  my $style     = join(';',
+    ($sep                          ? ('padding:' . $sep->toAttribute)     : ()),
+    ($th_pt && ($th_pt ne '0.4pt') ? ('border-width:' . $th->toAttribute) : ()));
+  return (
+    framed     => ToString($options{frame} || 'rectangle'),
+    framecolor => ($options{color}         || LookupValue('font')->getColor),
+    ($options{backgroundcolor} ? (backgroundcolor => $options{backgroundcolor}) : ()),
+    ($style                    ? (cssstyle        => $style)                    : ()),
+    padtop => $pad, padbottom => $pad, padleft => $pad, padright => $pad);
+}
 
 DefConstructor('\lx@hflipped{}',
   "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>",
@@ -422,7 +447,13 @@ sub isVAttached {
 # and then determine which container element is most apprpriate for both the conent & context
 # from block, logical-block or sectional-block, or the inline- variants.
 sub insertBlock {
-  my ($document, $contents, %blockattr) = @_;
+  my ($document, $contents, %props) = @_;
+  # Heuristic: we (slopily) accept all Whatsit properties, but only SOME are intended
+  # as attributes. Filter out non-attributes, based on what ltx:figure accepts.
+  # That's a maximal set of the attributes for candidate containers.
+  my %blockattr = ();
+  map { $document->canHaveAttribute('ltx:figure', $_) && ($blockattr{$_} = $props{$_}); }
+    sort keys %props;
   my $model   = $document->getModel;
   my $context = $document->getElement;    # Where we originally start inserting.
   if (!$context) {

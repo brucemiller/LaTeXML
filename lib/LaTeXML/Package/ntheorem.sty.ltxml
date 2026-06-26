@@ -208,17 +208,13 @@ DefPrimitive('\renewtheoremstyle{}{}{}', sub {
 # This needs to tie into framed.sty!!!!
 # Really should execute \theoremframecommand in isolation,
 # then copy the relevant attributes (framing, spacing, color, ...) to the theorem!
-### NEEDS TO integrate with framed.sty better
-### AND in the meantime, this needs a better API
 DefConstructorI('\lx@addframing', undef, sub {
     my ($doc, %props) = @_;
     my $node = $doc->getElement;
-    $doc->setAttribute($node, framed => 'rectangle');
-    my $css = $node->getAttribute('cssstyle');
-    my $pad = 'padding:' . $props{margin} . 'pt;';
-    $doc->setAttribute($node, cssstyle => ($css ? $css . ';' . $pad : $pad)); },
-  properties => sub { (framecolor => Black,
-      margin => LookupRegister('\FrameSep')->ptValue); });
+    $doc->setAttribute($node, framed     => $props{framed});
+    $doc->setAttribute($node, framecolor => $props{framecolor});
+    $doc->setAttribute($node, cssstyle   => $props{cssstyle}); },
+  properties => sub { (framedProperties(color => Black, margin => '\FrameSep')); });
 
 # Since \theoremframecommand can be defined to be pretty much anything,
 # we don't have a good handle on what colors, etc, it may use.

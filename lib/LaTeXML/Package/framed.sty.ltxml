@@ -21,26 +21,18 @@ use LaTeXML::Package;
 DefEnvironment('{framed}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    insertBlock($document, $props{body},
-      framed     => 'rectangle',
-      framecolor => $props{framecolor},
-      cssstyle   => 'padding:' . $props{margin} . 'pt;border-width:' . $props{border} . 'pt'); },
-  properties => sub { (framecolor => Black,
-      margin => LookupRegister('\FrameSep')->ptValue,
-      border => LookupRegister('\FrameRule')->ptValue); });
+    insertBlock($document, $props{body}, %props); },
+  properties => sub { (framedProperties(color => Black,
+        margin => '\FrameSep', rule => '\FrameRule')); });
 
 # {oframed} "open" framed box, the top/bottom is open when it splits across pages.
 # That shouldn't matter for us (?)
 DefEnvironment('{oframed}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    insertBlock($document, $props{body},
-      framed     => 'rectangle',
-      framecolor => $props{framecolor},
-      cssstyle   => 'padding:' . $props{margin} . 'pt;border-width:' . $props{border} . 'pt'); },
-  properties => sub { (framecolor => Black,
-      margin => LookupRegister('\FrameSep')->ptValue,
-      border => LookupRegister('\FrameRule')->ptValue); });
+    insertBlock($document, $props{body}, %props); },
+  properties => sub { (framedProperties(color => Black,
+        margin => '\FrameSep', rule => '\FrameRule')); });
 
 # {shaded} a shaded box; uses "shadecolor" for background color; otherwise, no frame.
 # Note that the shading "bleeds" into the margin (whatever that means)
@@ -50,38 +42,34 @@ DefEnvironment('{oframed}', sub {
 DefEnvironment('{shaded}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    insertBlock($document, $props{body},
-      backgroundcolor => $props{backgroundcolor},
-      cssstyle        => 'padding:' . $props{margin} . 'pt'); },
+    insertBlock($document, $props{body}, %props); },
   beforeDigest => sub {
     MergeFont(background => LookupValue('color_shadecolor')); },
-  properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
-      margin => LookupRegister('\FrameSep')->ptValue); });
+  properties => sub { (framedProperties(
+        backgroundcolor => LookupValue('font')->getBackground, margin => '\FrameSep')); });
+
 # {shaded*} Same as {shaded}, but the shading ends at the margin.
 # For us, that's pretty much identical.
 DefEnvironment('{shaded*}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    insertBlock($document, $props{body},
-      backgroundcolor => $props{backgroundcolor},
-      cssstyle        => 'padding:' . $props{margin} . 'pt'); },
-
+    insertBlock($document, $props{body}, %props); },
   beforeDigest => sub {
     MergeFont(background => LookupValue('color_shadecolor')); },
-  properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
-      margin => LookupRegister('\FrameSep')->ptValue); });
+  properties => sub { (framedProperties(
+        backgroundcolor => LookupValue('font')->getBackground, margin => '\FrameSep')); });
+
 # {snugshade} Same as {shaded}, but with a tight fit around the contents.
 # doesn't use \FrameSep?
 DefEnvironment('{snugshade}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    insertBlock($document, $props{body},
-      backgroundcolor => $props{backgroundcolor},
-      cssstyle        => 'padding:' . $props{margin} . 'pt'); },
+    insertBlock($document, $props{body}, %props); },
   beforeDigest => sub {
     MergeFont(background => LookupValue('color_shadecolor')); },
-  properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
-      margin => LookupRegister('\fboxsep')->ptValue); });    # Not \FrameSep
+  properties => sub { (framedProperties(
+        backgroundcolor => LookupValue('font')->getBackground, margin => '\FrameSep')); });
+
 DefEnvironment('{snugshade*}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
@@ -92,12 +80,13 @@ DefEnvironment('{snugshade*}', sub {
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
       margin => LookupRegister('\fboxsep')->ptValue); });
+
 DefEnvironment('{leftbar}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    insertBlock($document, $props{body}, framed => 'left', framecolor => $props{framecolor},
-      cssstyle => 'border-width:3pt;padding-left:10pt'); },
-  properties => sub { (framecolor => Black); });
+    insertBlock($document, $props{body}, %props); },
+  properties => sub { (framed => 'left', color => Black,
+      cssstyle => 'padding-left:10pt; border-left-width:3pt', padleft => Dimension('13pt')); });
 
 # Expects: TFFrameColor to color the frame
 # Kinda clumsy to deal with a fake title...
@@ -105,14 +94,15 @@ DefEnvironment('{leftbar}', sub {
 DefEnvironment('{titled-frame} Undigested', sub {
     my ($document, $title, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    insertBlock($document, $props{body},
-      framed          => 'rectangle', framecolor => $props{framecolor},
-      backgroundcolor => $props{backgroundcolor},
-      cssstyle        => 'padding:8pt;border-width:2pt'); },
+    insertBlock($document, $props{body}, %props); },
   afterDigestBegin => sub {
     Digest(Invocation(T_CS('\@titledframe@title'), $_[1]->getArg(1))); },
-  properties => sub { (framecolor => LookupValue('color_TFFrameColor'),
-      backgroundcolor => LookupValue('font')->getBackground); });
+  properties => sub {
+    (framedProperties(color => LookupValue('color_TFFrameColor'),
+        backgroundcolor => LookupValue('font')->getBackground,
+        margin          => '0pt', rule => '2pt'
+    )); });
+
 DefMacro('\@titledframe@title{}',
 '\@@titledframe@title{{\fboxsep8pt\fboxrule2pt\pagecolor{TFFrameColor}\textcolor{TFTitleColor} {#1}}}');
 DefConstructor('\@@titledframe@title{}', "<ltx:text cssstyle='display:block;margin:-8pt -8pt 8pt -8pt;padding:8pt'>#1</ltx:text>");

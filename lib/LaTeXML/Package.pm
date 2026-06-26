@@ -1368,15 +1368,27 @@ sub LookupRegister {
       "The control sequence " . ToString($cs) . " is not a register"); }
   return; }
 
+# Try to turn the argument into a Dimension
+# recognizing strings, registers,...
 sub LookupDimension {
   my ($cs, $noerror) = @_;
-  $cs = T_CS($cs) unless ref $cs;
-  if (my $defn = $STATE->lookupDefinition($cs)) {
-    if ($defn->isRegister) {    # Easy (and proper) case.
-      return $defn->valueOf; }
+  if ((ref $cs) && $cs->isaBox) {    # already digested; back to string
+    $cs = ToString($cs); }
+  if (!ref $cs) {                    # String?
+    if ($cs =~ /^[0-9\+\-\.]\w\w+$/) {    # obvious Dimension
+      $cs = Dimension($cs); }
     else {
-      return $STATE->getStomach->getGullet->readingFromMouth($cs, sub {
-          $_[0]->readDimension; }); } }
+      $cs = TokenizeInternal($cs);
+      ($cs) = $cs->unlist if scalar($cs->unlist) == 1; } }    # Single token?
+  my $defn;
+  if ($cs->isa('LaTeXML::Common::Dimension')) {
+    return $cs; }
+  elsif ((ref $cs eq 'LaTeXML::Core::Token') && ($defn = $STATE->lookupDefinition($cs))
+    && $defn->isRegister) {                                   # Easy (and proper) case.
+    return $defn->valueOf; }
+  elsif (ref $cs eq 'LaTeXML::Core::Tokens') {
+    return $STATE->getStomach->getGullet->readingFromMouth($cs, sub {
+        $_[0]->readDimension; }); }
   elsif (!$noerror) {
     Warn('expected', 'register', $STATE->getStomach,
       "The control sequence " . ToString($cs) . " is not a register"); }

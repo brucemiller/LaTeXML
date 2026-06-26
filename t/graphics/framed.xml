@@ -14,21 +14,21 @@
       <tag role="typerefnum">§1</tag>
     </tags>
     <title><tag close=" ">1</tag>Basics</title>
-    <para cssstyle="padding:9pt;border-width:0.4pt" framecolor="#000000" framed="rectangle" xml:id="S1.p1">
+    <para cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle" xml:id="S1.p1">
       <p>This is stuff that’s framed.</p>
     </para>
     <para xml:id="S1.p2">
       <p>Note that the</p>
-      <p cssstyle="padding:9pt;border-width:0.4pt" framecolor="#000000" framed="rectangle">framed</p>
+      <p cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle">framed</p>
       <p>stuff is a block!</p>
     </para>
-    <logical-block cssstyle="padding:9pt;border-width:0.4pt" framecolor="#000000" framed="rectangle">
+    <logical-block cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle">
       <para xml:id="S1.p3">
         <p>This is stuff that’s framed.</p>
         <p>And it can hold multiple paragraphs.</p>
       </para>
     </logical-block>
-    <sectional-block cssstyle="padding:9pt;border-width:0.4pt" framecolor="#000000" framed="rectangle">
+    <sectional-block cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle">
       <para xml:id="S1.p4">
         <p>And even stuff in multiple Paragraphs.</p>
       </para>
@@ -47,20 +47,20 @@
       <tag role="typerefnum">§2</tag>
     </tags>
     <title><tag close=" ">2</tag>Variants</title>
-    <para cssstyle="padding:9pt;border-width:0.4pt" framecolor="#000000" framed="rectangle" xml:id="S2.p1">
+    <para cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle" xml:id="S2.p1">
       <p>This is stuff that’s framed, but would stay open at page breaks.
 This doesn’t make so much sense for LaTeXML, so it’s pretty much
 the same.</p>
     </para>
-    <para backgroundcolor="#80BF80" cssstyle="padding:9pt" xml:id="S2.p2">
+    <para backgroundcolor="#80BF80" cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle" xml:id="S2.p2">
       <p>This is stuff that’s shaded green;
 should fade into the margin, whatever that means.</p>
     </para>
-    <para backgroundcolor="#80BF80" cssstyle="padding:9pt" xml:id="S2.p3">
+    <para backgroundcolor="#80BF80" cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle" xml:id="S2.p3">
       <p>This is stuff that’s shaded green;
 it should end sharply at the margin.</p>
     </para>
-    <para backgroundcolor="#80BF80" cssstyle="padding:3pt" xml:id="S2.p4">
+    <para backgroundcolor="#80BF80" cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle" xml:id="S2.p4">
       <p>This is stuff that’s snugly shaded green;
 fading into the margin.</p>
     </para>
@@ -68,14 +68,14 @@ fading into the margin.</p>
       <p>This is stuff that’s snugly shaded green;
 ending sharply at the margin.</p>
     </para>
-    <para cssstyle="border-width:3pt;padding-left:10pt" framecolor="#000000" framed="left" xml:id="S2.p6">
+    <para cssstyle="padding-left:10pt; border-left-width:3pt" framed="left" xml:id="S2.p6">
       <p>This is with a left bar, like a changebar?</p>
     </para>
-    <para cssstyle="padding:8pt;border-width:2pt" framecolor="#8080BF" framed="rectangle" xml:id="S2.p7">
+    <para cssstyle="padding:0.0pt;border-width:2.0pt" framecolor="#8080BF" framed="rectangle" xml:id="S2.p7">
       <p><text backgroundcolor="#8080BF" color="#FFFFFF" cssstyle="display:block;margin:-8pt -8pt 8pt -8pt;padding:8pt">A Titled Frame</text>
 This is a titled frame.</p>
     </para>
-    <logical-block cssstyle="padding:9pt;border-width:0.4pt" framecolor="#000000" framed="rectangle">
+    <logical-block cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle">
       <para xml:id="S2.p8">
         <p>Lorem ipsum.</p>
       </para>
@@ -91,7 +91,7 @@ This is a titled frame.</p>
         </para>
       </theorem>
     </logical-block>
-    <theorem backgroundcolor="#80BF80" class="ltx_theorem_thm" cssstyle="padding:9pt" inlist="thm theorem:thm" xml:id="Thmthm2">
+    <theorem backgroundcolor="#80BF80" class="ltx_theorem_thm" cssstyle="padding:9.0pt" framecolor="#000000" framed="rectangle" inlist="thm theorem:thm" xml:id="Thmthm2">
       <tags>
         <tag>Theorem 2</tag>
         <tag role="refnum">2</tag>

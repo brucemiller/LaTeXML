@@ -65,11 +65,11 @@ sub getSOULcolor {
       return ParseColor(undef, $color); } } }
 #======================================================================
 # underline
-# (should set framecolor from \setulcolor)
 DefConstructor('\textul{}',
   "<ltx:text framed='underline' framecolor='#framecolor'_noautoclose='1'>#1</ltx:text>",
   enterHorizontal => 1, bounded => 1, sizer => '#1',
-  properties      => { framecolor => sub { getSOULcolor('soul_ul_color'); } });
+  properties      => sub { (framedProperties(
+        framed => 'underline', color => getSOULcolor('soul_ul_color'))); });
 
 # Customizing underlines
 DefPrimitive('\setulcolor{}', sub { AssignValue(soul_ul_color => ToString($_[1])); });
