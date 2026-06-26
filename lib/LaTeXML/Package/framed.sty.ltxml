@@ -80,12 +80,13 @@ DefEnvironment('{snugshade*}', sub {
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
       margin => LookupRegister('\fboxsep')->ptValue); });
+
 DefEnvironment('{leftbar}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     insertBlock($document, $props{body}, %props); },
-  properties => sub { (framedProperties(
-        frame => 'left', color => Black, margin => '10pt', rule => '3pt')); });
+  properties => sub { (framed => 'left', color => Black,
+      cssstyle => 'padding-left:10pt; border-left-width:3pt', padleft => Dimension('13pt')); });
 
 # Expects: TFFrameColor to color the frame
 # Kinda clumsy to deal with a fake title...
