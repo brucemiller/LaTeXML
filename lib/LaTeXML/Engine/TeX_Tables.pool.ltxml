@@ -706,7 +706,7 @@ DefMacro('\lx@alignment@multicolumn {Number}{}{}', sub {
     $span = $span->valueOf;
     # First part, like \multispan
     (T_CS('\omit'), (map { (T_CS('\span'), T_CS('\omit')) } 1 .. $span - 1),
-      T_CS('\lx@alignment@altcolumn'), T_BEGIN, $template, T_END, $tokens); });
+      T_CS('\lx@alignment@altcolumn'), T_BEGIN, $template, T_END, T_CS('\relax'), $tokens); });
 DefMacro('\lx@alignment@altcolumn AlignmentTemplate', sub {
     my ($gullet, $template) = @_;
     if (my $alignment = LookupValue('Alignment')) {
