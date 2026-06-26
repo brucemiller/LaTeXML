@@ -3167,7 +3167,7 @@ DefMacro('\caption',
 # First, check for trailing \label, move it into the caption as a standard position
 # NOTE: If one day we want to unlock \@caption, make sure to test against arXiv:cond-mat/0001395 for a passing build.
 DefMacro('\@caption{}[]{}',
-  '\@ifnext\label{\@caption@postlabel{#1}{#2}{#3}}{\@caption@{#1}{#2}{#3}}', locked => 1);
+  '\@ifnextchar\label{\@caption@postlabel{#1}{#2}{#3}}{\@caption@{#1}{#2}{#3}}', locked => 1);
 
 DefMacro('\@caption@postlabel{}{}{} SkipMatch:\label Semiverbatim',
   '\@caption@{#1}{#2}{#3\label{#4}}');
@@ -5640,7 +5640,6 @@ DefMacro('\@ifnextchar DefToken {}{}', sub {
     ((XEquals($token, (defined $next ? $next : T_END)) ? $if : $else)->unlist,
       (defined $next ? ($next) : ())); });
 Let('\kernel@ifnextchar', '\@ifnextchar');
-Let('\@ifnext',           '\@ifnextchar');    # ????
 
 # Hacky version matches multiple chars! but does NOT expand
 DefMacro('\@ifnext@n {} {}{}', sub {

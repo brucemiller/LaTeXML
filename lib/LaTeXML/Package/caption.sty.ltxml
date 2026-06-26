@@ -117,7 +117,7 @@ DefMacro('\maybe@@generic@caption', sub {
 # It isn't necessarily IN a figure or any float, so we'll wrap it in an otherwise empty one!
 DefMacro('\captionof', '\@ifstar{\@scaptionof}{\@captionof}');
 DefMacro('\@captionof{}[]{}',
-  '\@ifnext\label{\@captionof@postlabel{#1}{#2}{#3}}{\@captionof@{#1}{#2}{#3}}');
+  '\@ifnextchar\label{\@captionof@postlabel{#1}{#2}{#3}}{\@captionof@{#1}{#2}{#3}}');
 # Check for trailing \label!
 DefMacro('\@captionof@postlabel{}{}{} SkipMatch:\label Semiverbatim',
   '\@captionof@{#1}{#2}{#3\label{#4}}');
