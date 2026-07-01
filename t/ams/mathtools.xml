@@ -6953,7 +6953,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S10.p16">
       <equation xml:id="S10.Ex80">
-        <Math mode="display" tex="\begin{multlined}\boxed{Firstline}\\&#10;\boxed{Secondline}\\&#10;L+E+F+T\\&#10;R+I+G+H+T\\&#10;L+E+F+T\\&#10;R+I+G+H+T\\&#10;\boxed{WupWup}\\&#10;\boxed{Lastline}\end{multlined}\boxed{Firstline}\\&#10;\boxed{Secondline}\\&#10;L+E+F+T\\&#10;R+I+G+H+T\\&#10;L+E+F+T\\&#10;R+I+G+H+T\\&#10;\boxed{WupWup}\\&#10;\boxed{Lastline}" text="F * i * r * s * t * l * i * n * e * S * e * c * o * n * d * l * i * n * e * L + E + F + T * R + I + G + H + T * L + E + F + T * R + I + G + H + T * W * u * p * W * u * p * L * a * s * t * l * i * n * e" xml:id="S10.Ex80.m1">
+        <Math mode="display" tex="\begin{multlined}\boxed{Firstline}\\&#10;\boxed{Secondline}\\&#10;L+E+F+T\\&#10;R+I+G+H+T\\&#10;\kern 28.45274ptL+E+F+T\\&#10;R+I+G+H+T\kern 85.95935pt\\&#10;\boxed{WupWup}\\&#10;\boxed{Lastline}\end{multlined}\boxed{Firstline}\\&#10;\boxed{Secondline}\\&#10;L+E+F+T\\&#10;R+I+G+H+T\\&#10;\kern 28.45274ptL+E+F+T\\&#10;R+I+G+H+T\kern 85.95935pt\\&#10;\boxed{WupWup}\\&#10;\boxed{Lastline}" text="F * i * r * s * t * l * i * n * e * S * e * c * o * n * d * l * i * n * e * L + E + F + T * R + I + G + H + T * L + E + F + T * R + I + G + H + T * W * u * p * W * u * p * L * a * s * t * l * i * n * e" xml:id="S10.Ex80.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -7057,7 +7057,7 @@ Then a switch of tag forms.</p>
                   <XMCell align="left">
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP" xml:id="S10.Ex80.m1.20">+</XMTok>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.19">L</XMTok>
+                      <XMTok font="italic" lpadding="28.5pt" role="UNKNOWN" xml:id="S10.Ex80.m1.19">L</XMTok>
                       <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.21">E</XMTok>
                       <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.23">F</XMTok>
                       <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.25">T</XMTok>
@@ -7066,14 +7066,17 @@ Then a switch of tag forms.</p>
                 </XMRow>
                 <XMRow>
                   <XMCell align="right">
-                    <XMApp>
-                      <XMTok meaning="plus" role="ADDOP" xml:id="S10.Ex80.m1.27">+</XMTok>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.26">R</XMTok>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.28">I</XMTok>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.30">G</XMTok>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.32">H</XMTok>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.34">T</XMTok>
-                    </XMApp>
+                    <XMWrap>
+                      <XMApp xml:id="S10.Ex80.m1.37">
+                        <XMTok meaning="plus" role="ADDOP" xml:id="S10.Ex80.m1.27">+</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.26">R</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.28">I</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.30">G</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.32">H</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex80.m1.34">T</XMTok>
+                      </XMApp>
+                      <XMHint name="qqqqqqqquad" role="PUNCT" width="86pt"/>
+                    </XMWrap>
                   </XMCell>
                 </XMRow>
                 <XMRow>

@@ -50,9 +50,13 @@ foreach my $option (qw(
   alignedleftspaceyes alignedleftspaceno alignedleftspaceyesifneg)) {
   DeclareOption($option, undef); }
 
+DefConditional('\if@fleqn');
+
 DeclareOption('reqno', sub { AssignMapping('DOCUMENT_CLASSES', ltx_leqno => undef); });
 DeclareOption('leqno', sub { AssignMapping('DOCUMENT_CLASSES', ltx_leqno => 1); });
-DeclareOption('fleqn', sub { AssignMapping('DOCUMENT_CLASSES', ltx_fleqn => 1); });
+DeclareOption('fleqn', sub {
+    AssignMapping('DOCUMENT_CLASSES', ltx_fleqn => 1);
+    Let('\if@fleqn', T_CS('\iftrue')); });
 
 ProcessOptions();
 
@@ -81,7 +85,6 @@ ProcessOptions();
 
 DefConditional('\ifmeasuring@');    # but we won't use it?
 DefConditional('\iftagsleft@');     # but we won't use it?
-DefConditional('\if@fleqn');        # but we won't use it?
 Let('\notag', '\nonumber');
 
 DefMacro('\tag OptionalMatch:* {}',
@@ -242,11 +245,12 @@ DefConstructor('\@@multline DigestedBody',
     . "</ltx:equation>",
   mode         => 'display_math',
   properties   => sub { RefStepCounter('equation') },
-  beforeDigest => sub { $_[0]->bgroup; },
-  afterDigest  => sub {                              # Nasty trick required to make "body" be the arg.
-    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left', '-1' => 'right' });
-    $_[1]->setBody($_[1]->getArg(1)->unlist, undef);
-    return; },
+  beforeDigest => sub {
+    AssignValue('MULTIROW_ALIGNMENT_RULE' => { 'default' => IfCondition('\if@fleqn') ? 'left' : 'center', '0' => 'left', '-1' => 'right' });
+    $_[0]->bgroup; },
+  afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => LookupValue('MULTIROW_ALIGNMENT_RULE'));
+    $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion      => '\begin{multline}#1\end{multline}',
   afterConstruct => sub {
     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
@@ -258,9 +262,11 @@ DefConstructor('\@@multlinestar DigestedBody',
     . "</ltx:Math>"
     . "</ltx:equation>",
   mode         => 'display_math',
-  beforeDigest => sub { $_[0]->bgroup; },
-  afterDigest  => sub {                     # Nasty trick required to make "body" be the arg.
-    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left', '-1' => 'right' });
+  beforeDigest => sub {
+    AssignValue('MULTIROW_ALIGNMENT_RULE' => { 'default' => IfCondition('\if@fleqn') ? 'left' : 'center', '0' => 'left', '-1' => 'right' });
+    $_[0]->bgroup; },
+  afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => LookupValue('MULTIROW_ALIGNMENT_RULE'));
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion      => '\begin{multline*}#1\end{multline*}',
   afterConstruct => sub {
@@ -270,9 +276,11 @@ DefConstructor('\@@multlinestar DigestedBody',
 DefConstructor('\@@AmS@multline DigestedBody',
   "#body",
   mode         => 'display_math',
-  beforeDigest => sub { $_[0]->bgroup; },
-  afterDigest  => sub {                     # Nasty trick required to make "body" be the arg.
-    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left', '-1' => 'right' });
+  beforeDigest => sub {
+    AssignValue('MULTIROW_ALIGNMENT_RULE' => { 'default' => IfCondition('\if@fleqn') ? 'left' : 'center', '0' => 'left', '-1' => 'right' });
+    $_[0]->bgroup; },
+  afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => LookupValue('MULTIROW_ALIGNMENT_RULE'));
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion      => '\multline#1\endmultline',
   afterConstruct => sub {
@@ -1315,8 +1323,28 @@ DefRegister('\multlinetaggap' => Glue('10pt'));
 DefMacro('\primfrac{}', Tokens());
 
 # \shoveleft, \shoveright should do something about eqn number placement?
-DefMacro('\shoveleft{}',  '#1');
-DefMacro('\shoveright{}', '#1');
+sub amsShove {
+  my ($shove_dir) = @_;
+  my $alignment = LookupValue('Alignment') or return;
+
+  my $attributes = $$alignment{properties}{attributes} or return;
+  my $name       = $$attributes{name}                  or return;
+
+  # \shove* do not change alignment outside of multline, multline*, multlined
+  if (ToString($name) =~ m/^multline/ && (my $rowalignment = LookupValue('MULTIROW_ALIGNMENT_RULE'))) {
+    my $cur_row_num = $alignment->currentRowNumber - 1;
+    $$rowalignment{$cur_row_num} = $shove_dir;
+  }
+
+  return;
+}
+
+# omit the reversion '\shoveleft' as it breaks mathtex, mathimages as it is not allowed outside of multline, multline*, multlined
+DefConstructor('\lx@ams@shoveleft{}', '#1', beforeDigest => sub { amsShove('left'); return; }, reversion => '#1');
+DefConstructor('\lx@ams@shoveright{}', '#1', beforeDigest => sub { amsShove('right'); return; }, reversion => '#1');
+
+Let('\shoveleft',  '\lx@ams@shoveleft');
+Let('\shoveright', '\lx@ams@shoveright');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

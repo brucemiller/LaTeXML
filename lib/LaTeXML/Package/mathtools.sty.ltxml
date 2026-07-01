@@ -586,17 +586,17 @@ DefMacroI('\multlined', '[][]', '\@multlined@tmp{'
 DefMacroI('\endmultlined', undef, '\lx@end@alignment\@end@multlined');
 DefPrimitiveI('\@end@multlined', undef, sub { $_[0]->egroup; });
 
-# Is currently ignore the shoving dimension
-DefMacro('\@MT@shove{}', sub {
-    my ($gullet, $shove_dir) = @_;
-    my $cur_row_num  = LookupValue('Alignment')->currentRowNumber;
-    my $rowalignment = LookupValue('MULTIROW_ALIGNMENT_RULE');
+DefMacro('\shoveleft[]{}', sub {
+    my ($gullet, $dim, $eqn) = @_;
+    $dim = readExpression($gullet, 'dimen', $dim) if defined $dim;
+    return (T_CS('\lx@ams@shoveleft'), T_BEGIN, ($dim ? (T_CS('\kern'), Tokenize($dim->toString)) : ()), $eqn, T_END);
+});
 
-    $$rowalignment{$cur_row_num} = ToString($shove_dir);
-    return; });
-
-DefMacro('\shoveright[]{}', '\@MT@shove{right}#2');
-DefMacro('\shoveleft[]{}',  '\@MT@shove{left}#2');
+DefMacro('\shoveright[]{}', sub {
+    my ($gullet, $dim, $eqn) = @_;
+    $dim = readExpression($gullet, 'dimen', $dim) if defined $dim;
+    return (T_CS('\lx@ams@shoveright'), T_BEGIN, $eqn, ($dim ? (T_CS('\kern'), Tokenize($dim->toString)) : ()), T_END);
+});
 
 # cases
 DefMacro('\dcases',
