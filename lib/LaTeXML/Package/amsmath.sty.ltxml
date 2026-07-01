@@ -849,8 +849,11 @@ DefMacroI('\DOTSI', undef, Tokens());
 DefMacroI('\DOTSX', undef, Tokens());
 Let('\hdots', '\lx@ldots');
 
-DefMacro('\hdotsfor Number', sub {
-    (map { T_CS('\hdots') } 1 .. $_[1]->valueOf); });
+# The optional argument determines the visual space between the dots, currently ignored
+DefMacro('\hdotsfor[Number]{Number}', sub {
+    my $cols = $_[2]->valueOf;
+    $cols = 1 if $cols < 1;
+    (map { T_CS('\hdots'), T_ALIGN } 1 .. $cols - 1), T_CS('\hdots'); });
 
 # The basic idea is simple enough (in TeX world);
 # Peek to see what follows (\futurelet) and if mathbin or mathrel, use cdots.
