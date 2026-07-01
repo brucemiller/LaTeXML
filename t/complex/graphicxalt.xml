@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="graphicx"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:aria="http://www.w3.org/ns/wai-aria">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <graphics candidates="sunset.jpg" graphic="sunset" xml:id="p1.g1"/>
+    <graphics candidates="sunset.jpg" description="alt text" graphic="sunset" options="alt=alt text" xml:id="p1.g2"/>
+    <graphics aria:label="actual text" candidates="sunset.jpg" graphic="sunset" options="actualtext=actual text" xml:id="p1.g3"/>
+    <graphics aria:label="actual text" candidates="sunset.jpg" description="alt text" graphic="sunset" options="actualtext=actual text,alt=alt text" xml:id="p1.g4"/>
+    <graphics aria:hidden="true" candidates="sunset.jpg" graphic="sunset" options="artifact=true" xml:id="p1.g5"/>
+    <graphics aria:hidden="true" candidates="sunset.jpg" description="alt text" graphic="sunset" options="artifact=true,alt=alt text" xml:id="p1.g6"/>
+    <graphics aria:hidden="true" aria:label="actual text" candidates="sunset.jpg" graphic="sunset" options="artifact=true,actualtext=actual text" xml:id="p1.g7"/>
+    <graphics aria:hidden="true" aria:label="actual text" candidates="sunset.jpg" description="alt text" graphic="sunset" options="artifact=true,actualtext=actual text,alt=alt text" xml:id="p1.g8"/>
+  </para>
+  <figure inlist="lof" xml:id="S0.F1">
+    <tags>
+      <tag>Figure 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Figure 1</tag>
+    </tags>
+    <graphics candidates="sunset.jpg" class="ltx_figure_panel" graphic="sunset" xml:id="S0.F1.g1"/>
+    <break class="ltx_break"/>
+    <graphics candidates="sunset.jpg" class="ltx_figure_panel" description="alt text" graphic="sunset" options="alt=alt text" xml:id="S0.F1.g2"/>
+    <break class="ltx_break"/>
+    <graphics aria:label="actual text" candidates="sunset.jpg" class="ltx_figure_panel" graphic="sunset" options="actualtext=actual text" xml:id="S0.F1.g3"/>
+    <break class="ltx_break"/>
+    <graphics aria:label="actual text" candidates="sunset.jpg" class="ltx_figure_panel" description="alt text" graphic="sunset" options="actualtext=actual text,alt=alt text" xml:id="S0.F1.g4"/>
+    <break class="ltx_break"/>
+    <graphics aria:hidden="true" candidates="sunset.jpg" class="ltx_figure_panel" graphic="sunset" options="artifact=true" xml:id="S0.F1.g5"/>
+    <break class="ltx_break"/>
+    <graphics aria:hidden="true" candidates="sunset.jpg" class="ltx_figure_panel" description="alt text" graphic="sunset" options="artifact=true,alt=alt text" xml:id="S0.F1.g6"/>
+    <break class="ltx_break"/>
+    <graphics aria:hidden="true" aria:label="actual text" candidates="sunset.jpg" class="ltx_figure_panel" graphic="sunset" options="artifact=true,actualtext=actual text" xml:id="S0.F1.g7"/>
+    <break class="ltx_break"/>
+    <graphics aria:hidden="true" aria:label="actual text" candidates="sunset.jpg" class="ltx_figure_panel" description="alt text" graphic="sunset" options="artifact=true,actualtext=actual text,alt=alt text" xml:id="S0.F1.g8"/>
+    <toccaption><tag close=" ">1</tag>Examples of figures with actual and alt text.</toccaption>
+    <caption><tag close=": ">Figure 1</tag>Examples of figures with actual and alt text.</caption>
+  </figure>
+</document>
