@@ -1209,4 +1209,37 @@
       </equation>
     </para>
   </section>
+  <section inlist="toc" xml:id="S8">
+    <tags>
+      <tag>8</tag>
+      <tag role="refnum">8</tag>
+      <tag role="typerefnum">§8</tag>
+    </tags>
+    <title><tag close=" ">8</tag>Euler’s Identity: Backporting Semantics</title>
+    <para xml:id="S8.p1">
+      <equation xml:id="S8.Ex15">
+        <Math mode="display" tex="e^{i\pi}+1=0" text="Exponential e ^ (Imaginary unit * Circular pi) + 1 = 0" xml:id="S8.Ex15.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                  <XMTok meaning="Exponential e" name="expe" role="UNKNOWN">e</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok fontsize="70%" meaning="Imaginary unit" name="iunit" role="UNKNOWN">i</XMTok>
+                    <XMTok font="italic" fontsize="70%" meaning="Circular pi" name="cpi" role="UNKNOWN">π</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+              </XMApp>
+              <XMTok meaning="0" role="NUMBER">0</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
 </document>

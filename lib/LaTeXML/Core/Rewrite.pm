@@ -381,12 +381,16 @@ sub compile_replacement {
   else {
     return sub {
       my $stomach = $STATE->getStomach;
-      $stomach->beginMode('restricted_horizontal'); # act like \hbox
+      $stomach->beginMode('restricted_horizontal');    # act like \hbox
       $STATE->assignValue(font     => LaTeXML::Common::Font->new(), 'local');
       $STATE->assignValue(mathfont => LaTeXML::Common::Font->new(), 'local');
       my $box = $stomach->digest($pattern, 0);
       $stomach->endMode('restricted_horizontal');
-      $box = $box->getBody if $$self{math};
+      if ($$self{math}) {                              # For math, get the math content
+        if (ref $box eq 'LaTeXML::Core::List') {       # Unwrap outer List, if any
+          my @b = $box->unlist;
+          $box = $b[0] if scalar(@b) == 1; }
+        $box = $box->getBody; }                        # and get the body of the $..$
       $_[0]->absorb($box); }
 } }
 
@@ -421,8 +425,8 @@ sub domToXPath {
 
 # May need some work here;
 my %EXCLUDED_MATCH_ATTRIBUTES = (
-    scriptpos => 1, mathstyle => 1,
-    'xml:id' => 1, fontsize => 1);    # [CONSTANT]
+  scriptpos => 1, mathstyle => 1,
+  'xml:id'  => 1, fontsize  => 1);    # [CONSTANT]
 
 sub domToXPath_rec {
   my ($document, $node, $axis, $pos) = @_;
