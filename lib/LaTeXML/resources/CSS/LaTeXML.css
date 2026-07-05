@@ -210,6 +210,9 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 .ltx_align_justify  { text-align:justify; }
 .ltx_align_top      { vertical-align:top; }
 .ltx_align_bottom   { vertical-align:bottom; }
+@supports (baseline-source: first) {
+  .ltx_align_top    { vertical-align:baseline; baseline-source:first; }
+  .ltx_align_bottom { vertical-align:baseline; baseline-source:last; } }
 .ltx_align_middle   { vertical-align:middle; }
 .ltx_align_baseline { vertical-align:baseline; }
 
@@ -243,7 +246,7 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 /* equations in aligned mode (aligning tags, etc as well as equations) */
 .ltx_eqn_table { display:table; width:100%; border-collapse:collapse; }
 .ltx_eqn_row   { display:table-row; }
-.ltx_eqn_cell  { display:table-cell; width:auto; }
+.ltx_eqn_cell  { display:table-cell; width:auto; vertical-align:middle; }
 
 /* Padding between column pairs in ams align */
 table.ltx_eqn_align tr.ltx_equation td.ltx_align_left + td.ltx_align_right,
@@ -276,7 +279,10 @@ li.ltx_item > .ltx_tag {
     display:inline-block; margin-left:-1.5em; min-width:1.5em;
     text-align:right; }
 .ltx_item .ltx_tag + .ltx_para {
-    display:inline-block; vertical-align:top;}
+    display:inline-block; vertical-align:top; }
+@supports (baseline-source: first) {
+  .ltx_item .ltx_tag + .ltx_para {
+    vertical-align:baseline; baseline-source:first; } }
 .ltx_item .ltx_tag + .ltx_para .ltx_p  {
     display:inline; }
 .ltx_item > .ltx_para > .ltx_p:first-child {
@@ -396,7 +402,7 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_tbody   { display:table-row-group; }
 .ltx_tr      { display:table-row; }
 .ltx_td,
-.ltx_th      { display:table-cell; }
+.ltx_th      { display:table-cell; vertical-align:baseline; }
 
 .ltx_tabular .ltx_td,
 .ltx_tabular .ltx_th { padding:0.1em 0.5em; }
