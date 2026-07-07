@@ -80,7 +80,7 @@ DefRegister('\authorrunning' => Tokens());
 DefRegister('\tocauthor'     => Tokens());    # Box!
 DefRegister('\titrun'        => Tokens());    # Box!
 DefRegister('\titlerunning'  => Tokens());
-DefRegister('\toctitle{}'    => Tokens());
+DefRegister('\toctitle'      => Tokens());
 
 DefRegister('\tocchpnum'         => Dimension(0));
 DefRegister('\tocsecnum'         => Dimension('15pt'));
