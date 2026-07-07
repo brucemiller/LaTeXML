@@ -527,7 +527,7 @@ my %metric_map = (
 );
 # Fallback fontnames for looking up random Unicode,
 # when they're not in the indicated FontMap
-my @metric_fallbacks = (qw(cmr cmmi cmsy cmex msam msbm));
+my @metric_fallbacks = (qw(cmr cmmi cmsy cmex msam msbm ifgeo));
 
 # Find a Font Metric corresponding to this font's family_series_shape_size
 # that contains the given $char, if given.
