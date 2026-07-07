@@ -130,15 +130,15 @@ sub read_tfm {
   $$self{extraspace}   = $param[6];
   # Add metrics for fake chars (from TeX perspective; Basically various space-like things)
   # What about \x{2002}, \x{2009} ?
-  my $em   = $param[5];
-  my $mu   = $em / 18;
-  my %para = (" " => $param[1], pack('U', 0xA0) => $param[1], "\n" => $param[1],
-    "\x{2002}" => $em / 2, "\x{2003}" => $em,
-    "\x{2006}" => $em / 6, "\x{2009}" => $em / 6,
-    "\x{200b}" => 3 * $mu, "\x{2005}" => 4 * $mu, "\x{2004}" => 5 * $mu);
-  foreach my $char (sort keys %para) {
-    if (!$$sizes{$char}) {    # Don't replace?
-      $$sizes{$char} = [$para{$char}, 0, 0]; } }
+  if (my $em = $param[5]) {
+    my $mu   = $em / 18;
+    my %para = (" " => $param[1], pack('U', 0xA0) => $param[1], "\n" => $param[1],
+      "\x{2002}" => $em / 2, "\x{2003}" => $em,
+      "\x{2006}" => $em / 6, "\x{2009}" => $em / 6,
+      "\x{200b}" => 3 * $mu, "\x{2005}" => 4 * $mu, "\x{2004}" => 5 * $mu);
+    foreach my $char (sort keys %para) {
+      if (!$$sizes{$char}) {    # Don't replace?
+        $$sizes{$char} = [$para{$char}, 0, 0]; } } }
   return $self; }
 
 # Process the ligature/kerning program for a character
