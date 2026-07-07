@@ -325,9 +325,9 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
 
     if (my $ops = LookupValue('@document@preamble@atend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
+    AssignValue(inPreamble => 0);    # We're now leaving the preamble (!?)
     if (my $ops = LookupValue('@at@begin@document')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
-    AssignValue(inPreamble => 0);    # atbegin is still (sorta) preamble
     if (my $ops = LookupValue('@document@preamble@afterend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
     $_[1]->setFont(LookupValue('font'));    # Start w/ whatever font was last selected.
