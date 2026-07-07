@@ -75,12 +75,17 @@ DefRegister('\instindent' => Dimension(0));
 
 # DefMacro('\lastand',Tokens());
 
-DefRegister('\authrun'       => Tokens());    # Box!
-DefRegister('\authorrunning' => Tokens());
-DefRegister('\tocauthor'     => Tokens());    # Box!
-DefRegister('\titrun'        => Tokens());    # Box!
-DefRegister('\titlerunning'  => Tokens());
-DefRegister('\toctitle{}'    => Tokens());
+DefRegister('\authrun' => Tokens());    # Box!
+DefRegister('\titrun'  => Tokens());    # Box!
+# These take an argument and only feed the running heads / TOC, which LaTeXML
+# doesn't render; define them as argument-gobbling macros so their argument is
+# consumed rather than leaking into the body (#2253). They were previously token
+# registers relying on TeX's optional-'=' assignment to swallow the {...}, which
+# is fragile and position-dependent.
+DefMacro('\authorrunning{}', Tokens());
+DefMacro('\tocauthor{}',     Tokens());
+DefMacro('\titlerunning{}',  Tokens());
+DefMacro('\toctitle{}',      Tokens());
 
 DefRegister('\tocchpnum'         => Dimension(0));
 DefRegister('\tocsecnum'         => Dimension('15pt'));
