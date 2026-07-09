@@ -413,8 +413,10 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       my $W = $w;
       my $x = Dimension(0);
       my $f = ($svg && $document->getNodeFont($svg)) || $whatsit->getFont;
+      my $y = $h;
       # Heuristic: Browsers seem set on creating at least a lineheight box, so adjust
-      my $y = $h->larger(Dimension($f->getSize . 'pt'));
+      my $vhack = $h->subtract(Dimension($f->getSize . 'pt'));
+      $vhack = Dimension(0) if $vhack->valueOf > 0;
       Debug("SVG:foreignObject " . $w->pxValue . ' x ' . $h->pxValue . ' x ' . $d->pxValue . "; "
           . " => H=" . $H->pxValue . " @ y=" . $y->pxValue
           . " for Whatsit=" . ToString($whatsit)) if $LaTeXML::DEBUG{svg_verbose};
@@ -430,7 +432,9 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       $style .= '--ltx-fo-width:' . $w->toAttribute . ';'
         . '--ltx-fo-height:' . $h->toAttribute . ';'
         . '--ltx-fo-depth:' . $d->toAttribute . ';';
-      $style .= 'font-size:' . $f->getSize . 'pt;';
+      # Reset font-size to parent svg's, so not affected by svg scaling.
+      $style .= 'font-size:' . $f->getSize . 'pt;'
+        . '--ltx-fo-vhack:' . $vhack->emValue(2, $f) . 'em;';
       $document->setAttribute($node, style => $style) if $style;
 } });
 

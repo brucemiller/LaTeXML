@@ -491,6 +491,9 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 .ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
 .ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }
 
+/* Temporary(?) hack until text-box-trim is supported */
+.ltx_foreignobject_content { translate: 0 var(--ltx-fo-vhack); }
+
 /*======================================================================
  Low-level Basics */
 /* Note that LaTeX(ML)'s font model doesn't map quite exactly to CSS's */
@@ -587,6 +590,7 @@ cite                 { font-style: normal; }
   .ltx_foreignobject_content {
     color: var(--fn-fg-color-to-dark-mode, white);
   }
+
   /* We eventually want to cover the full range of possible attributes where color
       customization is expected in latexml's HTML format. This will be easier once
       CSS @function becomes widely available in browsers.
