@@ -407,12 +407,14 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
     # Reminder: TeX/LaTeXML think origin is left & baseline
     # svg foreignObject content will draw down from the top
     if ($whatsit) {
+      my $svg = $document->findnode('ancestor::svg:svg', $node);
       my ($w, $h, $d) = $whatsit->getSize;
       my $H = $h->add($d);
       my $W = $w;
       my $x = Dimension(0);
-      my $y = $h;
-      my $f = $whatsit->getFont;
+      my $f = ($svg && $document->getNodeFont($svg)) || $whatsit->getFont;
+      # Heuristic: Browsers seem set on creating at least a lineheight box, so adjust
+      my $y = $h->larger(Dimension($f->getSize . 'pt'));
       Debug("SVG:foreignObject " . $w->pxValue . ' x ' . $h->pxValue . ' x ' . $d->pxValue . "; "
           . " => H=" . $H->pxValue . " @ y=" . $y->pxValue
           . " for Whatsit=" . ToString($whatsit)) if $LaTeXML::DEBUG{svg_verbose};
@@ -422,12 +424,14 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       # Set top of FO height above current, as if baseline will line up w/outside
       $node->setAttribute(transform => 'matrix(1 0 0 -1 ' . $x->pxValue . ' ' . $y->pxValue . ')');
       $node->setAttribute(overflow  => 'visible');
+      # Reset the font size, so not affected by any svg scaling.
+      my $style = '';
       # Store expected size for experimentation Temporary?
-      $document->setAttribute($node,
-        style => '--ltx-fo-width:' . $w->emValue(undef, $f) . 'em;'
-          . '--ltx-fo-height:' . $h->emValue(undef, $f) . 'em;'
-          . '--ltx-fo-depth:' . $d->emValue(undef, $f) . 'em;'
-          . 'font-size:' . $f->getSize . 'pt;');
+      $style .= '--ltx-fo-width:' . $w->toAttribute . ';'
+        . '--ltx-fo-height:' . $h->toAttribute . ';'
+        . '--ltx-fo-depth:' . $d->toAttribute . ';';
+      $style .= 'font-size:' . $f->getSize . 'pt;';
+      $document->setAttribute($node, style => $style) if $style;
 } });
 
 sub isVAttached {
