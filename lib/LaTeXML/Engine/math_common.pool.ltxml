@@ -76,7 +76,7 @@ DefMathI('\Im',    undef, "\x{2111}", role    => 'OPFUNCTION', meaning => 'imagi
 DefMathI('\mho',   undef, "\x{2127}");
 
 DefMathI('\prime',    undef, "\x{2032}", role => 'SUPOP', locked  => 1);
-DefMathI('\emptyset', undef, "\x{2205}", role => 'ID',    meaning => 'empty-set');
+DefMathI('\emptyset', undef, "\x{2205}\x{FE00}", role => 'ID',    meaning => 'empty-set');
 DefMathI('\nabla',    undef, "\x{2207}", role => 'OPERATOR');
 DefMathI('\surd',     undef, "\x{221A}", role => 'OPERATOR', meaning => 'square-root');
 DefMathI('\top',      undef, "\x{22A4}", role => 'ADDOP',    meaning => 'top');
