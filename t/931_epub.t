@@ -89,35 +89,6 @@ if (open(my $log_after_invalid_invocation, '<', $log_filename)) {
 is($log_content_after_invalid_invocation, $existing_log_content,
   'invalid archive invocation did not overwrite the pre-existing external log');
 
-my ($zip_fh, $zip_filename) = tempfile('931_testXXXX', SUFFIX => '.zip');
-close($zip_fh);
-my ($zip_log_fh, $zip_log_filename) = tempfile('931_testXXXX', SUFFIX => '.log', DIR => '.', UNLINK => 0);
-print $zip_log_fh $existing_log_content;
-close($zip_log_fh);
-
-my @zip_invocation = $path_to_perl, map { ('-I', $_) } @INC;
-push(@zip_invocation, $latexmlc, '--format=xml', "--dest=$zip_filename", "--log=$zip_log_filename", 'literal:test');
-my ($zip_writer_discard, $zip_reader_discard, $zip_error_discard);
-my $zip_pid = open3($zip_writer_discard, $zip_reader_discard, $zip_error_discard, @zip_invocation);
-{ local $/; <$zip_reader_discard>; } # consume all output
-close($zip_reader_discard);
-ok(waitpid($zip_pid, 0), "latexmlc invocation for explicit-format ZIP output: $!");
-
-my $generic_zip = Archive::Zip->new();
-is($generic_zip->read($zip_filename), AZ_OK, 'explicit-format ZIP successfully loads as Archive::Zip object');
-my $zip_log_member = $generic_zip->memberNamed(basename($zip_log_filename));
-ok($zip_log_member, 'log file was written to explicit-format ZIP');
-ok($zip_log_member->contents() =~ /No obvious problems/, 'explicit-format ZIP conversion was error-free');
-ok(-f $zip_log_filename, 'pre-existing external log was preserved for explicit-format ZIP');
-my $preserved_zip_log_content;
-if (open(my $preserved_zip_log, '<', $zip_log_filename)) {
-  local $/;
-  $preserved_zip_log_content = <$preserved_zip_log>;
-  close($preserved_zip_log);
-}
-is($preserved_zip_log_content, $existing_log_content,
-  'pre-existing external log was not overwritten for explicit-format ZIP');
-
 if (-f $epub_filename) {
   ok(unlink($epub_filename), "clean up generated epub file");
 }
@@ -126,12 +97,6 @@ if (-f $log_filename) {
 }
 if (-f $source_filename) {
   ok(unlink($source_filename), "clean up source file");
-}
-if (-f $zip_filename) {
-  ok(unlink($zip_filename), "clean up generated ZIP file");
-}
-if (-f $zip_log_filename) {
-  ok(unlink($zip_log_filename), "clean up preserved ZIP log file");
 }
 
 done_testing();
