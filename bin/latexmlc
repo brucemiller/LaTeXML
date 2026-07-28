@@ -20,6 +20,7 @@ my $RealBin_safe;
 use FindBin;
 use File::Spec::Functions;
 use File::Which;
+use Storable qw(dclone);
 
 BEGIN {
   if ($FindBin::RealBin =~ /^([^\0]+)\z/) {    # Valid Unix path TODO: Windows, revisit regexp
@@ -103,21 +104,33 @@ if ($source eq '-') {
 # Use $jobname.latexml.log or just latexml.log for logging by default
 #
 # In the local conversion case, this can be delegated to LaTeXML.pm
-my $logfile = $opts->get('log');
+my $normalized_opts  = LaTeXML::Common::Config->new(%{ dclone($opts->options) });
+my $normalization_ok = eval {
+  $normalized_opts->check;
+  1;
+};
+my $whatsout   = $normalized_opts->get('whatsout');
+my $is_archive = $whatsout && ($whatsout =~ /^archive/);
+# Fail closed so an invalid configuration cannot remove a pre-existing log.
+my $preserve_existing_log = !$normalization_ok || $is_archive;
+my $logfile               = $opts->get('log');
 if (!$logfile) {
   if (!pathname_is_literaldata($source)) {
     my ($dir, $name, $ext) = pathname_split($source);
     if ($name) {
-      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); }
+      $logfile = $is_archive
+        ? pathname_make(name => $name, type => 'latexml.log')
+        : pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); }
     else {
       $logfile = 'latexml.log';
-  } }
+    } }
   else {
     $logfile = 'latexml.log'; }
   $opts->set('log', $logfile); }
 # A bit special: Since LaTeXML.pm will always try to append to the log file
-# make sure the file is new before we start.
-unlink($logfile) if (-f $logfile);
+# make sure the file is new before we start. Archive logs are buffered and
+# packaged, so they must not affect an external file with the same name.
+unlink($logfile) if (!$preserve_existing_log && (-f $logfile));
 
 #***************************************************************************
 # Prepare output variables:
@@ -167,9 +180,6 @@ my $destination = $opts->get('destination');
 
 # Always write log to a file, either specified via --log or 'latexml.log'
 # with the exception of *archive* outputs, where the log is in the ZIP
-my $whatsout   = $opts->get('whatsout');
-my $is_archive = $whatsout && ($whatsout =~ /^archive/);
-
 if ($log && !$is_archive) {
   chomp($log);
   # If we get a log payload in the response, likely from a latexmls call
@@ -186,7 +196,7 @@ if ($result) {
   if ($destination) {
     my $output_handle;
     open($output_handle, ">", $destination) or die("Fatal:I/O:forbidden Couldn't open output file " . $destination . ": $!");
-    if ($whatsout eq 'archive') {
+    if ($is_archive) {
       binmode($output_handle, ':raw');
     }
     print $output_handle $result;
