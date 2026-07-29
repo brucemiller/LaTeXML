@@ -182,8 +182,7 @@ my $destination = $opts->get('destination');
 # Always write log to a file, either specified via --log or 'latexml.log'
 # with the exception of *archive* outputs, where the log is in the ZIP
 my $whatsout   = $opts->get('whatsout');
-my $is_archive = $keep_log_file
-  || ($whatsout && ($whatsout =~ /^archive/));
+my $is_archive = $whatsout && ($whatsout =~ /^archive/);
 
 if ($log && !$is_archive) {
   chomp($log);
