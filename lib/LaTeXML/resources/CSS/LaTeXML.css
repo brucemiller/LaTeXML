@@ -596,10 +596,11 @@ cite                 { font-style: normal; }
   }
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  body {
     background-color: black;
     color: white;
   }
+
   /* The :root rule does not appear to propagate color: into SVG foreignObject */
   .ltx_foreignobject_content {
     color: var(--fn-fg-color-to-dark-mode, white);
