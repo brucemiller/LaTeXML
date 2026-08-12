@@ -13,7 +13,7 @@ package LaTeXML::Post::Manifest::Epub;
 use strict;
 use warnings;
 use File::Find qw(find);
-use URI::file;
+use LaTeXML::Util::Pathname;
 
 our $uuid_tiny_installed;
 
@@ -27,7 +27,7 @@ BEGIN {
 use base qw(LaTeXML::Post::Manifest);
 use LaTeXML::Util::Pathname;
 use File::Spec::Functions qw(catdir);
-use POSIX qw(strftime);
+use POSIX                 qw(strftime);
 use LaTeXML::Post;    # for error handling!
 our $container_content = <<'EOL';
 <?xml version="1.0"?>
@@ -171,7 +171,7 @@ sub process {
       # Add to manifest
       my $manifest = $$self{opf_manifest};
       my $item     = $manifest->addNewChild(undef, 'item');
-      my $item_url = URI::file->new($relative_destination);
+      my $item_url = pathname_to_url($relative_destination);
       my $item_id  = url_id($item_url);
       $item->setAttribute('id',         $item_id);
       $item->setAttribute('href',       $item_url);
@@ -215,7 +215,7 @@ sub finalize {
       $file_type = 'application/octet-stream'; }
 
     my $file_item = $manifest->addNewChild(undef, 'item');
-    my $file_url  = URI::file->new($file);
+    my $file_url  = pathname_to_url($file);
     $file_item->setAttribute('id',         url_id($file_url));
     $file_item->setAttribute('href',       $file_url);
     $file_item->setAttribute('media-type', $file_type); }

@@ -31,6 +31,7 @@ use warnings;
 use File::Spec;
 use File::Copy;
 use File::Which;
+use URI::file;
 use Cwd;
 use base qw(Exporter);
 our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
@@ -39,6 +40,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_timestamp
   &pathname_concat
   &pathname_relative &pathname_absolute &pathname_to_url
+  &pathname_to_urls &pathname_from_url &pathname_from_urls &pathname_to_file_url
   &pathname_is_absolute &pathname_is_contained
   &pathname_is_url &pathname_is_literaldata
   &pathname_is_raw
@@ -212,13 +214,34 @@ sub pathname_absolute {
     ? File::Spec->rel2abs($pathname, ($base ? pathname_canonical($base) : pathname_cwd()))
     : $pathname); }
 
+# conversions to/from file URLs
+
+# remove file:// part for backwards compatibility
 sub pathname_to_url {
-  my ($pathname) = @_;
-  return unless defined $pathname;
-  my $relative_pathname = pathname_relative($pathname);
-  if ($SEP ne '/') {
-    $relative_pathname = join('/', split(/\Q$SEP\E/, $relative_pathname)); }
-  return $relative_pathname; }
+  return unless defined $_[0];
+  my $url = URI::file->new(pathname_canonical($_[0]))->path;
+  $url =~ s/,/%2C/g;
+  return $url; }
+
+sub pathname_to_urls {
+  return join(',', map { pathname_to_url($_) } @_); }
+
+sub pathname_from_url {
+  return unless defined $_[0];
+  return URI->new($_[0], 'file')->file; }
+
+sub pathname_from_urls {
+  return unless defined $_[0];
+  my @urls     = split(/,/, $_[0]);
+  my @nonempty = grep { $_ } @urls;
+  return map { pathname_from_url($_) } @nonempty; }
+
+# complete file:// URL
+sub pathname_to_file_url {
+  return unless defined $_[0];
+  my $url = URI::file->new(pathname_canonical($_[0]))->as_string;
+  $url =~ s/,/%2C/g;
+  return $url; }
 
 #======================================================================
 # Actual file system operations.
@@ -377,6 +400,7 @@ sub candidate_pathnames {
     opendir(my $dir_handle, $dir) or next;
     my @dir_files = readdir($dir_handle);
     closedir($dir_handle);
+    my @dir_paths;
     for my $local_file (@dir_files) {
       for my $regex_pair (@regexes) {
         my ($i_regex, $regex) = @$regex_pair;
@@ -386,7 +410,8 @@ sub candidate_pathnames {
           if ($local_file =~ m/$regex/) {
             # if we are only interested in the first match, return it:
             return ($full_file) if $options{findfirst};
-            push(@paths, $full_file); } } } } }
+            push(@dir_paths, $full_file); } } } }
+    push(@paths, sort @dir_paths); }
   # Fallback: if no strict matches were found, return any existing case-insensitive matches
   # Defer the -f check until we are sure we need it, to keep the usual cases fast.
   return @paths ? @paths : @nocase_paths; }
@@ -553,10 +578,26 @@ Returns the absolute pathname resulting from interpretting
 C<$path> relative to the directory C<$base>.  If C<$path>
 is already absolute, it is returned unchanged.
 
-=item C<< $relative_url = pathname_to_url($path); >>
+=item C<< $url = pathname_to_file_url($path); >>
 
-Creates a local, relative URL for a given pathname,
-also ensuring proper path separators on non-Unix systems.
+Creates a file URL for a given pathname.
+
+=item C<< $url = pathname_to_url($path); >>
+
+Creates a file URL for a given pathname without the file:// scheme.
+
+=item C<< $url = pathname_to_urls(@paths); >>
+
+Create a comma separated list of file URLs for a given list of pathnames.
+
+=item C<< $path = pathname_from_url($url); >>
+
+Create a pathname, with local OS path separators, from a file URL.
+
+=item C<< @paths = pathname_from_urls($urls); >>
+
+Create a list of pathnames, with local OS path separator, from a
+comma separated list of file URLs.
 
 =back
 

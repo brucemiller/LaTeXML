@@ -664,7 +664,6 @@ use DB_File;
 use Unicode::Normalize;
 use LaTeXML::Post;    # to import error handling...
 use LaTeXML::Common::Error;
-use URI::file;
 use base qw(LaTeXML::Common::Object);
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 our $XPATH = LaTeXML::Common::XML::XPath->new(ltx => $NSURI);
@@ -821,7 +820,7 @@ sub setDocument_internal {
     @paths = @{ $$self{searchpaths} } if $$self{searchpaths};
     foreach my $pi (@{ $$self{processingInstructions} }) {
       if ($pi =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/) {
-        push(@paths, split(',', $2)); } }
+        push(@paths, pathname_from_urls($2)); } }
     ### No, this ultimately can be the xml source, which may be the destination;
     ### adding this gets the wrong graphics (already processed!)
     ### push(@paths, pathname_absolute($$self{sourceDirectory})) if $$self{sourceDirectory};
@@ -857,7 +856,8 @@ sub setDocument_internal {
   else {
     Fatal('unexpected', $root, undef, "Dont know how to use '$root' as document element"); }
   # set URI to destination
-  $$self{document}->setURI(URI::file->new($self->getDestination));
+  my $url = pathname_to_file_url($self->getDestination);
+  $$self{document}->setURI($url) if defined $url;
   return $self; }
 
 our @MonthNames = (qw( January February March April May June
