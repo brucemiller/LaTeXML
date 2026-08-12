@@ -27,6 +27,10 @@ use LaTeXML::Post::CrossRef;
 use LaTeXML::Util::ObjectDB;
 use LaTeXML::Common::Error;
 
+# decode @ARGV before further processing
+use Encode::Locale;
+Encode::Locale::decode_argv(Encode::FB_CROAK);
+
 #**********************************************************************
 # Parse command line
 
