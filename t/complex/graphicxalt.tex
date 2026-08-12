@@ -1,0 +1,23 @@
+\documentclass{article}
+\usepackage{graphicx}
+\begin{document}
+\includegraphics{sunset}
+\includegraphics[alt={alt text}]{sunset}
+\includegraphics[actualtext={actual text}]{sunset}
+\includegraphics[actualtext={actual text},alt={alt text}]{sunset}
+\includegraphics[artifact]{sunset}
+\includegraphics[artifact,alt={alt text}]{sunset}
+\includegraphics[artifact,actualtext={actual text}]{sunset}
+\includegraphics[artifact,actualtext={actual text},alt={alt text}]{sunset}
+\begin{figure}
+  \includegraphics{sunset}
+  \includegraphics[alt={alt text}]{sunset}
+  \includegraphics[actualtext={actual text}]{sunset}
+  \includegraphics[actualtext={actual text},alt={alt text}]{sunset}
+  \includegraphics[artifact]{sunset}
+  \includegraphics[artifact,alt={alt text}]{sunset}
+  \includegraphics[artifact,actualtext={actual text}]{sunset}
+  \includegraphics[artifact,actualtext={actual text},alt={alt text}]{sunset}
+  \caption{Examples of figures with actual and alt text.}
+\end{figure}
+\end{document}
