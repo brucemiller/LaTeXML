@@ -103,21 +103,35 @@ if ($source eq '-') {
 # Use $jobname.latexml.log or just latexml.log for logging by default
 #
 # In the local conversion case, this can be delegated to LaTeXML.pm
+my $destination_path = $opts->get('destination') || '';
+my ($destination_type) = ($destination_path =~ /\.([^.]+)$/);
+my $format = $opts->defined('format')
+  ? $opts->get('format')
+  : ($destination_type || '');
+my $keep_log_file = 0;
+$keep_log_file = 1 if (($opts->get('whatsout') || '') =~ /^archive/);
+$keep_log_file = 1 if ($format =~ /^(?:epub|mobi|zip)$/i);
+$keep_log_file = 1
+  if (!$opts->defined('whatsout') && (($destination_type || '') eq 'zip'));
+
 my $logfile = $opts->get('log');
 if (!$logfile) {
   if (!pathname_is_literaldata($source)) {
     my ($dir, $name, $ext) = pathname_split($source);
     if ($name) {
-      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); }
+      $logfile = $keep_log_file
+        ? pathname_make(name => $name, type => 'latexml.log')
+        : pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); }
     else {
       $logfile = 'latexml.log';
-  } }
+    } }
   else {
     $logfile = 'latexml.log'; }
   $opts->set('log', $logfile); }
 # A bit special: Since LaTeXML.pm will always try to append to the log file
-# make sure the file is new before we start.
-unlink($logfile) if (-f $logfile);
+# make sure the file is new before we start. Archive logs are buffered and
+# packaged, so they must not affect an external file with the same name.
+unlink($logfile) if (!$keep_log_file && (-f $logfile));
 
 #***************************************************************************
 # Prepare output variables:
@@ -186,7 +200,7 @@ if ($result) {
   if ($destination) {
     my $output_handle;
     open($output_handle, ">", $destination) or die("Fatal:I/O:forbidden Couldn't open output file " . $destination . ": $!");
-    if ($whatsout eq 'archive') {
+    if ($is_archive) {
       binmode($output_handle, ':raw');
     }
     print $output_handle $result;
