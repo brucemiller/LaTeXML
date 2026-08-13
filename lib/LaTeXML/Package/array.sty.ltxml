@@ -27,15 +27,13 @@ DefColumnType('<{}', sub { $LaTeXML::BUILD_TEMPLATE->addAfterColumn($_[1]->unlis
 # m{} and b{} are like p{}, but vertical alignment is middle or bottom
 DefColumnType('m{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before  => Tokens(T_CS('\lx@tabular@p'), T_LETTER('m'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
-      after   => Tokens(T_END),
-      vattach => 'middle',
+      before => Tokens(T_CS('\lx@tabular@p'), T_LETTER('m'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
+      after  => Tokens(T_END)
     ); return; });
 DefColumnType('b{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before  => Tokens(T_CS('\lx@tabular@p'), T_LETTER('b'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
-      after   => Tokens(T_END),
-      vattach => 'bottom',
+      before => Tokens(T_CS('\lx@tabular@p'), T_LETTER('b'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
+      after  => Tokens(T_END)
     ); return; });
 
 # Like @{}, but should NOT suppress intercolumn space
