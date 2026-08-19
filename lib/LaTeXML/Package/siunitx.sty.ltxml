@@ -765,6 +765,9 @@ DefMacro('\num OptionalKeyVals:SIX {}', sub {
     my $result = six_wrap(six_format_number(six_parse_number($gullet, $number)));
     six_end_processing();
     return $result; });
+# V3 \num no longer processes complex, nor products, defines two new commands
+Let(T_CS('\complexnum'),T_CS('\num'));
+Let(T_CS('\numproduct'),T_CS('\num'));
 
 # \numlist[options]{number;number;...}
 DefMacro('\numlist OptionalKeyVals:SIX {}', sub {
@@ -1158,6 +1161,8 @@ DefMacro('\SI OptionalKeyVals:SIX {}{}', sub {
         $fnumber, I_wrap({}, six_process_units($units))));
     six_end_processing();
     return $result; });
+# V3 \num no longer processes complex, nor products, defines two new commands
+Let(T_CS('\qtyproduct'),T_CS('\si'));
 
 # \SIlist[options]{number;number;...}{units}
 DefMacro('\SIlist OptionalKeyVals:SIX {}{}', sub {
