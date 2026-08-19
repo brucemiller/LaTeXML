@@ -21,12 +21,38 @@ DefMacro('\@standalone@end@input', '\egroup\endinput');
 DefPrimitiveI(T_CS('\@standalone@start@input'), undef, sub {
     AssignValue(inPreamble => 0);
     return; });
-DefPrimitive('\@standalone@documentclass[]{}', sub {
-    my ($stomach, $packages) = @_;
+# The options standalone.cls turns into a same-named package load
+# (standalone.cls: the tikz/pstricks/preview/varwidth/multido options, resolved
+# via \RequirePackage). Every other option -- crop, multi, math, beamer, float,
+# png, border=, class=, 10pt/11pt/12pt, ... -- the class handles itself.
+our %standalone_option_packages =
+  map { ($_ => 1) } qw(tikz pstricks preview varwidth multido);
+
+DefPrimitive('\@standalone@documentclass OptionalKeyVals {}', sub {
+    my ($stomach, $options, $class) = @_;
     $stomach->bgroup;
     AssignValue(inPreamble => 1);
-    for my $package (split(",", ToString($packages))) {
-      RequirePackage($package);
+    # The optional argument holds class OPTIONS, not package names, so it is
+    # consulted only where standalone.sty itself consults it: for a subfile
+    # whose class is literally `standalone` (\sa@documentclass compares #2
+    # against `standalone` before honoring #1). Requiring it unconditionally
+    # made an ordinary \documentclass[12pt]{article} subfile report a missing
+    # 12pt.sty. Within a standalone subfile we still require the options that
+    # load a package, which is what makes \documentclass[tikz]{standalone}
+    # (the original use case, #1432) work.
+    #
+    # Read as OptionalKeyVals and matched on the KEY, because a class option
+    # list is a keyval list: every one of these options also has a valued form
+    # (standalone.sty's \sa@boolorvalue takes varwidth=5cm and tikz=true just
+    # as it takes the bare words), and a value may be a brace group containing
+    # commas (border={1pt 2pt}). Splitting on "," and matching whole items
+    # dropped the package for all of those.
+    if (ToString($class) =~ /^\s*standalone\s*$/ && $options) {
+      my %given = $options->getPairs;    # flat key => value list
+      for my $option (keys %given) {
+        $option =~ s/^\s+|\s+$//g;
+        RequirePackage($option) if $standalone_option_packages{$option};
+      }
     }
     Let(T_CS('\begin{document}'), T_CS('\@standalone@start@input'));
     Let(T_CS('\end{document}'),   T_CS('\@standalone@end@input'));

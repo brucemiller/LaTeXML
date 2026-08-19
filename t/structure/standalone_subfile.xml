@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="standalone"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>Parent text.</p>
+  </para>
+  <para xml:id="p2">
+    <p>Child text.</p>
+  </para>
+  <para class="ltx_minipage" vattach="middle" width="142.3pt" xml:id="p3">
+    <p>Valued child text.</p>
+  </para>
+</document>
