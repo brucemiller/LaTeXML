@@ -31,7 +31,7 @@ sub latexml_tests {
   if ($options{texlive_min} && (texlive_version() < $options{texlive_min})) {
     plan skip_all => "Requirement minimal texlive $options{texlive_min} not met.";
     return done_testing(); }
-  if (!opendir($DIR, $directory)) {
+  if (!pathname_opendir($DIR, $directory)) {
     # Can't read directory? Fail (assumed single) test.
     return do_fail($directory, "Couldn't read directory $directory:$!"); }
   else {
@@ -55,7 +55,7 @@ sub latexml_tests {
         foreach my $name (@core_tests) {
           my $test = "$directory/$name";
         SKIP: {
-            skip("No file $test.xml", 1) unless (-f "$test.xml");
+            skip("No file $test.xml", 1) unless pathname_test_f("$test.xml");
             next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
             latexml_ok("$test.tex", "$test.xml", $test, $options{compare}, $options{core_options}); } }
         # Carry out any post-processing tests
@@ -63,7 +63,7 @@ sub latexml_tests {
           my $test = "$directory/$name";
         SKIP: {
             skip("No file $test.xml and/or $test-post.xml", 1)
-              unless ((-f "$test.xml") && (-f "$test-post.xml"));
+              unless pathname_test_f("$test.xml") && pathname_test_f("$test-post.xml");
             next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
             latexmlpost_ok("$test.tex", "$test-post.xml", $test); } }
         # Carry out any daemon tests.
@@ -71,7 +71,7 @@ sub latexml_tests {
           my $test = "$directory/$name";
         SKIP: {
             skip("No file $test.xml", 1)
-              unless (-f "$test.xml");
+              unless pathname_test_f("$test.xml");
             my $ntests = ($directory =~ /runtimes/ ? 1 : 2);
             next unless check_requirements($test, $ntests, $$requires{'*'}, $$requires{$name});
             daemon_ok($test, $directory, $options{generate});
@@ -296,7 +296,7 @@ sub daemon_ok {
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
       if (my $xmlstrings = process_xmlfile("$base.xml", $base)) {
         is_strings($teststrings, $xmlstrings, $base); } }
-    unlink "$base.test.xml" if -e "$base.test.xml";
+    pathname_unlink("$base.test.xml") if pathname_test_e("$base.test.xml");
   }
   else {
     #TODO: Skip 3 tests
@@ -304,7 +304,7 @@ sub daemon_ok {
     pathname_chdir($dir);
     system(@invocation);
     pathname_chdir($current_dir);
-    move("$base.test.xml", "$base.xml") if -e "$base.test.xml";
+    move("$base.test.xml", "$base.xml") if pathname_test_e("$base.test.xml");
   }
   return; }
 
@@ -312,7 +312,7 @@ sub read_options {
   my ($optionfile, $testname) = @_;
   my $opts = [];
   my $OPT;
-  if (open($OPT, "<", $optionfile)) {
+  if (pathname_openfile($OPT, "<", $optionfile)) {
     while (my $line = <$OPT>) {
       next if $line =~ /^#/;
       chomp($line);
@@ -329,8 +329,8 @@ sub get_filecontent {
   my ($path, $testname) = @_;
   my $IN;
   my @lines;
-  if (-e $path) {
-    if (!open($IN, "<", $path)) {
+  if (pathname_test_e($path)) {
+    if (!pathname_openfile($IN, "<", $path)) {
       do_fail($testname, "Could not open $path"); }
     else {
       { local $\ = undef;
@@ -356,7 +356,7 @@ sub texlive_version {
   my $tex;
   # If kpsewhich specified, look for tex next to it
   if (my $path = $ENV{LATEXML_KPSEWHICH}) {
-    if (($path =~ s/kpsewhich/tex/i) && (-X $path)) {
+    if ($path =~ s/kpsewhich/tex/i && pathname_test_X($path)) {
       $tex = $path; } }
   if (!$tex) {    # Else look for executable
     $tex = which("tex"); }

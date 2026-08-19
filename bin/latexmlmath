@@ -130,7 +130,7 @@ EODoc
 # Digest the TeX
 #======================================================================
 @paths = map { pathname_canonical($_) } @paths;
-if (my @baddirs = grep { !-d $_ } @paths) {
+if (my @baddirs = grep { !pathname_test_d($_) } @paths) {
   warn "$LaTeXML::IDENTITY: these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
 my $latexml = LaTeXML::Core->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],
@@ -190,7 +190,7 @@ if ($mathimage) {
     DirectMathImages->new(magnification => $mag,
       imagename => $mathimage, imagetype => $imagetype,
       %OPTIONS));
-  unlink('LaTeXML.cache'); }
+  pathname_unlink('LaTeXML.cache'); }
 
 if ($mathsvg) {
   my $imagetype = 'svg';
@@ -201,18 +201,18 @@ if ($mathsvg) {
         imagename => $tmpfile, imagetype => $imagetype,
         %OPTIONS));
     my $SVG;
-    open($SVG, '<', "$tmpfile.svg") or die "Couldn't read temporary svg output '$tmpfile': $!";
+    pathname_openfile($SVG, '<', "$tmpfile.svg") or die "Couldn't read temporary svg output '$tmpfile': $!";
     while (<$SVG>) {
       print $_; }
     close($SVG);
-    unlink "$tmpfile.svg"; }
+    pathname_unlink("$tmpfile.svg"); }
   else {
     $mathsvg =~ s/\.svg$//;
     my ($result) = $post->ProcessChain(cloneDoc($document),
       DirectMathImages->new(magnification => $mag,
         imagename => $mathsvg, imagetype => $imagetype,
         %OPTIONS)); }
-  unlink('LaTeXML.cache'); }
+  pathname_unlink('LaTeXML.cache'); }
 
 if ($pmml) {
   require LaTeXML::Post::MathML::Presentation;
@@ -293,7 +293,7 @@ sub outputText {
     if (my $dir = pathname_directory($destination)) {
       pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }
     my $OUT;
-    open($OUT, '>', $destination) or die "Couldn't open output file $destination: $!";
+    pathname_openfile($OUT, '>', $destination) or die "Couldn't open output file $destination: $!";
     binmode($OUT, ":encoding(UTF-8)");
     print $OUT $serialized;
     close($OUT); }
