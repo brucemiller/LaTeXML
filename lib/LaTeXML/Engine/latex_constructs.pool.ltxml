@@ -325,9 +325,16 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
 
     if (my $ops = LookupValue('@document@preamble@atend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
-    AssignValue(inPreamble => 0);    # We're now leaving the preamble (!?)
     if (my $ops = LookupValue('@at@begin@document')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
+    AssignValue(inPreamble => 0);    # atbegin is still (sorta) preamble
+    # NOTE: inPreamble is cleared AFTER the begindocument hooks (reverting #2846), so
+    # \@onlypreamble commands (\RequirePackage/\usepackage) deferred to \AtBeginDocument
+    # stay legal (real latex.ltx disables \@preamblecmds only after the hook). #2754
+    # (a blank line in \AtBeginDocument must split paragraphs) is handled instead by
+    # \par being context-aware — a NOOP only in the raw preamble, active once
+    # current_environment 'document' is on the stack (set at \begin{document}'s start,
+    # above). See TeX_Paragraph.pool.ltxml \lx@normal@par.
     if (my $ops = LookupValue('@document@preamble@afterend')) {
       push(@boxes, $stomach->digest(Tokens(@$ops))); }
     $_[1]->setFont(LookupValue('font'));    # Start w/ whatever font was last selected.
