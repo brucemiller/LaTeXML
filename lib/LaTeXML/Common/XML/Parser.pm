@@ -12,12 +12,18 @@
 package LaTeXML::Common::XML::Parser;
 use strict;
 use warnings;
+use LaTeXML::Common::Error;
+use URI;
+use URI::Escape;
 use XML::LibXML;
 
 sub new {
   my ($class) = @_;
   my $parser = XML::LibXML->new();
   $parser->validation(0);
+  my $input_callbacks = XML::LibXML::InputCallback->new();
+  $input_callbacks->register_callbacks([sub { RecordInput($_[0] =~ m/^file:/i ? URI->new($_[0])->file : $_[0]); return 0; }, undef, undef, undef]);
+  $parser->input_callbacks($input_callbacks);
   return bless { parser => $parser }, $class; }
 
 sub parseFile {
