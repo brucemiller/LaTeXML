@@ -479,26 +479,9 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 /*======================================================================
  SVG (pgf/tikz & xy) basics
  */
-/* Heuristically adjust for content uncentered within line-box */
-foreignObject {
-    translate: 0 0.1em;
-    --ltx-fo-width: 100%; }
-/* Use flex to vertically center foreignObject,
-   to accommodate potentially tall line-box */
-.ltx_foreignobject_container {
-    display:flex;
-    align-items:center;
-    height:100%;
-    width:var(--ltx-fo-width);
-}
 /* Also horizontally for single math, since Chrome adds a lot of left/right spacing. */
 .ltx_foreignobject_container:has( > .ltx_foreignobject_content > math:only-child) {
     justify-content:center;
-}
-/* If multiple children, give more space to avoid unexpected line breaks
-   due to font differences. */
-.ltx_foreignobject_container:has( > .ltx_foreignobject_content > :not(:only-child)) {
-    width:calc(1.1 * var(--ltx-fo-width));
 }
 /* line height 0 just for this layer, to keep the line-box compact */
 .ltx_foreignobject_content {
@@ -507,6 +490,9 @@ foreignObject {
 /* Stuff appearing in svg:foreignObject */
 .ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
 .ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }
+
+/* Temporary(?) hack until text-box-trim is supported */
+.ltx_foreignobject_content { translate: 0 var(--ltx-fo-vhack); }
 
 /*======================================================================
  Low-level Basics */
@@ -605,6 +591,7 @@ cite                 { font-style: normal; }
   .ltx_foreignobject_content {
     color: var(--fn-fg-color-to-dark-mode, white);
   }
+
   /* We eventually want to cover the full range of possible attributes where color
       customization is expected in latexml's HTML format. This will be easier once
       CSS @function becomes widely available in browsers.

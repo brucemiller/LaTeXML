@@ -1234,6 +1234,7 @@ sub applyAligningContext {
       setAlignOrClass($document, $child, $align, $class) if $child->nodeType == XML_ELEMENT_NODE; } }
   return; }
 
+DefConstructorI('\lx@maybe@aligning@context', undef, \&setupAligningContext);
 DefConstructorI('\centering', undef, \&setupAligningContext,
   beforeDigest => sub { UnshiftValue(beforeAfterGroup => T_CS('\@add@centering')); });
 DefConstructorI('\raggedright', undef, \&setupAligningContext,
@@ -4788,7 +4789,13 @@ DefEnvironment('{minipage}[] OptionalUndigested [] {Dimension}', sub {
     AssignRegister('\textwidth'   => $width);
     AssignRegister('\columnwidth' => $width);
     $whatsit->setProperties(width => $width, vattach => $vattach);
-    Let('\\\\', '\lx@newline'); },
+    Let('\\\\', '\lx@newline');
+    Digest('\lx@maybe@aligning@context'); },    # So we can be centered.
+  beforeDigestEnd => sub {                      # Detect sneaky way of centering
+    if (LookupDimension('\leftskip')->getStretch->valueOf
+      && LookupDimension('\rightskip')->getStretch->valueOf) {
+      return Digest('\@add@centering'); }
+    return; },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
     $whatsit->getBody->setProperty(vattach => $whatsit->getProperty('vattach')); },
