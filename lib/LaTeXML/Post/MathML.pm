@@ -435,8 +435,9 @@ sub pmml_internal {
     my $vattach = $node->getAttribute('vattach');
     my $rowsep  = $node->getAttribute('rowsep') || '0pt';
     my $colsep  = $node->getAttribute('colsep') || '5pt';
-    $vattach = 'axis'    if !$vattach || ($vattach eq 'middle');    # roughly MathML's axis?
-    $vattach = 'bottom1' if $vattach && ($vattach eq 'top');
+    $vattach = 'axis'        if !$vattach || ($vattach eq 'middle');    # roughly MathML's axis?
+    $vattach = 'baseline 1'  if $vattach && ($vattach eq 'top');
+    $vattach = 'baseline -1' if $vattach && ($vattach eq 'bottom');
     my $ostyle = $LaTeXML::MathML::STYLE;
     local $LaTeXML::MathML::STYLE
       = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
@@ -444,7 +445,7 @@ sub pmml_internal {
     my $nrows = 0;
     my $ncols = 0;
 
-    my @spanned = ();                                               # record columns to be skipped
+    my @spanned = ();                                                   # record columns to be skipped
     foreach my $row (element_nodes($node)) {
       my @cols = ();
       my $nc   = 0;
