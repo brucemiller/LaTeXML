@@ -258,8 +258,11 @@ DefConstructor('\@@listings {}',
   beforeDigest => sub { beforeFloat('lstlisting'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
+our %frames = (none => undef, leftline => 'left', topline => 'top', bottomline => 'bottom',
+  lines => 'topbottom', single => 'rectangle', shadowbox => 'rectangle');
+
 DefConstructor('\@@listings@block {} {} {}',
-"<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding' dataname='#3'>#2</ltx:listing>",
+"<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding' dataname='#3' cssstyle='#cssstyle' framed='#framed' framecolor='#framecolor'>#2</ltx:listing>",
   mode        => 'internal_vertical',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -270,7 +273,19 @@ DefConstructor('\@@listings@block {} {} {}',
       $listings_data = encode('UTF-8', $listings_data);
     }
     my $data = encode_base64($listings_data, '');    # NO linebreaking!
-    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64'); });
+    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64');
+    my $frame = ToString(LookupValue('LST@frame'));
+    if ($frame ne 'none') {
+      my $border = $frames{$frame};
+      if (!defined $border) {
+        $border = join(' ',
+          $frame =~ m/t/i ? ('top')    : (),
+          $frame =~ m/b/i ? ('bottom') : (),
+          $frame =~ m/l/i ? ('left')   : (),
+          $frame =~ m/r/i ? ('right')  : ());
+      }
+      $whatsit->setProperties(framedProperties(frame => $border, margin => LookupValue('LST@framesep'))); }
+    return; });
 
 DefMacro('\lst@HRefStepCounter{}', '');
 
@@ -498,8 +513,8 @@ sub lstSetClassStyle {
       $props{class} = $stylestring; }            # add indirect to class.
     else {
       delete $$classes{$class}{class};
-      $props{begin} = Tokens($style, T_BEGIN);   # Otherwise, presumably TeX
-      $props{end} = T_END; } }
+      $props{begin} = Tokens($style, T_BEGIN);    # Otherwise, presumably TeX
+      $props{end}   = T_END; } }
   if ($class =~ /^(\w+?)s?$/) {
     $props{cssclass} = $1; }
   map { $$classes{$class}{$_} = $props{$_} } keys %props;
@@ -920,17 +935,7 @@ DefKeyVal('LST', 'breakautoindent', '', 'true');
 # 4.11 Frames
 #======================================================================
 # Mosly ignorable, but some could be used
-DefKeyVal('LST', 'frame', ''); # none | leftline | topline | bottomline | lines | single | shadowbox
-our %frames = (none => undef, leftline => 'left', topline => 'top', bottomline => 'bottom',
-  lines => 'topbottom', single => 'rectangle', shadowbox => 'rectangle');
-DefPrimitive('\lst@@frame Until:\end', sub {
-    my $name = ToString(Digest($_[1]));
-    AssignValue(LISTINGS_FRAME => $frames{$name});
-    lstPushValueLocally(LISTINGS_PREAMBLE => T_CS('\lst@@@set@frame')); });
-
-DefConstructor('\lst@@@set@frame', "^framed='#frame'",
-  properties => {
-    frame => sub { LookupValue('LISTINGS_INLINE') ? undef : LookupValue('LISTINGS_FRAME'); } });
+DefKeyVal('LST', 'frame', ''); # none | leftline | topline | bottomline | lines | single | shadowbox, see %frames
 
 DefKeyVal('LST', 'framearound',        '');            # t|f * 4
 DefKeyVal('LST', 'framesep',           'Dimension');
