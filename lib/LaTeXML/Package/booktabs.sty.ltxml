@@ -19,10 +19,17 @@ use LaTeXML::Package;
 # Except for the encodings of hline as t (normal) or T (thin)
 # there's currently no support for variable thickness.
 
-# \toprule[thickness]  doubled
-DefMacro('\toprule[Dimension]', '\hline\hline');
-# \midrule[thickness]
-DefMacro('\midrule[Dimension]', '\hline');
+# \toprule[thickness]  doubled; marks subsequent rows as header rows
+DefMacro('\toprule[Dimension]', sub {
+    if (my $alignment = LookupValue('Alignment')) {
+      $$alignment{in_tabular_head} = 1; }
+    return (T_CS('\hline'), T_CS('\hline')); });
+
+# \midrule[thickness]  ends the header region
+DefMacro('\midrule[Dimension]', sub {
+    if (my $alignment = LookupValue('Alignment')) {
+      $$alignment{in_tabular_head} = 0; }
+    return (T_CS('\hline')); });
 # \bottomrule[thickness] doubled
 DefMacro('\bottomrule[Dimension]', '\hline\hline');
 
