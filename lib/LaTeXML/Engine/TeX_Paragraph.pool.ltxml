@@ -91,12 +91,18 @@ sub alignLine {
 # Remember; \par _closes_, not opens, paragraphs!
 # Generally, we want to close both an open ltx:p and ltx:para (if either are open).
 # But when executed "internally" (by $stomach->leaveHorizontal), only close ltx:p.
-# NOTE Also that the whole inPreamble bit is, I think, overused.
-# For example, \par should be a NOOP in vertical mode, and that would generally make it
-# ignored in the preamble. (if we can be sure we're tracking modes correctly).
+# \par is a NOOP only in the RAW preamble (before \begin{document}); everywhere else it
+# closes the paragraph being built.  This is the pragmatic reading of the old note here
+# ("\par should be a NOOP in vertical mode ... if we can be sure we're tracking modes
+# correctly"): we can NOT rely on mode (we stay vertical after a display equation, so a
+# mode test would drop the blank line between $$..$$ groups; and raw-preamble text is
+# horizontal, so mode can't tell it from an \AtBeginDocument \par), so we key on CONTEXT
+# — whether \begin{document} has opened the 'document' environment — instead (afterDigest).
+# This lets a blank line inside \AtBeginDocument split paragraphs while inPreamble is
+# still set (so \RequirePackage there stays legal), retiring the need for #2846.
 DefConstructorI('\lx@normal@par', undef, sub {
     my ($document, %props) = @_;
-    if ($props{inPreamble}) { }
+    if ($props{noop}) { }
     else {
       $document->maybeCloseElement('ltx:p');
       my $node  = $document->getElement;
@@ -124,8 +130,14 @@ DefConstructorI('\lx@normal@par', undef, sub {
     # When invoked by $stomach->leaveHorizontal: no reversion, don't close ltx:para
     $whatsit->setProperties(internal_par => 1, reversion=>Tokens())
         if $LaTeXML::INTERNAL_PAR;
-    if (LookupValue('inPreamble')) {
-      $whatsit->setProperty(inPreamble => 1); }
+    # \par is a NOOP only in the RAW preamble: inPreamble is set AND the 'document'
+    # environment is NOT yet on the stack (\begin{document} pushes it at its start, so
+    # it is present throughout the begindocument hooks and the body).  Everywhere else
+    # \par closes the paragraph being built (see the header note).  The stacked lookup
+    # only runs while inPreamble is set (&& short-circuits in the body).
+    if (LookupValue('inPreamble')
+      && !grep { $_ eq 'document' } $STATE->lookupStackedValues('current_environment')) {
+      $whatsit->setProperty(noop => 1); }
     else {
       # Check if flags were set by prior \par:
       if (my $c = LookupValue("next_para_class")) {
