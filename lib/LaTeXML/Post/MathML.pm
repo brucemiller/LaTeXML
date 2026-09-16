@@ -435,8 +435,9 @@ sub pmml_internal {
     my $vattach = $node->getAttribute('vattach');
     my $rowsep  = $node->getAttribute('rowsep') || '0pt';
     my $colsep  = $node->getAttribute('colsep') || '5pt';
-    $vattach = 'axis'    if !$vattach || ($vattach eq 'middle');    # roughly MathML's axis?
-    $vattach = 'bottom1' if $vattach && ($vattach eq 'top');
+    if    (!$vattach || ($vattach eq 'middle')) { $vattach = 'axis'; }
+    elsif ($vattach eq 'top')                   { $vattach = 'baseline1'; }
+    elsif ($vattach eq 'bottom')                { $vattach = 'baseline-1'; }
     my $ostyle = $LaTeXML::MathML::STYLE;
     local $LaTeXML::MathML::STYLE
       = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
@@ -444,7 +445,7 @@ sub pmml_internal {
     my $nrows = 0;
     my $ncols = 0;
 
-    my @spanned = ();                                               # record columns to be skipped
+    my @spanned = ();    # record columns to be skipped
     foreach my $row (element_nodes($node)) {
       my @cols = ();
       my $nc   = 0;
@@ -1194,11 +1195,11 @@ our $atomtype_form = {
 # (use negative for spacing only in display & text style;  use 0 for * which means "shouldn't happen")
 # THUS, we'll need to know which style!!!
 our $atompair_spacing = {
-  Ord => { Ord =>  0, Op => 1, Bin => -2, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
-  Op  => { Ord =>  1, Op => 1, Bin =>  0, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
+  Ord => { Ord => 0,  Op => 1, Bin => -2, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
+  Op  => { Ord => 1,  Op => 1, Bin => 0,  Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
   Bin => { Ord => -2, Op => -2, Bin => 0, Rel => 0, Open => -2, Close => 0, Punct => 0, Inner => -2 },
   Rel => { Ord => -3, Op => -3, Bin => 0, Rel => 0, Open => -3, Close => 0, Punct => 0, Inner => -3 },
-  Open  => { Ord => 0, Op => 0, Bin =>  0, Rel =>  0, Open => 0, Close => 0, Punct => 0, Inner => 0 },
+  Open  => { Ord => 0, Op => 0, Bin => 0,  Rel => 0,  Open => 0, Close => 0, Punct => 0, Inner => 0 },
   Close => { Ord => 0, Op => 1, Bin => -2, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
   Punct => { Ord => -1, Op => -1, Bin => 0, Rel => -1, Open => -1, Close => -1, Punct => -1, Inner => -1 },
   Inner => { Ord => -1, Op => 1, Bin => -2, Rel => -3, Open => -1, Close => 0, Punct => -1, Inner => -1 },
