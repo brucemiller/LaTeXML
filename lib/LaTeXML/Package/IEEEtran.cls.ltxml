@@ -195,21 +195,20 @@ DefMacro('\IEEEQEDhere', sub {
     PushValue('QED@stack', Tokens());
     $t || (); });
 
-# Apparently no title...
+# IEEEtran.cls: \def\@IEEEproof[#1]{...{\itshape #1: }}, with #1 defaulting to \IEEEproofname.
+# Note that (unlike amsthm) the optional argument replaces the whole title,
+# and the title is italic (not bold), followed by a colon.
 DefEnvironment('{IEEEproof} OptionalUndigested',
   "<ltx:proof class='#class'>"
     . "<ltx:title font='#titlefont' _force_font='true' class='#titleclass'>#title</ltx:title>"
     . "#body",
-  #  beforeDigest => sub {
-  #    Digest(T_CS('\th@proof')); },
   afterConstruct   => sub { $_[0]->maybeCloseElement('ltx:proof'); },
   afterDigestBegin => sub {
     my ($stomach, $whatsit) = @_;
-    PushValue('QED@stack', T_CS('\qed'));
-    #    Digest(Tokens(T_CS('\the'), T_CS('\thm@bodyfont')));
-  },
+    PushValue('QED@stack', T_CS('\qed')); },
   properties => sub {
-    my $title     = Digest(TokenizeInternal('\textbf{\textit{Proof:}}'));
+    my @content   = $_[1] ? $_[1]->unlist : (T_CS('\IEEEproofname'));
+    my $title     = Digest(Tokens(T_BEGIN, T_CS('\itshape'), @content, T_OTHER(':'), T_END));
     my $titlefont = [$title->unlist]->[1];
     $titlefont = $titlefont->getFont if $titlefont;
     (title => $title,
