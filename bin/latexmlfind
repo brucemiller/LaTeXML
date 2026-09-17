@@ -20,6 +20,10 @@ use LaTeXML::Common::XML;
 use Text::Wrap;
 use LaTeXML;    # Currently, just for version information.
 
+# decode @ARGV before further processing
+use Encode::Locale;
+Encode::Locale::decode_argv(Encode::FB_CROAK);
+
 #**********************************************************************
 # Parse command line
 my ($verbosity) = (0);
@@ -125,7 +129,7 @@ sub collect_matches {
   my ($description, $xpath) = @_;
   my @nodes = $XPATH->findnodes($xpath, $DOC);
   print "Query $description appears in " . scalar(@nodes) . " places\n" if $verbosity > -1;
-  print "  [XPath = \"$xpath\"]\n" if $verbosity > 0;
+  print "  [XPath = \"$xpath\"]\n"                                      if $verbosity > 0;
   foreach my $node (@nodes) {
     my $object = id_object($node);
     push(@{ $$object{items} }, $node); }
@@ -144,9 +148,9 @@ sub id_object {
     my $parent_object = id_object($node);
     my $type          = $node->localname;
     my $labels        = $node->getAttribute('labels');
-    my ($refnum) = $XPATH->findnodes("child::ltx:tags/ltx:tag[\@refnum]/text()", $node);
-    my ($title)  = $XPATH->findnodes("child::ltx:toctitle | child::ltx:title",   $node);
-    my $desc = ($refnum ? ($title ? "$refnum. " . $title->textContent : $refnum)
+    my ($refnum)      = $XPATH->findnodes("child::ltx:tags/ltx:tag[\@refnum]/text()", $node);
+    my ($title)       = $XPATH->findnodes("child::ltx:toctitle | child::ltx:title",   $node);
+    my $desc          = ($refnum ? ($title ? "$refnum. " . $title->textContent : $refnum)
       : ($title ? $title->textContent : ''));
     $desc =~ s/\s+/ /g;
     $OBJECTS{$id} = $object
