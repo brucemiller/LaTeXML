@@ -47,9 +47,9 @@ DefConstructor('\psfig RequiredKeyVals:epsGin',
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
       @candidates = map { pathname_relative($_, $base) } @candidates; }
     my $options = ToString($kv);
-    (graphic => $file,
-      candidates => join(',', @candidates),
-      options => $options); });
+    (graphic => pathname_to_url($file),
+      candidates => pathname_to_urls(@candidates),
+      options    => $options); });
 
 Let('\epsfig', '\psfig');
 
