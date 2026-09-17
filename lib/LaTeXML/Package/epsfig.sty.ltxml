@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Image;
+use URI::file;
 
 #**********************************************************************
 # (See  LaTeXML::Post::Graphics for suggested postprocessing)
@@ -45,11 +46,11 @@ DefConstructor('\psfig RequiredKeyVals:epsGin',
     $kv->setValue(clip   => 'true') if LookupValue('epsfclip');
     my @candidates = pathname_findall($file, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map { pathname_relative($_, $base) } @candidates; }
+      @candidates = map { URI::file->new(pathname_relative($_, $base)) } @candidates; }
     my $options = ToString($kv);
     (graphic => $file,
       candidates => join(',', @candidates),
-      options => $options); });
+      options    => $options); });
 
 Let('\epsfig', '\psfig');
 
@@ -80,4 +81,3 @@ DefRegister('\epsfysize' => Dimension(0));
 DefPrimitive('\epsfsize{}{}', undef);
 #**********************************************************************
 1;
-
