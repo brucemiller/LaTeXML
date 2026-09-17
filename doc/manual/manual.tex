@@ -505,6 +505,13 @@ controlled by
 \begin{lstlisting}[style=shell]
 --svg %or% --nosvg
 \end{lstlisting}
+Image conversion requires one of the Perl modules \code{Graphics::Magick} or
+\code{Image::Magick}; by default, the first one that can be loaded is used.
+To force the use of a specific one (e.g.~if one of them fails on your system),
+set the environment variable \code{LATEXML\_IMAGECLASS}:
+\begin{lstlisting}[style=shell]
+LATEXML_IMAGECLASS=Image::Magick latexmlpost --dest=doc.html doc.xml
+\end{lstlisting}
 
 \paragraph{Stylesheets and Javascript}\label{usage.post.xslt}
 If you wish to restyle the generated \HTML\ either by adding \CSS\ or by customizing
