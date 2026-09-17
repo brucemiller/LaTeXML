@@ -303,7 +303,7 @@ sub cleanup_XMText {
             $document->replaceNode($m, map { $_->childNodes } $m->childNodes); }
           else {                                           # Otherwise, wrap whatever it is in an XMText
             $document->wrapNodes('ltx:XMText', $m); }
-        } } }
+    } } }
     # And now we don't need the XMText any more.
     foreach my $attr ($textnode->attributes) {    # Copy the child's attributes (should Merge!!)
       $table->setAttribute($attr->nodeName => $attr->getValue); }
@@ -426,7 +426,7 @@ sub scriptHandler {
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
     Error('unexpected', $c, $stomach, "Script $c can only appear in math mode");
     return Box($c, undef, undef, (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
-  } }
+} }
 
 DefPrimitiveI(T_SUPER, undef, sub { scriptHandler($_[0], 'SUPERSCRIPT'); });
 DefPrimitiveI(T_SUB,   undef, sub { scriptHandler($_[0], 'SUBSCRIPT'); });
@@ -547,7 +547,7 @@ DefRewrite(xpath => 'descendant::ltx:Math[child::ltx:XMath[child::ltx:XMApp[' .
             elsif ($role eq 'FLOATSUBSCRIPT') {
               $document->insertElement('ltx:sub', $text);
               return; }
-          } } } }
+    } } } }
     # should never happen, but just in case:
     Info("rewrite", "footnotemark", "Failed to find floating node in: " . $math->toString(1));
     $document->getNode->appendChild($math);
@@ -822,7 +822,7 @@ sub augmentDelimiterProperties {
       if (exists $$entry{char}) {                    # replace the char content!
         if (my $char = $$entry{char}) {
           $delim->firstChild->setData($char); } }
-    } }
+  } }
   return; }
 
 # Useful for afterConstruct of delimiter sizing macros (eg. \bigl)
@@ -1058,10 +1058,22 @@ sub adjustMathStyle_internal {
 
 sub fracSizer {
   my ($numerator, $denominator) = @_;
-  my $w = $numerator->getWidth->larger($denominator->getWidth);
-  my $d = $denominator->getTotalHeight->multiply(0.5);
-  my $h = $numerator->getTotalHeight->add($d);
-  return ($w, $h, $d); }
+  my $nfont     = $numerator   && $numerator->getFont;
+  my $dfont     = $denominator && $denominator->getFont;
+  my $style     = $nfont       && $nfont->getMathstyle || 'text';
+  my $isdisplay = ($style eq 'display');
+  my $syfont    = 'cmsy' . ($nfont && $nfont->getSize || 10);
+  my ($wnum, $hnum, $dnum) = map { $_->valueOf } $numerator->getSize;
+  my ($wden, $hden, $dden) = map { $_->valueOf } $denominator->getSize;
+  my ($wnom, $hnom, $dnom) = map { $_->valueOf } $nfont->getNominalSize;
+  my $th      = Dimension('0.4pt')->valueOf;
+  my $xheight = getFontDimen($syfont, 5);
+  my $maxis   = $xheight / 2 + $th;
+  my $pad     = ($isdisplay ? 3.5 : 1.5) * $th;
+  my $h       = $pad + max($dnum, $dnom) + $hnum + $maxis;
+  my $d       = $pad + max($hden, $hnom) + $dden - $maxis;
+  my $w       = max($wnum, $wden) + Dimension('2.4pt')->valueOf;    # should be what?
+  return (Dimension($w), Dimension($h), Dimension($d)); }
 
 # \lx@generalized@over{reversion}{keyvals}{top}{bottom}
 # keyvals: role,meaning, left,right, thickness
