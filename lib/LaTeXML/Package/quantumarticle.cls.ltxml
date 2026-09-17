@@ -42,7 +42,8 @@ DefMacro('\thanks[]{}',              '\lx@add@contact[role=thanks,name={#1}]{#2}
 DefMacro('\orcid[]{}',               '\lx@add@contact[role=orcid,name={#1}]{#2}');
 
 DefMacro('\collaboration{}',    '\author{#1}');
-DefMacro('\altaffiliation[]{}', '\lx@add@contact[annotate=new,role=affiliation,name={#1}]{#2}');
+# \altaffiliation[prefix]{affil} is a footnote on the preceding \author, not its affiliation
+DefMacro('\altaffiliation[]{}', '\lx@add@altaffiliation[name={#1}]{#2}');
 # some elsearticle style commands?
 DefMacro('\ead[]{}', '\email{#1}');    # Strictly if #1=url, should be homepage.
 
