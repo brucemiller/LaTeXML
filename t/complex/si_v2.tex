@@ -1,14 +1,10 @@
 \documentclass{article}
 \usepackage{xcolor}
 \usepackage{cancel}
-\usepackage{siunitx}
+\usepackage{siunitx}[=v2]
 \usepackage{float}
 \usepackage{multirow}
 \usepackage{booktabs}
-
-% recover version 2's {s} column type
-%%\usepackage{collcell}
-%%\newcolumntype{s}{>{\collectcell\si}c<{\endcollectcell}}
 
 \DeclareSIQualifier\polymer{pol}
 \DeclareSIQualifier\catalyst{cat}
@@ -26,7 +22,7 @@
 \def\mabbra{a}
 \DeclareSIUnit\mabbrb{\mabbra}
 
-%%\DeclareSIPrefix\killer{\kilo}{3}
+\DeclareSIPrefix\killer{\kilo}{3}
 
 \usepackage{amsmath}
 \begin{document}
@@ -58,12 +54,12 @@ Semantic again:
 %\num{\sqrt{2}}\\
 %\num{{a word}}\\
 \num{12345,67890}\\
-\complexnum{1+-2i}\\
+\num{1+-2i}\\
 \num{.3e45}\\
-\numproduct{1.654 x 2.34 x 3.430}\\
-%%\num{\pi}\\
-%%\num{2\pi}\\
-%%\num{\pi/3}\\
+\num{1.654 x 2.34 x 3.430}\\
+\num{\pi}\\
+\num{2\pi}\\
+\num{\pi/3}\\
 
 \num{123}\\
 \num{1234}\\
@@ -79,19 +75,19 @@ Semantic again:
 \num{123(3)e4}\\
 
 \num{123\pm2}\\
-\complexnum{123\pm2i}\\
-\complexnum{123+234i}\\
+\num{123\pm2i}\\
+\num{123+234i}\\
 %\num{123+234}\\
 %\num{123e2+234e3i}\\
-\complexnum{123+234ie3}\\
-\complexnum{123(1)+234(1)ie3}\\
+\num{123+234ie3}\\
+\num{123(1)+234(1)ie3}\\
 %\num{123e2(1)+234e3i(1)}\\
 %\num{+234(1)ie3}\\              %comes out weird?
-\complexnum{+3i}\\
-\complexnum{+3ie4}\\
+\num{+3i}\\
+\num{+3ie4}\\
 
 Pretty nonsensical stuff?
-%%\num{1.\pi e+3}\\
+\num{1.\pi e+3}\\
 \def\dig{1234}\\
 \num{\dig.\dig}\\
 \def\odd{\xi}\\
@@ -99,9 +95,9 @@ Pretty nonsensical stuff?
 \num[input-symbols=\xi]{3\xi}\\
 \num[input-symbols=\xi]{3\odd}\\
 %\num[input-symbols=\odd]{3\odd}\\
-%%\num[input-symbols=\odd, input-protect-tokens=\odd]{3\odd}\\
-%%\num[input-symbols=\odd, input-protect-tokens=\odd]{3\odder}\\
-%%\num[input-symbols=\odder, input-protect-tokens=\odder]{3\odder}\\
+\num[input-symbols=\odd, input-protect-tokens=\odd]{3\odd}\\
+\num[input-symbols=\odd, input-protect-tokens=\odd]{3\odder}\\
+\num[input-symbols=\odder, input-protect-tokens=\odder]{3\odder}\\
 %\num[input-symbols=\odder, input-protect-tokens=\odd]{3\odder}\\
 %\num[input-symbols=\odd, input-protect-tokens=\odder]{3\odder}\\
 
@@ -110,7 +106,7 @@ Pretty nonsensical stuff?
 \num{1.23\pm0.01}\\
 %\num{1.23(1.0)}\\
 %\num{1.23(\pm1)}\\
-%%\num{1.23(\pi)}\\
+\num{1.23(\pi)}\\
 
 \subsection{Parsing numbers}
 
@@ -131,8 +127,8 @@ Pretty nonsensical stuff?
 \num{12.3 +- 6}\\
 
 \subsubsection{input-complex-roots}
-\complexnum{9.99 + 88.8i} \\
-\complexnum{9.99 + i88.8}\\
+\num{9.99 + 88.8i} \\
+\num{9.99 + i88.8}\\
 
 \subsubsection{input-protect-tokens}
 
@@ -162,11 +158,11 @@ Pretty nonsensical stuff?
 }
 \subsubsection{round-integer-to-decimal}
 {
-\num[round-mode = figures, round-precision=1]{1} \\
-\num[round-mode = places, round-precision=0]{1} \\
-%% \sisetup{round-integer-to-decimal}
-%% \num[round-mode = figures]{1} \\
-%% \num[round-mode = places]{1}\\
+\num[round-mode = figures]{1} \\
+\num[round-mode = places]{1} \\
+\sisetup{round-integer-to-decimal}
+\num[round-mode = figures]{1} \\
+\num[round-mode = places]{1}\\
 }
 
 \subsubsection{round-minimum}
@@ -191,12 +187,12 @@ Pretty nonsensical stuff?
 
 \subsubsection{add-decimal-zero, add-integer-zero}
 {
-\num[minimum-decimal-digits=1]{123.} \\
+\num{123.} \\
 \num{456} \\
 \num{.789} \\
 \sisetup{
   add-decimal-zero = false,
-%%  add-integer-zero = false,
+  add-integer-zero = false,
 }%
 \num{123.} \\
 \num{456} \\
@@ -213,8 +209,8 @@ Pretty nonsensical stuff?
 \subsubsection{explicit-sign, retain-explicit-plus}
 \num{+345} \\
 \num[retain-explicit-plus]{+345} \\
-%%\num[explicit-sign = -]{345}\\
-%%\num[explicit-sign = -]{+345}\\
+\num[explicit-sign = -]{345}\\
+\num[explicit-sign = -]{+345}\\
 
 \subsubsection{retain-unity-mantissa, retain-zero-exponent}
 \num{1e4} \\
@@ -260,8 +256,7 @@ scientific-notation = fixed,
 \num[group-digits= integer]{12345.67890}\\
 
 \num{1234567890.1234567890}\\
-%%\num[group-four-digits]{1234567890.1234567890}\\
-%%\num[digit-group-size=4]{1234567890.1234567890}\\
+\num[group-four-digits]{1234567890.1234567890}\\
 
 \num{12345} \\
 \num[group-separator = {,}]{12345} \\
@@ -276,16 +271,16 @@ scientific-notation = fixed,
 \subsubsection{output-complex-root,output-decimal-marker,copy-complex-root,copy-decimal-marker}
 \num{1.23} \\
 \num[output-decimal-marker = {,}]{1.23} \\
-\complexnum{1+2i} \\
-\complexnum[output-complex-root = \text{\ensuremath{i}}]{1+2i} \\
-\complexnum[output-complex-root = j]{1+2i} \\
-%%\complexnum[copy-complex-root]{1+2j} \\
-%%\num[copy-decimal-marker]{555,555}\\
+\num{1+2i} \\
+\num[output-complex-root = \text{\ensuremath{i}}]{1+2i} \\
+\num[output-complex-root = j]{1+2i} \\
+\num[copy-complex-root]{1+2j} \\
+\num[copy-decimal-marker]{555,555}\\
 
 \subsubsection{complex-root-position}
-\complexnum{67-0.9i} \\
-\complexnum[complex-root-position = before-number]{67-0.9i} \\
-\complexnum[complex-root-position = after-number]{67-0.9i}\\
+\num{67-0.9i} \\
+\num[complex-root-position = before-number]{67-0.9i} \\
+\num[complex-root-position = after-number]{67-0.9i}\\
 
 \subsubsection{exponent-base, exponent-product}
 \num[exponent-product = \times]{1e2} \\
@@ -314,8 +309,8 @@ scientific-notation = fixed,
 \num[separate-uncertainty]{8.2(13)}\\
 \num[separate-uncertainty]{8.2\pm1.3} \\
 
-%%\num{1.234(5) x \pi} \\
-%\num[separate-uncertainty = true]{1.234(5) x \pi} \\
+\num{1.234(5) x \pi} \\
+\num[separate-uncertainty = true]{1.234(5) x \pi} \\
 
 \num{1.2 +- 0.001}\\
 \num[separate-uncertainty]{1.2 +- 0.001}\\
@@ -323,14 +318,14 @@ scientific-notation = fixed,
 \subsubsection{bracket-numbers, open-bracket, close-bracket}
 {
 \num{1 e10} \\
-\complexnum{2i e10} \\
-\complexnum{1+2i e10} \\
-\complexnum[bracket-numbers = false]{1+2i e10} \\
-%%\sisetup{
-%%  open-bracket = \{,
-%%  close-bracket = \},
-%%}
-%%\complexnum{1+2i e10}\\
+\num{2i e10} \\
+\num{1+2i e10} \\
+\num[bracket-numbers = false]{1+2i e10} \\
+\sisetup{
+  open-bracket = \{,
+  close-bracket = \},
+}
+\num{1+2i e10}\\
 }
 
 \subsubsection{negative-color}
@@ -346,28 +341,28 @@ scientific-notation = fixed,
 \subsection{Multi-part Numbers}
 
 \subsubsection{input-product,input-quotient}
-\numproduct{1 x 2 x 3} \\
-%%\numproduct{1e4 x 2(3) x 3/4} \\
-%%\numproduct[input-product=*]{4 * 5 * 6} \\
-%%\num{ 1 / 2e4 } \\
-%%\num{ 1e2 / 3e4 }\\
+\num{1 x 2 x 3} \\
+\num{1e4 x 2(3) x 3/4} \\
+\num[input-product=*]{4 * 5 * 6} \\
+\num{ 1 / 2e4 } \\
+\num{ 1e2 / 3e4 }\\
 
-%%\subsubsection{output-product, output-quotient}
-%%\numproduct[output-product = \cdot]{4.87 x 5.321 x 6.90545} \\
-%%\num[output-quotient = \text{ div }]{1 / 2}\\
+\subsubsection{output-product, output-quotient}
+\num[output-product = \cdot]{4.87 x 5.321 x 6.90545} \\
+\num[output-quotient = \text{ div }]{1 / 2}\\
 
-%%\subsubsection{quotient-mode}
-%%\num{1 / 2e4} \\
-%%\num[quotient-mode = fraction]{1 / 2e4}\\
+\subsubsection{quotient-mode}
+\num{1 / 2e4} \\
+\num[quotient-mode = fraction]{1 / 2e4}\\
 
-%%\subsubsection{fraction-function}
-%%{
-%%\sisetup{quotient-mode= fraction}
-%%\num{1 / 1}\\
-%%\num[fraction-function= \dfrac]{1 / 2}\\
-%%%\num[fraction-function= \sfrac]{1 / 3}\\
-%%\num[fraction-function= \tfrac]{1 / 4}\\
-%%}
+\subsubsection{fraction-function}
+{
+\sisetup{quotient-mode= fraction}
+\num{1 / 1}\\
+\num[fraction-function= \dfrac]{1 / 2}\\
+%\num[fraction-function= \sfrac]{1 / 3}\\
+\num[fraction-function= \tfrac]{1 / 4}\\
+}
 
 \subsection{Lists and ranges of numbers}
 \subsubsection{list-final-separator,list-pair-separator,list-separator}
@@ -496,16 +491,16 @@ Unit & Macro & Symbol \\\hline
 \centering
 \begin{tabular}{lll}\hline\hline
 Unit & Macro & Symbol \\\hline
-%%\showunit{astronomicalunit}\\
-%%\showunit{atomicmassunit}\\
-%%\showunit{bohr}\\
-%%\showunit{clight}\\
+\showunit{astronomicalunit}\\
+\showunit{atomicmassunit}\\
+\showunit{bohr}\\
+\showunit{clight}\\
 \showunit{dalton}\\
-%%\showunit{electronmass}\\
+\showunit{electronmass}\\
 \showunit{electronvolt}\\
-%%\showunit{elementarycharge}\\
-%%\showunit{hartree}\\
-%%\showunit{planckbar}\\
+\showunit{elementarycharge}\\
+\showunit{hartree}\\
+\showunit{planckbar}\\
 \end{tabular}
 \end{table}
 
@@ -514,19 +509,19 @@ Unit & Macro & Symbol \\\hline
 \centering
 \begin{tabular}{lll}\hline\hline
 Unit & Macro & Symbol \\\hline
-%%\showunit{angstrom}\\
-%%\showunit{bar}\\
-%%\showunit{barn}\\
+\showunit{angstrom}\\
+\showunit{bar}\\
+\showunit{barn}\\
 \showunit{bel}\\
 \showunit{decibel}\\
-%%\showunit{knot}\\
-%%\showunit{mmHg}\\
-%%\showunit{nauticalmile}\\
+\showunit{knot}\\
+\showunit{mmHg}\\
+\showunit{nauticalmile}\\
 \showunit{neper}\\
 \end{tabular}
 \end{table}
 
-\def\showprefix#1{#1 & \texttt{\Backslash#1} & \si{\csname#1\endcsname\meter} & \si[prefixes-as-symbols=false]{\csname#1\endcsname\meter}}
+\def\showprefix#1{#1 & \texttt{\Backslash#1} & \si{\csname#1\endcsname} & \si[prefixes-as-symbols=false]{\csname#1\endcsname}}
 \begin{table}
 \caption{Other non-SI units}
 \centering
@@ -559,7 +554,7 @@ Unit & Macro & Symbol \\\hline
 \showunit{mg}\\
 \showunit{g}\\
 \showunit{kg}\\
-%%\showunit{amu}\\\hline
+\showunit{amu}\\\hline
 \showunit{pm}\\
 \showunit{nm}\\
 \showunit{um}\\
@@ -668,11 +663,11 @@ Unit & Macro & Symbol & Power \\\hline
 % Not allowed.
 %\si{\kilo\kilogram}
 %\si{\kilo\kilo\gram}
-%%{
-%%% and note that regular macros ARE expanded!
-%%\def\killermeater{\kilo\meter}
-%%\si{\killermeater}
-%%}
+{
+% and note that regular macros ARE expanded!
+\def\killermeater{\kilo\meter}
+\si{\killermeater}
+}
 {
 % BUT, it prefers its OWN definitions!
 \def\gram{Grr}
@@ -690,7 +685,7 @@ Unit & Macro & Symbol & Power \\\hline
 \si{\mabbra}\\
 \si{\mabbrb}\\
 
-%%\si{\killer\meter}\\
+\si{\killer\meter}\\
 
 % Where can highlight go?
 \si{\highlight{red}\kilo\gram\metre\per\second} \\
@@ -749,13 +744,13 @@ Unit & Macro & Symbol & Power \\\hline
 \si{\pascal\per\gray\henry} \\
 \si[sticky-per]{\pascal\per\gray\henry}\\
 
-%%\subsubsection{power-font}
-%%\si{\metre\per\second\squared} \\
-%%\si[power-font = unit]{\metre\per\second\squared}\\
+\subsubsection{power-font}
+\si{\metre\per\second\squared} \\
+\si[power-font = unit]{\metre\per\second\squared}\\
 
-%%\subsubsection{literal-superscript-as-power}
-%%\si{m.s^{2}} \\
-%\si[literal-superscript-as-power = false]{m.s^{2}}\\
+\subsubsection{literal-superscript-as-power}
+\si{m.s^{2}} \\
+\si[literal-superscript-as-power = false]{m.s^{2}}\\
 
 \subsubsection{qualifier-mode, qualifier-phrase}
 \si{\kilogram\polymer\squared\per\mole\catalyst\per\hour} \\
@@ -817,12 +812,12 @@ Unit & Macro & Symbol & Power \\\hline
 \SI{1.234(5)e-4}{\metre}\\
 }
 \subsubsection{product-units}
-\qtyproduct{2 x 3 x 4}{\metre} \\
-\qtyproduct[product-units = brackets]{2 x 3 x 4}{\metre}\\
-%%\qtyproduct[product-units = brackets-power]{2 x 3 x 4}{\metre}\\
-\qtyproduct[product-units = power]{2 x 3 x 4}{\metre}\\
-\qtyproduct[product-units = repeat]{2 x 3 x 4}{\metre}\\
-\qtyproduct[product-units = single]{2 x 3 x 4}{\metre}\\
+\SI{2 x 3 x 4}{\metre} \\
+\SI[product-units = brackets]{2 x 3 x 4}{\metre}\\
+\SI[product-units = brackets-power]{2 x 3 x 4}{\metre}\\
+\SI[product-units = power]{2 x 3 x 4}{\metre}\\
+\SI[product-units = repeat]{2 x 3 x 4}{\metre}\\
+\SI[product-units = single]{2 x 3 x 4}{\metre}\\
 
 \subsubsection{list-units,range-units}
 \SIlist{2;4;6;8}{\tesla} \\
@@ -923,37 +918,37 @@ Heading & Heading \\
 \end{tabular}
 \end{table}
 
-% % \begin{table}[H]
-% % \centering
-% % \caption{Units in tables.}
-% % \label{tab:s:demo}
-% % \begin{tabular}{s}
-% % \toprule
-% % \multicolumn{1}{c}{Unit} \\
-% % \midrule
-% % \metre\squared\per\second \\
-% % \pascal \\
-% % m.s^{-1} \\
-% % \bottomrule
-% % \end{tabular}
-% % \end{table}
+\begin{table}[H]
+\centering
+\caption{Units in tables.}
+\label{tab:s:demo}
+\begin{tabular}{s}
+\toprule
+\multicolumn{1}{c}{Unit} \\
+\midrule
+\metre\squared\per\second \\
+\pascal \\
+m.s^{-1} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-% % \begin{table}[H]
-% % \centering
-% % \caption{The \texttt{s} column processes everything.}
-% % \label{tab:s:processing}
-% % \sisetup{color = orange}
-% % \begin{tabular}{ss}
-% % \toprule
-% % {Unit}
-% % & \multicolumn{1}{c}{Unit}\\
-% % \midrule
-% % {\si{m^3}} & \multicolumn{1}{c}{\si{m^3}} \\
-% % \kilogram
-% % & \kilogram \\
-% % \bottomrule
-% % \end{tabular}
-% % \end{table}
+\begin{table}[H]
+\centering
+\caption{The \texttt{s} column processes everything.}
+\label{tab:s:processing}
+\sisetup{color = orange}
+\begin{tabular}{ss}
+\toprule
+{Unit}
+& \multicolumn{1}{c}{Unit}\\
+\midrule
+{\si{m^3}} & \multicolumn{1}{c}{\si{m^3}} \\
+\kilogram
+& \kilogram \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsubsection{table-parse-only}
 \begin{table}[H]
@@ -1340,58 +1335,58 @@ S[table-text-alignment = right]
 \end{tabular}
 \end{table}
 
-% % \subsubsection{table-unit-alignment}
-% % \begin{table}[H]
-% % \centering
-% % \caption{Alignment options in \texttt{s} columns.}
-% % \label{tab:s:align}
-% % \begin{tabular}
-% % {
-% % s[table-unit-alignment = right]
-% % s
-% % s[table-unit-alignment = left]
-% % }
-% % \toprule
-% % {Right-aligned} &
-% % {Centred text} &
-% % {Left-aligned} \\
-% % \midrule
-% % \metre\per\second & \metre\per\second & \metre\per\second \\
-% % \kilogram
-% % & \kilogram
-% % & \kilogram
-% % \\
-% % \bottomrule
-% % \end{tabular}
-% % \end{table}
+\subsubsection{table-unit-alignment}
+\begin{table}[H]
+\centering
+\caption{Alignment options in \texttt{s} columns.}
+\label{tab:s:align}
+\begin{tabular}
+{
+s[table-unit-alignment = right]
+s
+s[table-unit-alignment = left]
+}
+\toprule
+{Right-aligned} &
+{Centred text} &
+{Left-aligned} \\
+\midrule
+\metre\per\second & \metre\per\second & \metre\per\second \\
+\kilogram
+& \kilogram
+& \kilogram
+\\
+\bottomrule
+\end{tabular}
+\end{table}
 
-% % \subsubsection{table-alignment}
+\subsubsection{table-alignment}
 
-% % \subsubsection{table-column-width}
-% % \begin{table}[H]
-% % \centering
-% % \caption{Fixed-width columns.}
-% % \label{tab:width:fixed}
-% % \begin{tabular}
-% % {
-% % s
-% % s[table-column-width = 2 cm]
-% % S
-% % S[table-column-width = 2 cm]
-% % }
-% % \toprule
-% % {Flexible} &
-% % {Fixed}
-% % &
-% % {Flexible} &
-% % {Fixed}
-% % \\
-% % \midrule
-% % \metre\per\second & \metre\per\second & 1.23 & 1.23 \\
-% % \kilogram\candela & \kilogram\candela & 45.6 & 45.6 \\
-% % \bottomrule
-% % \end{tabular}
-% % \end{table}
+\subsubsection{table-column-width}
+\begin{table}[H]
+\centering
+\caption{Fixed-width columns.}
+\label{tab:width:fixed}
+\begin{tabular}
+{
+s
+s[table-column-width = 2 cm]
+S
+S[table-column-width = 2 cm]
+}
+\toprule
+{Flexible} &
+{Fixed}
+&
+{Flexible} &
+{Fixed}
+\\
+\midrule
+\metre\per\second & \metre\per\second & 1.23 & 1.23 \\
+\kilogram\candela & \kilogram\candela & 45.6 & 45.6 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % \begin{table}[H]
 % \centering
