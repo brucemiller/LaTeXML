@@ -97,16 +97,42 @@ sub image_size {
     return image_getvalue($image, 'width', 'height'); } }
 
 # This will be set once we've found an Image processing library to use [Daemon safe]
-our $IMAGECLASS;    # cached class if we found one that works. [CONFIGURABLE?]
+our $IMAGECLASS;    # cached class if we found one that works.
 my @MagickClasses = (qw(Graphics::Magick Image::Magick));    # CONSTANT
+# The environment variable LATEXML_IMAGECLASS can be set to one of the above
+# class names (case-insensitively, with or without the ::) to force its use,
+# rather than using whichever loads first.
+# If the requested class can't be loaded, NO image processing will be done.
+my $reported_imageclass_error = 0;
 
+# Return the class(es) that will be considered for image processing.
 sub image_classes {
-  return @MagickClasses; }
+  my $requested = image_requested_class();
+  return ($requested ? ($requested) : @MagickClasses); }
+
+# Return the normalized class requested via LATEXML_IMAGECLASS, if any (and valid).
+sub image_requested_class {
+  my $requested = $ENV{LATEXML_IMAGECLASS};
+  return unless defined $requested && $requested =~ /\S/;
+  $requested =~ s/^\s+//; $requested =~ s/\s+$//;
+  (my $key = lc($requested)) =~ s/:://g;
+  foreach my $class (@MagickClasses) {
+    (my $ckey = lc($class)) =~ s/:://g;
+    return $class if $key eq $ckey; }
+  if (!$reported_imageclass_error) {
+    $reported_imageclass_error = 1;
+    Error('imageprocessing', 'imageclass', undef,
+      "Unrecognized image processing class '$requested' requested by LATEXML_IMAGECLASS",
+      "Expected one of: " . join(', ', @MagickClasses)); }
+  return; }
 
 sub image_can_image {
   my ($pathname) = @_;
   if (!$IMAGECLASS) {
-    foreach my $class (@MagickClasses) {
+    my $requested = image_requested_class();
+    # If a class was requested, but it is not a recognized one, do no image processing.
+    return if !$requested && defined $ENV{LATEXML_IMAGECLASS} && $ENV{LATEXML_IMAGECLASS} =~ /\S/;
+    foreach my $class ($requested ? ($requested) : @MagickClasses) {
       my $module = $class . ".pm";
       $module =~ s/::/\//g;
       my $object = eval {
@@ -114,7 +140,12 @@ sub image_can_image {
         require $module; $class->new(); };
       if ($object) {
         $IMAGECLASS = $class;
-        last; } } }
+        last; }
+      elsif ($requested && !$reported_imageclass_error) {
+        $reported_imageclass_error = 1;
+        Error('imageprocessing', 'imageclass', undef,
+          "Image processing class '$requested' requested by LATEXML_IMAGECLASS could not be loaded",
+          ($@ ? (split(/\n/, $@))[0] : ())); } } }
   return $IMAGECLASS; }
 
 # return an image object (into which you can read), if possible.
