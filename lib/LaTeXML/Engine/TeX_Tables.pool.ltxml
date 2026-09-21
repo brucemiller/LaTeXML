@@ -68,9 +68,8 @@ DefColumnType('r', sub {
 # BUT @{} might add other contents to the cell!  So, we need an inline-block
 DefColumnType('p{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before  => Tokens(T_CS('\lx@tabular@p'), T_LETTER('t'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
-      after   => Tokens(T_END),
-      vattach => 'top',
+      before => Tokens(T_CS('\lx@tabular@p'), T_LETTER('t'), T_BEGIN, $_[1]->revert, T_END, T_BEGIN),
+      after  => Tokens(T_END)
     ); return; });
 # Make sure the content sees the desired width as \hsize
 DefMacro('\lx@tabular@p{}{}', '\hsize=#2\relax\lx@tabular@p@{#1}{#2}');
