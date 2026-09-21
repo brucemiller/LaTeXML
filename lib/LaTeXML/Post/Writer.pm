@@ -14,6 +14,7 @@ package LaTeXML::Post::Writer;
 use strict;
 use warnings;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
@@ -54,6 +55,7 @@ sub process {
       or return Fatal('I/O', $destdir, undef, "Couldn't create directory '$destdir'",
       "Response was: $!");
     my $OUT;
+    RecordOutput($destination);
     open($OUT, '>', $destination)
       or return Fatal('I/O', $destdir, undef, "Couldn't write '$destination'", "Response was: $!");
     print $OUT $serialized;

@@ -46,6 +46,8 @@ our @EXPORT = (
   qw(&MergeStatus),
   # Run time reporting
   qw(&StartTime &RunTime),
+  # Recording API
+  qw(&UseRecordFile &RecordInput &RecordOutput),
 );
 
 our $VERBOSITY   = 0;
@@ -134,9 +136,47 @@ sub UseLog {
     $log_count++;
     return if $LOG or not($path);                 # already opened?
     pathname_mkdir(pathname_directory($path));    # and hopefully no errors! :>
+    RecordOutput($path) if !$append || $log_count == 1;
     open($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
     $LOG_PATH = $path;
     binmode($LOG, ":encoding(UTF-8)"); }
+  return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Record file
+our $RECORDFILE;
+our $RECORDFILE_PATH;
+# NOTE: same strategy as for $LOG
+our $recordfile_count = 0;
+
+sub UseRecordFile {
+  my ($path, $append) = @_;
+  if (!$path) {    # Single false argument? Turn OFF and Close
+    $recordfile_count--;
+    return if !$RECORDFILE || $recordfile_count;
+    close($RECORDFILE) or die "Cannot close record file: $!";
+    $RECORDFILE = undef; }
+  else {
+    $recordfile_count++;
+    return if $RECORDFILE or not($path);          # already opened?
+    pathname_mkdir(pathname_directory($path));    # and hopefully no errors! :>
+    my $is_empty = -z $path || !$append;
+    open($RECORDFILE, ($append ? '>>' : '>'), $path) or die "Cannot open record file $path for writing: $!";
+    $RECORDFILE_PATH = $path;
+    binmode($RECORDFILE, ":encoding(UTF-8)");
+    # first line must be current working directory
+    print $RECORDFILE "PWD " . pathname_cwd() . "\n" if $is_empty; }
+  return; }
+
+# Recording API
+sub RecordInput {
+  my ($filename) = @_;
+  print $RECORDFILE "INPUT $filename\n" unless !$RECORDFILE;
+  return; }
+
+sub RecordOutput {
+  my ($filename) = @_;
+  print $RECORDFILE "OUTPUT $filename\n" unless !$RECORDFILE;
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

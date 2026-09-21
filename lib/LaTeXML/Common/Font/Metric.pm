@@ -47,6 +47,7 @@ sub read_tfm {
   my $pathname = $$self{file};
   # Read the TFM raw data.
   my $TFM;
+  RecordInput($pathname);
   if (!open($TFM, '<', $pathname)) {
     Error('expected', $pathname, undef,
       "Couldn't open TFM files '$pathname': $!");

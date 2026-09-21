@@ -76,6 +76,12 @@ sub process {
   if (my $icon = $params{ICON}) {
     # Hmm.... what type? could be various image types
     $params{ICON} = '"' . $self->copyResource($doc, $icon, undef) . '"'; }
+
+  my $security = XML::LibXSLT::Security->new;
+  $security->register_callback(write_file => sub { RecordOutput($_[1]); return 1; });
+  $security->register_callback(create_dir => sub { RecordOutput($_[1]); return 1; });
+  $$self{stylesheet}->security_callbacks($security);
+
   my $newdoc = $doc->new($$self{stylesheet}->transform($doc->getDocument, %params));
   return $newdoc; }
 
@@ -115,7 +121,10 @@ sub copyResource {
       if (!pathname_is_contained($dest, $doc->getSiteDirectory)) {
         $dest = pathname_make(dir => $doc->getSiteDirectory, name => $name, type => $ex); } }
     # Now, copy (unless in same place! happens a lot during testing!!!!)
-    pathname_copy($path, $dest) unless $path eq $dest;
+    if (!($path eq $dest)) {
+      RecordInput($path);
+      pathname_copy($path, $dest);
+      RecordOutput($dest); }
     # and return the relative path from the dest doc to the resource
     return pathname_relative($dest, $doc->getDestinationDirectory); }
   else {
