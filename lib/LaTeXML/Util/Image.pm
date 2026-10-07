@@ -463,7 +463,9 @@ sub image_read {
   $page = ($page // 1) - 1;    # graphicx counts pages from 1, ImageMagick from 0
   my $image = image_object();
   # Just in case this is pdf, set this option; ImageMagick defaults to MediaBox (Wrong!!!)
-  image_internalop($image, 'Set',  option => 'pdf:use-cropbox=true') or return;
+  # Graphics::Magick doesn't know this attribute, and its error handler would exit the process.
+  if ($IMAGECLASS eq 'Image::Magick') {
+    image_internalop($image, 'Set', option => 'pdf:use-cropbox=true') or return; }
   image_internalop($image, 'Set',  @args)                            or return;
   image_internalop($image, 'Read', $source . "[$page]")              or return;
   return $image; }
