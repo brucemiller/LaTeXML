@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="siunitx"?>
+<?latexml package="booktabs"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="10" text="10" xml:id="p1.m1">
+        <XMath>
+          <XMTok meaning="10" role="NUMBER">10</XMTok>
+        </XMath>
+      </Math><break/><Math mode="inline" tex="123" text="123" xml:id="p1.m2">
+        <XMath>
+          <XMTok meaning="123" role="NUMBER">123</XMTok>
+        </XMath>
+      </Math></p>
+  </para>
+  <subsubsection inlist="toc" xml:id="S4.SS4.SSS2">
+    <tags>
+      <tag>4.4.2</tag>
+      <tag role="refnum">4.4.2</tag>
+      <tag role="typerefnum">§4.4.2</tag>
+    </tags>
+    <title><tag close=" ">4.4.2</tag>exponent-thresholds</title>
+    <para xml:id="S4.SS4.SSS2.p1">
+      <p>Table <ref labelref="LABEL:tab:threshold"/></p>
+    </para>
+    <table inlist="lot" labels="LABEL:tab:threshold" xml:id="S4.T1">
+      <tags>
+        <tag>Table 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Table 1</tag>
+      </tags>
+      <toccaption><tag close=" ">1</tag>Thresholds for exponents.</toccaption>
+      <caption><tag close=": ">Table 1</tag>Thresholds for exponents.</caption>
+      <tabular class="ltx_guessed_headers" vattach="middle">
+        <thead>
+          <tr>
+            <td align="center" border="tt" thead="column row">Input</td>
+            <td align="center" border="tt" thead="column">Threshold <Math mode="inline" tex="-3:3" text="- 3 colon 3" xml:id="S4.T1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok name="colon" role="METARELOP">:</XMTok>
+                    <XMApp>
+                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMTok meaning="3" role="NUMBER">3</XMTok>
+                    </XMApp>
+                    <XMTok meaning="3" role="NUMBER">3</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="center" border="tt" class="ltx_nopad_r" thead="column">Threshold <Math mode="inline" tex="-2:2" text="- 2 colon 2" xml:id="S4.T1.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok name="colon" role="METARELOP">:</XMTok>
+                    <XMApp>
+                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    </XMApp>
+                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="center" border="t" thead="row"><text width="6.1pt"/><Math mode="inline" tex="0.001" text="0.001" xml:id="S4.T1.m3">
+                <XMath>
+                  <XMTok meaning="0.001" role="NUMBER">0.001</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="center" border="t"><text width="6.1pt"/><Math mode="inline" tex="1\makebox[12.20703pt]{}\text{\times}{10}^{-3}" text="0001.E3" xml:id="S4.T1.m4">
+                <XMath>
+                  <XMApp meaning="0001.E3">
+                    <XMText meaning="times" role="MULOP" xml:id="S4.T1.m4.2">×</XMText>
+                    <XMApp xml:id="S4.T1.m4.1">
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="0001." role="NUMBER">1</XMTok>
+                      <XMText width="12.2pt"/>
+                    </XMApp>
+                    <XMApp xml:id="S4.T1.m4.3">
+                      <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                      <XMTok meaning="10" role="NUMBER">10</XMTok>
+                      <XMApp>
+                        <XMTok fontsize="70%" meaning="minus" role="ADDOP">-</XMTok>
+                        <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="center" border="t" class="ltx_nopad_r"><text width="6.1pt"/><Math mode="inline" tex="1\makebox[12.20703pt]{}\text{\times}{10}^{-3}" text="0001.E3" xml:id="S4.T1.m5">
+                <XMath>
+                  <XMApp meaning="0001.E3">
+                    <XMText meaning="times" role="MULOP" xml:id="S4.T1.m5.2">×</XMText>
+                    <XMApp xml:id="S4.T1.m5.1">
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="0001." role="NUMBER">1</XMTok>
+                      <XMText width="12.2pt"/>
+                    </XMApp>
+                    <XMApp xml:id="S4.T1.m5.3">
+                      <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                      <XMTok meaning="10" role="NUMBER">10</XMTok>
+                      <XMApp>
+                        <XMTok fontsize="70%" meaning="minus" role="ADDOP">-</XMTok>
+                        <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </tr>
+          <tr>
+            <td align="center" thead="row"><text width="6.1pt"/><Math mode="inline" tex="0.012" text="0.012" xml:id="S4.T1.m6">
+                <XMath>
+                  <XMTok meaning="0.012" role="NUMBER">0.012</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="center"><text width="6.1pt"/><Math mode="inline" tex="0.012" text="0.012E0" xml:id="S4.T1.m7">
+                <XMath>
+                  <XMTok meaning="0.012E0" role="NUMBER">0.012</XMTok>
+                </XMath>
+              </Math><text width="18.3pt"/></td>
+            <td align="center" class="ltx_nopad_r"><text width="6.1pt"/><Math mode="inline" tex="1.2\makebox[6.10352pt]{}\text{\times}{10}^{-2}" text="001.2E2" xml:id="S4.T1.m8">
+                <XMath>
+                  <XMApp meaning="001.2E2">
+                    <XMText meaning="times" role="MULOP" xml:id="S4.T1.m8.2">×</XMText>
+                    <XMApp xml:id="S4.T1.m8.1">
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="001.2" role="NUMBER">1.2</XMTok>
+                      <XMText width="6.1pt"/>
+                    </XMApp>
+                    <XMApp xml:id="S4.T1.m8.3">
+                      <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                      <XMTok meaning="10" role="NUMBER">10</XMTok>
+                      <XMApp>
+                        <XMTok fontsize="70%" meaning="minus" role="ADDOP">-</XMTok>
+                        <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </tr>
+          <tr>
+            <td align="center" thead="row"><text width="6.1pt"/><Math mode="inline" tex="0.123" text="0.123" xml:id="S4.T1.m9">
+                <XMath>
+                  <XMTok meaning="0.123" role="NUMBER">0.123</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="center"><text width="6.1pt"/><Math mode="inline" tex="0.123" text="0.123E0" xml:id="S4.T1.m10">
+                <XMath>
+                  <XMTok meaning="0.123E0" role="NUMBER">0.123</XMTok>
+                </XMath>
+              </Math><text width="18.3pt"/></td>
+            <td align="center" class="ltx_nopad_r"><text width="6.1pt"/><Math mode="inline" tex="0.123" text="0.123E0" xml:id="S4.T1.m11">
+                <XMath>
+                  <XMTok meaning="0.123E0" role="NUMBER">0.123</XMTok>
+                </XMath>
+              </Math><text width="18.3pt"/></td>
+          </tr>
+          <tr>
+            <td align="center" thead="row"><text width="6.1pt"/><Math mode="inline" tex="1" text="1" xml:id="S4.T1.m12">
+                <XMath>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                </XMath>
+              </Math><text width="15.3pt"/></td>
+            <td align="center"><text width="6.1pt"/><Math mode="inline" tex="1" text="1.E0" xml:id="S4.T1.m13">
+                <XMath>
+                  <XMTok meaning="1.E0" role="NUMBER">1</XMTok>
+                </XMath>
+              </Math><text width="30.5pt"/></td>
+            <td align="center" class="ltx_nopad_r"><text width="6.1pt"/><Math mode="inline" tex="1" text="1.E0" xml:id="S4.T1.m14">
+                <XMath>
+                  <XMTok meaning="1.E0" role="NUMBER">1</XMTok>
+                </XMath>
+              </Math><text width="30.5pt"/></td>
+          </tr>
+          <tr>
+            <td align="center" thead="row"><Math mode="inline" tex="12" text="12" xml:id="S4.T1.m15">
+                <XMath>
+                  <XMTok meaning="12" role="NUMBER">12</XMTok>
+                </XMath>
+              </Math><text width="15.3pt"/></td>
+            <td align="center"><Math mode="inline" tex="12" text="12.E0" xml:id="S4.T1.m16">
+                <XMath>
+                  <XMTok meaning="12.E0" role="NUMBER">12</XMTok>
+                </XMath>
+              </Math><text width="30.5pt"/></td>
+            <td align="center" class="ltx_nopad_r"><Math mode="inline" tex="12" text="12.E0" xml:id="S4.T1.m17">
+                <XMath>
+                  <XMTok meaning="12.E0" role="NUMBER">12</XMTok>
+                </XMath>
+              </Math><text width="30.5pt"/></td>
+          </tr>
+          <tr>
+            <td align="center" thead="row"><Math mode="inline" tex="123" text="123" xml:id="S4.T1.m18">
+                <XMath>
+                  <XMTok meaning="123" role="NUMBER">123</XMTok>
+                </XMath>
+              </Math><text width="15.3pt"/></td>
+            <td align="center"><Math mode="inline" tex="123" text="123.E0" xml:id="S4.T1.m19">
+                <XMath>
+                  <XMTok meaning="123.E0" role="NUMBER">123</XMTok>
+                </XMath>
+              </Math><text width="30.5pt"/></td>
+            <td align="center" class="ltx_nopad_r"><text width="6.1pt"/><Math mode="inline" tex="1.23\makebox[0.0pt]{}\text{\times}{10}^{2}" text="1.23E2" xml:id="S4.T1.m20">
+                <XMath>
+                  <XMApp meaning="1.23E2">
+                    <XMText meaning="times" role="MULOP" xml:id="S4.T1.m20.2">×</XMText>
+                    <XMApp xml:id="S4.T1.m20.1">
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="1.23" role="NUMBER">1.23</XMTok>
+                      <XMText width="0.0pt"/>
+                    </XMApp>
+                    <XMApp xml:id="S4.T1.m20.3">
+                      <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                      <XMTok meaning="10" role="NUMBER">10</XMTok>
+                      <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </tr>
+          <tr>
+            <td align="center" border="bb" thead="row"><Math mode="inline" tex="1234" text="1234" xml:id="S4.T1.m21">
+                <XMath>
+                  <XMTok meaning="1234" role="NUMBER">1234</XMTok>
+                </XMath>
+              </Math><text width="15.3pt"/></td>
+            <td align="center" border="bb"><text width="6.1pt"/><Math mode="inline" tex="1.234\makebox[0.0pt]{}\text{\times}{10}^{3}" text="1.234E3" xml:id="S4.T1.m22">
+                <XMath>
+                  <XMApp meaning="1.234E3">
+                    <XMText meaning="times" role="MULOP" xml:id="S4.T1.m22.2">×</XMText>
+                    <XMApp xml:id="S4.T1.m22.1">
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="1.234" role="NUMBER">1.234</XMTok>
+                      <XMText width="0.0pt"/>
+                    </XMApp>
+                    <XMApp xml:id="S4.T1.m22.3">
+                      <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                      <XMTok meaning="10" role="NUMBER">10</XMTok>
+                      <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="center" border="bb" class="ltx_nopad_r"><text width="6.1pt"/><Math mode="inline" tex="1.234\makebox[0.0pt]{}\text{\times}{10}^{3}" text="1.234E3" xml:id="S4.T1.m23">
+                <XMath>
+                  <XMApp meaning="1.234E3">
+                    <XMText meaning="times" role="MULOP" xml:id="S4.T1.m23.2">×</XMText>
+                    <XMApp xml:id="S4.T1.m23.1">
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="1.234" role="NUMBER">1.234</XMTok>
+                      <XMText width="0.0pt"/>
+                    </XMApp>
+                    <XMApp xml:id="S4.T1.m23.3">
+                      <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                      <XMTok meaning="10" role="NUMBER">10</XMTok>
+                      <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </tr>
+        </tbody>
+      </tabular>
+    </table>
+  </subsubsection>
+  <subsubsection inlist="toc" xml:id="S4.SS5.SSS16">
+    <tags>
+      <tag>4.5.16</tag>
+      <tag role="refnum">4.5.16</tag>
+      <tag role="typerefnum">§4.5.16</tag>
+    </tags>
+    <title><tag close=" ">4.5.16</tag>zero-decimal-as-symbol, zero-symbol</title>
+    <para xml:id="S4.SS5.SSS16.p1">
+      <p><Math mode="inline" tex="123\mbox{---}" text="123" xml:id="S4.SS5.SSS16.p1.m1">
+          <XMath>
+            <XMDual>
+              <XMTok meaning="123" role="NUMBER"/>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="123" role="NUMBER">123</XMTok>
+                <XMText>—</XMText>
+              </XMApp>
+            </XMDual>
+          </XMath>
+        </Math></p>
+    </para>
+  </subsubsection>
+  <subsubsection inlist="toc" xml:id="S4.SS10.SSS5">
+    <tags>
+      <tag>4.10.5</tag>
+      <tag role="refnum">4.10.5</tag>
+      <tag role="typerefnum">§4.10.5</tag>
+    </tags>
+    <title><tag close=" ">4.10.5</tag>qualifier-[mode|phrase]</title>
+    <para xml:id="S4.SS10.SSS5.p1">
+      <p><Math mode="inline" tex="{\mathrm{(kg\mathrm{pol})}}^{2}\text{\,}{\mathrm{(mol\mathrm{cat})}}^{-1}\text%&#10;{\,}{\mathrm{h}}^{-1}" text="power@(kilogram-polymer, 2) * power@(mole-catalyst, - 1) * power@(hour, - 1)" xml:id="S4.SS10.SSS5.p1.m1">
+          <XMath>
+            <XMApp>
+              <XMText meaning="times" role="MULOP" xml:id="S4.SS10.SSS5.p1.m1.4"> </XMText>
+              <XMApp xml:id="S4.SS10.SSS5.p1.m1.1">
+                <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMDual class="ltx_unit" meaning="kilogram-polymer" role="ID">
+                  <XMRef idref="S4.SS10.SSS5.p1.m1.1.1"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="S4.SS10.SSS5.p1.m1.1.1">kgpol</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+              <XMApp xml:id="S4.SS10.SSS5.p1.m1.3">
+                <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMDual class="ltx_unit" meaning="mole-catalyst" role="ID">
+                  <XMRef idref="S4.SS10.SSS5.p1.m1.3.1"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="S4.SS10.SSS5.p1.m1.3.1">molcat</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMApp>
+                  <XMTok fontsize="70%" meaning="minus" role="ADDOP">-</XMTok>
+                  <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp xml:id="S4.SS10.SSS5.p1.m1.5">
+                <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMTok class="ltx_unit" meaning="hour" role="ID">h</XMTok>
+                <XMApp>
+                  <XMTok fontsize="70%" meaning="minus" role="ADDOP">-</XMTok>
+                  <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math></p>
+    </para>
+  </subsubsection>
+</document>

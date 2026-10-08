@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage{siunitx}%[=v2]
+\DeclareSIQualifier\polymer{pol}
+\DeclareSIQualifier\catalyst{cat}
+\usepackage{booktabs}
+\begin{document}
+
+% This file tests valid commands that give different results in siunitx v2 and v3
+
+\num{10.}\\
+\num[add-decimal-zero = false]{123.}
+
+\setcounter{section}{4}
+\setcounter{subsection}{4}
+\setcounter{subsubsection}{1}
+
+\subsubsection{exponent-thresholds}
+Table \ref{tab:threshold}
+\begin{table}
+\caption{Thresholds for exponents.%
+\label{tab:threshold}}
+\begin{tabular}
+{
+@{}
+S
+S[exponent-mode = threshold]
+S[exponent-mode = threshold, exponent-thresholds = -2:2]
+@{}
+}
+\toprule
+{Input} & {Threshold $-3:3$} & {Threshold $-2:2$} \\
+\midrule
+0.001 & 0.001 & 0.001 \\
+0.012 & 0.012 & 0.012 \\
+0.123 & 0.123 & 0.123 \\
+1 & 1 & 1 \\
+12 & 12 & 12 \\
+123 & 123 & 123 \\
+1234 & 1234 & 1234 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\setcounter{section}{4}
+\setcounter{subsection}{5}
+\setcounter{subsubsection}{15}
+
+\subsubsection{zero-decimal-as-symbol, zero-symbol}
+\num[zero-decimal-as-symbol]{123.}
+
+\setcounter{subsection}{10}
+\setcounter{subsubsection}{4}
+
+\subsubsection{qualifier-[mode\textbar phrase]}
+\unit[qualifier-mode = phrase]
+{\kilogram\polymer\squared\per\mole\catalyst\per\hour}
+
+
+\end{document}
