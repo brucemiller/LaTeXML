@@ -669,7 +669,8 @@ DefMacro('\lx@add@note [] Semiverbatim',
 # and can use \\ to separate affiliation from each author.
 # BUT ALSO, this markup is commonly abused by putting authors & affiliations in
 # seemingly random orders, but adding superscript markers to connect them.
-# Assumption: superscript near END is used for authors; near FRONT for affiliation.
+# Assumption: a superscript leading a line marks an affiliation, as in "$^a$Univ";
+# one following some text marks an author, as in "A. Author$^a$".
 # NOTE: This is a mess! really should use role, so could apply to editors also
 # AND, matching \\ this way fails to catch \\[1em], so really should Let it
 
@@ -684,6 +685,15 @@ my @authoraffilsplits = (T_CS('\and'), T_CS('\And'), T_CS('\AND'),
 my @affilsplits       = (T_CS('\quad'), T_CS('\qquad'), T_CS("\\\\"),);
 my @authorsup_markers = (T_SUPER, T_CS('\textsuperscript'));
 
+# Whether the marker at (1-based) position $p in $line leads the line, i.e., only
+# formatting precedes it: spaces, braces, math shifts, and control sequences such
+# as \footnotesize or \bf.
+sub markerLeads {
+  my ($line, $p) = @_;
+  my @before = ($line->unlist)[0 .. $p - 2];
+  return !grep { my $cc = $_->getCatcode;
+      ($cc == CC_LETTER) || ($cc == CC_OTHER) || ($cc == CC_ACTIVE); } @before; }
+
 DefMacro('\lx@add@authors{}', sub {
     my ($gullet, $stuff) = @_;
     my @tokens = $stuff->unlist;
@@ -696,21 +706,28 @@ DefMacro('\lx@add@authors{}', sub {
       my @lines   = SplitTokens($stuff, @authoraffilsplits);
       my @entries = ();
       foreach my $line (@lines) {
-        next unless $line->unlist;
+        # skip empty lines, as after a trailing \\, also when only spaces or comments
+        next unless grep { my $cc = $_->getCatcode; ($cc != CC_SPACE) && ($cc != CC_COMMENT); }
+          $line->unlist;
         my $p = positionOf($line, @authorsup_markers);
         if (!$p) {    # No marker?
-          if (@entries) {    # continues previous entry;
-            $entries[-1][1] = Tokens($entries[-1][1], $line); }    # Append
+          if (@entries) {    # continues previous entry, keeping the line break
+            $entries[-1][1] = Tokens($entries[-1][1], T_CS("\\\\"), $line); }
           else {
-            push(@entries, ['author', $line]); } }                 # safest to assume author?
-        elsif ($p < 8) {                                           # Close to front? assume affiliation
+            push(@entries, ['author', $line]); } }    # safest to assume author?
+        elsif (markerLeads($line, $p)) {              # Leading marker: affiliation
           push(@entries, ['affiliation', $line]); }
         else {    # Presumably author; but split again on "," JIK
           foreach my $author (SplitTokens($line, T_OTHER(','))) {
             push(@entries, ['author', $author]); } } }
+      # Without any author, the affiliations would be orphaned and dropped,
+      # so fall back to unstructured author content.
+      @entries = (['unstructured', $stuff]) unless grep { $$_[0] eq 'author'; } @entries;
       foreach my $entry (@entries) {
         my ($type, $line) = @$entry;
-        if ($type eq 'author') {
+        if ($type eq 'unstructured') {
+          push(@calls, Invocation(T_CS('\lx@add@author'), undef, $line)); }
+        elsif ($type eq 'author') {
           push(@calls, Invocation(T_CS('\lx@add@author'), undef,
               Invocation(T_CS('\lx@author@withsup'), $line))); }
         else {
