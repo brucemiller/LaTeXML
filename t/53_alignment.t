@@ -6,6 +6,7 @@ use LaTeXML::Util::Test;
 
 latexml_tests("t/alignment",
   requires => {
-    listing => 'listings.cfg',
-    algx    => ['algorithm.sty', 'algpseudocode.sty'],
-    cells   => 'makecell.sty' });
+    listing  => 'listings.cfg',
+    algx     => ['algorithm.sty', 'algpseudocode.sty'],
+    arydshln => 'arydshln.sty',
+    cells    => 'makecell.sty' });

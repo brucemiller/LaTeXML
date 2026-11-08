@@ -1,0 +1,116 @@
+# -*- mode: Perl -*-
+#  /====================================================================\
+# | arydshln.sty for LaTeXML                                             |
+# |                                                                      |
+#  >====================================================================<
+# | Released to public domain.                                           |
+# | Christopher Smolen <chrispbsmolen@gmail.com>                         |
+# | http://dlmf.nist.gov/LaTeXML/                                        |
+#  \====================================================================/
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# arydshln adds dashed horizontal and vertical rules to array and tabular.
+#
+# Horizontal dashed rules (\hdashline, \cdashline) are recorded as ordinary
+# (solid) top borders, since the border model has no dashed variant.
+# Vertical dashed rules (the ':' and ';{dash/gap}' column specifiers) are
+# recorded as ordinary l/r borders, and the affected cells additionally get
+# a class ltx_border_l_dashed or ltx_border_r_dashed.
+# The dash and gap lengths are accepted but have no effect.
+
+#======================================================================
+# Registers
+DefRegister('\dashlinedash' => Dimension('4pt'));
+DefRegister('\dashlinegap'  => Dimension('4pt'));
+Let('\hdashlinewidth', '\dashlinedash');
+Let('\hdashlinegap',   '\dashlinegap');
+
+#======================================================================
+# Horizontal dashed rules; the optional [dash/gap] is ignored.
+DefMacro('\hdashline[]',      '\noalign{\lx@adl@hdashline}');
+DefMacro('\firsthdashline[]', '\noalign{\lx@adl@hdashline}');
+DefMacro('\lasthdashline[]',  '\noalign{\lx@adl@hdashline}');
+DefConstructorI('\lx@adl@hdashline', undef, '',
+  afterDigest => sub {
+    if (my $alignment = LookupValue('Alignment')) {
+      $alignment->addLine('t'); }
+    return; },
+  properties => { isHorizontalRule => 1 },
+  sizer      => 0, alias => '\hdashline');
+
+# \cdashline{a-b}[dash/gap]
+DefMacro('\cdashline{}[]', '\noalign{\lx@adl@cdashline{#1}}');
+DefConstructor('\lx@adl@cdashline{}', '',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $cols = ToString($whatsit->getArg(1));
+    my @cols = ();
+    while ($cols =~ s/^,?(\d+)//) {
+      my $n = $1;
+      push(@cols, ($cols =~ s/^-(\d+)// ? ($n .. $1) : ($n))); }
+    if (my $alignment = LookupValue('Alignment')) {
+      $alignment->addLine('t', @cols); }
+    return; },
+  properties => { isHorizontalRule => 1 },
+  sizer      => 0, alias => '\cdashline');
+
+#======================================================================
+# Vertical dashed rules: the ':' and ';{dash/gap}' column specifiers.
+# Like '|', they put a (zero size) vertical rule between columns, which
+# the alignment code turns into an l or r border; the rule also marks
+# the cell it ends up in as dashed on that side.
+DefConstructor('\lx@adl@vdashrule{}', '',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $side = ToString($whatsit->getArg(1));
+    if (my $alignment = LookupValue('Alignment')) {
+      if (my $row = $alignment->currentRow) {
+        if (my $colspec = $row->column($alignment->currentColumnNumber)) {
+          my $class   = 'ltx_border_' . $side . '_dashed';
+          my @classes = grep { $_ && ($_ ne $class) } split(/\s+/, $$colspec{class} || '');
+          $$colspec{class} = join(' ', @classes, $class); } } }
+    return; },
+  properties => { isVerticalRule => 1 },
+  sizer      => 0, reversion => '');
+
+sub adl_dash_column {
+  # Before the first column, the rule is the left border of that column;
+  # otherwise it is the right border of the previous one.
+  my $side = ($$LaTeXML::BUILD_TEMPLATE{current_column} ? 'r' : 'l');
+  $LaTeXML::BUILD_TEMPLATE->addBetweenColumn(T_CS('\lx@adl@vdashrule'), T_BEGIN, T_LETTER($side), T_END);
+  return; }
+DefColumnType(':',   sub { adl_dash_column(); return; });
+DefColumnType(';{}', sub { adl_dash_column(); return; });
+
+#======================================================================
+# Shorthand environments: Array, Tabular, Tabular* (and Longtable,
+# if longtable has been loaded); these just activate dashed lines in TeX.
+Let('\Array',             '\array');
+Let('\endArray',          '\endarray');
+Let('\Tabular',           '\tabular');
+Let('\endTabular',        '\endtabular');
+Let(T_CS('\Tabular*'),    T_CS('\tabular*'));
+Let(T_CS('\endTabular*'), T_CS('\endtabular*'));
+if (IsDefined('\longtable')) {
+  Let('\Longtable',    '\longtable');
+  Let('\endLongtable', '\endlongtable'); }
+
+#======================================================================
+# Configuration of the TeX drawing; no effect here.
+DefMacro('\ADLactivate',      '');
+DefMacro('\ADLinactivate',    '');
+DefMacro('\ADLnullwide',      '');
+DefMacro('\ADLsomewide',      '');
+DefMacro('\ADLnullwidehline', '');
+DefMacro('\ADLsomewidehline', '');
+DefMacro('\ADLnoshorthanded', '');
+DefMacro('\ADLdrawingmode{}', '');
+# Colouring the gaps of dashed lines (with colortbl)
+DefMacro('\dashgapcolor[]{}', '');
+DefMacro('\nodashgapcolor',   '');
+
+#======================================================================
+1;
