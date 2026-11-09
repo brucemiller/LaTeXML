@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{array}
+\usepackage{arydshln}
+\begin{document}
+
+\section{Basic}
+\begin{tabular}{c:c|c}
+\hline
+a & b & c \\ \hdashline
+d & e & f \\ \cdashline{1-2}
+g & h & i \\ \hdashline[1pt/2pt]
+j & k & l \\ \hline
+\end{tabular}
+
+\section{Leading colon, pattern column, trailing dashline}
+\setlength{\dashlinedash}{1pt}\setlength{\dashlinegap}{2pt}
+\begin{tabular}{:l;{2pt/2pt}r:}
+\hdashline
+x & y \\ \cdashline{2-2}[0.5pt/1pt]
+z & w \\
+\hdashline
+\end{tabular}
+
+\section{Double dashed column, first and last lines}
+\ADLnullwide\ADLinactivate\ADLactivate
+\begin{tabular}{c::c}
+\firsthdashline
+p & q \\
+\lasthdashline
+\end{tabular}
+
+\section{Math array}
+\[ \left[\begin{array}{cc:c} 1 & 2 & 3\\ \hdashline 4 & 5 & 6 \end{array}\right] \]
+
+\end{document}
