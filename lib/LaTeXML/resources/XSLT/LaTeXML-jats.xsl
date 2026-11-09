@@ -68,6 +68,7 @@
   -->
 
   <xsl:variable name="footnotes" select="//ltx:note[@role='footnote']"/>
+  <xsl:key name="bibitem-by-id" match="ltx:bibitem" use="@xml:id"/>
   <xsl:template name="add_classes"/>
   <xsl:param name="html_ns"></xsl:param>
   <xsl:param name="USE_XMLID"></xsl:param>
@@ -714,6 +715,9 @@
 
   <xsl:template match="ltx:ref[@idref]">
     <xref rid="{./@idref}">
+      <xsl:if test="key('bibitem-by-id', @idref)">
+        <xsl:attribute name="ref-type">bibr</xsl:attribute>
+      </xsl:if>
       <xsl:apply-templates/>
     </xref>
   </xsl:template>
